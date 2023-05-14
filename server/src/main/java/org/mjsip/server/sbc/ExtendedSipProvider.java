@@ -28,9 +28,8 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.SipTransport;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
 
 
 
@@ -44,6 +43,7 @@ import org.zoolu.util.LogLevel;
   */
 public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ExtendedSipProvider.class);
 
 	/** Binder of pairs of SocketAddresses */
 	AddressResolver address_resolver;
@@ -51,8 +51,10 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 
 	/** Inits private attribute. */ 
 	private void init(long refresh_time, long keepalive_time) {
-		if (keepalive_time>0) address_resolver=new AddressResolverKeepAlive(refresh_time,event_logger,this,keepalive_time);
-		else address_resolver=new AddressResolver(refresh_time,event_logger);
+		if (keepalive_time > 0)
+			address_resolver = new AddressResolverKeepAlive(refresh_time, this, keepalive_time);
+		else
+			address_resolver = new AddressResolver(refresh_time);
 	}
 
 
@@ -105,8 +107,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 			}
 		}
 		catch (Exception e) {
-			log(LogLevel.WARNING,"Error managing addressing material");
-			log(LogLevel.DEBUG,e);
+			LOG.warn("Error managing addressing material", e);
 		}
 
 		super.onReceivedMessage(transport,msg);
@@ -118,7 +119,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 		// logs
 		String foot_print=msg.getFirstLine();
 		if (foot_print==null) foot_print="NOT a SIP message\r\n";
-		log(LogLevel.INFO,"Sending message ("+msg.getLength()+" bytes): "+foot_print);
+		LOG.info("Sending message ("+msg.getLength()+" bytes): "+foot_print);
 		String refer_addr=dest_addr;
 		int refer_port=dest_port;
 		if (msg.isResponse()) {
@@ -140,31 +141,14 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 		//}
 		if (address_resolver.contains(refer_soaddr)) {
 			dest_soaddr=address_resolver.getSocketAddress(refer_soaddr);
-			log(LogLevel.INFO,"CHANGING DESTINATION "+refer_soaddr+" >> "+dest_soaddr);
-			//System.out.println("DEBUG: SPX: CHANGING DESTINATION "+refer_soaddr+" >> "+dest_soaddr);
+			LOG.info("CHANGING DESTINATION "+refer_soaddr+" >> "+dest_soaddr);
 			dest_addr=dest_soaddr.getAddress().toString();
 			dest_port=dest_soaddr.getPort();
 		}
 		else {
-			log(LogLevel.INFO,"destination unchanged: "+dest_soaddr);
+			LOG.info("destination unchanged: "+dest_soaddr);
 		}
 		
 		return super.sendRawMessage(msg,proto,dest_addr,dest_port,ttl);
-	}
-
-
-	//**************************** logs ****************************
-
-	/** Adds a new log line to the default log output */ 
-	private final void log(LogLevel level, String str) {
-		if (event_logger!=null) {
-			String provider_id=(isAllInterfaces())? Integer.toString(getPort()) : getBindingIpAddress().toString()+":"+getPort();
-			event_logger.log(level,"SipProviderX-"+provider_id+": "+str);  
-		}    
-	}
-
-	/** Adds the Exception message to the default Log */
-	private final void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
 	}
 }

@@ -3,8 +3,7 @@ package org.mjsip.media;
 
 
 import org.mjsip.net.UdpRelay;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -12,8 +11,7 @@ import org.zoolu.util.Logger;
   */
 public class NativeMediaStreamer implements MediaStreamer {
 	
-	/** Logger */
-	Logger logger=null;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NativeMediaStreamer.class);
 
 	/** Runtime media process (native media application) */
 	Process media_process=null;
@@ -32,8 +30,8 @@ public class NativeMediaStreamer implements MediaStreamer {
 	  * @param command the command-line program to be run
 	  * @param args command-line arguments that have to be passed to the program
 	  * @param logger the logger where running information are logged */
-	public  NativeMediaStreamer(String command, String[] args, Logger logger) {
-		init(command,args,0,0,logger);
+	public NativeMediaStreamer(String command, String[] args) {
+		init(command, args, 0, 0);
 	}
 
 	/** Creates a new media streamer.
@@ -42,8 +40,8 @@ public class NativeMediaStreamer implements MediaStreamer {
 	  * @param local_port local media port
 	  * @param remote_port remote media port
 	  * @param logger the logger where running information are logged */
-	public  NativeMediaStreamer(String command, String[] args, int local_port, int remote_port, Logger logger) {
-		init(command,args,local_port,remote_port,logger);
+	public NativeMediaStreamer(String command, String[] args, int local_port, int remote_port) {
+		init(command, args, local_port, remote_port);
 	}
 
 	/** Inits the media streamer.
@@ -52,8 +50,7 @@ public class NativeMediaStreamer implements MediaStreamer {
 	  * @param local_port local media port
 	  * @param remote_port remote media port
 	  * @param logger the logger where running information are logged */
-	private void init(String command, String[] args, int local_port, int remote_port, Logger logger) {
-		this.logger=logger;
+	private void init(String command, String[] args, int local_port, int remote_port) {
 		this.command=command;
 		this.args=args;
 		this.local_port=local_port;
@@ -98,14 +95,16 @@ public class NativeMediaStreamer implements MediaStreamer {
 		return true;
 	}
 
-
 	// ****************************** Logs *****************************
 
-	/** Adds a new string to the default Log.
-	  * @param str the string message to be logged. */
+	/**
+	 * Adds a new string to the default Log.
+	 * 
+	 * @param str
+	 *        the string message to be logged.
+	 */
 	private void log(String str) {
-		if (logger!=null) logger.log(LogLevel.INFO,"NativeMediaApp: "+str);  
-		System.out.println("NativeMediaApp: "+str);
+		LOG.info("NativeMediaApp: " + str);
 	}
-		
+
 }

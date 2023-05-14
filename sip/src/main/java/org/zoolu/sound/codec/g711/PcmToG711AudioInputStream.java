@@ -15,6 +15,7 @@ package org.zoolu.sound.codec.g711;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.sound.BufferedAudioInputStream;
 import org.zoolu.sound.codec.G711;
 
@@ -24,6 +25,8 @@ import org.zoolu.sound.codec.G711;
   */
 class PcmToG711AudioInputStream extends BufferedAudioInputStream {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PcmToG711AudioInputStream.class);
+
 	/** Buffer size */
 	static final int BUFFER_SIZE=1;
 
@@ -37,11 +40,13 @@ class PcmToG711AudioInputStream extends BufferedAudioInputStream {
 	/** Creates a new PcmToG711AudioInputStream. */
 	public PcmToG711AudioInputStream(AudioInputStream input_stream, AudioFormat target_format) {
 		super(input_stream,target_format,BUFFER_SIZE);
-		printOut("PcmToG711AudioInputStream()");
+		if (DEBUG) {
+			LOG.debug("PcmToG711AudioInputStream()");
+		}
 		g711_encoding=target_format.getEncoding();
 		
 		if (g711_encoding!=G711Encoding.G711_ULAW && g711_encoding!=G711Encoding.G711_ALAW) {
-			System.err.println("ERROR: PcmToG711AudioInputStream: unknown G711 encoding type: "+g711_encoding.toString());  
+			LOG.error("unknown G711 encoding type: " + g711_encoding.toString());
 		}
 
 		aux_buffer=new byte[2*BUFFER_SIZE];

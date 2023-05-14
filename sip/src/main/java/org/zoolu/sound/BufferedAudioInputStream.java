@@ -17,6 +17,8 @@ import java.io.InputStream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
+import org.slf4j.LoggerFactory;
+
 
 
 /** Abstract buffered AudioInputStream.
@@ -27,9 +29,11 @@ import javax.sound.sampled.AudioInputStream;
   * {@link #innerRead(byte[])} and {@link #innerAvailable()}.
   */
 abstract public class BufferedAudioInputStream extends AudioInputStream {
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(BufferedAudioInputStream.class);
 	
 	/** Debug mode */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 
 
 	/** Input stream */
@@ -176,16 +180,6 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 	/** Repositions this stream to the position at the time the mark method was last called on this input stream. */
 	public void reset()  {
 		// TODO
-	}
-
-
-	/** Prints debugging information. */
-	protected void printOut(String str) {
-		if (DEBUG) {
-			//System.err.println("DEBUG: "+getClass().getName()+": "+str);
-			String[] class_name=getClass().getName().split("[.]");
-			System.err.println("DEBUG: "+class_name[class_name.length-1]+": "+str);
-		}
 	}
 
 }

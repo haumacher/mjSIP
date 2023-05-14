@@ -28,6 +28,7 @@ import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPacket;
 import org.mjsip.rtp.RtpPayloadFormat;
 import org.mjsip.rtp.RtpSocket;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpSocket;
@@ -40,6 +41,8 @@ import org.zoolu.util.Random;
   */
 public class RtpStreamSender extends Thread implements RtpControlledSender {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RtpStreamSender.class);
+
 	/** Inter-time of RTCP Sending Report (SR) packets [millisecs]. */
 	public static long RTCP_SR_TIME=5000;
 
@@ -59,7 +62,7 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	public static long STATIC_TIMESTAMP=-1;
 
 	/** Whether working in debug mode. */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 
 	// DEBUG DROP RATE
 	/** Mean interval between two dropping periods (in mean number of packets) */
@@ -296,8 +299,10 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 
 		running=true;
 
-		if (DEBUG) println("RTP: localhost:"+rtp_socket.getUdpSocket().getLocalPort()+" --> "+remote_soaddr);
-		if (DEBUG) println("RTP: sending pkts of "+(formatted_len)+" bytes of RTP payload");
+		if (DEBUG)
+			LOG.debug("RTP: localhost:"+rtp_socket.getUdpSocket().getLocalPort()+" --> "+remote_soaddr);
+		if (DEBUG)
+			LOG.debug("RTP: sending pkts of "+(formatted_len)+" bytes of RTP payload");
 
 		// DEBUG DROP RATE
 		int debug_drop_count=0;
@@ -360,7 +365,8 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 				}
 				else
 				if (len<0) {
-					if (DEBUG) println("Error reading from InputStream");
+					if (DEBUG)
+						LOG.debug("Error reading from InputStream");
 					running=false;
 				}
 			}
@@ -383,7 +389,8 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		input_stream=null;
 		rtp_socket=null;
 
-		if (DEBUG) println("rtp sender terminated");
+		if (DEBUG)
+			LOG.debug("rtp sender terminated");
 		if (listener!=null) listener.onRtpStreamSenderTerminated(this,error);
 	}
 	
@@ -405,12 +412,6 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	public long getUdpOctectCounter() {
 		if (rtp_socket!=null) return rtp_socket.getUdpSocket().getSenderOctectCounter();
 		else return 0;
-	}
-
-
-	/** Debug output */
-	private static void println(String str) {
-		System.err.println("RtpStreamSender: "+str);
 	}
 
 }

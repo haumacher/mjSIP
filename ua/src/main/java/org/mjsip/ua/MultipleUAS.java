@@ -34,8 +34,7 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.ScheduledWork;
 
 
@@ -45,6 +44,7 @@ import org.zoolu.util.ScheduledWork;
   */
 public abstract class MultipleUAS implements UserAgentListener, RegistrationClientListener, SipProviderListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
 	/** UserAgentProfile */
 	protected UserAgentProfile ua_profile;
@@ -52,17 +52,11 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
-	/** Logger */
-	Logger logger;
-	
 	/** Standard output */
 	PrintStream stdout=null;
 
-
-
 	/** Creates a new MultipleUAS. */
 	public MultipleUAS(SipProvider sip_provider, UserAgentProfile ua_profile) {
-		logger=sip_provider.getLogger();
 		this.ua_profile=ua_profile;
 		this.sip_provider=sip_provider;
 
@@ -88,9 +82,9 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 
 	/** From SipProviderListener. When a new Message is received by the SipProvider. */
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
-		log(LogLevel.DEBUG,"onReceivedMessage()");
+		LOG.debug("onReceivedMessage()");
 		if (msg.isRequest() && msg.isInvite()) {
-			log(LogLevel.INFO,"received new INVITE request");
+			LOG.info("received new INVITE request");
 			// get caller, callee, sdp
 			//NameAddress callee=msg.getToHeader().getNameAddress();
 			//NameAddress caller=msg.getFromHeader().getNameAddress();
@@ -168,31 +162,12 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 
 	/** From RegistrationClientListener. When a UA has been successfully (un)registered. */
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		log(LogLevel.INFO,"Registration success: expires="+expires+": "+result);
+		LOG.info("Registration success: expires="+expires+": "+result);
 	}
 
 	/** From RegistrationClientListener. When a UA failed on (un)registering. */
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		log(LogLevel.INFO,"Registration failure: "+result);
-	}
-
-	
-	// ****************************** Logs *******************************
-
-	/** Prints out a message to stantard output. */
-	void printOut(String str) {
-		if (stdout!=null) stdout.println(str);
-	}
-
-
-	/** Adds a new string to the default Log. */
-	void log(String str) {
-		log(LogLevel.INFO,str);
-	}
-
-	/** Adds a new string to the default Log. */
-	void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"MultipleUAS: "+str);  
+		LOG.info("Registration failure: "+result);
 	}
 
 }

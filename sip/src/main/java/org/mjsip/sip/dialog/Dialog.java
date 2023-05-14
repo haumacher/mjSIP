@@ -29,9 +29,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.DialogId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -39,6 +37,7 @@ import org.zoolu.util.Logger;
   */
 public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Dialog.class);
 	
 	// ********************* Static private attributes ********************
 
@@ -48,9 +47,6 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 
 	// *********************** Protected attributes ***********************
 
-	/** Logger */
-	protected Logger logger;
- 
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
@@ -88,7 +84,6 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	protected Dialog(SipProvider provider) {
 		super(); 
 		this.sip_provider=provider;
-		this.logger=sip_provider.getLogger();
 		this.dialog_num=dialog_counter++;  
 		this.status=0;
 		this.dialog_id=null;
@@ -100,7 +95,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	/** Changes the internal dialog state */
 	protected void changeStatus(int newstatus) {
 		status=newstatus;
-		log(LogLevel.DEBUG,"changed dialog state: "+getStatus());
+		LOG.debug("changed dialog state: "+getStatus());
 		
 		// remove the sip_provider listener when going to "terminated" state
 		if (isTerminated()) {
@@ -140,7 +135,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	public void updateDialogInfo(boolean is_client, SipMessage msg) {
 		
 		if (isTerminated()) {
-			log(LogLevel.WARNING,"trying to update a terminated dialog: do nothing.");
+			LOG.warn("trying to update a terminated dialog: do nothing.");
 			return;
 		}
 		// else
@@ -149,30 +144,17 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		
 		update(is_client,sip_provider,msg);
 			
-		if (secure_old!=secure) log(LogLevel.INFO,"secure dialog: on");
+		if (secure_old!=secure) LOG.info("secure dialog: on");
 
 		// update dialog_id and sip_provider listener
 		DialogId new_dialog_id=new DialogId(call_id,local_tag,remote_tag);
 		if (dialog_id==null || !dialog_id.equals(new_dialog_id)) {
-			log(LogLevel.INFO,"new dialog-id: "+new_dialog_id);
+			LOG.info("new dialog-id: "+new_dialog_id);
 			if (sip_provider!=null) sip_provider.addSelectiveListener(new_dialog_id,this);
 			if (dialog_id!=null && sip_provider!=null) sip_provider.removeSelectiveListener(dialog_id);
 			dialog_id=new_dialog_id;
 		}
 
-	}
-
- 
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"Dialog#"+dialog_num+": "+str);  
-	}
-
-	/** Adds the Exception message to the default log. */
-	protected final void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
 	}
 
 	/** Verifies the correct status; if not logs the event. */
@@ -183,8 +165,10 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	/** Verifies an event; if not logs it. */
 	protected final boolean verifyThat(boolean expression, String str) {
 		if (!expression) {
-			if (str==null || str.length()==0) log(LogLevel.WARNING,"expression check failed. ");
-			else log(LogLevel.WARNING,str);
+			if (str == null || str.length() == 0)
+				LOG.warn("expression check failed. ");
+			else
+				LOG.warn(str);
 		}
 		return expression;
 	}

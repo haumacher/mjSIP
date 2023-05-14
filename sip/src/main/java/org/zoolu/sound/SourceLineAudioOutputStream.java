@@ -31,6 +31,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Pipe;
 import org.zoolu.util.PipeInputStream;
 import org.zoolu.util.PipeOutputStream;
@@ -45,9 +46,11 @@ import org.zoolu.util.PipeOutputStream;
   * javax.sound.sampled.AudioInputStream class.
   */
 class SourceLineAudioOutputStream extends AudioOutputStream {
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SourceLineAudioOutputStream.class);
 	
 	/** Whether printing debugging information on standard error output. */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 	
 	/** Internal buffer size. */
 	protected static final int INTERNAL_BUFFER_SIZE=40960;
@@ -92,8 +95,10 @@ class SourceLineAudioOutputStream extends AudioOutputStream {
 		}
 		
 		converted_input_stream=AudioSystem.getAudioInputStream(source_line.getFormat(),audio_input_stream);
-		printOut("input codec: "+format.toString());
-		printOut("output codec: "+source_line.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("input codec: "+format.toString());
+		if (DEBUG)
+			LOG.debug("output codec: "+source_line.getFormat().toString());
 		if (converted_input_stream==null) {
 			throw new IOException("Failed while getting a transcoded AudioInputStream from AudioSystem for input codec: "+format.toString()+", and output codec: "+source_line.getFormat().toString()+".");
 		}
@@ -158,12 +163,6 @@ class SourceLineAudioOutputStream extends AudioOutputStream {
 			internal_buffer[0]=(byte)b;
 			source_line.write(internal_buffer,0,1);
 		}
-	}
-
-
-	/** Prints debugging information */
-	private static void printOut(String str) {
-		if (DEBUG) System.err.println("DEBUG: SourceLineAudioOutputStream: "+str);
 	}
 
 }

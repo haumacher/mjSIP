@@ -36,7 +36,7 @@ import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -46,6 +46,7 @@ import org.zoolu.util.LogLevel;
   */
 public class Echo extends MultipleUAS implements SipProviderListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Echo.class);
 
 	/** Default number of available media ports */
 	public static int MEDIA_PORTS=40;
@@ -91,7 +92,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 			NameAddress sender=msg.getFromHeader().getNameAddress();
 			String content_type=msg.getContentTypeHeader().getContentType();
 			byte[] content=msg.getBody();
-			log("message received: "+new String(content));
+			LOG.info("message received: "+new String(content));
 			// respond
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 			ts.respondWith(200);
@@ -104,7 +105,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 			}
 			TransactionClient tc=new TransactionClient(sip_provider,reply,null);
 			tc.request();
-			log("echo reply sent");
+			LOG.info("echo reply sent");
 		}
 		else super.onReceivedMessage(sip_provider,msg);
 	}
@@ -120,21 +121,13 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 			ua.accept(media_descs);
 		}
 		else ua.accept();
-		log("incoming call accepted");
+		LOG.info("incoming call accepted");
 	}
 	
-
-	/** Adds a new string to the default Log. */
-	void log(String str) {
-		if (logger!=null) logger.log(LogLevel.INFO,"Echo: "+str);  
-	}
-
-
 	/** The main method. */
 	public static void main(String[] args) {
 		
 		UA.println("Echo "+SipStack.version);
-		SipStack.debug_level=8;
 
 		int media_ports=MEDIA_PORTS;
 		boolean force_reverse_route=false;

@@ -40,9 +40,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.InviteTransactionServer;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.SimpleDigest;
 
 
@@ -60,13 +58,12 @@ import org.zoolu.util.SimpleDigest;
   */
 public abstract class ServerEngine implements SipProviderListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ServerEngine.class);
+
 	/** Name of the Loop-Tag header field.
 	  * It is used as temporary field for carry loop detection information
 	  * added to the via branch parameter of the forwarded requests. */
 	protected static final String Loop_Tag="Loop-Tag";
-
-	/** Logger */
-	protected Logger logger=null;
 
 	/** ServerProfile of the server. */
 	protected ServerProfile server_profile=null;
@@ -125,11 +122,10 @@ public abstract class ServerEngine implements SipProviderListener {
 	public ServerEngine(SipProvider provider, ServerProfile profile) {
 		server_profile=profile;
 		sip_provider=provider;
-		logger=sip_provider.getLogger();
 		sip_provider.addSelectiveListener(MethodId.ANY,this);
 			 
 		// LOCAL DOMAINS
-		log(LogLevel.INFO,"Domains="+getLocalDomains());
+		LOG.info("Domains="+getLocalDomains());
 
 		// LOCATION SERVICE
 		String location_service_class=profile.location_service;
@@ -144,13 +140,12 @@ public abstract class ServerEngine implements SipProviderListener {
 				location_service=(LocationService)constructor.newInstance(parameters);
 			}
 			catch (NoSuchMethodException e) {
-				log(LogLevel.DEBUG,e);
+				LOG.debug("Exception." + e);
 				location_service=(LocationService)myclass.newInstance();
 			}
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
-			log(LogLevel.INFO,"Error trying to use location service '"+location_service_class+"': use default class.");
+			LOG.info("Error trying to use location service '" + location_service_class + "': use default class.", e);
 		}
 		// use default location service
 		if (location_service==null) location_service=new LocationServiceImpl(profile.location_db);   
@@ -164,7 +159,7 @@ public abstract class ServerEngine implements SipProviderListener {
 				}
 			}
 			location_service.sync();
-			log(LogLevel.DEBUG,"LocationService \""+profile.location_db+"\": cleaned\r\n");
+			LOG.debug("LocationService \""+profile.location_db+"\": cleaned\r\n");
 		}
 		else {
 			// remove all expired contacts
@@ -180,8 +175,8 @@ public abstract class ServerEngine implements SipProviderListener {
 			}
 			if (changed) location_service.sync();
 		}  
-		log(LogLevel.DEBUG,"LocationService ("+profile.authentication_service+"): size="+location_service.size()+"\r\n"+location_service.toString());
-		log(LogLevel.DEBUG,"LocationService ("+profile.authentication_service+"): size="+location_service.size()+"\r\n"+location_service.toString());
+		LOG.debug("LocationService ("+profile.authentication_service+"): size="+location_service.size()+"\r\n"+location_service.toString());
+		LOG.debug("LocationService ("+profile.authentication_service+"): size="+location_service.size()+"\r\n"+location_service.toString());
 
 		// AUTHENTICATION SERVICE
 		if (server_profile.do_authentication || server_profile.do_proxy_authentication) {
@@ -199,17 +194,17 @@ public abstract class ServerEngine implements SipProviderListener {
 					authentication_service=(AuthenticationService)constructor.newInstance(parameters);
 				}
 				catch (NoSuchMethodException e) {
-					log(LogLevel.DEBUG,e);
+					LOG.debug("Exception." + e);
 					authentication_service=(AuthenticationService)myclass.newInstance();
 				}
 			}
 			catch (Exception e) {
-				log(LogLevel.INFO,e);
-				log(LogLevel.INFO,"Error trying to use authentication service '"+authentication_service_class+"': use default class.");
+				LOG.info("Error trying to use authentication service '" + authentication_service_class
+						+ "': use default class.", e);
 			}
 			// use default authentication service
 			if (authentication_service==null) authentication_service=new AuthenticationServiceImpl(server_profile.authentication_db);
-			log(LogLevel.DEBUG,"AuthenticationService ("+profile.authentication_service+"): size="+authentication_service.size()+"\r\n"+authentication_service.toString());
+			LOG.debug("AuthenticationService ("+profile.authentication_service+"): size="+authentication_service.size()+"\r\n"+authentication_service.toString());
 			
 			// now, init the proper authentication server
 			String authentication_server_class=profile.authentication_scheme;
@@ -218,24 +213,25 @@ public abstract class ServerEngine implements SipProviderListener {
 			try {
 				Class myclass=Class.forName(authentication_server_class);
 				Class[] parameter_types={ Class.forName("java.lang.String"), Class.forName("local.server.AuthenticationService"), Class.forName("org.zoolu.util.LogWriter") };
-				Object[] parameters={ realm, authentication_service, sip_provider.getLogger() };
+				Object[] parameters = { realm, authentication_service };
 				try {
 					java.lang.reflect.Constructor constructor=myclass.getConstructor(parameter_types);
 					as=(AuthenticationServer)constructor.newInstance(parameters);
 				}
 				catch (NoSuchMethodException e) {
-					log(LogLevel.DEBUG,e);
+					LOG.debug("Exception." + e);
 					as=(AuthenticationServer)myclass.newInstance();
 				}
 			}
 			catch (Exception e) {
-				log(LogLevel.INFO,e);
-				log(LogLevel.WARNING,"Error trying to use authentication server '"+authentication_server_class+"': use default class.");
+				LOG.warn("Error trying to use authentication server '" + authentication_server_class
+						+ "': use default class.", 1);
 			}
 			// use default authentication service
-			if (as==null) as=new AuthenticationServerImpl(realm,authentication_service,sip_provider.getLogger());
-			log(LogLevel.DEBUG,"AuthenticationServer: scheme: "+profile.authentication_scheme);
-			log(LogLevel.DEBUG,"AuthenticationServer: realm: "+profile.authentication_realm);
+			if (as == null)
+				as = new AuthenticationServerImpl(realm, authentication_service);
+			LOG.debug("AuthenticationServer: scheme: "+profile.authentication_scheme);
+			LOG.debug("AuthenticationServer: realm: "+profile.authentication_realm);
 		}
 		else as=null;
 
@@ -258,10 +254,10 @@ public abstract class ServerEngine implements SipProviderListener {
 	/** When a new message is received by the SipProvider.
 	  * If the received message is a request, it cheks for loops, */
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
-		log(LogLevel.DEBUG,"message received");
+		LOG.debug("message received");
 		if (msg.isRequest()) {
 			// it is an INVITE or ACK or BYE or OPTIONS or REGISTER or CANCEL
-			log(LogLevel.DEBUG,"message is a request");
+			LOG.debug("message is a request");
 
 			// validate the message
 			SipMessage err_resp=validateRequest(msg);
@@ -280,7 +276,7 @@ public abstract class ServerEngine implements SipProviderListener {
 				//SipURI route_uri=msg.getRouteHeader().getNameAddress().getAddress();
 				GenericURI route_uri=(new RouteHeader(msg.getRoutes().getBottom())).getNameAddress().getAddress();
 				if (!route_uri.hasLr()) {
-					log(LogLevel.DEBUG,"probably the message was compliant to RFC2543 Strict Route rule: message is updated to RFC3261");
+					LOG.debug("probably the message was compliant to RFC2543 Strict Route rule: message is updated to RFC3261");
 
 					// the message has been sent to this server according with RFC2543 Strict Route
 					// the proxy MUST replace the Request-URI in the request with the last
@@ -291,7 +287,7 @@ public abstract class ServerEngine implements SipProviderListener {
 					
 					// update the target
 					target=msg.getRequestLine().getAddress();
-					log(LogLevel.TRACE,"new recipient: "+target.toString());
+					LOG.trace("new recipient: "+target.toString());
 					
 					// check again if this server is the target
 					//this_is_target=matchesDomainName(target.getHost(),target.getPort());
@@ -311,14 +307,14 @@ public abstract class ServerEngine implements SipProviderListener {
 
 			// check whether the request is for a domain the server is responsible for
 			boolean is_for_this_domain=isResponsibleFor(msg);
-			log(LogLevel.TRACE,"is for local doamin? "+((is_for_this_domain)?"yes":"no"));
+			LOG.trace("is for local doamin? "+((is_for_this_domain)?"yes":"no"));
 			
 			// check whether the request is coming from a user belonging to a domain the server is responsible for
 			boolean is_from_this_domain=isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress());
-			log(LogLevel.TRACE,"is from local doamin? "+((is_from_this_domain)?"yes":"no"));
+			LOG.trace("is from local doamin? "+((is_from_this_domain)?"yes":"no"));
 
 			if (is_for_this_domain && (target.isSipURI() && !(new SipURI(target)).hasUserName())) {
-				log(LogLevel.TRACE,"the recipient is this server");
+				LOG.trace("the recipient is this server");
 				// check message authentication (server authentication)
 				if (server_profile.do_authentication && !msg.isAck() && !msg.isCancel()) {
 					err_resp=as.authenticateRequest(msg);  
@@ -333,7 +329,7 @@ public abstract class ServerEngine implements SipProviderListener {
 				processRequestToLocalServer(msg);
 			}
 			else {
-				log(LogLevel.TRACE,"the recipient is NOT this server");
+				LOG.trace("the recipient is NOT this server");
 				// check message authentication (proxy authentication)
 				boolean is_spiral=(msg.getRemotePort()==sip_provider.getPort() && (msg.getRemoteAddress().startsWith("127.") || msg.getRemoteAddress().equals(sip_provider.getViaAddress())));
 				if (server_profile.do_proxy_authentication && is_from_this_domain && !is_spiral && !msg.isAck() && !msg.isCancel()) {
@@ -348,12 +344,12 @@ public abstract class ServerEngine implements SipProviderListener {
 					}
 				}
 				if (is_for_this_domain) {
-					log(LogLevel.TRACE,"the request is for a local user");
+					LOG.trace("the request is for a local user");
 					// process the message
 					processRequestToLocalUser(msg);
 				}
 				else {
-					log(LogLevel.TRACE,"the request is for a remote UA");
+					LOG.trace("the request is for a remote UA");
 					// process the message
 					processRequestToRemoteUA(msg);
 				}
@@ -362,10 +358,10 @@ public abstract class ServerEngine implements SipProviderListener {
 		else {
 			// the message may be a response
 			if (msg.isResponse()) {
-				log(LogLevel.TRACE,"message is a response");
+				LOG.trace("message is a response");
 				processResponse(msg);
 			}
-			else log(LogLevel.WARNING,"received message is not recognized as a request nor a response: discarded");
+			else LOG.warn("received message is not recognized as a request nor a response: discarded");
 		}
 	}
 
@@ -451,7 +447,7 @@ public abstract class ServerEngine implements SipProviderListener {
 	/** Validates the message.
 	  * @return It returns 0 if the message validation successes, otherwise return the error code. */
 	protected SipMessage validateRequest(SipMessage msg) {
-		log(LogLevel.TRACE,"inside validateRequest(msg)");
+		LOG.trace("inside validateRequest(msg)");
 	
 		int err_code=0;
 		
@@ -497,7 +493,7 @@ public abstract class ServerEngine implements SipProviderListener {
 		// Proxy-Authorization
 
 		if (err_code>0) {
-			log(LogLevel.INFO,"Message validation failed ("+err_code+" "+SipResponses.reasonOf(err_code)+"), message discarded");
+			LOG.info("Message validation failed ("+err_code+" "+SipResponses.reasonOf(err_code)+"), message discarded");
 			return SipMessageFactory.createResponse(msg,err_code,null,null);
 		}
 		else return null;
@@ -522,18 +518,5 @@ public abstract class ServerEngine implements SipProviderListener {
 		MultipleHeader rr=msg.getRoutes();
 		if (rr!=null) sb.append(rr.size());
 		return (new SimpleDigest(7,sb.toString())).asHex();
-	}
-
-
-	// ********************************* logs *********************************
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"ServerEngine: "+str);  
-	}
-
-	/** Adds the Exception message to the default Log. */
-	private final void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
 	}
 }

@@ -15,6 +15,7 @@ package org.zoolu.sound.codec.amr;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.sound.BufferedAudioInputStream;
 import org.zoolu.sound.codec.AMR;
 
@@ -24,6 +25,7 @@ import org.zoolu.sound.codec.AMR;
   */
 class AmrToPcmAudioInputStream extends BufferedAudioInputStream {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AmrToPcmAudioInputStream.class);
 
 	/** PCM (linear) audio format */
 	private static final AudioFormat PCM_AudioFormat=new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,8000,16,1,2,8000,false);
@@ -84,7 +86,9 @@ class AmrToPcmAudioInputStream extends BufferedAudioInputStream {
 			}
 		}
 		catch (java.io.IOException e) {
-			if (DEBUG) {  printOut("innerRead(): "+e);  e.printStackTrace();  System.exit(0);  }
+			if (DEBUG) {  if (DEBUG) {
+				LOG.debug("innerRead(): "+e);
+			}  e.printStackTrace();  System.exit(0);  }
 			return -1;
 		}
 	}

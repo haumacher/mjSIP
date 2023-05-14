@@ -68,7 +68,7 @@ public class UA {
 		
 		while (flags.getBoolean("--skip",null)); // skip
 		boolean help=flags.getBoolean("-h","prints this message");
-		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
+		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		
 		Boolean unregist=flags.getBoolean("-u",null,"unregisters the contact address with the registrar server (the same as -g 0)");
 		Boolean unregist_all=flags.getBoolean("-z",null,"unregisters ALL contact addresses");
@@ -120,9 +120,6 @@ public class UA {
 		String auth_realm=flags.getString("--auth-realm","<realm>",null,"realm used for authentication");
 		String auth_passwd=flags.getString("--auth-passwd","<passwd>",null,"passwd used for authentication");
 
-		int debug_level=flags.getInteger("--debug-level","<level>",-1,"debug level (level=0 means no log)");
-		String log_path=flags.getString("--log-path","<path>",null,"log folder");
-
 		no_gui=flags.getBoolean("--no-gui",no_gui,"do not use graphical user interface");
 		Boolean no_prompt=flags.getBoolean("--no-prompt",null,"do not prompt");
 		String[] remaining_params=flags.getRemainingStrings(true,null,null);
@@ -137,8 +134,6 @@ public class UA {
 		try {
 			// init SipStack
 			SipStack.init(config_file);
-			if (debug_level>=0) SipStack.debug_level=debug_level;
-			if (log_path!=null) SipStack.log_path=log_path;
 
 			// init sip_provider
 			if (config_file!=null) sip_provider=new SipProvider(config_file);

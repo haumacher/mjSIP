@@ -35,12 +35,16 @@ import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
 
+import org.slf4j.LoggerFactory;
+
 
 
 /** Plays an audio file or AudioInputStream.
   */
 public class AudioClipPlayer implements LineListener  {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AudioClipPlayer.class);
+
 	/** The sound clip */
 	Clip clip=null;
 
@@ -143,7 +147,7 @@ public class AudioClipPlayer implements LineListener  {
 
 	/** Sets the volume gain, between -1 (min) and +1 (max). Value 0 corrisponds to the original volume level. */
 	public AudioClipPlayer setVolumeGain(float volume) {
-		//System.err.println("DEBUG: set clip volume gain (linear): "+volume);        
+		LOG.debug("set clip volume gain (linear): " + volume);
 		// try to set the overall gain of the line
 		try {
 			FloatControl vc=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
@@ -152,14 +156,12 @@ public class AudioClipPlayer implements LineListener  {
 				double linear_min=Math.exp((vc.getMinimum()/10)*Math.log(10));   
 				double linear_level=(volume>=0)? volume*(linear_max-1)+1 : 1+volume*(1-linear_min);
 				double level=10*Math.log(linear_level)/Math.log(10);
-				//System.err.println("DEBUG: set clip volume gain (dB): "+level);
+				LOG.debug("set clip volume gain (dB): " + level);
 				vc.setValue((float)level);
 			}
 		}
 		catch (Exception e) {
-			// getControl may throw IllegalArgumentException
-			//e.printStackTrace();
-			//System.err.println("WARNING: AudioClipPlayer: failed while trying to set volume gain.");
+			LOG.warn("AudioClipPlayer: failed while trying to set volume gain.", e);
 		}
 		return this;
 	}
@@ -173,7 +175,7 @@ public class AudioClipPlayer implements LineListener  {
 			FloatControl vc=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
 			if(vc!=null) {
 				float level=vc.getValue();
-				//System.err.println("DEBUG: get clip volume (dB): "+level);
+				LOG.debug("get clip volume (dB): " + level);
 				double linear_max=Math.exp((vc.getMaximum()/10)*Math.log(10));
 				double linear_min=Math.exp((vc.getMinimum()/10)*Math.log(10));
 				double linear_level=Math.exp((level/10)*Math.log(10));
@@ -181,11 +183,8 @@ public class AudioClipPlayer implements LineListener  {
 			}
 		}
 		catch (Exception e) {
-			// getControl may throw IllegalArgumentException
-			//e.printStackTrace();
-			//System.err.println("WARNING: AudioClipPlayer: failed while trying to get volume gain.");
+			LOG.warn("AudioClipPlayer: failed while trying to get volume gain.", e);
 		}
-		//System.err.println("DEBUG: get clip volume gain (linear): "+volume);
 		return volume;
 	}
 
@@ -198,8 +197,7 @@ public class AudioClipPlayer implements LineListener  {
 			if(vc!=null) vc.setValue(volume);
 		}
 		catch (Exception e) // getControl may throw IllegalArgumentException {
-			//e.printStackTrace();
-			System.err.println("WARNING: AudioClipPlayer: failed while trying to set volume level.");
+			LOG.warn("AudioClipPlayer: failed while trying to set volume level.", e);
 		}
 		return this;
 	}*/

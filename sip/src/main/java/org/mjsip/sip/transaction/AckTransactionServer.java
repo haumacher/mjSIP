@@ -31,7 +31,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionServerId;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 
 
@@ -42,6 +42,8 @@ import org.zoolu.util.Timer;
   */ 
 public class AckTransactionServer extends Transaction implements SipProviderListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AckTransactionServer.class);
+
 	/** the TransactionServerListener that captures the events fired by the AckTransactionServer */
 	AckTransactionServerListener transaction_listener;
 
@@ -93,12 +95,12 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		//{  retransmission_to=new Timer(retransmission_to.getTime(),this);
 		//   retransmission_to.start();
 		//}
-		log(LogLevel.INFO,"new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: "+transaction_id.toString());
 	}    
 
 	/** Starts the AckTransactionServer. */
 	public void respond() {
-		log(LogLevel.TRACE,"start");
+		LOG.trace("start");
 		changeStatus(STATE_PROCEEDING); 
 		// (CHANGE-071209) add sip provider listener
 		sip_provider.addSelectiveListener(transaction_id,this);
@@ -115,7 +117,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		if (statusIs(STATE_PROCEEDING) && msg.isRequest()) {
 			if (msg.isInvite()) {
-				log(LogLevel.TRACE,"response retransmission");
+				LOG.trace("response retransmission");
 				sip_provider.sendMessage(response);
 			}
 			/*else
@@ -124,7 +126,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 				if (transaction_listener!=null) transaction_listener.onTransAck(this,msg);
 				transaction_listener=null;
 			}*/
-			else log(LogLevel.WARNING,msg.getRequestLine().getMethod()+" method erroneously passed to this trasaction");
+			else LOG.warn(msg.getRequestLine().getMethod()+" method erroneously passed to this trasaction");
 		}
 	}
 
@@ -134,7 +136,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && statusIs(STATE_PROCEEDING)) {
-				log(LogLevel.INFO,"Retransmission timeout expired");
+				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
 				if (timeout>SipStack.max_retransmission_timeout) timeout=SipStack.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this);
@@ -142,7 +144,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 				sip_provider.sendMessage(response);
 			}  
 			if (to.equals(transaction_to) && statusIs(STATE_PROCEEDING)) {
-				log(LogLevel.INFO,"Transaction timeout expired");
+				LOG.info("Transaction timeout expired");
 				doTerminate();
 				//retransmission_to=null;
 				//transaction_to=null;
@@ -150,7 +152,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 			}  
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}   
 
@@ -175,14 +177,6 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 			//transaction_to=null;
 			sip_provider.removeSelectiveListener(transaction_id);
 		}
-	}
-
-
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"AckTransactionServer#"+transaction_sqn+": "+str);  
 	}
 
 }

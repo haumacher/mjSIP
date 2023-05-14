@@ -26,7 +26,6 @@ package org.mjsip.sip.provider;
 
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -37,15 +36,11 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configurable;
 import org.zoolu.util.Configure;
-import org.zoolu.util.DateFormat;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.LogRotationWriter;
-import org.zoolu.util.Logger;
 import org.zoolu.util.Parser;
 import org.zoolu.util.Random;
 import org.zoolu.util.SimpleDigest;
@@ -98,6 +93,7 @@ import org.zoolu.util.VectorUtils;
   */
 public class SipProvider implements Configurable, SipTransportListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipProvider.class);
 
 	// **************************** Constants ****************************
 
@@ -200,12 +196,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 
 	// ************************ Other attributes *************************
-
-	/** Event logger */
-	protected Logger event_logger=null;
-
-	/** Message logger */
-	protected Logger message_logger=null;
 
 	/** Table of supported transport layers for SIP (Hashtable of protocol (<code>String</code>), transport (<code>SipTransport</code>)) */
 	protected Hashtable sip_transports=null;
@@ -356,27 +346,10 @@ public class SipProvider implements Configurable, SipTransportListener {
 	
 	/** Inits logs. */ 
 	private void initLog() {
-		event_logger=(SipStack.event_logger!=null)? SipStack.event_logger : (SipStack.debug_level>0)? newLogger("_events.log") : null;
-		message_logger=(SipStack.message_logger!=null)? SipStack.message_logger : (SipStack.debug_level>0)? newLogger("_messages.log") : null;
-
-		log(LogLevel.INFO,"Date: "+DateFormat.formatHHmmssSSSEEEddMMMyyyy(new Date()));
-		log(LogLevel.INFO,"SipStack: "+SipStack.release);
-		log(LogLevel.INFO,"new SipProvider(): "+toString());
+		LOG.info("SipStack: " + SipStack.release);
+		LOG.info("SipProvider: " + toString());
 	}
 
-  
-	/** Gets a new logger for this SIP provider.
-	  * The name of the log file is formed by the SIP provider Via address, port, and the given suffix
-	  * @param file_suffix the log file suffix
-	  * @return a new logger for this SIP provider that writes log messages to a file with the given suffix */ 
-	private Logger newLogger(String file_suffix) {
-		String filename=SipStack.log_path+"//"+via_addr+"."+host_port+file_suffix;
-		int debug_level=SipStack.debug_level;
-		LogLevel logging_level=debug_level>=6? LogLevel.ALL : debug_level==5? LogLevel.TRACE : debug_level==4? LogLevel.DEBUG : debug_level==3? LogLevel.INFO : debug_level==2? LogLevel.WARNING : debug_level==1? LogLevel.SEVERE : LogLevel.OFF;
-		return new LogRotationWriter(filename,logging_level,SipStack.max_logsize*1024,SipStack.log_rotations,SipStack.rotation_scale,SipStack.rotation_time);
-	}
- 
-  
 	/** Whether the given transport protocol is secure (TLS or DTLS) or not (UDP, TCP, SCTP, etc.).
 	  * @return true for TLS or DTLS, false otherwise */
 	public static boolean isSecureTransport(String proto) {
@@ -405,15 +378,15 @@ public class SipProvider implements Configurable, SipTransportListener {
 				else
 				if (proto.equals(PROTO_TCP)) {
 					if (port==0) port=host_port;
-					transp=new TcpTransport(port,binding_ipaddr,nmax_connections,event_logger);
+					transp=new TcpTransport(port,binding_ipaddr,nmax_connections);
 				}
 				else
 				if (proto.equals(PROTO_TLS)) {
 					if (port==0) port=(host_port==SipStack.default_port)? SipStack.default_tls_port : host_port+1;
-					if (trust_all) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,event_logger);
+					if (trust_all) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file);
 					else {
-						if (trusted_certs!=null) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trusted_certs,event_logger);
-						else transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trust_folder,event_logger);
+						if (trusted_certs!=null) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trusted_certs);
+						else transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trust_folder);
 					}
 				}
 				else
@@ -427,13 +400,13 @@ public class SipProvider implements Configurable, SipTransportListener {
 					//transp=new SctpTransport(new SocketAddress(binding_ipaddr,port),nmax_connections,log_writer);
 					Class sctp_transport=Class.forName("org.zoolu.ext.sip.provider.SctpTransport");
 					Class[] param_classes={ Class.forName("org.zoolu.net.SocketAddress"), int.class, Class.forName("org.zoolu.util.LogWriter") };
-					Object[] param_objects={ new SocketAddress(binding_ipaddr,port), new Integer(nmax_connections), event_logger };
+					Object[] param_objects={ new SocketAddress(binding_ipaddr,port), new Integer(nmax_connections)};
 					try  {
 						java.lang.reflect.Constructor constructor=sctp_transport.getConstructor(param_classes);
 						transp=(SipTransport)constructor.newInstance(param_objects);
 					}
 					catch (NoSuchMethodException e) {
-						log(LogLevel.DEBUG,e);
+						LOG.debug("Exception.", e);
 					}
 				}
 				
@@ -442,10 +415,10 @@ public class SipProvider implements Configurable, SipTransportListener {
 				}
 			}
 			catch (Exception e) {
-				log(LogLevel.INFO,e);
+				LOG.info("Exception. " + e);
 			}
 		}
-		//log(LogLevel.DEBUG,"transport is up");
+		// LOG.debug("transport is up");
 	}
 
 
@@ -455,7 +428,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 			for(Enumeration e=sip_transports.keys(); e.hasMoreElements(); ) {
 				String proto=(String)e.nextElement();
 				SipTransport transp=(SipTransport)sip_transports.get(proto);
-				log(LogLevel.TRACE,proto+" is going down");
+				LOG.trace(proto + " is going down");
 				transp.halt();
 			}
 			sip_transports.clear();
@@ -471,7 +444,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 		sip_transports.put(proto,transport);
 		transport.setListener(this);
 		if (default_transport==null) default_transport=proto;
-		log(LogLevel.INFO,proto+" is up at port "+transport.getLocalPort());
+		LOG.info(proto + " is up at port " + transport.getLocalPort());
 	}
 
 
@@ -482,14 +455,14 @@ public class SipProvider implements Configurable, SipTransportListener {
 			sip_transports.remove(proto);
 			t.halt();
 			if (proto.equals(default_transport)) default_transport=null;
-			log(LogLevel.INFO,proto+" is down");
+			LOG.info(proto + " is down");
 		}
 	}
 
 
 	/** Stops the SipProviders. */ 
 	public synchronized void halt() {
-		log(LogLevel.DEBUG,"halt: SipProvider is going down");
+		LOG.debug("halt: SipProvider is going down");
 		stopSipTrasport();
 		sip_listeners=new Hashtable();
 		promiscuous_listeners=new Vector();
@@ -534,22 +507,30 @@ public class SipProvider implements Configurable, SipTransportListener {
 		if (attribute.equals("key_file")){ key_file=par.getRemainingString().trim(); return; }
 
 		// old parameters
-		if (attribute.equals("host_addr")) System.err.println("WARNING: parameter 'host_addr' is no more supported; use 'via_addr' instead.");
-		if (attribute.equals("tls_port")) System.err.println("WARNING: parameter 'tls_port' is no more supported; use 'transport_ports' instead.");
-		if (attribute.equals("all_interfaces")) System.err.println("WARNING: parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
-		if (attribute.equals("use_outbound")) System.err.println("WARNING: parameter 'use_outbound' is no more supported; use 'outbound_proxy' for setting an outbound proxy or let it undefined.");
+		if (attribute.equals("host_addr"))
+			LOG.warn("parameter 'host_addr' is no more supported; use 'via_addr' instead.");
+		if (attribute.equals("tls_port"))
+			LOG.warn("parameter 'tls_port' is no more supported; use 'transport_ports' instead.");
+		if (attribute.equals("all_interfaces"))
+			LOG.warn(
+					"parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
+		if (attribute.equals("use_outbound"))
+			LOG.warn(
+					"parameter 'use_outbound' is no more supported; use 'outbound_proxy' for setting an outbound proxy or let it undefined.");
 		if (attribute.equals("outbound_addr")) {
-			System.err.println("WARNING: parameter 'outbound_addr' has been deprecated; use 'outbound_proxy=[sip:]<host_addr>[:<host_port>][;transport=proto]' instead.");
+			LOG.warn(
+					"parameter 'outbound_addr' has been deprecated; use 'outbound_proxy=[sip:]<host_addr>[:<host_port>][;transport=proto]' instead.");
 			outbound_addr=par.getString();
 			return;
 		}
 		if (attribute.equals("outbound_port")) {
-			System.err.println("WARNING: parameter 'outbound_port' has been deprecated; use 'outbound_proxy=<host_addr>[:<host_port>]' instead.");
+			LOG.warn(
+					"parameter 'outbound_port' has been deprecated; use 'outbound_proxy=<host_addr>[:<host_port>]' instead.");
 			outbound_port=par.getInt();
 			return;
 		}
 		if (attribute.equals("host_ifaddr")) {
-			System.err.println("WARNING: parameter 'host_ifaddr' has been deprecated; use 'binding_ipaddr' instead.");
+			LOG.warn("parameter 'host_ifaddr' has been deprecated; use 'binding_ipaddr' instead.");
 			setBindingIpAddress(par.getString());
 			return;
 		}
@@ -564,8 +545,8 @@ public class SipProvider implements Configurable, SipTransportListener {
 				binding_ipaddr=IpAddress.getByName(str);
 			}
 			catch (IOException e) {
-				log(LogLevel.INFO,"Unable to set the following binding address: "+str);
-			log(LogLevel.DEBUG,e);
+				LOG.info("Unable to set the following binding address: " + str,
+						e);
 			}
 		}
 	}
@@ -792,13 +773,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 		nmax_connections=n;
 	}    
 		
-				
-	/** Gets event logger. */ 
-	public Logger getLogger() {
-		return event_logger;
-	}    
-	
-
 	/** Returns the table of active listeners as Hastable:(SipId)IDs--&gt;(SipListener)listener. */ 
 	public Hashtable getListeners() {
 		return sip_listeners;
@@ -811,27 +785,28 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * Use MethodId.ANY to capture all messages.
 	  * @param listener is the SipProviderListener that the specified type of messages has to be passed to. */
 	public synchronized void addSelectiveListener(SipId id, SipProviderListener listener) {
-		log(LogLevel.DEBUG,"adding SipProviderListener: "+id);
+		LOG.debug("adding SipProviderListener: " + id);
 		if (sip_listeners.containsKey(id)) {
-			log(LogLevel.WARNING,"adding a SipProvider listener with an identifier already present: the previous listener is removed.");
+			LOG.warn(
+					"adding a SipProvider listener with an identifier already present: the previous listener is removed.");
 			sip_listeners.remove(id);
 		}
 		sip_listeners.put(id,listener);   
-		log(LogLevel.TRACE,"active sip listeners: "+sip_listeners.size());
+		LOG.trace("active sip listeners: " + sip_listeners.size());
 	}
 
 
 	/** Removes a SipProviderListener.
 	  * @param id specifies the messages that the listener was associated to. */
 	public synchronized void removeSelectiveListener(SipId id) {
-		log(LogLevel.DEBUG,"removing SipProviderListener: "+id);
+		LOG.debug("removing SipProviderListener: " + id);
 		if (!sip_listeners.containsKey(id)) {
-			log(LogLevel.WARNING,"removeListener("+id+"): no such listener found.");
+			LOG.warn("removeListener(" + id + "): no such listener found.");
 		}
 		else {
 			sip_listeners.remove(id);
 		}
-		log(LogLevel.TRACE,"active sip listeners: "+sip_listeners.size());
+		LOG.trace("active sip listeners: " + sip_listeners.size());
 	}
 
   
@@ -843,9 +818,10 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * in that case the same message is passed to all promiscuous SipProviderListeners.
 	  * @param listener is the SipProviderListener. */
 	public synchronized void addPromiscuousListener(SipProviderListener listener) {
-		log(LogLevel.DEBUG,"adding SipProviderListener in promiscuous mode");
+		LOG.debug("adding SipProviderListener in promiscuous mode");
 		if (promiscuous_listeners.contains(listener)) {
-			log(LogLevel.WARNING,"trying to add an already present SipProviderListener in promiscuous mode.");
+			LOG.warn(
+					"trying to add an already present SipProviderListener in promiscuous mode.");
 		}
 		else {
 			promiscuous_listeners.addElement(listener);
@@ -856,9 +832,10 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Removes a SipProviderListener in promiscuous mode. 
 	  * @param listener is the SipProviderListener to be removed. */
 	public synchronized void removePromiscuousListener(SipProviderListener listener) {
-		log(LogLevel.DEBUG,"removing SipProviderListener in promiscuous mode");
+		LOG.debug("removing SipProviderListener in promiscuous mode");
 		if (!promiscuous_listeners.contains(listener)) {
-			log(LogLevel.WARNING,"trying to remove a missed SipProviderListener in promiscuous mode.");
+			LOG.warn(
+					"trying to remove a missed SipProviderListener in promiscuous mode.");
 		}
 		else {
 			promiscuous_listeners.removeElement(listener);
@@ -870,9 +847,10 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * The SipProviderExceptionListener is a listener for all exceptions thrown by the SipProviders.
 	  * @param listener is the SipProviderExceptionListener. */
 	public synchronized void addExceptionListener(SipProviderExceptionListener listener) {
-		log(LogLevel.DEBUG,"adding a SipProviderExceptionListener");
+		LOG.debug("adding a SipProviderExceptionListener");
 		if (exception_listeners.contains(listener)) {
-			log(LogLevel.WARNING,"trying to add an already present SipProviderExceptionListener.");
+			LOG.warn(
+					"trying to add an already present SipProviderExceptionListener.");
 		}
 		else {
 			exception_listeners.addElement(listener);
@@ -883,9 +861,9 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Removes a SipProviderExceptionListener. 
 	  * @param listener is the SipProviderExceptionListener to be removed. */
 	public synchronized void removeExceptionListener(SipProviderExceptionListener listener) {
-		log(LogLevel.DEBUG,"removing a SipProviderExceptionListener");
+		LOG.debug("removing a SipProviderExceptionListener");
 		if (!exception_listeners.contains(listener)) {
-			log(LogLevel.WARNING,"trying to remove a missed SipProviderExceptionListener.");
+			LOG.warn("trying to remove a missed SipProviderExceptionListener.");
 		}
 		else {
 			exception_listeners.removeElement(listener);
@@ -920,27 +898,29 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * @return Returns a ConnectionId in case of connection-oriented delivery
 	  * (e.g. TCP) or null in case of connection-less delivery (e.g. UDP) */
 	public ConnectionId sendMessage(SipMessage msg) {
-		if (log_all_packets || msg.getLength()>MIN_MESSAGE_LENGTH) log(LogLevel.INFO,"sendMessage()");
-		log(LogLevel.TRACE,"message to send:\r\n"+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
+		if (log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
+			LOG.trace("sendMessage()");
+		LOG.trace("message to send:\r\n" + MESSAGE_BEGIN_DELIMITER
+				+ msg.toString() + MESSAGE_END_DELIMITER);
 
 		ConnectionId conn_id=msg.getConnectionId();
 		if (conn_id!=null) {
-			log(LogLevel.INFO,"trying to send message through connection "+conn_id);
+			LOG.debug("trying to send message through connection " + conn_id);
 		
 			SipTransport sip_transport=(SipTransport)sip_transports.get(conn_id.getProtocol());
 			if (sip_transport!=null)
 			try {
 				SipTransportConnection conn=((SipTransportCO)sip_transport).sendMessageCO(msg);
 				// logs
-				logMessage(conn.getProtocol(),conn.getRemoteAddress().toString(),conn.getRemotePort(),msg.getLength(),msg,"sent");
+				logMessage("Sent message: ", conn.getProtocol(), conn.getRemoteAddress().toString(),
+						conn.getRemotePort(), msg.getLength(), msg);
 				return conn_id;
 			}
 			catch (IOException e) {
-				log(LogLevel.INFO,e);
-				log(LogLevel.WARNING,"failed when tried to send message through connection "+conn_id);
+				LOG.warn("failed when tried to send message through connection " + conn_id, e);
 			}
 			else {
-				log(LogLevel.WARNING,"no support for protocol "+conn_id.getProtocol());
+				LOG.warn("no support for protocol " + conn_id.getProtocol());
 			}         
 		}
 		// else
@@ -1003,7 +983,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 			// update the via according to transport information
 			updateViaHeader(msg,proto,via_addr,host_port,maddr,ttl);
 			
-			log(LogLevel.DEBUG,"using transport "+proto);
+			LOG.debug("using transport " + proto);
 		}
 		else {
 			// RESPONSES
@@ -1108,12 +1088,13 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * It does the same as method {@link #sendMessage(SipMessage,String,String,int,int)}, but no via address is added (if not already present) in request messages.  */
 	public ConnectionId sendRawMessage(SipMessage msg, String proto, String dest_addr, int dest_port, int ttl) {
 		try {
-			if (log_all_packets || msg.getLength()>MIN_MESSAGE_LENGTH) log(LogLevel.DEBUG,"Resolving host address '"+dest_addr+"'");
+			if (log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
+				LOG.debug("Resolving host address '" + dest_addr + "'");
 			IpAddress dest_ipaddr=IpAddress.getByName(dest_addr);  
 			return sendRawMessage(msg,proto,dest_ipaddr,dest_port,ttl); 
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 			return null;
 		}     
 	}
@@ -1122,57 +1103,51 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Sends the <i>msg</i> message, specifing the transport protocol, nexthop address and port.
 	  * For request messages, no via address is added. */
 	private ConnectionId sendRawMessage(SipMessage msg, String proto, IpAddress dest_ipaddr, int dest_port, int ttl) {
-		if (log_all_packets || msg.getLength()>MIN_MESSAGE_LENGTH) log(LogLevel.DEBUG,"Sending message to "+(new ConnectionId(proto,dest_ipaddr,dest_port)).toString());
+		if (log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
+			LOG.debug("Sending message to "
+					+ (new ConnectionId(proto, dest_ipaddr, dest_port))
+							.toString());
 
 		if (proto==null) {
-			log(LogLevel.WARNING,"null protocol; message discarded");
+			LOG.warn("null protocol; message discarded");
 			return null;
 		}
 		// else
 		SipTransport sip_transport=(SipTransport)sip_transports.get(proto.toLowerCase());
 		if (sip_transport==null) {
-			log(LogLevel.WARNING,"unsupported protocol "+proto+"; message discarded");
+			LOG.warn("unsupported protocol " + proto + "; message discarded");
 			return null;
 		}
 		// else
 		try {
 			ConnectionId connection_id=sip_transport.sendMessage(msg,dest_ipaddr,dest_port,ttl);
 			// logs
-			logMessage(proto,dest_ipaddr.toString(),dest_port,msg.getLength(),msg,"sent");
+			logMessage("Sent message: ", proto, dest_ipaddr.toString(), dest_port, msg.getLength(), msg);
 
 			return connection_id;
 		}
 		catch (IOException e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception", e);
 			return null;
 		}
 	}
 
 
 	/** Sends the <i>msg</i> message using the specified transport connection. */
-	/*public ConnectionId sendMessage(SipMessage msg, ConnectionId conn_id) {
-		if (log_all_packets || msg.getLength()>MIN_MESSAGE_LENGTH) log(LogLevel.INFO,"Sending message through conn "+conn_id);
-		log(LogLevel.TRACE,"message to send:\r\n"+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
-		SipTransportConnection conn=null;
-		for (Enumeration e=sip_transports.elements(); e.hasMoreElements() && conn==null; ) {
-			SipTransport transp=(SipTransport)e.nextElement();
-			if (isReliableTransport(transp)) conn=((SipTransportCO)transp).sendMessage(msg,conn_id);
-		}
-		if (conn!=null) {
-			// logs
-			String proto=conn.getProtocol();
-			log(LogLevel.DEBUG,"SipProvider: sendMessage(msg,conn): conn: "+conn);
-			log(LogLevel.DEBUG,"SipProvider: sendMessage(msg,conn): remote_addr: "+conn.getRemoteAddress());
-			String dest_addr=conn.getRemoteAddress().toString();
-			int dest_port=conn.getRemotePort();
-			logMessage(proto,dest_addr,dest_port,msg.getLength(),msg,"sent");
-					
-			return new ConnectionId(conn);
-		}
-		else {
-			return sendMessage(msg);
-		}
-	}*/
+	/*
+	 * public ConnectionId sendMessage(SipMessage msg, ConnectionId conn_id) { if (log_all_packets ||
+	 * msg.getLength()>MIN_MESSAGE_LENGTH) LOG.info("Sending message through conn "+conn_id);
+	 * LOG.trace("message to send:\r\n"+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
+	 * SipTransportConnection conn=null; for (Enumeration e=sip_transports.elements(); e.hasMoreElements() &&
+	 * conn==null; ) { SipTransport transp=(SipTransport)e.nextElement(); if (isReliableTransport(transp))
+	 * conn=((SipTransportCO)transp).sendMessage(msg,conn_id); } if (conn!=null) { // logs String
+	 * proto=conn.getProtocol(); LOG.debug("SipProvider: sendMessage(msg,conn): conn: "+conn);
+	 * LOG.debug("SipProvider: sendMessage(msg,conn): remote_addr: "+conn.getRemoteAddress()); String
+	 * dest_addr=conn.getRemoteAddress().toString(); int dest_port=conn.getRemotePort();
+	 * logMessage(proto,dest_addr,dest_port,msg.getLength(),msg,"sent");
+	 * 
+	 * return new ConnectionId(conn); } else { return sendMessage(msg); } }
+	 */
 
 
 	//************************* Callback methods *************************
@@ -1181,21 +1156,25 @@ public class SipProvider implements Configurable, SipTransportListener {
 	public void onReceivedMessage(SipTransport transport, SipMessage msg) {
 		try {
 			// logs
-			logMessage(msg.getTransportProtocol(),msg.getRemoteAddress(),msg.getRemotePort(),msg.getLength(),msg,"received");
+			logMessage("Received message: ", msg.getTransportProtocol(), msg.getRemoteAddress(), msg.getRemotePort(),
+					msg.getLength(), msg);
 			
 			// discard too short messages (e.g. CRLFCRLF "PING", or CRLF "PONG")
 			if (msg.getLength()<=4) {
-				if (log_all_packets) log(LogLevel.TRACE,"message too short: discarded\r\n");
+				if (log_all_packets)
+					LOG.trace("message too short: discarded\r\n");
 				return;
 			}
 			// discard non-SIP messages
 			String first_line=msg.getFirstLine();
 			if (first_line==null || first_line.toUpperCase().indexOf("SIP/2.0")<0) {
-				if (log_all_packets) log(LogLevel.TRACE,"NOT a SIP message: discarded\r\n");
+				if (log_all_packets)
+					LOG.trace("NOT a SIP message: discarded\r\n");
 				return;
 			}
-			log(LogLevel.INFO,"received new SIP message");
-			log(LogLevel.TRACE,"received message:\r\n"+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
+			LOG.info("received new SIP message");
+			LOG.trace("received message:\r\n" + MESSAGE_BEGIN_DELIMITER
+					+ msg.toString() + MESSAGE_END_DELIMITER);
 			
 			// if a request, handle "received" and "rport" parameters
 			if (msg.isRequest()) {
@@ -1231,7 +1210,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 			
 			// is there any listeners?
 			if (sip_listeners.size()==0 && promiscuous_listeners.size()==0) {
-				log(LogLevel.INFO,"no listener found: meesage discarded.");
+				LOG.info("no listener found: meesage discarded.");
 				return;
 			}
 
@@ -1239,13 +1218,13 @@ public class SipProvider implements Configurable, SipTransportListener {
 			Vector promiscuous_listeners=getPromisquousListeners();
 			for (int i=0; promiscuous_listeners!=null && i<promiscuous_listeners.size(); i++) {
 				SipProviderListener listener=(SipProviderListener)promiscuous_listeners.elementAt(i);
-				log(LogLevel.DEBUG,"message passed to promiscuous listener");
+				LOG.debug("message passed to promiscuous listener");
 				listener.onReceivedMessage(this,msg);
 			}
 			
 			// check if the message is still valid
 			if (!msg.isRequest() && !msg.isResponse()) {
-				log(LogLevel.INFO,"no valid SIP message: message discarded.");
+				LOG.info("no valid SIP message: message discarded.");
 				return;
 			}
 
@@ -1254,21 +1233,20 @@ public class SipProvider implements Configurable, SipTransportListener {
 			if (listener!=null) listener.onReceivedMessage(this,msg);
 			else {
 				// no listener_ID matched..
-				log(LogLevel.INFO,"no listener found matching that message: message discarded.");
-				log(LogLevel.DEBUG,"active listeners: "+sip_listeners.size());
+				LOG.info(
+						"no listener found matching that message: message discarded.");
+				LOG.debug("active listeners: " + sip_listeners.size());
 			}
 		}
 		catch (Exception exception) {
-			log(LogLevel.WARNING,"Error handling a new incoming message");
-			log(LogLevel.DEBUG,exception);
+			LOG.warn("Error handling a new incoming message", exception);
 			Vector exception_listeners=getExceptionListeners();
 			for (int i=0; exception_listeners!=null && i<exception_listeners.size(); i++) {
 				try {
 					((SipProviderExceptionListener)exception_listeners.elementAt(i)).onMessageException(msg,exception);
 				}
 				catch (Exception e) {
-					log(LogLevel.WARNING,"Error handling the Exception");
-					log(LogLevel.DEBUG,e);
+					LOG.warn("Error handling the Exception", e);
 				}
 			}
 		}
@@ -1303,27 +1281,27 @@ public class SipProvider implements Configurable, SipTransportListener {
 		SipId key;
 		// try to look for a transaction (requests go to transaction servers and response go to transaction clients)
 		key=(msg.isRequest())? (SipId)new TransactionServerId(msg) : (SipId)new TransactionClientId(msg);
-		log(LogLevel.DEBUG,"transaction-id: "+key);
+		LOG.debug("transaction-id: " + key);
 		if (sip_listeners.containsKey(key)) {
-			log(LogLevel.DEBUG,"message passed to transaction: "+key);
+			LOG.debug("message passed to transaction: " + key);
 			return (SipProviderListener)sip_listeners.get(key);
 		}
 		// try to look for a dialog
 		key=new DialogId(msg);
-		log(LogLevel.DEBUG,"dialog-id: "+key);
+		LOG.debug("dialog-id: " + key);
 		if (sip_listeners.containsKey(key)) {
-			log(LogLevel.DEBUG,"message passed to dialog: "+key);
+			LOG.debug("message passed to dialog: " + key);
 			return (SipProviderListener)sip_listeners.get(key);
 		}
 		// try to look for a UAS
 		key=new MethodId(msg);
 		if (sip_listeners.containsKey(key)) {
-			log(LogLevel.DEBUG,"message passed to uas: "+key);
+			LOG.debug("message passed to uas: " + key);
 			return (SipProviderListener)sip_listeners.get(key);
 		}        
 		// try to look for a default UA
 		if (sip_listeners.containsKey(MethodId.ANY)) {
-			log(LogLevel.DEBUG,"message passed to uas: "+MethodId.ANY);
+			LOG.debug("message passed to uas: " + MethodId.ANY);
 			return (SipProviderListener)sip_listeners.get(MethodId.ANY);
 		}
 		// else
@@ -1334,17 +1312,18 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** From SipTransportListener. When SipTransport terminates. */
 	public void onTransportTerminated(SipTransport transport, Exception error) {
-		log(LogLevel.DEBUG,"transport "+transport+" terminated");
+		LOG.debug("transport " + transport + " terminated");
 		// TRY TO RESTART UDP WHEN ERRORS OCCUR
 		if (error!=null && transport.getProtocol().equals(PROTO_UDP)) {
-			log(LogLevel.INFO,"transport UDP terminated with error: trying to restart it (after 1000ms)..");
+			LOG.info(
+					"transport UDP terminated with error: trying to restart it (after 1000ms)..");
 			try {  Thread.sleep(1000);  } catch (Exception e) {}
 			try {
 				SipTransport udp=new UdpTransport(host_port,binding_ipaddr);
 				setTransport(udp);
 			}
 			catch (Exception e) {
-				log(LogLevel.INFO,e);
+				LOG.info("Transport problem.", e);
 			}
 		}
 	}   
@@ -1352,13 +1331,15 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** When a new incoming transport connection is established. It is called only for CO transport portocols. */ 
 	public void onIncomingTransportConnection(SipTransport transport, SocketAddress remote_soaddr) {
-		log(LogLevel.DEBUG,"incoming connection established with "+transport+":"+remote_soaddr);
+		LOG.debug("incoming connection established with " + transport + ":"
+				+ remote_soaddr);
 	}
 
 
 	/** When a transport connection terminates. */
 	public void onTransportConnectionTerminated(SipTransport transport, SocketAddress remote_soaddr, Exception error) {
-		log(LogLevel.DEBUG,"connection to "+transport+":"+remote_soaddr+" terminated");
+		LOG.debug("connection to " + transport + ":" + remote_soaddr
+				+ " terminated");
 	}
 
 
@@ -1500,40 +1481,16 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	//******************************* Logs *******************************
 
-	/** Prints a message to the event log. */
-	private final void log(LogLevel level, String message) {
-		String id=(binding_ipaddr==null)? Integer.toString(host_port) : binding_ipaddr.toString()+":"+host_port;
-		String tag="SipProvider-"+id+": ";
-		if (event_logger!=null) event_logger.log(level,tag+message);
-	}
-
-
-	/** Prints an exception to the event log. */
-	private final void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
-	}
-
-
 	/** Adds the SIP message to the message log. */
-	private final void logMessage(String proto, String addr, int port, int len, SipMessage msg, String str) {
+	private final void logMessage(String message, String proto, String addr, int port, int len, SipMessage msg) {
 		if (log_all_packets || len>=MIN_MESSAGE_LENGTH) {
-			if (message_logger!=null) {
-				message_logger.log(getPacketTimestamp(proto,addr,port,len)+" "+str+"\r\n"+msg.toString()+MESSAGE_END_DELIMITER);
-			}
-			if (event_logger!=null) {
-				String first_line=msg.getFirstLine();
-				if (first_line!=null) first_line=first_line.trim(); else first_line="NOT a SIP message";
-				event_logger.log(LogLevel.INFO,"");
-				event_logger.log(LogLevel.INFO,getPacketTimestamp(proto,addr,port,len)+first_line+", "+str);
-			}
+			String first_line = msg.getFirstLine();
+			if (first_line != null)
+				first_line = first_line.trim();
+			else
+				first_line = "NOT a SIP message";
+			LOG.info(message + addr + ":" + port + "/" + proto + " (" + len + " bytes): " + first_line);
 		}
-	}
-
-
-	/** Gets a packet timestamp. */
-	private static String getPacketTimestamp(String proto, String remote_addr, int remote_port, int len) {
-		String str=remote_addr+":"+remote_port+"/"+proto+" ("+len+" bytes)";
-		return DateFormat.formatHHmmssSSSEEEddMMMyyyy(new Date())+", "+str;
 	}
 
 }

@@ -8,10 +8,8 @@ import java.util.Vector;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.DateFormat;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.LogWriter;
-import org.zoolu.util.Logger;
 
 
 /** CallLoggerImpl implements a simple CallLogger.
@@ -19,6 +17,8 @@ import org.zoolu.util.Logger;
   */
 public class CallLoggerImpl implements CallLogger {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CallLoggerImpl.class);
+
 	/** Maximum number of concurrent calls. */
 	static final int MAX_SIZE=10000;
 
@@ -39,10 +39,6 @@ public class CallLoggerImpl implements CallLogger {
 	/** Set : (String)call_id. */
 	Vector calls;
 
-	/** Logger */
-	Logger call_logger;
-
-	
 	/** Costructs a new CallLoggerImpl.
 	  */
 	public CallLoggerImpl(String filename) {
@@ -54,8 +50,7 @@ public class CallLoggerImpl implements CallLogger {
 		callers=new Hashtable();
 		callees=new Hashtable();
 		
-		call_logger=new LogWriter(filename,LogLevel.INFO,-1,true);
-		call_logger.log("Date \tCall-Id \tStatus \tCaller \tCallee \tSetup Time \tCall Time");
+		LOG.info("Date \tCall-Id \tStatus \tCaller \tCallee \tSetup Time \tCall Time");
 	}
  
 	
@@ -136,7 +131,8 @@ public class CallLoggerImpl implements CallLogger {
 	  */
 	private void eventlog(Date time, String call_id, String event, String caller, String callee) {
 		//call_logger.log(DateFormat.formatHHMMSS(time)+"\t"+call_id+"\t"+event+"\t"+caller+"\t"+callee);
-		call_logger.log(DateFormat.formatYyyyMMddHHmmssSSS(time)+"\t"+call_id+"\t"+event+"\t"+caller+"\t"+callee);
+		LOG.info(DateFormat.formatYyyyMMddHHmmssSSS(time) + "\t" + call_id + "\t" + event + "\t" + caller + "\t"
+				+ callee);
 	}
 
 
@@ -148,7 +144,10 @@ public class CallLoggerImpl implements CallLogger {
 		Date bye_time=(Date)bye_dates.get(call_id);
 		if (invite_time!=null && accepted_time!=null && bye_time!=null) 
 			//call_logger.log(DateFormat.formatHHMMSS(invite_time)+"\t"+call_id+"\tCALL \t"+callers.get(call_id)+"\t"+callees.get(call_id)+"\t"+(accepted_time.getTime()-invite_time.getTime())+"\t"+(bye_time.getTime()-accepted_time.getTime()));
-			call_logger.log(DateFormat.formatYyyyMMddHHmmssSSS(invite_time)+"\t"+call_id+"\tCALL \t"+callers.get(call_id)+"\t"+callees.get(call_id)+"\t"+(accepted_time.getTime()-invite_time.getTime())+"\t"+(bye_time.getTime()-accepted_time.getTime()));
+			LOG.info(DateFormat.formatYyyyMMddHHmmssSSS(invite_time) + "\t" + call_id + "\tCALL \t"
+					+ callers.get(call_id) + "\t" + callees.get(call_id) + "\t"
+					+ (accepted_time.getTime() - invite_time.getTime()) + "\t"
+					+ (bye_time.getTime() - accepted_time.getTime()));
 	}
 
 }

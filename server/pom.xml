@@ -14,5 +14,19 @@
 	    <groupId>org.mjsip</groupId>
 	    <artifactId>mjsip-sip</artifactId>
 	</dependency>
+	
+	<dependency>
+		<groupId>org.tinylog</groupId>
+		<artifactId>slf4j-tinylog</artifactId>
+		<version>2.6.1</version>
+	    <scope>runtime</scope>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.tinylog</groupId>
+	    <artifactId>tinylog-impl</artifactId>
+	    <version>2.6.1</version>
+	    <scope>runtime</scope>
+	</dependency>
   </dependencies>
 </project>

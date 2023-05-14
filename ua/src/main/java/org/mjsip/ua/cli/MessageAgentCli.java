@@ -22,20 +22,15 @@
 package org.mjsip.ua.cli;
 
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.call.RegistrationClientListener;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
 import org.mjsip.ua.MessageAgent;
 import org.mjsip.ua.MessageAgentListener;
 import org.mjsip.ua.UserAgentProfile;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Simple command-line short-message UA.
@@ -43,8 +38,7 @@ import org.zoolu.util.Logger;
   */
 public class MessageAgentCli implements RegistrationClientListener, MessageAgentListener {
 	
-	/** Logger */
-	Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MessageAgentCli.class);
 	
 	/** Message Agent */
 	MessageAgent ma;
@@ -58,7 +52,6 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	
 	/** Creates a new MA. */
 	public MessageAgentCli(SipProvider sip_provider, UserAgentProfile user_profile) {
-		logger=sip_provider.getLogger();
 		ma=new MessageAgent(sip_provider,user_profile,this);
 		ma.receive();
 		if (user_profile.do_register || user_profile.do_unregister || user_profile.do_unregister_all) {
@@ -75,21 +68,21 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 
 	/** Register with the registrar server. */
 	public void register(int expire_time) {
-		log("REGISTRATION");
+		LOG.info("REGISTRATION");
 		rc.register(expire_time);
 	}
 
 
 	/** Unregister with the registrar server */
 	public void unregister() {
-		log("UNREGISTER the contact URI");
+		LOG.info("UNREGISTER the contact URI");
 		rc.unregister();
 	}
 
 
 	/** Unregister all contacts with the registrar server */
 	public void unregisterall() {
-		log("UNREGISTER ALL contact URIs");
+		LOG.info("UNREGISTER ALL contact URIs");
 		rc.unregisterall();
 	}
 
@@ -105,43 +98,31 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	/** When a new Message is received. */
 	public void onMaReceivedMessage(MessageAgent ma, NameAddress sender, NameAddress recipient, String subject, String content_type, String content) {
 		remote_user=sender;
-		log("NEW MESSAGE:");
-		log("From: "+sender);
-		if (subject!=null) log("Subject: "+subject);
-		log("Content: "+content);
+		LOG.info("NEW MESSAGE:");
+		LOG.info("From: " + sender);
+		if (subject != null)
+			LOG.info("Subject: " + subject);
+		LOG.info("Content: " + content);
 	}
 
 	/** When a message delivery successes. */
 	public void onMaDeliverySuccess(MessageAgent ma, NameAddress recipient, String subject, String result) {
-		//log(LogLevel.INFO,"Delivery success: "+result);
+		//LOG.info("Delivery success: "+result);
 	}
 
 	/** When a message delivery fails. */
 	public void onMaDeliveryFailure(MessageAgent ma, NameAddress recipient, String subject, String result) {
-		//log(LogLevel.INFO,"Delivery failure: "+result);
+		//LOG.info("Delivery failure: "+result);
 	}
 
 	/** When a UA has been successfully (un)registered. */
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		log(LogLevel.INFO,"Registration success: expires="+expires+": "+result);
+		LOG.info("Registration success: expires="+expires+": "+result);
 	}
 
 	/** When a UA failed on (un)registering. */
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		log(LogLevel.INFO,"Registration failure: "+result);
+		LOG.info("Registration failure: "+result);
 	}
 
- 	
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default Log. */
-	private void log(String str) {
-		log(LogLevel.INFO,str);
-	}
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"CommandLineMA: "+str);
-		System.out.println("MA: "+str);  
-	}
 }

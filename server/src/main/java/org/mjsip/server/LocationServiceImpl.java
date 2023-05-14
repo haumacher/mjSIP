@@ -36,6 +36,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.header.ContactHeader;
 import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.provider.SipParser;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Parser;
 
 
@@ -46,6 +47,8 @@ import org.zoolu.util.Parser;
   */
 public class LocationServiceImpl implements LocationService {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(LocationServiceImpl.class);
+
 	/** Maximum expiration date (equivalent to NEVER).
 	  * <p>
 	  * Note: time 3116354400000 is 2/10/2068, that is when I will be 100 years old.. good luck! ;) */
@@ -66,7 +69,8 @@ public class LocationServiceImpl implements LocationService {
 	/** Creates a new LocationServiceImpl */
 	public LocationServiceImpl(String file_name) {
 		this.file_name=file_name;
-		if (file_name==null) System.err.println("WARNING: no file has been provided for location DB: only temporary memory (RAM) will be used.");
+		if (file_name == null)
+			LOG.warn("no file has been provided for location DB: only temporary memory (RAM) will be used.");
 		users=new Hashtable();
 		load();
 	}
@@ -281,7 +285,7 @@ public class LocationServiceImpl implements LocationService {
 		changed=false;
 		try { in = new BufferedReader(new FileReader(file_name)); }
 		catch (FileNotFoundException e) {
-			System.err.println("WARNING: file \""+file_name+"\" not found: created new empty DB");
+			LOG.warn("file \""+file_name+"\" not found: created new empty DB");
 			return;
 		}   
 		String user=null;
@@ -296,7 +300,6 @@ public class LocationServiceImpl implements LocationService {
 			if (line.startsWith("To")) {
 				Parser par=new Parser(line);
 				user=par.skipString().getString();
-				//System.out.println("add user: "+user);
 				addUser(user);
 				continue;
 			}
@@ -329,7 +332,7 @@ public class LocationServiceImpl implements LocationService {
 			out.close();
 		}
 		catch (IOException e) {
-			System.err.println("WARNING: error trying to write on file \""+file_name+"\"");
+			LOG.warn("error trying to write on file \""+file_name+"\"", e);
 			return;
 		}
 	}

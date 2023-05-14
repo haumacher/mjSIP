@@ -53,10 +53,8 @@ import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 import org.zoolu.util.Timer;
 import org.zoolu.util.TimerListener;
 
@@ -72,6 +70,7 @@ import org.zoolu.util.TimerListener;
   */
 public class UserAgent extends CallListenerAdapter implements SipProviderListener, ExtendedCallListener, RegistrationClientListener, TimerListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgent.class);
 
 	/** On wav file */
 	static final String CLIP_ON="on.wav";
@@ -84,9 +83,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	// ***************************** attributes ****************************
-
-	/** Logger */
-	Logger logger;
 	
 	/** UserAgentProfile */
 	protected UserAgentProfile ua_profile;
@@ -166,32 +162,31 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Inits the UserAgent */
 	private void init(SipProvider sip_provider, UserAgentProfile ua_profile, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
-		logger=sip_provider.getLogger();
 		this.listener=listener;
 		this.ua_profile=ua_profile;
 		// update user profile information
 		ua_profile.setUnconfiguredAttributes(sip_provider);
 
 		// log main config parameters
-		log(LogLevel.DEBUG,"ua_address: "+ua_profile.ua_address);
-		log(LogLevel.DEBUG,"user's uri: "+ua_profile.getUserURI());
-		log(LogLevel.DEBUG,"proxy: "+ua_profile.proxy);
-		log(LogLevel.DEBUG,"registrar: "+ua_profile.registrar);
-		log(LogLevel.DEBUG,"auth_realm: "+ua_profile.auth_realm);
-		log(LogLevel.DEBUG,"auth_user: "+ua_profile.auth_user);
-		log(LogLevel.DEBUG,"auth_passwd: ******");
-		log(LogLevel.DEBUG,"audio: "+ua_profile.audio);
-		log(LogLevel.DEBUG,"video: "+ua_profile.video);
+		LOG.debug("ua_address: "+ua_profile.ua_address);
+		LOG.debug("user's uri: "+ua_profile.getUserURI());
+		LOG.debug("proxy: "+ua_profile.proxy);
+		LOG.debug("registrar: "+ua_profile.registrar);
+		LOG.debug("auth_realm: "+ua_profile.auth_realm);
+		LOG.debug("auth_user: "+ua_profile.auth_user);
+		LOG.debug("auth_passwd: ******");
+		LOG.debug("audio: "+ua_profile.audio);
+		LOG.debug("video: "+ua_profile.video);
 		for (int i=0; i<ua_profile.media_descs.length; i++) {
-			log(LogLevel.DEBUG,"media: "+(ua_profile.media_descs[i]).toString());
+			LOG.debug("media: "+(ua_profile.media_descs[i]).toString());
 		}      
 		// log other config parameters
-		log(LogLevel.TRACE,"loopback: "+ua_profile.loopback);
-		log(LogLevel.TRACE,"send_only: "+ua_profile.send_only);
-		log(LogLevel.TRACE,"recv_only: "+ua_profile.recv_only);
-		log(LogLevel.TRACE,"send_file: "+ua_profile.send_file);
-		log(LogLevel.TRACE,"recv_file: "+ua_profile.recv_file);
-		log(LogLevel.TRACE,"send_tone: "+ua_profile.send_tone);
+		LOG.trace("loopback: "+ua_profile.loopback);
+		LOG.trace("send_only: "+ua_profile.send_only);
+		LOG.trace("recv_only: "+ua_profile.recv_only);
+		LOG.trace("send_file: "+ua_profile.send_file);
+		LOG.trace("recv_file: "+ua_profile.recv_file);
+		LOG.trace("send_tone: "+ua_profile.send_tone);
 
 		// start listening for INVITE requests (UAS)
 		if (ua_profile.ua_server) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
@@ -203,7 +198,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (ua_profile.null_server) null_server=new NotImplementedServer(sip_provider);
 
 		// init media agent
-		media_agent=new MediaAgent(ua_profile,logger);
+		media_agent = new MediaAgent(ua_profile);
 
 		// load sounds
 		// ################# patch to make rat working.. #################
@@ -223,7 +218,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				clip_progress.setVolumeGain(clip_progress_volume_gain);
 			}
 			catch (Exception e) {
-				log(LogLevel.INFO,e);
+				LOG.info("Exception.", e);
 			}
 		}
 	}
@@ -530,7 +525,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Modifies the current session. It re-invites the remote party changing the contact URI and SDP. */
 	public void modify(String body) {
 		if (call!=null && call.getState().isActive()) {
-			log("RE-INVITING/MODIFING");
+			LOG.info("RE-INVITING/MODIFING");
 			call.modify(body);
 		}
 	}
@@ -546,7 +541,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Transfers the current call to a remote UA. */
 	public void transfer(NameAddress transfer_to) {
 		if (call!=null && call.getState().isActive()) {
-			log("REFER/TRANSFER");
+			LOG.info("REFER/TRANSFER");
 			call.transfer(transfer_to);
 		}
 	}
@@ -559,7 +554,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		
 		// exit if the media application is already running  
 		if (media_sessions.size()>0) {
-			log(LogLevel.DEBUG,"media sessions already active");
+			LOG.debug("media sessions already active");
 			return;
 		}
 		// get local and remote rtp addresses and ports
@@ -599,7 +594,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			}
 			if (local_port!=0 && remote_port!=0 && media_spec!=null) {
 				FlowSpec flow_spec=new FlowSpec(media_spec,local_port,remote_address,remote_port,dir);
-				log(media+" format: "+flow_spec.getMediaSpec().getCodec());
+				LOG.info(media+" format: "+flow_spec.getMediaSpec().getCodec());
 				boolean success=media_agent.startMediaSession(flow_spec);           
 				if (success) {
 					media_sessions.addElement(media);
@@ -607,7 +602,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				}
 			}
 			else {
-				log("DEBUG: media session cannot be started (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
+				LOG.info("DEBUG: media session cannot be started (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
 			}
 		}
 	}
@@ -628,13 +623,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From RegistrationClientListener. When it has been successfully (un)registered. */
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		log(LogLevel.INFO,"Registration success: expires="+expires+": "+result);
+		LOG.info("Registration success: expires="+expires+": "+result);
 		if (listener!=null) listener.onUaRegistrationSucceeded(this,result);   
 	}
 
 	/** From RegistrationClientListener. When it failed on (un)registering. */
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		log(LogLevel.INFO,"Registration failure: "+result);
+		LOG.info("Registration failure: "+result);
 		if (listener!=null) listener.onUaRegistrationFailed(this,result);
 	}
 
@@ -649,14 +644,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a new INVITE method (incoming call) */
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite) {
-		log(LogLevel.DEBUG,"onCallInvite()");
+		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
-			log(LogLevel.INFO,"LOCALLY BUSY: INCOMING CALL REFUSED");
+			LOG.info("LOCALLY BUSY: INCOMING CALL REFUSED");
 			call.refuse();
 			return;
 		}
 		// else   
-		log(LogLevel.INFO,"INCOMING");
+		LOG.info("INCOMING");
 		this.call=(ExtendedCall)call;
 		call.ring();
 		// sound
@@ -677,9 +672,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	public void onCallModify(Call call, String sdp, SipMessage invite) {
-		log(LogLevel.DEBUG,"onCallModify()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"RE-INVITE/MODIFY");
+		LOG.debug("onCallModify()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("RE-INVITE/MODIFY");
 		// to be implemented.
 		// currently it simply accepts the session changes (see method onCallModify() in CallListenerAdapter)
 		super.onCallModify(call,sdp,invite);
@@ -688,10 +683,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 183 Session Progress */
 	public void onCallProgress(Call call, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallProgress()");
-		if (call!=this.call && call!=call_transfer) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
+		LOG.debug("onCallProgress()");
+		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		if (!progress) {
-			log(LogLevel.INFO,"PROGRESS");
+			LOG.info("PROGRESS");
 			progress=true;
 			// sound
 			if (clip_progress!=null) clip_progress.play();
@@ -703,10 +698,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function that may be overloaded (extended). Called when arriving a 180 Ringing */
 	public void onCallRinging(Call call, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallRinging()");
-		if (call!=this.call && call!=call_transfer) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
+		LOG.debug("onCallRinging()");
+		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		if (!ringing) {
-			log(LogLevel.INFO,"RINGING");
+			LOG.info("RINGING");
 			ringing=true;
 			// sound
 			if (clip_progress!=null) clip_progress.play();
@@ -728,9 +723,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 2xx (call accepted) */
 	public void onCallAccepted(Call call, String sdp, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallAccepted()");
-		if (call!=this.call && call!=call_transfer) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"ACCEPTED/CALL");
+		LOG.debug("onCallAccepted()");
+		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("ACCEPTED/CALL");
 		if (ua_profile.no_offer) {
 			// new sdp
 			SdpMessage local_sdp=getSessionDescriptor(media_descs);
@@ -757,9 +752,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving an ACK method (call confirmed) */
 	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
-		log(LogLevel.DEBUG,"onCallConfirmed()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"CONFIRMED/CALL");
+		LOG.debug("onCallConfirmed()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("CONFIRMED/CALL");
 		// sound
 		if (clip_on!=null) clip_on.play();
 		
@@ -769,26 +764,26 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 2xx (re-invite/modify accepted) */
 	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallModifyAccepted()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"RE-INVITE-ACCEPTED/CALL");
+		LOG.debug("onCallModifyAccepted()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("RE-INVITE-ACCEPTED/CALL");
 	}
 
 
 	/** From CallListener. Callback function called when arriving a 4xx (re-invite/modify failure) */
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallReInviteRefused()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"RE-INVITE-REFUSED ("+reason+")/CALL");
+		LOG.debug("onCallReInviteRefused()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("RE-INVITE-REFUSED ("+reason+")/CALL");
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
 
 
 	/** From CallListener. Callback function called when arriving a 4xx (call failure) */
 	public void onCallRefused(Call call, String reason, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallRefused()");
-		if (call!=this.call && call!=call_transfer) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"REFUSED ("+reason+")");
+		LOG.debug("onCallRefused()");
+		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("REFUSED ("+reason+")");
 		if (call==call_transfer) {
 			this.call.notify(resp);
 			call_transfer=null;
@@ -804,9 +799,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 3xx (call redirection) */
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallRedirected()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"REDIRECTION ("+reason+")");
+		LOG.debug("onCallRedirected()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("REDIRECTION ("+reason+")");
 		NameAddress first_contact=new NameAddress((String)contact_list.elementAt(0));
 		call.call(first_contact); 
 	}
@@ -814,9 +809,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a CANCEL request */
 	public void onCallCancel(Call call, SipMessage cancel) {
-		log(LogLevel.DEBUG,"onCallCancel()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"CANCEL");
+		LOG.debug("onCallCancel()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("CANCEL");
 		this.call=null;
 		// sound
 		if (clip_ring!=null) clip_ring.stop();
@@ -830,16 +825,16 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a BYE request */
 	public void onCallBye(Call call, SipMessage bye) {
-		log(LogLevel.DEBUG,"onCallBye()");
-		if (call!=this.call && call!=call_transfer) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
+		LOG.debug("onCallBye()");
+		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		if (call!=call_transfer && call_transfer!=null) {
-			log(LogLevel.INFO,"CLOSE PREVIOUS CALL");
+			LOG.info("CLOSE PREVIOUS CALL");
 			this.call=call_transfer;
 			call_transfer=null;
 			return;
 		}
 		// else
-		log(LogLevel.INFO,"CLOSE");
+		LOG.info("CLOSE");
 		this.call=null;
 		closeMediaSessions();
 		// sound
@@ -851,17 +846,17 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a response after a BYE request (call closed) */
 	public void onCallClosed(Call call, SipMessage resp) {
-		log("LogLevel.DEBUG,onCallClosed()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"CLOSE/OK");
+		LOG.info("LogLevel.DEBUG,onCallClosed()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("CLOSE/OK");
 		if (listener!=null) listener.onUaCallClosed(this);
 	}
 
 	/** Callback function called when the invite expires */
 	public void onCallTimeout(Call call) {
-		log(LogLevel.DEBUG,"onCallTimeout()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"NOT FOUND/TIMEOUT");
+		LOG.debug("onCallTimeout()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("NOT FOUND/TIMEOUT");
 		int code=408;
 		String reason="Request Timeout";
 		if (call==call_transfer) {
@@ -880,9 +875,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From ExtendedCallListener. Callback function called when arriving a new UPDATE method (update request). */
 	public void onCallUpdate(ExtendedCall call, String sdp, SipMessage update) {
-		log(LogLevel.DEBUG,"onCallUpdate()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"UPDATE");
+		LOG.debug("onCallUpdate()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("UPDATE");
 		// to be implemented.
 		// currently it simply accepts the session changes (see method onCallModify() in CallListenerAdapter)
 		super.onCallUpdate(call,sdp,update);
@@ -891,9 +886,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From ExtendedCallListener. Callback function called when arriving a new REFER method (transfer request) */
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
-		log(LogLevel.DEBUG,"onCallTransfer()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"transfer to "+refer_to.toString());
+		LOG.debug("onCallTransfer()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("transfer to "+refer_to.toString());
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(ua_profile.getUserURI()),this);
 		call_transfer.call(refer_to,getSessionDescriptor(media_descs).toString());
@@ -901,32 +896,32 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is accepted. */
 	public void onCallTransferAccepted(ExtendedCall call, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallTransferAccepted()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"transfer accepted");
+		LOG.debug("onCallTransferAccepted()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("transfer accepted");
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is refused. */
 	public void onCallTransferRefused(ExtendedCall call, String reason, SipMessage resp) {
-		log(LogLevel.DEBUG,"onCallTransferRefused()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"transfer refused");
+		LOG.debug("onCallTransferRefused()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("transfer refused");
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is successfully completed */
 	public void onCallTransferSuccess(ExtendedCall call, SipMessage notify) {
-		log(LogLevel.DEBUG,"onCallTransferSuccess()");
-		if (call!=this.call) {  log(LogLevel.TRACE,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"transfer successed");
+		LOG.debug("onCallTransferSuccess()");
+		if (call!=this.call) {  LOG.trace("NOT the current call");  return;  }
+		LOG.info("transfer successed");
 		call.hangup();
 		if (listener!=null) listener.onUaCallTransferred(this);
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is NOT sucessfully completed */
 	public void onCallTransferFailure(ExtendedCall call, String reason, SipMessage notify) {
-		log(LogLevel.DEBUG,"onCallTransferFailure()");
-		if (call!=this.call) {  log(LogLevel.DEBUG,"NOT the current call");  return;  }
-		log(LogLevel.INFO,"transfer failed");
+		LOG.debug("onCallTransferFailure()");
+		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
+		LOG.info("transfer failed");
 	}
 
 
@@ -935,7 +930,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** When the Timer exceeds. */
 	public void onTimeout(Timer t) {
 		if (response_to==t) {
-			log(LogLevel.INFO,"response time expired: incoming call declined");
+			LOG.info("response time expired: incoming call declined");
 			if (call!=null) call.refuse();
 			// sound
 			if (clip_ring!=null) clip_ring.stop();
@@ -947,25 +942,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	private static AudioClipPlayer getAudioClip(String image_file) throws java.io.IOException {
 		return new AudioClipPlayer(UserAgent.class.getResource("/" + image_file), null);
-	}
-
-
-	// ***************************** logs ****************************
-
-	/** Adds a new string to the default Log. */
-	public void log(String str) {
-		log(LogLevel.INFO,str);
-	}
-
-	/** Adds a new string to the default Log. */
-	public void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,this.getClass(),str);  
-		else if ((ua_profile==null || !ua_profile.no_prompt) && level.getValue()>=LogLevel.INFO.getValue()) System.out.println("UA: "+str);
-	}
-
-	/** Adds the Exception message to the default Log. */
-	public void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
 	}
 
 }

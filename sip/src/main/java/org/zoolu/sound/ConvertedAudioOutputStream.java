@@ -20,6 +20,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Pipe;
 import org.zoolu.util.PipeInputStream;
 import org.zoolu.util.PipeOutputStream;
@@ -31,9 +32,11 @@ import org.zoolu.util.PipeOutputStream;
   * a specific FormatConversionProvider.
   */
 class ConvertedAudioOutputStream extends AudioOutputStream {
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ConvertedAudioOutputStream.class);
 	
 	/** Whether printing debugging information on standard error output. */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 	
 	/** Internal buffer size. */
 	static final int INTERNAL_BUFFER_SIZE=40960;
@@ -76,8 +79,10 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 		}
 		converted_input_stream=converter.getAudioInputStream(final_output_stream.getFormat(),audio_input_stream);
 
-		printOut("input codec: "+format);
-		printOut("output codec: "+final_output_stream.getFormat());
+		if (DEBUG)
+			LOG.debug("input codec: "+format);
+		if (DEBUG)
+			LOG.debug("output codec: "+final_output_stream.getFormat());
 		if (converted_input_stream==null) {
 			throw new IOException("Failed while getting a transcoded AudioOuputStream of format:"+format+", for an AudioOuputStream with format: "+final_output_stream.getFormat()+".");
 		}
@@ -132,12 +137,6 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 			int len=converted_input_stream.read(buff,0,buff.length);
 			final_output_stream.write(buff,0,len);
 		}
-	}
-
-
-	/** Prints debugging information. */
-	private static void printOut(String str) {
-		if (DEBUG) System.err.println("DEBUG: ConvertedAudioOutputStream: "+str);
 	}
 
 }

@@ -33,8 +33,7 @@ import org.mjsip.sip.dialog.InviteDialogListener;
 import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Class Call implements SIP calls.
@@ -50,8 +49,7 @@ import org.zoolu.util.Logger;
   */
 public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	
-	/** Logger */
-	Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Call.class);
 
 	/** The SipProvider used for the call */
 	protected SipProvider sip_provider;
@@ -124,7 +122,6 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param call_listener the call listener */
 	private void initCall(SipProvider sip_provider, SipUser user, CallListener call_listener) {
 		this.sip_provider=sip_provider;
-		this.logger=sip_provider.getLogger();
 		this.listener=call_listener;
 		if (user!=null) {
 			this.from_naddr=user.getAddress();
@@ -155,7 +152,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param state the new state value */
 	protected void changeState(int state) {
 		call_state.setState(state);
-		log(LogLevel.DEBUG,"changed call state: "+call_state.toString());
+		LOG.debug("changed call state: "+call_state.toString());
 	}
 
 	/** Gets the current invite dialog. */
@@ -211,7 +208,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param caller the caller address
 	  * @param sdp the session descriptor */
 	public void call(NameAddress callee, NameAddress caller, String sdp) {
-		log(LogLevel.DEBUG,"calling "+callee);
+		LOG.debug("calling "+callee);
 		dialog=new InviteDialog(sip_provider,this_invite_dialog_listener);
 		if (caller==null) caller=from_naddr;
 		NameAddress caller_contact=getContactAddress(SipNameAddress.isSIPS(callee));
@@ -224,7 +221,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Starts a new call, with the given <i>INVITE</i> request.
 	  * @param invite the INVITE request message */
 	public void call(SipMessage invite) {
-		log(LogLevel.DEBUG,"calling "+invite.getRequestLine().getAddress());
+		LOG.debug("calling "+invite.getRequestLine().getAddress());
 		dialog=new InviteDialog(sip_provider,this_invite_dialog_listener);
 		local_sdp=invite.getStringBody();
 		if (local_sdp!=null) dialog.invite(invite);
@@ -375,7 +372,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** When an incoming INVITE is received. */ 
 	private void processDlgInvite(InviteDialog d, NameAddress callee, NameAddress caller, String sdp, SipMessage msg) {
-		if (dialog!=null && d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (dialog!=null && d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// else
 		this.dialog=d;
 		changeState(CallState.C_INCOMING);
@@ -385,14 +382,14 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** When an incoming Re-INVITE is received. */ 
 	private void processDlgReInvite(InviteDialog d, String sdp, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
 		if (listener!=null) listener.onCallModify(this,sdp,msg);
 	}
 
 	/** When a 1xx response response is received for an INVITE transaction */ 
 	private void processDlgInviteProvisionalResponse(InviteDialog d, int code, String reason, String sdp, SipMessage resp) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// else
 		if (code==183) if (listener!=null) listener.onCallProgress(this,resp);
 		if (code==180) if (listener!=null) listener.onCallRinging(this,resp);
@@ -401,14 +398,14 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** When a reliable 1xx response is received for an INVITE request.
 	  * If a body ("offer") has been included in the respose, method {@link InviteDialog#confirm1xxWithAnswer(SipMessage,String,byte[]) confirm1xxWithAnswer()} must be explicitely called. */ 
 	private void processDlgInviteReliableProvisionalResponse(InviteDialog dialog, int code, String reason, String content_type, byte[] body, SipMessage resp) {
-		if (dialog!=this.dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (dialog!=this.dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// else
 		if (listener!=null) listener.onCallConfirmableProgress(this,resp);
 	}
 	
 	/** When a reliable 1xx response has been confirmed by the reception of a corresponding PRACK request. */
 	private void processDlgInviteReliableProvisionalResponseConfirmed(InviteDialog dialog, int code, SipMessage resp, String content_type, byte[] body, SipMessage prack) {
-		if (dialog!=this.dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (dialog!=this.dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// else
 		if (listener!=null) listener.onCallProgressConfirmed(this,resp,prack);
 	}
@@ -421,10 +418,10 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** When a 2xx successful final response is received for an INVITE request.
 	  * If a body ("offer") has been included in the respose, method {@link InviteDialog#confirm2xxWithAnswer(NameAddress,String) confirm2xxWithAnswer()} must be explicitely called. */ 
 	private void processDlgInviteSuccessResponse(InviteDialog d, int code, String reason, String sdp, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// check if the call has been already cancelled or closed
 		if (call_state.isClosed()) {
-			log(LogLevel.INFO,"call already closed");
+			LOG.info("call already closed");
 			dialog.bye();
 			return;
 		} 
@@ -436,60 +433,60 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	
 	/** When a 3xx redirection response is received for an INVITE transaction. */ 
 	private void processDlgInviteRedirectResponse(InviteDialog d, int code, String reason, MultipleHeader contacts, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		changeState(CallState.C_CLOSED);
 		if (listener!=null) listener.onCallRedirected(this,reason,contacts.getValues(),msg);
 	}
 	
 	/** When a 400-699 failure response is received for an INVITE transaction. */ 
 	private void processDlgInviteFailureResponse(InviteDialog d, int code, String reason, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		changeState(CallState.C_CLOSED);
 		if (listener!=null) listener.onCallRefused(this,reason,msg);
 	}
 	
 	/** When INVITE transaction expires */ 
 	private void processDlgInviteTimeout(InviteDialog d) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		changeState(CallState.C_CLOSED);
 		if (listener!=null) listener.onCallTimeout(this);
 	}
 
 	/** When a 1xx response response is received for a Re-INVITE transaction. */ 
 	private void processDlgReInviteProvisionalResponse(InviteDialog d, int code, String reason, String sdp, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
 	}
 
 	/** When a 2xx successful final response is received for a Re-INVITE transaction */ 
 	private void processDlgReInviteSuccessResponse(InviteDialog d, int code, String reason, String sdp, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
 		if (listener!=null) listener.onCallModifyAccepted(this,sdp,msg);
 	}
 
 	/** When a 3xx redirection response is received for a Re-INVITE transaction */ 
 	//private void processDlgReInviteRedirectResponse(InviteDialog d, int code, String reason, MultipleHeader contacts, SipMessage msg)
-	//{  if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+	//{  if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 	//   if (listener!=null) listener.onCallModifyRedirection(this,reason,contacts.getValues(),msg);
 	//}
 
 	/** When a 400-699 failure response is received for a Re-INVITE transaction. */ 
 	private void processDlgReInviteFailureResponse(InviteDialog d, int code, String reason, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		changeState(CallState.C_ACTIVE);
 		if (listener!=null) listener.onCallModifyRefused(this,reason,msg);
 	}
 
 	/** When a Re-INVITE transaction expires */ 
 	private void processDlgReInviteTimeout(InviteDialog d) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (listener!=null) listener.onCallModifyTimeout(this);
 	}
 
 	/** When an incoming ACK is received for an INVITE transaction. */ 
 	private void processDlgAck(InviteDialog d, String sdp, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
 		if (listener!=null) listener.onCallConfirmed(this,sdp,msg);
 	}
@@ -499,27 +496,27 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** When an incoming INFO is received. */ 
 	private void processDlgInfo(InviteDialog dialog, String info_package, String content_type, byte[] body, SipMessage msg) {
-		if (this.dialog!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (this.dialog!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (listener!=null) listener.onCallInfo(this,info_package,content_type,body,msg);
 	}
 
 	/** When an incoming CANCEL is received for an INVITE transaction. */ 
 	private void processDlgCancel(InviteDialog d, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		changeState(CallState.C_CLOSED);
 		if (listener!=null) listener.onCallCancel(this,msg);
 	}
 
 	/** When an incoming UPDATE request is received within the dialog. */ 
 	private void processDlgUpdate(InviteDialog dialog, String sdp, SipMessage msg) {
-		if (this.dialog!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (this.dialog!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
 		if (listener!=null) listener.onCallUpdate(this,sdp,msg);
 	}
 
 	/** When a response is received for an UPDATE request. */ 
 	private void processDlgUpdateResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-		if (this.dialog!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (this.dialog!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (listener!=null) {
 			if (code>=200 && code<300) listener.onCallUpdateAccepted(this,body,msg);
 			else listener.onCallUpdateRefused(this,body,msg);
@@ -528,20 +525,20 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** When an incoming BYE is received */ 
 	private void processDlgBye(InviteDialog d, SipMessage msg)       {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		changeState(CallState.C_CLOSED);
 		if (listener!=null) listener.onCallBye(this,msg);
 	}
 	
 	/** When a success response is received for a Bye request. */ 
 	private void processDlgByeSuccessResponse(InviteDialog d, int code, String reason, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (listener!=null) listener.onCallClosed(this,msg);
 	}
  
 	/** When a failure response is received for a Bye request. */ 
 	private void processDlgByeFailureResponse(InviteDialog d, int code, String reason, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		if (listener!=null) listener.onCallClosed(this,msg);
 	}
 
@@ -636,13 +633,5 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	}
 
-
-
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"Call: "+str);  
-	}
 }
 

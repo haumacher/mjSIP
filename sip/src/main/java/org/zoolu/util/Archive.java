@@ -44,20 +44,6 @@ public class Archive {
 	/** The base path */
 	public static String BASE_PATH=(new File("")).getAbsolutePath();
 
-
-
-	/** Gets a URL from a String. */
-	/*public static URL getURL(String url) {
-		try  {
-			return new URL(url);
-		}
-		catch (java.net.MalformedURLException e) {
-			System.err.println("ERROR: malformed url "+url);
-			return null;
-		} 
-	}*/
-
-
 	/** Gets the complete URL of a file included within a jar archive. */
 	public static URL getJarURL(String jar_archive, String file_name) throws java.net.MalformedURLException {
 		//if (jar_archive==null || file_name==null) return null;

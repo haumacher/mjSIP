@@ -29,6 +29,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.ua.cli.UserAgentCli;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -40,6 +41,7 @@ import org.mjsip.ua.cli.UserAgentCli;
   */
 public class MiniJukebox extends UserAgentCli {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MiniJukebox.class);
 
 	/** URI resource parameter */
 	public static String PARAM_RESOURCE="resource";
@@ -57,7 +59,7 @@ public class MiniJukebox extends UserAgentCli {
 
 	/** From UserAgentListener. When a new call is incoming */
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller) {
-		printOut("incoming call from "+caller.toString());
+		LOG.info("incoming call from "+caller.toString());
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {

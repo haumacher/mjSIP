@@ -33,7 +33,7 @@ import org.mjsip.sip.dialog.InviteDialog;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -45,6 +45,7 @@ import org.zoolu.util.LogLevel;
   */
 public class ExtendedCall extends Call {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ExtendedCall.class);
 
 	/** Extended-call listener. */
 	ExtendedCallListener xcall_listener;
@@ -142,7 +143,7 @@ public class ExtendedCall extends Call {
 	  * @param caller the caller address
 	  * @param sdp the session descriptor */
 	public void call(NameAddress callee, NameAddress caller, String sdp) {
-		log(LogLevel.DEBUG,"calling "+callee);
+		LOG.debug("calling "+callee);
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
 		else dialog=new ExtendedInviteDialog(sip_provider,this_extended_invite_dialog_listener);
 		if (caller==null) caller=from_naddr;
@@ -157,7 +158,7 @@ public class ExtendedCall extends Call {
 	/** Starts a new call, with the given <i>INVITE</i> request.
 	  * @param invite the INVITE request message */
 	public void call(SipMessage invite) {
-		log(LogLevel.DEBUG,"calling "+invite.getRequestLine().getAddress());
+		LOG.debug("calling "+invite.getRequestLine().getAddress());
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
 		else dialog=new ExtendedInviteDialog(sip_provider,this_extended_invite_dialog_listener);
 		local_sdp=invite.getStringBody();
@@ -213,8 +214,8 @@ public class ExtendedCall extends Call {
 
 	/** From ExtendedInviteDialogListener. When an incoming REFER request is received within the dialog */ 
 	private void processDlgRefer(org.mjsip.sip.dialog.InviteDialog d, NameAddress refer_to, NameAddress referred_by, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
-		log(LogLevel.TRACE,"onDlgRefer("+refer_to.toString()+")");       
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
+		LOG.trace("onDlgRefer("+refer_to.toString()+")");       
 		refer=msg;
 		if (xcall_listener!=null) {
 			String replcall_id=null;
@@ -226,8 +227,8 @@ public class ExtendedCall extends Call {
 
 	/** From ExtendedInviteDialogListener. When a response is received for a REFER request within the dialog */ 
 	private void processDlgReferResponse(org.mjsip.sip.dialog.InviteDialog d, int code, String reason, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
-		log(LogLevel.TRACE,"onDlgReferResponse("+code+" "+reason+")");       
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
+		LOG.trace("onDlgReferResponse("+code+" "+reason+")");       
 		if (code>=200 && code <300) {
 			if(xcall_listener!=null) xcall_listener.onCallTransferAccepted(this,msg);
 		}
@@ -239,22 +240,22 @@ public class ExtendedCall extends Call {
 
 	/** From ExtendedInviteDialogListener. When an incoming NOTIFY request is received within the dialog */ 
 	private void processDlgNotify(org.mjsip.sip.dialog.InviteDialog d, String event, String sipfragment, SipMessage msg) {
-		if (d!=dialog) {  log(LogLevel.INFO,"NOT the current dialog");  return;  }
-		log(LogLevel.TRACE,"onDlgNotify()");
+		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
+		LOG.trace("onDlgNotify()");
 		if (event.equals("refer")) {
 			SipMessage fragment=new SipMessage(sipfragment);
-			log(LogLevel.INFO,"Notify: "+sipfragment);
+			LOG.info("Notify: "+sipfragment);
 			if (fragment.isResponse()) {
 				StatusLine status_line=fragment.getStatusLine();
 				int code=status_line.getCode();
 				String reason=status_line.getReason();
 				if (code>=200 && code<300) {
-					log(LogLevel.DEBUG,"Call successfully transferred");
+					LOG.debug("Call successfully transferred");
 					if(xcall_listener!=null) xcall_listener.onCallTransferSuccess(this,msg);
 				}
 				else
 				if (code>=300) {
-					log(LogLevel.DEBUG,"Call NOT transferred");
+					LOG.debug("Call NOT transferred");
 					if(xcall_listener!=null) xcall_listener.onCallTransferFailure(this,reason,msg);
 				}            
 			}
@@ -305,13 +306,5 @@ public class ExtendedCall extends Call {
 		
 	}
 
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"ExtendedCall: "+str);  
-	}
 }
 

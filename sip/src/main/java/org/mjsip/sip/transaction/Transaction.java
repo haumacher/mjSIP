@@ -30,9 +30,7 @@ import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.TransactionId;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 import org.zoolu.util.TimerListener;
 
@@ -49,6 +47,8 @@ import org.zoolu.util.TimerListener;
   */
 public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ implements SipProviderListener, TimerListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Transaction.class);
+
 	/** Transactions counter */
 	protected static int transaction_counter=0;
 
@@ -88,9 +88,6 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 	/** Transaction sequence number */
 	int transaction_sqn;
 
-	/** Logger */
-	Logger logger;
- 
 	/** Lower layer dispatcher that sends and receive messages.
 	  * The messages received by the SipProvider are fired to the Transaction
 	  * by means of the onReceivedMessage() method. */
@@ -112,7 +109,6 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 	/** Costructs a new Transaction */
 	protected Transaction(SipProvider sip_provider) {
 		this.sip_provider=sip_provider;
-		logger=sip_provider.getLogger();
 		this.transaction_id=null;
 		this.request=null;
 		this.connection_id=null;
@@ -124,7 +120,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 	protected void changeStatus(int newstatus) {
 		status=newstatus;
 		//transaction_listener.onChangedTransactionStatus(status);
-		log(LogLevel.DEBUG,"changed transaction state: "+getStatus());
+		LOG.debug("changed transaction state: "+getStatus());
 	}
 	
 	/** Whether the internal status is equal to <i>st</i> */
@@ -200,18 +196,5 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 
 	/** Terminates the transaction. */
 	public abstract void terminate();
-
 	
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"Transaction#"+transaction_sqn+": "+str);  
-	}
-
-	/** Adds the Exception to the log file. */
-	protected void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
-	}
-
 }

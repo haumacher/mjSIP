@@ -23,15 +23,12 @@ package org.mjsip.server.sbc;
 
 
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpPacket;
 import org.zoolu.net.UdpProvider;
 import org.zoolu.net.UdpProviderListener;
 import org.zoolu.net.UdpSocket;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-// logs
-import org.zoolu.util.Logger;
 import org.zoolu.util.Timer;
 import org.zoolu.util.TimerListener;
 
@@ -42,8 +39,7 @@ import org.zoolu.util.TimerListener;
  */
 public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 	
-	/** Logger */
-	protected Logger logger=null;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SymmetricUdpRelay.class);
 
 	/** SymmetricUdpRelay listener */
 	protected SymmetricUdpRelayListener listener;
@@ -88,20 +84,23 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 
 
 	/** Costructs a new SymmetricUdpRelay. */
-	/*public SymmetricUdpRelay(UdpSocket left_socket, SocketAddress left_soaddr, UdpSocket right_socket, SocketAddress right_soaddr, long relay_time, Logger logger, SymmetricUdpRelayListener listener) {
-		init(left_socket,left_soaddr,right_socket,right_soaddr,relay_time,log,listener);
-	}*/
+	/*
+	 * public SymmetricUdpRelay(UdpSocket left_socket, SocketAddress left_soaddr, UdpSocket right_socket, SocketAddress
+	 * right_soaddr, long relay_time, SymmetricUdpRelayListener listener) {
+	 * init(left_socket,left_soaddr,right_socket,right_soaddr,relay_time,log,listener); }
+	 */
 	
 	
 	/** Costructs a new SymmetricUdpRelay. */
-	public SymmetricUdpRelay(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr, long relay_time, Logger logger, SymmetricUdpRelayListener listener) {
-		init(left_port,left_soaddr,right_port,right_soaddr,relay_time,logger,listener);
+	public SymmetricUdpRelay(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr,
+			long relay_time, SymmetricUdpRelayListener listener) {
+		init(left_port, left_soaddr, right_port, right_soaddr, relay_time, listener);
 	}
 
 
 	/** Initializes the SymmetricUdpRelay. */
-	private void init(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr, long relay_time, Logger logger, SymmetricUdpRelayListener listener) {
-		this.logger=logger;
+	private void init(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr,
+			long relay_time, SymmetricUdpRelayListener listener) {
 		//this.left_port=left_port;
 		this.left_soaddr=left_soaddr;
 		//this.right_port=right_port;
@@ -111,13 +110,13 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 
 		try {
 			left_udp=new UdpProvider(new UdpSocket(left_port),0,this);
-			log(LogLevel.INFO,"udp interfce: "+left_udp.toString()+" started");    
+			LOG.info("udp interfce: "+left_udp.toString()+" started");    
 	
 			right_udp=new UdpProvider(new UdpSocket(right_port),0,this);
-			log(LogLevel.INFO,"udp interfce: "+right_udp.toString()+" started");
+			LOG.info("udp interfce: "+right_udp.toString()+" started");
 		}   
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	
 		if (relay_time>0) {
@@ -165,7 +164,7 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 	
 	/** Sets a new left peer SocketAddress. */
 	public void setLeftSoAddress(SocketAddress left_soaddr) {
-		log(LogLevel.INFO,"left soaddr "+this.left_soaddr+" becomes "+left_soaddr);
+		LOG.info("left soaddr "+this.left_soaddr+" becomes "+left_soaddr);
 		this.left_soaddr=left_soaddr;
 		last_left_change=System.currentTimeMillis();
 	}
@@ -177,7 +176,7 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 
 	/** Sets a new right peer SocketAddress. */
 	public void setRightSoAddress(SocketAddress right_soaddr) {
-		log(LogLevel.INFO,"right soaddr "+this.right_soaddr+" becomes "+right_soaddr);
+		LOG.info("right soaddr "+this.right_soaddr+" becomes "+right_soaddr);
 		this.right_soaddr=right_soaddr;
 		last_right_change=System.currentTimeMillis();
 	}
@@ -224,7 +223,7 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 			udp=left_udp;
 			// check whether the source address and port are changed for incoming packet
 			if (!right_soaddr.equals(src_soaddr)) {
-				//log(LogLevel.INFO,"right peer addr "+right_soaddr+" changed to "+src_soaddr);
+				//LOG.info("right peer addr "+right_soaddr+" changed to "+src_soaddr);
 				if (listener!=null) listener.onSymmetricUdpRelayRightPeerChanged(this,src_soaddr);
 			}
 		}
@@ -242,8 +241,8 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 
 	/** When UdpProvider stops receiving UDP datagrams. */
 	public void onServiceTerminated(UdpProvider udp_service, Exception error) {
-		log(LogLevel.INFO,"udp "+udp_service.toString()+" terminated");
-		if (error!=null) log(LogLevel.DEBUG,"udp "+udp_service.toString()+" exception:\n"+error.toString());
+		LOG.info("udp "+udp_service.toString()+" terminated");
+		if (error!=null) LOG.debug("udp "+udp_service.toString()+" exception:\n"+error.toString());
 		udp_service.getUdpSocket().close();
 		if (!isRunning() && listener!=null) listener.onSymmetricUdpRelayTerminated(this);
 	}
@@ -259,7 +258,7 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 		}
 		else {
 			timer=null;
-			log(LogLevel.INFO,"relay inactive for more than "+relay_time+"ms");
+			LOG.info("relay inactive for more than "+relay_time+"ms");
 			halt();
 		}
 	}
@@ -268,19 +267,6 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 	/** Gets a String representation of the Object */
 	public String toString() {
 		return left_soaddr+"<-->"+left_udp.getUdpSocket().getLocalPort()+"[--]"+right_udp.getUdpSocket().getLocalPort()+"<-->"+right_soaddr;
-	}
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"SymmetricUdpRelay: "+str);  
-	}
-
-	/** Adds the Exception message to the default Log */
-	protected void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
 	}
 
 }

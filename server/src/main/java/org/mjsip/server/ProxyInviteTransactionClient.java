@@ -28,7 +28,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.InviteTransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 
 
@@ -37,6 +37,8 @@ import org.zoolu.util.Timer;
   */ 
 public class ProxyInviteTransactionClient extends InviteTransactionClient {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ProxyInviteTransactionClient.class);
+
 	/** Proxy-transaction timeout for client transactions ("Timer C" in RFC 3261) */
 	Timer proxy_transaction_to;
 
@@ -57,7 +59,7 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient {
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(proxy_transaction_to)) {
-				log(LogLevel.INFO,"Proxy-transaction timeout expired");
+				LOG.info("Proxy-transaction timeout expired");
 				doTerminate();
 				if (transaction_listener!=null) transaction_listener.onTransTimeout(this);
 				transaction_listener=null;
@@ -65,7 +67,7 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient {
 			else super.onTimeout(to);
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}
 

@@ -28,9 +28,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 import org.zoolu.util.Timer;
 import org.zoolu.util.TimerListener;
 
@@ -46,6 +45,7 @@ import org.zoolu.util.TimerListener;
   */
 public class AddressResolver implements TimerListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AddressResolver.class);
 
 	/** Refresh time [millisecs].
 	  * When expired bindings are removed. */
@@ -54,9 +54,6 @@ public class AddressResolver implements TimerListener {
 	/** Expire time [millisecs].
 	  * The maximum time that a binding is considered active. */
 	long expire_time;
-
-	/** Logger */
-	Logger logger=null;
 
 	/** Binding table */
 	Hashtable binding_table;
@@ -67,13 +64,10 @@ public class AddressResolver implements TimerListener {
 	/** Refresh timer */
 	Timer timer;
 	
-	
-
 	/** Costructs an empty AddressResolve.r */
-	public AddressResolver(long refresh_time, Logger logger) {
+	public AddressResolver(long refresh_time) {
 		this.refresh_time=refresh_time;
 		expire_time=refresh_time/2;
-		this.logger=logger;
 		binding_table=new Hashtable();
 		time_table=new Hashtable();
 		timer=new Timer(refresh_time,this);
@@ -109,19 +103,19 @@ public class AddressResolver implements TimerListener {
 			Long expire=new Long((new Date()).getTime()+expire_time);
 			if (binding_table.containsKey(key)) {
 				if (!((SocketAddress)binding_table.get(key)).equals(actual_soaddr)) {
-					log(LogLevel.INFO,"change BINDING "+refer_soaddr+" >> "+actual_soaddr);
+					LOG.info("change BINDING "+refer_soaddr+" >> "+actual_soaddr);
 					binding_table.remove(key);
 					binding_table.put(key,actual_soaddr);
 				}
 				else {
-					log(LogLevel.DEBUG,"update BINDING "+refer_soaddr+" >> "+actual_soaddr);
+					LOG.debug("update BINDING "+refer_soaddr+" >> "+actual_soaddr);
 					// do not change binding_table
 				}
 				time_table.remove(key);
 				time_table.put(key,expire);
 			}
 			else {
-				log(LogLevel.INFO,"add BINDING "+refer_soaddr+" >> "+actual_soaddr);
+				LOG.info("add BINDING "+refer_soaddr+" >> "+actual_soaddr);
 				binding_table.put(key,actual_soaddr);
 				time_table.put(key,expire);
 			}
@@ -134,7 +128,7 @@ public class AddressResolver implements TimerListener {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
 			if (binding_table.containsKey(key)) {
-				log(LogLevel.INFO,"remove BINDING for "+refer_soaddr);
+				LOG.info("remove BINDING for "+refer_soaddr);
 				binding_table.remove(key);
 				time_table.remove(key);
 			}
@@ -155,7 +149,7 @@ public class AddressResolver implements TimerListener {
 	/** When the refresh timeout fires */
 	public void onTimeout(Timer t) {
 		// enumerate expired binding
-		log(LogLevel.DEBUG,"refresh all address bindings:");         
+		LOG.debug("refresh all address bindings:");         
 		long now=(new Date()).getTime();
 		Vector aux=new Vector();
 		for (Enumeration e=time_table.keys(); e.hasMoreElements(); ) {
@@ -166,23 +160,15 @@ public class AddressResolver implements TimerListener {
 		// remove expired binding
 		for (int i=0; i<aux.size(); i++) {
 			String key=(String)aux.elementAt(i);
-			log(LogLevel.INFO,"remove BINDING for "+key);         
+			LOG.info("remove BINDING for "+key);         
 			binding_table.remove(key);
 			time_table.remove(key);
 		}
-		log(LogLevel.DEBUG,"done.");         
+		LOG.debug("done.");         
 
 		// start a new refresh timer
 		timer=new Timer(refresh_time,this);
 		timer.start();
-	}
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"AddressResolver: "+str);
-		if (level.getValue()>=LogLevel.INFO.getValue()) System.out.println("IP: "+str);
 	}
 
 }

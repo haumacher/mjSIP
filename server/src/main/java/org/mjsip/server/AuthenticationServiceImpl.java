@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Base64;
 import org.zoolu.util.Parser;
 
@@ -20,6 +21,8 @@ import org.zoolu.util.Parser;
   */
 public class AuthenticationServiceImpl implements AuthenticationService {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+
 	/** AuthenticationService name */
 	String filename=null;
 	
@@ -154,7 +157,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		changed=false;
 		try { in = new BufferedReader(new FileReader(filename)); }
 		catch (FileNotFoundException e) {
-			System.err.println("WARNING: file \""+filename+"\" not found: created new empty DB");
+			LOG.warn("file \""+filename+"\" not found: created new empty DB");
 			return;
 		}   
 		String user=null;
@@ -203,7 +206,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			out.close();
 		}
 		catch (IOException e) {
-			System.err.println("WARNING: error trying to write on file \""+filename+"\"");
+			LOG.warn("error trying to write on file \""+filename+"\"", e);
 			return;
 		}
 	}

@@ -41,8 +41,8 @@ import org.mjsip.sip.transaction.Transaction;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.mjsip.sip.transaction.TransactionServer;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
-import org.zoolu.util.LogLevel;
 
 
 /** StatefulProxy server. 
@@ -52,6 +52,8 @@ import org.zoolu.util.LogLevel;
   */
 public class StatefulProxy extends Proxy implements TransactionClientListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StatefulProxy.class);
+
 	/** Transactions state */
 	protected StatefulProxyState state=null;
 	
@@ -95,17 +97,17 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 	/** When a new request is received for the local server */
 	public void processRequestToLocalServer(SipMessage req) {
-		log(LogLevel.DEBUG,"inside processRequestToLocalServer(msg)");
+		LOG.debug("inside processRequestToLocalServer(msg)");
 		super.processRequestToLocalServer(req);
 	}
 
 
 	/** When a new request message is received for a local user */
 	public void processRequestToLocalUser(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside processRequestToLocalUser(msg)");
+		LOG.debug("inside processRequestToLocalUser(msg)");
 
 		if (msg.isAck()) {
-			log(LogLevel.DEBUG,"ACK received out of an active InviteServerTransaction, message forwarded");
+			LOG.debug("ACK received out of an active InviteServerTransaction, message forwarded");
 			// ACK out of an active transaction is treated in statelss manner
 			super.processRequestToLocalUser(msg);
 			return; 
@@ -136,13 +138,13 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			if (new_target!=null) targets.addElement(new_target.toString());
 		}
 		if (targets.isEmpty()) {
-			log(LogLevel.INFO,"No target found, message discarded");
+			LOG.info("No target found, message discarded");
 			// the msg is not an ACK (already checked)
 			sendStatefulServerResponse(ts,SipMessageFactory.createResponse(msg,404,null,null));
 			return;
 		}
 
-		log(LogLevel.DEBUG,"message will be forwarded to "+targets.size()+" user's contact(s)"); 
+		LOG.debug("message will be forwarded to "+targets.size()+" user's contact(s)"); 
 		for (int i=0; i<targets.size(); i++)  {
 			SipURI target_uri=new SipURI((String)(targets.elementAt(i)));
 			SipMessage request=new SipMessage(msg);
@@ -164,9 +166,9 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	
 	/** When a new request message is received for a remote UA */
 	public void processRequestToRemoteUA(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside processRequestToRemoteUA(msg)");
+		LOG.debug("inside processRequestToRemoteUA(msg)");
 		if (msg.isAck()) {
-			log(LogLevel.DEBUG,"ACK received out of an active InviteServerTransaction, message forwarded");
+			LOG.debug("ACK received out of an active InviteServerTransaction, message forwarded");
 			// just send the ack..
 			super.processRequestToRemoteUA(msg);
 			return; 
@@ -178,7 +180,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		if (!server_profile.is_open_proxy) {
 			// check whether the caller or callee is a local user 
 			if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress())) {
-				log(LogLevel.INFO,"both caller and callee are not registered with the local server: proxy denied.");
+				LOG.info("both caller and callee are not registered with the local server: proxy denied.");
 				ts.respondWith(SipMessageFactory.createResponse(msg,503,null,null));
 				return;
 			}
@@ -213,7 +215,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 	/** When a new response message is received */
 	public void processResponse(SipMessage resp) {
-		log(LogLevel.DEBUG,"inside processResponse(msg)");
+		LOG.debug("inside processResponse(msg)");
 		//printLog("Response received out of an active ClientTransaction, message discarded",LogWriter.LEVEL_HIGH);
 		super.processResponse(resp);   
 	}
@@ -221,15 +223,15 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 	/** Sends a server final response */
 	protected void sendStatefulServerResponse(TransactionServer ts, SipMessage resp) {
-		log(LogLevel.DEBUG,"inside sendStatefulServerResponse(msg)");
-	log(LogLevel.DEBUG,"Server response: "+resp.getStatusLine().toString());
+		LOG.debug("inside sendStatefulServerResponse(msg)");
+	LOG.debug("Server response: "+resp.getStatusLine().toString());
 		ts.respondWith(resp);
 	}   
 
 
 	/** Process provisional response */
 	protected void processProvisionalResponse(TransactionClient transaction, SipMessage resp) {
-		log(LogLevel.DEBUG,"inside processProvisionalResponse(t,resp)");
+		LOG.debug("inside processProvisionalResponse(t,resp)");
 		int code=resp.getStatusLine().getCode();
 		TransactionServer ts=state.getServer(transaction);
 		if (ts!=null && code!=100) {
@@ -240,7 +242,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	
 	/** Process failure response */
 	protected void processFailureResponse(TransactionClient transaction, SipMessage resp) {
-		log(LogLevel.DEBUG,"inside processFailureResponse(t,resp)");
+		LOG.debug("inside processFailureResponse(t,resp)");
 		TransactionServer ts=state.getServer(transaction);
 		state.removeClient(transaction);
 		if (ts==null) return;
@@ -250,19 +252,19 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		// if there are no more pending clients, sends the final response
 		HashSet clients=state.getClients(ts);
 		if (clients.isEmpty()) {
-			log(LogLevel.TRACE,"only this t_client remained: send the response");
+			LOG.trace("only this t_client remained: send the response");
 			resp=state.getFinalResponse(ts);
 			updateProxyingResponse(resp);
 			if (resp.hasViaHeader()) ts.respondWith(resp); else ts.terminate();
 			state.removeServer(ts);
 		}
-		log(LogLevel.TRACE,"t_clients still active: "+state.numOfClients());
-		log(LogLevel.TRACE,"t_servers still active: "+state.numOfClients());
+		LOG.trace("t_clients still active: "+state.numOfClients());
+		LOG.trace("t_servers still active: "+state.numOfClients());
 	}
 
 	/** Process success response */
 	protected void processSuccessResponse(TransactionClient transaction, SipMessage resp) {
-		log(LogLevel.DEBUG,"inside processSuccessResponse(t,resp)");
+		LOG.debug("inside processSuccessResponse(t,resp)");
 		TransactionServer ts=state.getServer(transaction);
 		state.removeClient(transaction);
 		if (ts==null) return;
@@ -276,8 +278,8 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			//printLog("Cancel pending clients..",LogWriter.LEVEL_LOW);
 			// cancel ONLY INVITE transaction clients
 			if (transaction.getTransactionMethod().equals(SipMethods.INVITE)) {
-				//log(LogLevel.TRACE,"Cancelling "+clients.size()+" pending clients");
-				log(LogLevel.TRACE,clients.size()+" pending clients");
+				//LOG.trace("Cancelling "+clients.size()+" pending clients");
+				LOG.trace(clients.size()+" pending clients");
 				int canc_counter=0;
 				for (Iterator i=clients.iterator(); i.hasNext(); ) {
 					Transaction tc=(Transaction)i.next();
@@ -289,25 +291,25 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 						canc_counter++;
 					}
 				}
-				log(LogLevel.TRACE,"Cancelled "+canc_counter+" clients in \"proceeding\" state");
+				LOG.trace("Cancelled "+canc_counter+" clients in \"proceeding\" state");
 			}
 			state.removeServer(ts);
 		}
-		log(LogLevel.TRACE,"t_clients still active: "+state.numOfClients());
-		log(LogLevel.TRACE,"t_servers still active: "+state.numOfServers());
+		LOG.trace("t_clients still active: "+state.numOfClients());
+		LOG.trace("t_servers still active: "+state.numOfServers());
 	}
 
 
 	/** Process tmeout */
 	protected void processTimeout(TransactionClient transaction) {
-		log(LogLevel.DEBUG,"inside processTimeout(t)");
+		LOG.debug("inside processTimeout(t)");
 		TransactionServer ts=state.getServer(transaction);
 		state.removeClient(transaction);
 		if (ts==null) return;
 		HashSet clients=state.getClients(ts);
 		if (clients==null) return;
 		if (clients.isEmpty()) {
-			log(LogLevel.TRACE,"responding..");
+			LOG.trace("responding..");
 			//printLog("DEBUG:\r\n"+state.getFinalResponse(ts),LogWriter.LEVEL_LOW);
 			SipMessage resp=state.getFinalResponse(ts);
 			updateProxyingResponse(resp);
@@ -315,8 +317,8 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			else ts.terminate();
 			state.removeServer(ts);
 		}      
-		log(LogLevel.TRACE,"t_clients still active: "+state.numOfClients());
-		log(LogLevel.TRACE,"t_servers still active: "+state.numOfClients());
+		LOG.trace("t_clients still active: "+state.numOfClients());
+		LOG.trace("t_servers still active: "+state.numOfClients());
 	}
 
 	// ******************* TransactionClient callback methods *******************
@@ -340,16 +342,6 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	public void onTransTimeout(TransactionClient transaction) {
 		processTimeout(transaction);
 	}
-
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"StatefulProxy: "+str);  
-	}
-
 
 	// ****************************** MAIN *****************************
 

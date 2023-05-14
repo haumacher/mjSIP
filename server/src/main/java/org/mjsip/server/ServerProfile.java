@@ -70,8 +70,6 @@ public class ServerProfile extends Configure {
 	/** The name of the authentication DB. */
 	public String authentication_db="aaa.db";
 
-	/** Whether maintaining a complete call log. */
-	public boolean call_log=false;
 	/** Whether the server should stay in the signaling path (uses Record-Route/Route) */
 	public boolean on_route=false;
 	/** Whether implementing the RFC3261 Loose Route (or RFC2543 Strict Route) rule */
@@ -150,7 +148,6 @@ public class ServerProfile extends Configure {
 		if (attribute.equals("authentication_service")) { authentication_service=par.getString(); return; }
 		if (attribute.equals("authentication_db")) { authentication_db=par.getString(); return; }
 
-		if (attribute.equals("call_log")) { call_log=(par.getString().toLowerCase().startsWith("y")); return; }
 		if (attribute.equals("on_route")) { on_route=(par.getString().toLowerCase().startsWith("y")); return; }
 		if (attribute.equals("loose_route")) { loose_route=(par.getString().toLowerCase().startsWith("y")); return; }
 		if (attribute.equals("loop_detection")) { loop_detection=(par.getString().toLowerCase().startsWith("y")); return; }

@@ -16,6 +16,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import org.slf4j.LoggerFactory;
+
 
 
 /** A format conversion provider provides format conversion services from one or
@@ -34,6 +36,8 @@ import javax.sound.sampled.spi.FormatConversionProvider;
   */
 public class G711FormatConversionProvider extends FormatConversionProvider {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(G711FormatConversionProvider.class);
+
 	/** */
 	public static final AudioFormat.Encoding[] NO_ENCODING={};
 	/** */
@@ -46,8 +50,8 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 	public static final AudioFormat[] NO_FORMAT={};
 
 	/** Debug */
-	public static boolean DEBUG=true;
-	//public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
+	//public static final boolean DEBUG=false;
 
 
 	/** Obtains the set of source format encodings from which format conversion
@@ -76,19 +80,23 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 	  * @param source_format format of the incoming data.
 	  * @return array of supported target format encodings. */
 	public AudioFormat.Encoding[] getTargetEncodings(final AudioFormat source_format) {
-		printOut("getTargetEncodings(): source_format="+source_format.toString());
+		if (DEBUG)
+			LOG.debug("getTargetEncodings(): source_format="+source_format.toString());
 
 		if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED)) {
-			printOut("getTargetEncodings(): target encoding: G711_ENCODING");
+			if (DEBUG)
+				LOG.debug("getTargetEncodings(): target encoding: G711_ENCODING");
 			return G711_ENCODING;
 		}
 		else
 		if (source_format.getEncoding() instanceof G711Encoding) {
-			printOut("getTargetEncodings(): target encoding: PCM_ENCODING");
+			if (DEBUG)
+				LOG.debug("getTargetEncodings(): target encoding: PCM_ENCODING");
 			return PCM_ENCODING;
 		}
 		else {
-			printOut("getTargetEncodings(): target encoding: NO_ENCODING");
+			if (DEBUG)
+				LOG.debug("getTargetEncodings(): target encoding: NO_ENCODING");
 			return NO_ENCODING;
 		}
 	}
@@ -102,8 +110,10 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 	  * @return array of supported target formats.
 	  */
 	public AudioFormat[] getTargetFormats(final AudioFormat.Encoding target_encoding, final AudioFormat source_format) {
-		printOut("getTargetFormats(): source format="+source_format.toString());
-		printOut("getTargetFormats(): target encoding="+target_encoding.toString());
+		if (DEBUG)
+			LOG.debug("getTargetFormats(): source format="+source_format.toString());
+		if (DEBUG)
+			LOG.debug("getTargetFormats(): target encoding="+target_encoding.toString());
 
 		if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) && target_encoding instanceof G711Encoding) {
 			
@@ -146,9 +156,12 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
 	public AudioInputStream getAudioInputStream(final AudioFormat.Encoding target_encoding, final AudioInputStream source_stream) {
-		printOut("getAudioInputStream(Encoding,AudioInputStream): source format="+source_stream.getFormat().toString());
-		printOut("getAudioInputStream(Encoding,AudioInputStream): target encoding="+target_encoding.toString());
-		printOut("getAudioInputStream(Encoding,AudioInputStream): size: "+getTargetFormats(target_encoding,source_stream.getFormat()).length);
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(Encoding,AudioInputStream): source format="+source_stream.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(Encoding,AudioInputStream): target encoding="+target_encoding.toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(Encoding,AudioInputStream): size: "+getTargetFormats(target_encoding,source_stream.getFormat()).length);
 		
 		if (isConversionSupported(target_encoding,source_stream.getFormat())) {
 			AudioFormat[] formats=getTargetFormats(target_encoding,source_stream.getFormat());
@@ -189,8 +202,10 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
 	public AudioInputStream getAudioInputStream(final AudioFormat target_format, final AudioInputStream source_stream) {
-		printOut("getAudioInputStream(AudioFormat,AudioInputStream): source format="+source_stream.getFormat().toString());
-		printOut("getAudioInputStream(AudioFormat,AudioInputStream): target format="+target_format.toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): source format="+source_stream.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): target format="+target_format.toString());
 		
 		if (isConversionSupported(target_format,source_stream.getFormat())) {
 			AudioFormat[] formats=getTargetFormats(target_format.getEncoding(),source_stream.getFormat());
@@ -218,11 +233,5 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 		else {
 			throw new IllegalArgumentException("Conversion not supported");
 		}
-	}
-
-
-	/** Prints debugging information. */
-	private void printOut(String str) {
-		if (DEBUG) System.err.println("DEBUG: G711 codec: "+str);
 	}
 }

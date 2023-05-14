@@ -27,13 +27,12 @@ package org.mjsip.sip.provider;
 
 import java.io.IOException;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.TcpServer;
 import org.zoolu.net.TcpServerListener;
 import org.zoolu.net.TcpSocket;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 
 
 
@@ -41,6 +40,8 @@ import org.zoolu.util.Logger;
   */
 public class TcpTransport extends SipTransportCO/* implements TcpServerListener*/ {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TcpTransport.class);
+
 	/** TCP protocol type */
 	public static final String PROTO_TCP="tcp";
 	
@@ -50,15 +51,17 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Creates a new TcpTransport */ 
-	public TcpTransport(int local_port, int nmax_connections, Logger logger)   throws IOException {
-		super(local_port,nmax_connections,logger);
+	public TcpTransport(int local_port, int nmax_connections)
+			throws IOException {
+		super(local_port, nmax_connections);
 		init(local_port,null);
 	}
 
 
 	/** Creates a new TcpTransport */ 
-	public TcpTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, Logger logger)   throws IOException {
-		super(local_port,nmax_connections,logger);
+	public TcpTransport(int local_port, IpAddress host_ipaddr,
+			int nmax_connections) throws IOException {
+		super(local_port, nmax_connections);
 		init(local_port,host_ipaddr);
 	}
 
@@ -102,10 +105,10 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** When a new incoming connection is established */ 
 	private void processIncomingConnection(TcpServer tcp_server, TcpSocket socket) {
-		log(LogLevel.DEBUG,"incoming connection from "+socket.getAddress()+":"+socket.getPort());
+		LOG.debug("incoming connection from "+socket.getAddress()+":"+socket.getPort());
 		if (tcp_server==this.tcp_server) {
 			SipTransportConnection conn=new TcpTransportConnection(socket,this_conn_listener);
-			log(LogLevel.DEBUG,"tcp connection "+conn+" opened");
+			LOG.debug("tcp connection "+conn+" opened");
 			addConnection(conn);
 			if (listener!=null) listener.onIncomingTransportConnection(this,new SocketAddress(socket.getAddress(),socket.getPort()));
 		}
@@ -114,7 +117,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** From TcpServerListener. When TcpServer terminates. */
 	private void processServerTerminated(TcpServer tcp_server, Exception error)  {
-		log(LogLevel.DEBUG,"tcp server "+tcp_server+" terminated");
+		LOG.debug("tcp server "+tcp_server+" terminated");
 	}
 
 

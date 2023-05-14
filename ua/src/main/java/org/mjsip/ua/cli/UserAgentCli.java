@@ -33,9 +33,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentProfile;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.ScheduledWork;
 
 
@@ -46,9 +44,7 @@ import org.zoolu.util.ScheduledWork;
   */
 public class UserAgentCli implements UserAgentListener {
 	
-
-	/** Logger */
-	protected Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgentCli.class);
 	
 	/** SipProvider. */
 	protected SipProvider sip_provider;
@@ -84,7 +80,7 @@ public class UserAgentCli implements UserAgentListener {
 	/** Changes the call state */
 	protected void changeStatus(String state) {
 		call_state=state;
-		log(LogLevel.DEBUG,"state: "+call_state); 
+		LOG.debug("state: "+call_state); 
 	}
 
 	/** Checks the call state */
@@ -104,7 +100,6 @@ public class UserAgentCli implements UserAgentListener {
 	public UserAgentCli(SipProvider sip_provider, UserAgentProfile ua_profile) {
 		this.sip_provider=sip_provider;
 		this.ua_profile=ua_profile;
-		logger=sip_provider.getLogger();
 		ua=new UserAgent(sip_provider,ua_profile,this);      
 		if (!ua_profile.no_prompt) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!ua_profile.no_prompt) stdout=System.out;
@@ -114,20 +109,22 @@ public class UserAgentCli implements UserAgentListener {
 
 	/** Becomes ready for receive a new incoming call. */
 	public void readyToReceive() {
-		ua.log("WAITING FOR INCOMING CALL");
-		if (!ua_profile.audio && !ua_profile.video) ua.log("ONLY SIGNALING, NO MEDIA");       
+		LOG.info("WAITING FOR INCOMING CALL");
+		if (!ua_profile.audio && !ua_profile.video)
+			LOG.info("ONLY SIGNALING, NO MEDIA");
 		//ua.listen();
 		changeStatus(UA_IDLE);
-		printOut("digit the callee's URI to make a call or press 'enter' to exit");
+		LOG.info("digit the callee's URI to make a call or press 'enter' to exit");
 	} 
 
 
 	/** Makes a new call */
 	public void call(String target_uri) {
 		ua.hangup();
-		ua.log("CALLING "+target_uri);
-		printOut("calling "+target_uri);
-		if (!ua_profile.audio && !ua_profile.video) ua.log("ONLY SIGNALING, NO MEDIA");       
+		LOG.info("CALLING " + target_uri);
+		LOG.info("calling "+target_uri);
+		if (!ua_profile.audio && !ua_profile.video)
+			LOG.info("ONLY SIGNALING, NO MEDIA");
 		ua.call(target_uri);
 		changeStatus(UA_OUTGOING_CALL);
 	} 
@@ -138,13 +135,13 @@ public class UserAgentCli implements UserAgentListener {
 		ua.accept();
 		changeStatus(UA_ONCALL);
 		if (ua_profile.hangup_time>0) automaticHangup(ua_profile.hangup_time); 
-		printOut("press 'enter' to hangup"); 
+		LOG.info("press 'enter' to hangup"); 
 	} 
 
 
 	/** Terminates a call */
 	public void hangup() {
-		printOut("hangup");
+		LOG.info("hangup");
 		ua.hangup();
 		changeStatus(UA_IDLE);
 		if (ua_profile.call_to!=null) {
@@ -173,32 +170,33 @@ public class UserAgentCli implements UserAgentListener {
 
 			if (ua_profile.do_unregister_all) {
 				// ########## unregisters ALL contact URIs
-				ua.log("UNREGISTER ALL contact URIs");
+				LOG.info("UNREGISTER ALL contact URIs");
 				ua.unregisterall();
 			} 
 
 			if (ua_profile.do_unregister) {
 				// unregisters the contact URI
-				ua.log("UNREGISTER the contact URI");
+				LOG.info("UNREGISTER the contact URI");
 				ua.unregister();
 			} 
 
 			if (ua_profile.do_register) {
 				// ########## registers the contact URI with the registrar server
-				ua.log("REGISTRATION");
+				LOG.info("REGISTRATION");
 				ua.loopRegister(ua_profile.expires,ua_profile.expires/2,ua_profile.keepalive_time);
 			}         
 			
 			if (ua_profile.call_to!=null) {
 				// UAC
 				call(ua_profile.call_to.toString()); 
-				printOut("press 'enter' to cancel");
+				LOG.info("press 'enter' to cancel");
 				readLine();
 				hangup();
 			}
 			else {
 				// UAS + UAC
-				if (ua_profile.accept_time>=0) ua.log("AUTO ACCEPT MODE");
+				if (ua_profile.accept_time>=0)
+					LOG.info("AUTO ACCEPT MODE");
 				readyToReceive();
 				while (stdin!=null) {
 					String line=readLine();
@@ -244,7 +242,7 @@ public class UserAgentCli implements UserAgentListener {
 		if (ua_profile.redirect_to!=null) {
 			// redirect the call
 			ua.redirect(ua_profile.redirect_to);
-			printOut("call redirected to "+ua_profile.redirect_to);
+			LOG.info("call redirected to "+ua_profile.redirect_to);
 		}         
 		else
 		if (ua_profile.accept_time>=0) {
@@ -254,8 +252,8 @@ public class UserAgentCli implements UserAgentListener {
 		}
 		else          {
 			changeStatus(UA_INCOMING_CALL);
-			printOut("incoming call from "+caller.toString());
-			printOut("accept? [yes/no]");
+			LOG.info("incoming call from "+caller.toString());
+			LOG.info("accept? [yes/no]");
 		}
 	}
 	
@@ -272,9 +270,10 @@ public class UserAgentCli implements UserAgentListener {
 	/** When an ougoing call has been accepted */
 	public void onUaCallAccepted(UserAgent ua) {
 		changeStatus(UA_ONCALL);
-		printOut("call accepted");
-		if (ua_profile.hangup_time>0) automaticHangup(ua_profile.hangup_time); 
-		else printOut("press 'enter' to hangup");
+		LOG.info("call accepted");
+		if (ua_profile.hangup_time>0) automaticHangup(ua_profile.hangup_time);
+		else
+			LOG.info("press 'enter' to hangup");
 	}
 	
 	/** When a call has been transferred */
@@ -312,14 +311,12 @@ public class UserAgentCli implements UserAgentListener {
 
 	/** When registration succeeded. */
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
-		log("REGISTRATION SUCCESS: "+result); 
-		printOut("UA: REGISTRATION SUCCESS: "+result);
+		LOG.info("Registration succeeded: "+result); 
 	}
 
 	/** When registration failed. */
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		log("REGISTRATION FAILURE: "+result); 
-		printOut("UA: REGISTRATION FAILURE: "+result);
+		LOG.error("Registration failed: "+result); 
 	}
 	
 
@@ -336,7 +333,7 @@ public class UserAgentCli implements UserAgentListener {
 	}*/
 	/** Schedules a re-inviting after <i>delay_time</i> secs. It simply changes the contact address. */
 	void reInvite(final int delay_time) {
-		log("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
+		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
 		if (delay_time==0) ua.modify(null);
 		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  ua.modify(null);  }  };
 	}
@@ -353,7 +350,7 @@ public class UserAgentCli implements UserAgentListener {
 	}*/
 	/** Schedules a call-transfer after <i>delay_time</i> secs. */
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
-		log("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
+		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
 		if (delay_time==0) ua.transfer(transfer_to);
 		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  ua.transfer(transfer_to);  }  };
 	}
@@ -369,7 +366,7 @@ public class UserAgentCli implements UserAgentListener {
 	}*/
 	/** Schedules an automatic answer after <i>delay_time</i> secs. */
 	void automaticAccept(final int delay_time) {
-		log("AUTOMATIC ANSWER: "+delay_time+" secs");
+		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
 		if (delay_time==0) accept();
 		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  accept();  }  };
 	}
@@ -385,14 +382,14 @@ public class UserAgentCli implements UserAgentListener {
 	}*/
 	/** Schedules an automatic hangup after <i>delay_time</i> secs. */
 	void automaticHangup(final int delay_time) {
-		log("AUTOMATIC HANGUP: "+delay_time+" secs");
+		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
 		if (delay_time==0) hangup();
 		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  hangup();  }  };
 	}
 	
 	/** Schedules an automatic re-call after <i>delay_time</i> secs. */
 	void automaticCall(final int delay_time, final String remote_uri) {
-		log("AUTOMATIC RE-CALL: "+delay_time+" secs");
+		LOG.info("AUTOMATIC RE-CALL: "+delay_time+" secs");
 		if (delay_time==0) call(remote_uri);
 		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  call(remote_uri);  }  };
 	}
@@ -404,26 +401,6 @@ public class UserAgentCli implements UserAgentListener {
 	protected String readLine() {
 		try { if (stdin!=null) return stdin.readLine(); } catch (IOException e) {}
 		return null;
-	}
-
-	/** Print to stantard output. */
-	protected void printOut(String str) {
-		if (stdout!=null) System.out.println(str);
-	}
-
-	/** Adds a new string to the default Log. */
-	void log(String str) {
-		log(LogLevel.INFO,str);
-	}
-
-	/** Adds a new string to the default Log. */
-	void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"CommandLineUA: "+str);
-	}
-
-	/** Adds the Exception message to the default Log. */
-	void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
 	}
 
 }

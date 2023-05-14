@@ -31,7 +31,7 @@ import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionServerId;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 
 
@@ -43,6 +43,8 @@ import org.zoolu.util.Timer;
   */
 public class TransactionServer extends Transaction {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TransactionServer.class);
+
 	/** The TransactionServerListener that captures the events fired by the TransactionServer */
 	TransactionServerListener transaction_listener;
 
@@ -74,7 +76,7 @@ public class TransactionServer extends Transaction {
 		request=new SipMessage(req);
 		init(listener,new TransactionServerId(request),request.getConnectionId());
 		
-		log(LogLevel.TRACE,"start");
+		LOG.trace("start");
 		changeStatus(STATE_TRYING);
 		sip_provider.addSelectiveListener(transaction_id,this); 
 	}  
@@ -87,7 +89,7 @@ public class TransactionServer extends Transaction {
 		this.response=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
 		clearing_to=new Timer(SipStack.transaction_timeout,null);
-		log(LogLevel.INFO,"new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: "+transaction_id.toString());
 	}  
 
 
@@ -96,7 +98,7 @@ public class TransactionServer extends Transaction {
 	/** Starts the TransactionServer. */
 	public void listen() {
 		if (statusIs(STATE_IDLE)) {
-			log(LogLevel.TRACE,"start");
+			LOG.trace("start");
 			changeStatus(STATE_WAITING);  
 			sip_provider.addSelectiveListener(transaction_id,this); 
 		}
@@ -125,7 +127,7 @@ public class TransactionServer extends Transaction {
 					clearing_to.start();
 				}
 				else {
-					log(LogLevel.TRACE,"clearing_to=0 for reliable transport");
+					LOG.trace("clearing_to=0 for reliable transport");
 					onTimeout(clearing_to);
 				}
 			}
@@ -158,7 +160,7 @@ public class TransactionServer extends Transaction {
 			}
 			if (statusIs(STATE_PROCEEDING) || statusIs(STATE_COMPLETED)) {
 				// retransmission of the last response
-				log(LogLevel.TRACE,"response retransmission");
+				LOG.trace("response retransmission");
 				sip_provider.sendMessage(response);
 				return;
 			}
@@ -169,12 +171,12 @@ public class TransactionServer extends Transaction {
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(clearing_to)) {
-				log(LogLevel.INFO,"Clearing timeout expired");
+				LOG.info("Clearing timeout expired");
 				doTerminate();
 			}
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}   
 
@@ -189,14 +191,6 @@ public class TransactionServer extends Transaction {
 			sip_provider.removeSelectiveListener(transaction_id);
 			changeStatus(STATE_TERMINATED);
 		}
-	}
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"TransactionServer#"+transaction_sqn+": "+str);  
 	}
 
 }

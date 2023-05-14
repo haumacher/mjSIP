@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.zoolu.net.SocketAddress;
 import org.zoolu.sound.CodecType;
-import org.zoolu.util.LogWriter;
 
 
 
@@ -22,8 +21,11 @@ public class AudioApp {
 
 	
 	/** Creates a new audio streamer. */
-	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out, boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop, boolean symmetric_rtp, boolean rtcp, LogWriter log) {
-		return new AudioStreamer(flow_spec,audiofile_in,audiofile_out,direct_convertion,additional_encoding,do_sync,random_early_drop,symmetric_rtp,rtcp,log);
+	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out,
+			boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop,
+			boolean symmetric_rtp, boolean rtcp) {
+		return new AudioStreamer(flow_spec, audiofile_in, audiofile_out, direct_convertion, additional_encoding,
+				do_sync, random_early_drop, symmetric_rtp, rtcp);
 	}
 
 
@@ -90,11 +92,6 @@ public class AudioApp {
 				if (args[i].equals("-h")) {
 					printHelp();
 					System.exit(0);
-				}
-				// else
-				if (args[i].equals("-v"))  {
-					AudioStreamer.VERBOSE_DEBUG=true;
-					continue;
 				}
 				// else
 				if (args[i].startsWith("-s"))  {
@@ -244,7 +241,8 @@ public class AudioApp {
 		MediaSpec mspec=new MediaSpec("audio",avp,codec_name,sample_rate,channels,packet_size);      
 		FlowSpec fspec=new FlowSpec(mspec,local_port,remote_ipaddr,remote_port,dir);
 
-		AudioStreamer audio_streamer=createAudioStreamer(fspec,audio_in,audio_out,direct_convertion,null,do_sync,random_early_drop,symmetric_rtp,rtcp,null);
+		AudioStreamer audio_streamer = createAudioStreamer(fspec, audio_in, audio_out, direct_convertion, null, do_sync,
+				random_early_drop, symmetric_rtp, rtcp);
 
 		//if (random_early_drop>0) aapp.setRED(random_early_drop);
 		if (sync_adj!=0) audio_streamer.setSyncAdj(sync_adj);

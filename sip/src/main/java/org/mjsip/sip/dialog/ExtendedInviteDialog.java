@@ -44,7 +44,7 @@ import org.mjsip.sip.provider.TransactionServerId;
 import org.mjsip.sip.transaction.InviteTransactionClient;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -57,6 +57,8 @@ import org.zoolu.util.LogLevel;
   */
 public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ExtendedInviteDialog.class);
+
 	/** Max number of registration attempts. */
 	static final int MAX_ATTEMPTS=3;
 
@@ -205,21 +207,21 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Responds with <i>resp</i> */
 	public void respond(SipMessage resp) {
-		log(LogLevel.DEBUG,"inside x-respond(resp)");
+		LOG.debug("inside x-respond(resp)");
 		String method=resp.getCSeqHeader().getMethod();
 		if (method.equals(SipMethods.INVITE) || method.equals(SipMethods.CANCEL) || method.equals(SipMethods.BYE)) {
 			super.respond(resp);
 		}
 		else {
 			TransactionServerId transaction_id=new TransactionServerId(resp);
-			log(LogLevel.DEBUG,"transaction-id="+transaction_id);
+			LOG.debug("transaction-id="+transaction_id);
 			if (transactions.containsKey(transaction_id)) {
-				log(LogLevel.TRACE,"responding");
+				LOG.trace("responding");
 				TransactionServer t=(TransactionServer)transactions.get(transaction_id);
 				t.respondWith(resp);
 			}
 			else {
-				log(LogLevel.DEBUG,"transaction server not found; message discarded");
+				LOG.debug("transaction server not found; message discarded");
 			}
 		}
 	} 
@@ -227,7 +229,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Accepts a REFER request. */
 	public void acceptRefer(SipMessage req) {
-		log(LogLevel.DEBUG,"inside acceptRefer(refer)");
+		LOG.debug("inside acceptRefer(refer)");
 		SipMessage resp=SipMessageFactory.createResponse(req,202,null,null);
 		respond(resp);
 	} 
@@ -235,7 +237,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Refuses a REFER request. */
 	public void refuseRefer(SipMessage req) {
-		log(LogLevel.DEBUG,"inside refuseRefer(refer)");
+		LOG.debug("inside refuseRefer(refer)");
 		SipMessage resp=SipMessageFactory.createResponse(req,603,null,null);
 		respond(resp);
 	} 
@@ -243,7 +245,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Inherited from class SipProviderListener. */
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
-		log(LogLevel.TRACE,"onReceivedMessage(): "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')));
+		LOG.trace("onReceivedMessage(): "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')));
 		if (msg.isResponse()) {
 			super.onReceivedMessage(provider,msg);
 		}
@@ -272,7 +274,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 				if (ext_listener!=null) ext_listener.onDlgNotify(this,event,sipfragment,msg);
 			} 
 			else {
-				log(LogLevel.DEBUG,"Received alternative request "+msg.getRequestLine().getMethod());
+				LOG.debug("Received alternative request "+msg.getRequestLine().getMethod());
 				if (ext_listener!=null) ext_listener.onDlgAltRequest(this,msg.getRequestLine().getMethod(),msg.getStringBody(),msg);
 			}
 		}
@@ -282,7 +284,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Inherited from TransactionClientListener.
 	  * When the TransactionClientListener goes into the "Completed" state, receiving a failure response */
 	public void onTransFailureResponse(TransactionClient tc, SipMessage msg) {
-		log(LogLevel.TRACE,"inside onTransFailureResponse("+tc.getTransactionId()+",msg)");
+		LOG.trace("inside onTransFailureResponse("+tc.getTransactionId()+",msg)");
 		String method=tc.getTransactionMethod();
 		StatusLine status_line=msg.getStatusLine();
 		int code=status_line.getCode();
@@ -337,7 +339,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Inherited from TransactionClientListener.
 	  * When an TransactionClientListener goes into the "Terminated" state, receiving a 2xx response  */
 	public void onTransSuccessResponse(TransactionClient t, SipMessage msg) {
-		log(LogLevel.TRACE,"inside onTransSuccessResponse("+t.getTransactionId()+",msg)");
+		LOG.trace("inside onTransSuccessResponse("+t.getTransactionId()+",msg)");
 		attempts=0;
 		String method=t.getTransactionMethod();
 		StatusLine status_line=msg.getStatusLine();
@@ -363,7 +365,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Inherited from TransactionClientListener.
 	  * When the TransactionClient goes into the "Terminated" state, caused by transaction timeout */
 	public void onTransTimeout(TransactionClient t) {
-		log(LogLevel.TRACE,"inside onTransTimeout("+t.getTransactionId()+",msg)");
+		LOG.trace("inside onTransTimeout("+t.getTransactionId()+",msg)");
 		String method=t.getTransactionMethod();
 		if (method.equals(SipMethods.INVITE) || method.equals(SipMethods.BYE)) {
 			super.onTransTimeout(t);
@@ -373,13 +375,5 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 			transactions.remove(t.getTransactionId());
 		}
 	} 
-
-
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"ExtendedInviteDialog#"+dialog_num+": "+str);  
-	}
 
 }

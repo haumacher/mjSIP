@@ -16,6 +16,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import org.slf4j.LoggerFactory;
+
 
 
 /** A format conversion provider provides format conversion services from one or
@@ -33,6 +35,8 @@ import javax.sound.sampled.spi.FormatConversionProvider;
   * returned by one of the getAudioInputStream methods.
   */
 public class G726FormatConversionProvider extends FormatConversionProvider {
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(G726FormatConversionProvider.class);
 	
 	/** */
 	public static final AudioFormat.Encoding[] NO_ENCODING={};
@@ -46,8 +50,7 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	public static final AudioFormat[] NO_FORMAT={};
 
 	/** Debug */
-	//public static boolean DEBUG=true;
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 
 
 	/** Obtains the set of source format encodings from which format conversion
@@ -76,7 +79,8 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	  * @param source_format format of the incoming data.
 	  * @return array of supported target format encodings. */
 	public AudioFormat.Encoding[] getTargetEncodings(final AudioFormat source_format) {
-		printOut("getTargetEncodings(): source_format="+source_format.toString());
+		if (DEBUG)
+			LOG.debug("getTargetEncodings(): source_format="+source_format.toString());
 
 		if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED)) {
 			return G726_ENCODING;
@@ -99,8 +103,10 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	  * @return array of supported target formats.
 	  */
 	public AudioFormat[] getTargetFormats(final AudioFormat.Encoding target_encoding, final AudioFormat source_format) {
-		printOut("getTargetFormats(): target_encoding="+target_encoding.toString());
-		printOut("getTargetFormats(): source_format="+source_format.toString());
+		if (DEBUG)
+			LOG.debug("getTargetFormats(): target_encoding="+target_encoding.toString());
+		if (DEBUG)
+			LOG.debug("getTargetFormats(): source_format="+source_format.toString());
 
 		/*if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) && target_encoding instanceof G726Encoding) {
 			
@@ -180,8 +186,10 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
 	public AudioInputStream getAudioInputStream(final AudioFormat.Encoding target_encoding, final AudioInputStream source_stream) {
-		printOut("getAudioInputStream(): target_encoding="+target_encoding.toString());
-		printOut("getAudioInputStream(): source format="+source_stream.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(): target_encoding="+target_encoding.toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(): source format="+source_stream.getFormat().toString());
 
 		if (isConversionSupported(target_encoding,source_stream.getFormat())) {
 			AudioFormat[] formats=getTargetFormats(target_encoding,source_stream.getFormat());
@@ -222,8 +230,10 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
 	public AudioInputStream getAudioInputStream(final AudioFormat target_format, final AudioInputStream source_stream) {
-		printOut("getAudioInputStream(): target_format="+target_format.toString());
-		printOut("getAudioInputStream(): source format="+source_stream.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(): target_format="+target_format.toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(): source format="+source_stream.getFormat().toString());
 		
 		if (isConversionSupported(target_format,source_stream.getFormat())) {
 			AudioFormat[] formats=getTargetFormats(target_format.getEncoding(),source_stream.getFormat());
@@ -251,11 +261,5 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 		else {
 			throw new IllegalArgumentException("Conversion not supported");
 		}
-	}
-
-
-	/** Prints debugging information. */
-	private void printOut(String str) {
-		if (DEBUG) System.err.println("DEBUG: G726: "+str);
 	}
 }

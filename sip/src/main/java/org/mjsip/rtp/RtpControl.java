@@ -37,10 +37,10 @@ import org.zoolu.util.ByteUtils;
 public class RtpControl implements RtcpProviderListener {
 	
 	/** Debug mode */
-	public static boolean DEBUG=true;
+	public static final boolean DEBUG=true;
 
 	/** In case of no sender RTP stream, whether the SSRC of RR packets is set equal to the SSRC of the received RTP stream */
-	public static boolean DEBUG_RR_SSRC_SYMMETRIC=true;
+	public static final boolean DEBUG_RR_SSRC_SYMMETRIC=true;
 
 	/** RTCP */
 	RtcpProvider rtcp;

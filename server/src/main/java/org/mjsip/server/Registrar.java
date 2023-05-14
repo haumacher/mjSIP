@@ -39,9 +39,9 @@ import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionServer;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.DateFormat;
 import org.zoolu.util.Flags;
-import org.zoolu.util.LogLevel;
 
 
 /** Class Registrar implements a Registrar SIP Server.
@@ -49,6 +49,7 @@ import org.zoolu.util.LogLevel;
   */
 public class Registrar extends ServerEngine {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Registrar.class);
 	
 	/** Costructs a void Registrar. */
 	protected Registrar() {}
@@ -64,7 +65,7 @@ public class Registrar extends ServerEngine {
 	/** When a new request is received for the local server. */
 	public void processRequestToLocalServer(SipMessage msg) {
 		
-		log(LogLevel.DEBUG,"inside processRequestToLocalServer(msg)");
+		LOG.debug("inside processRequestToLocalServer(msg)");
 		if (server_profile.is_registrar && msg.isRegister()) {
 			TransactionServer t=new TransactionServer(sip_provider,msg,null);
 	
@@ -99,27 +100,27 @@ public class Registrar extends ServerEngine {
 
 	/** When a new request message is received for a local user. */
 	public void processRequestToLocalUser(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside processRequestToLocalUser(msg)");
+		LOG.debug("inside processRequestToLocalUser(msg)");
 		// stateless-response (in order to avoid DoS attacks)
 		if (!msg.isAck()) sip_provider.sendMessage(SipMessageFactory.createResponse(msg,404,null,null));
-		else log(LogLevel.INFO,"message discarded");
+		else LOG.info("message discarded");
 	}
  
 	
 	/** When a new request message is received for a remote UA. */
 	public void processRequestToRemoteUA(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside processRequestToRemoteUA(msg)");
+		LOG.debug("inside processRequestToRemoteUA(msg)");
 		// stateless-response (in order to avoid DoS attacks)
 		if (!msg.isAck()) sip_provider.sendMessage(SipMessageFactory.createResponse(msg,404,null,null));
-		else log(LogLevel.INFO,"message discarded");
+		else LOG.info("message discarded");
 	}
 
 
 	/** When a new response message is received. */
 	public void processResponse(SipMessage resp) {
-		log(LogLevel.DEBUG,"inside processResponse(msg)");
+		LOG.debug("inside processResponse(msg)");
 		// no actions..
-		log(LogLevel.INFO,"message discarded");
+		LOG.info("message discarded");
 	}
 	
 	
@@ -128,49 +129,49 @@ public class Registrar extends ServerEngine {
 	/** Gets the request's targets.
 	  * @return a vector of target URIs (Vector of <code>String</code>). */
 	protected Vector getTargets(SipMessage msg) {
-		log(LogLevel.TRACE,"inside getTargets(msg)");
+		LOG.trace("inside getTargets(msg)");
 
 		Vector targets=new Vector();
 		
 		if (location_service==null) {
-			log(LogLevel.INFO,"Location service is not active");
+			LOG.info("Location service is not active");
 			return targets;
 		}           
 
 		GenericURI request_uri=msg.getRequestLine().getAddress();
 		if (!request_uri.isSipURI()) {
-			log(LogLevel.INFO,"request-URI is not a SIP URI");
+			LOG.info("request-URI is not a SIP URI");
 			return targets;
 		}
 		SipURI sip_uri=new SipURI(request_uri);
 		String username=sip_uri.getUserName();
 		if (username==null) {
-			log(LogLevel.INFO,"no username found");
+			LOG.info("no username found");
 			return targets;
 		}
 		String user=username+"@"+sip_uri.getHost();
-		log(LogLevel.DEBUG,"user: "+user); 
+		LOG.debug("user: "+user); 
 			  
 		if (!location_service.hasUser(user)) {
-			log(LogLevel.INFO,"user "+user+" not found");
+			LOG.info("user "+user+" not found");
 			return targets;
 		}
 
 		GenericURI to_uri=msg.getToHeader().getNameAddress().getAddress();
 		
 		Enumeration e=location_service.getUserContactURIs(user);
-		log(LogLevel.TRACE,"message targets: ");  
+		LOG.trace("message targets: ");  
 		for (int i=0; e.hasMoreElements(); i++) {
 			// if exipred, remove the contact URI
 			String contact=(String)e.nextElement();
 			if (location_service.isUserContactExpired(user,contact)) {
 				location_service.removeUserContact(user,contact);
-			log(LogLevel.TRACE,"target"+i+" expired: contact URI removed");
+			LOG.trace("target"+i+" expired: contact URI removed");
 			}
 			// otherwise add the URI to the target list
 			else {
 				targets.addElement(contact);
-				log(LogLevel.TRACE,"target"+i+"="+targets.elementAt(i));
+				LOG.trace("target"+i+"="+targets.elementAt(i));
 			}
 		}
 		// for SIPS request-uri remove non-SIPS targets
@@ -178,7 +179,7 @@ public class Registrar extends ServerEngine {
 			for (int i=0; i<targets.size(); i++) {
 				SipURI uri=new SipURI((String)targets.elementAt(i));
 				if (!uri.isSecure()) {
-					log(LogLevel.INFO,uri.toString()+" has not SIPS scheme: skipped");
+					LOG.info(uri.toString()+" has not SIPS scheme: skipped");
 					targets.removeElementAt(i--);
 				}
 			}
@@ -192,7 +193,7 @@ public class Registrar extends ServerEngine {
 	protected SipMessage updateRegistration(SipMessage msg) {
 		ToHeader th=msg.getToHeader();
 		if (th==null)   {
-			log(LogLevel.INFO,"ToHeader missed: message discarded");
+			LOG.info("ToHeader missed: message discarded");
 			int result=400;
 			return SipMessageFactory.createResponse(msg,result,null,null);  
 		}         
@@ -214,10 +215,10 @@ public class Registrar extends ServerEngine {
 		if (!location_service.hasUser(user)) {
 			if (server_profile.register_new_users) {
 				location_service.addUser(user);
-				log(LogLevel.INFO,"new user '"+user+"' added");
+				LOG.info("new user '"+user+"' added");
 			} 
 			else {
-				log(LogLevel.INFO,"user '"+user+"' unknown: message discarded.");
+				LOG.info("user '"+user+"' unknown: message discarded.");
 				int result=404;
 				return SipMessageFactory.createResponse(msg,result,null,null);  
 			}
@@ -230,10 +231,10 @@ public class Registrar extends ServerEngine {
 		//if (to_uri.hasParameter("device")) device=to_uri.getParameter("device");
 
 		if (!msg.hasContactHeader())   {
-			//log(LogLevel.INFO,"ContactHeader missed: message discarded");
+			//LOG.info("ContactHeader missed: message discarded");
 			//int result=484;
 			//return SipMessageFactory.createResponse(msg,result,null,null,null);  
-			log(LogLevel.DEBUG,"no contact found: fetching bindings..");
+			LOG.debug("no contact found: fetching bindings..");
 			int result=200;
 			SipMessage resp=SipMessageFactory.createResponse(msg,result,null,null);  
 			// add current contacts
@@ -259,7 +260,7 @@ public class Registrar extends ServerEngine {
 
 		ContactHeader ch_0=new ContactHeader((Header)contacts.elementAt(0));
 		if (ch_0.isStar()) {
-			log(LogLevel.TRACE,"ContactHeader is star");
+			LOG.trace("ContactHeader is star");
 			Vector resp_contacts=new Vector();
 			for (Enumeration e=location_service.getUserContactURIs(user); e.hasMoreElements();)  {
 				String contact=(String)(e.nextElement());
@@ -267,13 +268,13 @@ public class Registrar extends ServerEngine {
 					NameAddress name_address=location_service.getUserContactNameAddress(user,contact);
 					// update db
 					location_service.removeUserContact(user,contact);
-					log(LogLevel.TRACE,"contact removed: "+contact);
+					LOG.trace("contact removed: "+contact);
 					if (exp_secs>0) {
 						Date exp_date=new Date(System.currentTimeMillis()+((long)exp_secs)*1000);
 						location_service.addUserContact(user,name_address,exp_date);
 						//DateFormat df=new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",Locale.ITALIAN);
 						//printLog("contact added: "+uri+"; expire: "+df.format(location_service.getUserContactExpire(user,url)),LogWriter.LEVEL_LOW);
-						log(LogLevel.TRACE,"contact added: "+contact+"; expire: "+DateFormat.formatEEEddMMMyyyyhhmmss(location_service.getUserContactExpirationDate(user,contact)));
+						LOG.trace("contact added: "+contact+"; expire: "+DateFormat.formatEEEddMMMyyyyhhmmss(location_service.getUserContactExpirationDate(user,contact)));
 					}
 					ContactHeader ch_i=new ContactHeader(name_address.getAddress());
 					ch_i.setExpires(exp_secs);
@@ -302,7 +303,7 @@ public class Registrar extends ServerEngine {
 				if (exp_secs_i>0) {
 					Date exp_date=new Date(System.currentTimeMillis()+((long)exp_secs)*1000);
 					location_service.addUserContact(user,name_address,exp_date);
-					log(LogLevel.INFO,"registration of user "+user+" updated");
+					LOG.info("registration of user "+user+" updated");
 				}           
 				ch_i.setExpires(exp_secs_i);
 				resp_contacts.addElement(ch_i);
@@ -314,14 +315,6 @@ public class Registrar extends ServerEngine {
 		return resp;
 	}
 
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"Registrar: "+str);  
-	}
-  
 
 	// ****************************** MAIN *****************************
 

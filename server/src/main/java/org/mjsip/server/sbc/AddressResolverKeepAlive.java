@@ -30,9 +30,8 @@ import java.util.Vector;
 
 import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipProvider;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 import org.zoolu.util.Timer;
 
 
@@ -47,6 +46,7 @@ import org.zoolu.util.Timer;
   */
 public class AddressResolverKeepAlive extends AddressResolver {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AddressResolverKeepAlive.class);
 
 	/** Keep-alive time [millisecs] */
 	long keepalive_time;
@@ -57,11 +57,9 @@ public class AddressResolverKeepAlive extends AddressResolver {
 	/** SipProvider */
 	SipProvider sip_provider;
 	
-
-
 	/** Costructs an empty AddressResolverKeepAlive */
-	public AddressResolverKeepAlive(long refresh_time, Logger logger, SipProvider sip_provider, long keepalive_time) {
-		super(refresh_time,logger);
+	public AddressResolverKeepAlive(long refresh_time, SipProvider sip_provider, long keepalive_time) {
+		super(refresh_time);
 		this.sip_provider=sip_provider;
 		this.keepalive_time=keepalive_time;
 		keepalive_daemons=new Hashtable();
@@ -76,13 +74,13 @@ public class AddressResolverKeepAlive extends AddressResolver {
 				if (!((SocketAddress)binding_table.get(key)).equals(actual_soaddr)) {
 					SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
 					keepalive.setDestSoAddress(actual_soaddr);
-					log(LogLevel.DEBUG,"KeepAlive: change dest: "+actual_soaddr);
+					LOG.debug("KeepAlive: change dest: "+actual_soaddr);
 				}
 			}
 			else {
 				SipKeepAlive keepalive=new SipKeepAlive(sip_provider,actual_soaddr,keepalive_time);
 				keepalive_daemons.put(key,keepalive);
-				log(LogLevel.DEBUG,"KeepAlive: start: "+actual_soaddr);
+				LOG.debug("KeepAlive: start: "+actual_soaddr);
 			}
 		}
 		super.updateBinding(refer_soaddr,actual_soaddr);
@@ -97,7 +95,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 				SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
 				keepalive_daemons.remove(key);
 				keepalive.halt();
-				log(LogLevel.DEBUG,"KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
+				LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
 			}
 		}
 		super.removeBinding(refer_soaddr);
@@ -120,7 +118,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 			SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
 			keepalive_daemons.remove(key);
 			keepalive.halt();
-			log(LogLevel.DEBUG,"KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
+			LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
 		}
 		super.onTimeout(t);
 	}

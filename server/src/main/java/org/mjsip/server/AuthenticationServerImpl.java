@@ -29,9 +29,8 @@ import org.mjsip.sip.header.ProxyAuthenticateHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.ByteUtils;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 import org.zoolu.util.MD5;
 
 
@@ -40,16 +39,13 @@ import org.zoolu.util.MD5;
   */
 public class AuthenticationServerImpl implements AuthenticationServer {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuthenticationServerImpl.class);
 
 	/** Server authentication. */
 	protected static final int SERVER_AUTHENTICATION=0;
 
 	/** Proxy authentication. */
 	protected static final int PROXY_AUTHENTICATION=1;
-
-
-	/** Logger */
-	protected Logger logger=null;
 
 	/** The repository of users's authentication data. */
 	protected AuthenticationService authentication_service;
@@ -76,14 +72,13 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 
 
 	/** Costructs a new AuthenticationServerImpl. */
-	public AuthenticationServerImpl(String realm, AuthenticationService authentication_service, Logger logger) {
-		init(realm,authentication_service,logger);
+	public AuthenticationServerImpl(String realm, AuthenticationService authentication_service) {
+		init(realm, authentication_service);
 	}
  
 	
 	/** Inits the AuthenticationServerImpl. */
-	private void init(String realm, AuthenticationService authentication_service, Logger logger) {
-		this.logger=logger;
+	private void init(String realm, AuthenticationService authentication_service) {
 		this.realm=realm;
 		this.authentication_service=authentication_service;
 		this.rand=pickRandBytes();
@@ -164,18 +159,18 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 						// authentication/authorization failed
 						int result=403; // response code 403 ("Forbidden")
 						err_resp=SipMessageFactory.createResponse(msg,result,null,null);
-						log(LogLevel.INFO,"LOGIN ERROR: Authentication of '"+user+"' failed");
+						LOG.info("Login error: Authentication of '" + user + "' failed");
 					}
 					else {
 						// authentication/authorization successed
-						log(LogLevel.INFO,"Authentication of '"+user+"' successed");
+						LOG.info("Authentication of '"+user+"' successed");
 					}
 				}
 				else {
 					// authentication/authorization failed
 					int result=400; // response code 400 ("Bad request")
 					err_resp=SipMessageFactory.createResponse(msg,result,null,null);
-					log(LogLevel.INFO,"Authentication method '"+scheme+"' not supported.");
+					LOG.info("Authentication method '"+scheme+"' not supported.");
 				}
 			}
 			else {
@@ -186,7 +181,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 		}
 		else {
 			// no Authorization header found
-			log(LogLevel.INFO,"No Authorization header found or nonce mismatching");
+			LOG.info("No Authorization header found or nonce mismatching");
 			int result;
 			if (type==SERVER_AUTHENTICATION) result=401; // response code 401 ("Unauthorized")
 			else result=407; // response code 407 ("Proxy Authentication Required")
@@ -236,13 +231,6 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 	/** Calculates the HEX of an array of bytes. */
 	private static String HEX(byte[] bb) {
 		return ByteUtils.asHex(bb);
-	}
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"AuthenticationServer: "+str);  
 	}
 
 }

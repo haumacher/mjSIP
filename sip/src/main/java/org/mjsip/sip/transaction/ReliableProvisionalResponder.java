@@ -33,9 +33,7 @@ import org.mjsip.sip.header.RSeqHeader;
 import org.mjsip.sip.header.RequireHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipStack;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Random;
 import org.zoolu.util.Timer;
 import org.zoolu.util.TimerListener;
@@ -51,11 +49,10 @@ import org.zoolu.util.TimerListener;
   */ 
 public class ReliableProvisionalResponder {
 	
-	/** Whether initializing RSeq = 1; note that RFC 3262 specifies that the initial value of RSeq should be chosen uniformly between 1 and 2^31 - 1 */
-	public static boolean DEBUG_RSEQ_INIT1=true;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ReliableProvisionalResponder.class);
 
-	/** Logger */
-	Logger logger;
+	/** Whether initializing RSeq = 1; note that RFC 3262 specifies that the initial value of RSeq should be chosen uniformly between 1 and 2^31 - 1 */
+	public static final boolean DEBUG_RSEQ_INIT1=true;
 
 	/** Invite transaction server */
 	InviteTransactionServer invite_ts;
@@ -82,7 +79,6 @@ public class ReliableProvisionalResponder {
 	/** Creates a new ReliableProvisionalResponder. */
 	public ReliableProvisionalResponder(InviteTransactionServer invite_ts, ReliableProvisionalResponderListener listener) {
 		this.invite_ts=invite_ts;
-		this.logger=invite_ts.getSipProvider().getLogger();
 		this.listener=listener;
 		this.rseq_counter=(DEBUG_RSEQ_INIT1)? 1 : Random.nextLong(2147483648L); // chosen uniformly between 1 and 2^31 - 1
 		this_timer_listener=new TimerListener() {
@@ -90,7 +86,7 @@ public class ReliableProvisionalResponder {
 				processTimeout(t);
 			}
 		};
-		log(LogLevel.INFO,"new ReliableProvisionalResponder has been created");
+		LOG.info("new ReliableProvisionalResponder has been created");
 	}    
 
 
@@ -98,7 +94,7 @@ public class ReliableProvisionalResponder {
 	  * It actually adds the response to the output queue, waiting for the confirmation of the previously queued responses. 
 	  * @param resp the 1xx resp */
 	public void respond(SipMessage resp) {
-		log(LogLevel.DEBUG,"respond()");
+		LOG.debug("respond()");
 		if (resp.hasRequireHeader()) {
 			RequireHeader reqh=resp.getRequireHeader();
 			if (!reqh.hasOptionTag(SipStack.OTAG_100rel)) {
@@ -117,7 +113,7 @@ public class ReliableProvisionalResponder {
 	/** Processes a new received PRACK message.
 	  * @param prack the received PRACK */
 	public synchronized void processPrack(SipMessage prack) {
-		log(LogLevel.DEBUG,"processPrack()");
+		LOG.debug("processPrack()");
 		if (responses.size()>0) {
 			SipMessage resp=(SipMessage)responses.elementAt(0);
 			CSeqHeader sh=resp.getCSeqHeader();
@@ -129,9 +125,9 @@ public class ReliableProvisionalResponder {
 				if (listener!=null) listener.onReliableProvisionalResponseConfirmation(this,resp,prack);
 				if (retransmission_to==null && hasPendingResponses()) sendNextResponse();
 			}
-			else log(LogLevel.WARNING,prack.getRequestLine().getMethod()+" confirmation received for past response?");
+			else LOG.warn(prack.getRequestLine().getMethod()+" confirmation received for past response?");
 		}
-		else log(LogLevel.WARNING,prack.getRequestLine().getMethod()+" no provisional response waiting for confirmation has been found");
+		else LOG.warn(prack.getRequestLine().getMethod()+" no provisional response waiting for confirmation has been found");
 	}
 
 
@@ -171,7 +167,7 @@ public class ReliableProvisionalResponder {
 	private synchronized void processTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to)) {
-				log(LogLevel.INFO,"Retransmission timeout expired");
+				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
 				if (timeout>SipStack.max_retransmission_timeout) timeout=SipStack.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this_timer_listener);
@@ -181,7 +177,7 @@ public class ReliableProvisionalResponder {
 			}
 			else
 			if (to.equals(transaction_to)) {
-				log(LogLevel.INFO,"Transaction timeout expired");
+				LOG.info("Transaction timeout expired");
 				stopResponseRetransmission();
 				SipMessage resp=(SipMessage)responses.elementAt(0);
 				responses.removeElementAt(0);
@@ -190,7 +186,7 @@ public class ReliableProvisionalResponder {
 			}  
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}   
 
@@ -201,18 +197,6 @@ public class ReliableProvisionalResponder {
 		if (transaction_to!=null) transaction_to.halt();  
 		retransmission_to=null;
 		transaction_to=null;
-	}
-
-	//**************************** Logs ****************************/
-
-	/** Adds the Exception to the log file. */
-	protected void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
-	}
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"ReliableProvisionalResponder: "+str);  
 	}
 
 }

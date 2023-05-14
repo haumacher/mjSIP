@@ -29,8 +29,7 @@ import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -39,8 +38,7 @@ import org.zoolu.util.Logger;
   */
 public class NotImplementedServer implements SipProviderListener {
 	
-	/** Logger */
-	Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NotImplementedServer.class);
 	
 	/** SipProvider. */
 	SipProvider sip_provider;
@@ -55,7 +53,6 @@ public class NotImplementedServer implements SipProviderListener {
 	/** Costructs a new NotImplementedServer. */
 	public NotImplementedServer(SipProvider sip_provider) {
 		this.sip_provider=sip_provider;
-		logger=sip_provider.getLogger();
 		implemented_methods=null;
 		sip_provider.addSelectiveListener(MethodId.ANY,this);  
 	} 
@@ -64,7 +61,6 @@ public class NotImplementedServer implements SipProviderListener {
 	/** Costructs a new NotImplementedServer. */
 	public NotImplementedServer(String[] implemented_methods, SipProvider sip_provider) {
 		this.sip_provider=sip_provider;
-		logger=sip_provider.getLogger();
 		this.implemented_methods=implemented_methods;
 		sip_provider.addSelectiveListener(MethodId.ANY,this);  
 	} 
@@ -74,7 +70,6 @@ public class NotImplementedServer implements SipProviderListener {
 	public void halt() {
 		if (sip_provider!=null) sip_provider.removeSelectiveListener(MethodId.ANY);
 		sip_provider=null;
-		logger=null;
 	}   
 
 
@@ -90,20 +85,12 @@ public class NotImplementedServer implements SipProviderListener {
 				for (int i=0; i<implemented_methods.length; i++) if (method.equalsIgnoreCase(implemented_methods[i])) is_implemented=true;
 			}
 			if (!is_implemented)      {
-				log("responding to a new "+method+" request");
+				LOG.info("NotImplementedServer: " + "responding to a new " + method + " request");
 				SipMessage resp=SipMessageFactory.createResponse(msg,501,null,null);
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 				ts.respondWith(resp);
 			}
 		}
-	}
-
-
-	// ******************************** Logs *******************************
-
-	/** Adds a new string to the default log. */
-	void log(String str) {
-		if (logger!=null) logger.log(LogLevel.INFO,"NotImplementedServer: "+str);  
 	}
 
 }

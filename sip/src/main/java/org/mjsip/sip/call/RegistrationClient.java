@@ -47,10 +47,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
-import org.zoolu.util.ExceptionPrinter;
-//import org.mjsip.sip.provider.SipKeepAlive;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 import org.zoolu.util.TimerListener;
 
@@ -61,8 +58,7 @@ import org.zoolu.util.TimerListener;
   */
 public class RegistrationClient implements TransactionClientListener, TimerListener {
 	
-	/** Logger */
-	protected Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RegistrationClient.class);
 
 	/** RegistrationClient listener */
 	protected RegistrationClientListener listener;
@@ -238,7 +234,6 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	private void init(SipProvider sip_provider, SipURI registrar_uri, NameAddress to_naddr, NameAddress from_naddr, NameAddress contact_naddr, RegistrationClientListener listener) {
 		this.listener=listener;
 		this.sip_provider=sip_provider;
-		this.logger=sip_provider.getLogger();
 		this.registrar_uri=registrar_uri;
 		if (contact_naddr==null) {
 			GenericURI to_uri=to_naddr.getAddress();
@@ -295,7 +290,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 
 	/** Registers with the registrar server for <i>expire_time</i> seconds, with a given message body. */
 	protected void register(int expire_time, String content_type, byte[] body) {
-		log(LogLevel.INFO,"register with "+registrar_uri+" for "+expire_time+" secs");
+		LOG.info("register with "+registrar_uri+" for "+expire_time+" secs");
 		attempts=0;
 		if (expire_time>0) this.expire_time=expire_time;
 		String call_id=sip_provider.pickCallId();
@@ -314,11 +309,11 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			req.setAuthorizationHeader(ah);
 		}
 		if (body!=null) {
-			log(LogLevel.INFO,"register body type: "+content_type+"; length: "+body.length+" bytes");
+			LOG.info("register body type: "+content_type+"; length: "+body.length+" bytes");
 			req.setBody(content_type,body);
 		}
-		if (expire_time>0) log(LogLevel.INFO,"registering contact "+contact_naddr+" (it expires in "+expire_time+" secs)");
-		else log(LogLevel.INFO,"unregistering contact "+contact_naddr);
+		if (expire_time>0) LOG.info("registering contact "+contact_naddr+" (it expires in "+expire_time+" secs)");
+		else LOG.info("unregistering contact "+contact_naddr);
 		TransactionClient t=new TransactionClient(sip_provider,req,this);
 		t.request(); 
 	}
@@ -334,7 +329,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		//ContactHeader contact_star=new ContactHeader(); // contact is *
 		//req.setContactHeader(contact_star);
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(0)));
-		log(LogLevel.INFO,"unregistering all contacts");
+		LOG.info("unregistering all contacts");
 		TransactionClient t=new TransactionClient(sip_provider,req,this); 
 		t.request(); 
 	}
@@ -408,11 +403,11 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			}
 			if (expires>0 && expires<renew_time) renew_time=expires;
 			
-			log(LogLevel.INFO,"Registration success: expires: "+expires+"s: "+result);
+			LOG.info("Registration success: expires: "+expires+"s: "+result);
 			if (loop) {
 				attempt_to=null;
 				(registration_to=new Timer((long)renew_time*1000,this)).start();
-				log(LogLevel.TRACE,"next registration after "+renew_time+" secs");
+				LOG.trace("next registration after "+renew_time+" secs");
 			}
 			if (listener!=null) listener.onRegistrationSuccess(this,to_naddr,contact_naddr,expires,result);
 		}
@@ -435,7 +430,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				req.addViaHeader(vh);
 				WwwAuthenticateHeader wah=resp.getWwwAuthenticateHeader();
 				String qop_options=wah.getQopOptionsParam();
-				//log(LogLevel.DEBUG,"qop-options: "+qop_options);
+				//LOG.debug("qop-options: "+qop_options);
 				qop=(qop_options!=null)? "auth" : null;
 				AuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),wah,qop,null,0,null,username,passwd)).getAuthorizationHeader();
 				req.setAuthorizationHeader(ah);
@@ -450,7 +445,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				req.setCSeqHeader(req.getCSeqHeader().incSequenceNumber());
 				ProxyAuthenticateHeader pah=resp.getProxyAuthenticateHeader();
 				String qop_options=pah.getQopOptionsParam();
-				//log(LogLevel.DEBUG,"qop-options: "+qop_options);
+				//LOG.debug("qop-options: "+qop_options);
 				qop=(qop_options!=null)? "auth" : null;
 				ProxyAuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),pah,qop,null,0,null,username,passwd)).getProxyAuthorizationHeader();
 				req.setProxyAuthorizationHeader(ah);
@@ -460,11 +455,11 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			else {
 				// Registration failure
 				String result=code+" "+status.getReason();
-				log(LogLevel.INFO,"Registration failure: "+result);
+				LOG.info("Registration failure: "+result);
 				if (loop) {
 					registration_to=null;
 					(attempt_to=new Timer(SipStack.regc_max_attempt_timeout,this)).start();
-					log(LogLevel.TRACE,"next attempt after "+(SipStack.regc_max_attempt_timeout/1000)+" secs");
+					LOG.trace("next attempt after "+(SipStack.regc_max_attempt_timeout/1000)+" secs");
 				}
 				if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,result);
 			}
@@ -474,13 +469,13 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	/** Callback function called when client expires timeout. */
 	public void onTransTimeout(TransactionClient transaction) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
-			log(LogLevel.INFO,"Registration failure: No response from server");
+			LOG.info("Registration failure: No response from server");
 			if (loop) {
 				registration_to=null;
 				long inter_time_msecs=(attempt_to==null)? SipStack.regc_min_attempt_timeout : attempt_to.getTime()*2;
 				if (inter_time_msecs>SipStack.regc_max_attempt_timeout) inter_time_msecs=SipStack.regc_max_attempt_timeout;
 				(attempt_to=new Timer(inter_time_msecs,this)).start();
-				log(LogLevel.TRACE,"next attempt after "+(inter_time_msecs/1000)+" secs");
+				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}
 			if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,"Timeout");
 		}
@@ -509,21 +504,11 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				Thread.sleep(renew_time*1000);
 			}
 		}
-		catch (Exception e) {  log(LogLevel.INFO,e);  }
+		catch (Exception e) {
+			LOG.info("Exception.", e);
+		}
 		is_running=false;
 	}
 
 	
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default log. */
-	void log(LogLevel level, String str) {
-		if (logger!=null) logger.log("RegistrationClient: "+str);  
-	}
-
-	/** Adds the Exception message to the default log. */
-	void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
-	}
-
 }

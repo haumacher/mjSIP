@@ -30,21 +30,17 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.mjsip.sip.message.SipMessage;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.ExceptionPrinter;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 
 
 
 /** SipTransportCO is a generic Connection Oriented (CO) transport service for SIP.
   */
 public abstract class SipTransportCO implements SipTransport/*, SipTransportConnectionListener*/ {
-	
 
-	/** Event Logger */
-	protected Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipTransportCO.class);
 
 	/** Table of active connections (Hashtable of <code>ConnectionId</code>,<code>SipTransportConnection</code>) */
 	protected Hashtable connections;
@@ -68,9 +64,9 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 
 
 	/** Creates a new SipTransportCO */ 
-	public SipTransportCO(int local_port, int nmax_connections, Logger logger) throws IOException {
+	public SipTransportCO(int local_port, int nmax_connections)
+			throws IOException {
 		this.nmax_connections=nmax_connections;
-		this.logger=logger;
 		connections=new Hashtable();
 		this_conn_listener=new SipTransportConnectionListener() {
 			public void onReceivedMessage(SipTransportConnection conn, SipMessage msg) {
@@ -141,44 +137,43 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			
 			if (connections.containsKey(connection_id))
 			try {
-				log(LogLevel.DEBUG,"already active connection found for connection-id "+connection_id);
+				LOG.debug("already active connection found for connection-id "+connection_id);
 				SipTransportConnection conn=(SipTransportConnection)connections.get(connection_id);
-				log(LogLevel.DEBUG,"sending data through already active connection "+conn);
+				LOG.debug("sending data through already active connection "+conn);
 				//conn.sendMessage(msg);
 				sendMessage(conn,msg);
 				return connection_id;
 			}
 			catch (Exception e) {
-				log(LogLevel.INFO,e);
-				log(LogLevel.DEBUG,"error using previous connection with connection-id "+connection_id);
+				LOG.info("error using previous connection with connection-id " + connection_id, e);
 				removeConnection(connection_id);
 			}
 			// no active connection
-			log(LogLevel.DEBUG,"no active connection for "+connection_id);
+			LOG.debug("no active connection for "+connection_id);
 			if (!manual) {
 				// AUTOMATIC CONN MODE
-				log(LogLevel.DEBUG,"open "+getProtocol()+" connection to "+dest_ipaddr+":"+dest_port);
+				LOG.debug("open "+getProtocol()+" connection to "+dest_ipaddr+":"+dest_port);
 				try {
 					SipTransportConnection conn=addConnection(dest_ipaddr,dest_port);
 					if (conn!=null) {
-						log(LogLevel.DEBUG,"sending data through connection "+conn);
+						LOG.debug("sending data through connection "+conn);
 						//conn.sendMessage(msg);
 						sendMessage(conn,msg);
 						return new ConnectionId(conn);
 					}
 					else {
-						log(LogLevel.DEBUG,"null connection: message has not been sent");
+						LOG.debug("null connection: message has not been sent");
 						return null;
 					}
 				}
 				catch (Exception e) {
-					log(LogLevel.DEBUG,e);
+					LOG.warn("Exception: " + e);
 					return null;
 				}
 			}
 			else {
 				// MANUAL CONN MODE
-				log(LogLevel.DEBUG,"only manual connections: message has not been sent");
+				LOG.debug("only manual connections: message has not been sent");
 				return null;
 			}
 		}
@@ -203,7 +198,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 				throw new IOException("no active connection found matching connection-id "+connection_id);
 			}
 			// else
-			log(LogLevel.DEBUG,"active connection found matching "+connection_id);
+			LOG.debug("active connection found matching "+connection_id);
 			SipTransportConnection conn=(SipTransportConnection)connections.get(connection_id);
 			//conn.sendMessage(msg);
 			sendMessage(conn,msg);
@@ -226,7 +221,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	public void halt() {
 		// close all connections
 		if (connections!=null) {
-			log(LogLevel.TRACE,"connections are going down");
+			LOG.trace("connections are going down");
 			for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {
 				SipTransportConnection c=(SipTransportConnection)e.nextElement();
 				c.halt();
@@ -248,8 +243,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 		//System.out.println("DEBUG: SipTransportCO: connection terminated");
 		ConnectionId connection_id=new ConnectionId(conn);
 		removeConnection(connection_id);
-		log(LogLevel.INFO,"connection "+conn+" terminated");
-		if (error!=null) log(LogLevel.INFO,error);
+		LOG.info("connection " + conn + " terminated", error);
 		if (listener!=null) listener.onTransportConnectionTerminated(this,new SocketAddress(conn.getRemoteAddress(),conn.getRemotePort()),error);
 	}
 
@@ -258,10 +252,10 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	public SipTransportConnection addConnection(IpAddress remote_ipaddr, int remote_port) throws IOException {
 		SipTransportConnection conn=createTransportConnection(new SocketAddress(remote_ipaddr,remote_port));
 		if (conn!=null)  {
-			log(LogLevel.INFO,"connection "+conn+" opened");
+			LOG.info("connection "+conn+" opened");
 			addConnection(conn);
 		}
-		else log(LogLevel.INFO,"no connection has been opened");
+		else LOG.info("no connection has been opened");
 		return conn;
 	}
 
@@ -274,8 +268,8 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			
 			if (connections.containsKey(connection_id)) {
 				// remove the previous connection
-				log(LogLevel.INFO,"trying to add the already established connection "+connection_id);
-				log(LogLevel.INFO,"connection "+connection_id+" will be replaced");
+				LOG.info("trying to add the already established connection "+connection_id);
+				LOG.info("connection "+connection_id+" will be replaced");
 				SipTransportConnection old_conn=(SipTransportConnection)connections.get(connection_id);
 				old_conn.halt();
 				connections.remove(connection_id);
@@ -283,7 +277,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			else
 			if (connections.size()>=nmax_connections) {
 				// remove the older unused connection
-				log(LogLevel.INFO,"reached the maximum number of connection: removing the older unused connection");
+				LOG.info("reached the maximum number of connection: removing the older unused connection");
 				long older_time=System.currentTimeMillis();
 				ConnectionId older_id=null;
 				for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {
@@ -297,10 +291,10 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			//connection_id=new ConnectionId(conn);
 			//conn=(SipTransportConnection)connections.get(connection_id);
 			// DEBUG log:
-			log(LogLevel.TRACE,"active connenctions:");
+			LOG.trace("active connenctions:");
 			for (Enumeration e=connections.keys(); e.hasMoreElements(); ) {
 				ConnectionId id=(ConnectionId)e.nextElement();
-				log(LogLevel.TRACE,"connection-id="+id+": "+((SipTransportConnection)connections.get(id)).toString());
+				LOG.trace("connection-id="+id+": "+((SipTransportConnection)connections.get(id)).toString());
 			}
 		}
 		// END SYNCHRONIZATION      
@@ -317,27 +311,13 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 				connections.remove(connection_id);
 				conn.halt();
 				// DEBUG log:
-				log(LogLevel.TRACE,"active connenctions:");
+				LOG.trace("active connenctions:");
 				for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {
 					SipTransportConnection co=(SipTransportConnection)e.nextElement();
-					log(LogLevel.TRACE,"conn "+co.toString());
+					LOG.trace("conn "+co.toString());
 				}
 			}
 		}
 		// END SYNCHRONIZATION
 	}
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default log. */
-	void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,getProtocol()+": "+str);  
-	}
-
-	/** Prints an exception to the event log. */
-	void log(LogLevel level, Exception e) {
-		log(level, "Exception: "+ExceptionPrinter.getStackTraceOf(e));
-	}
-
 }

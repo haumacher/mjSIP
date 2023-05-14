@@ -30,8 +30,7 @@ import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -39,6 +38,8 @@ import org.zoolu.util.Logger;
   */
 public class CancelServer implements SipProviderListener {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CancelServer.class);
+
 	/** SipProvider. */
 	SipProvider sip_provider;
 	
@@ -64,18 +65,12 @@ public class CancelServer implements SipProviderListener {
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond to CANCEL request
 		if (msg.isRequest() && msg.isCancel()) {
-			log("responding to CANCEL request with 481 \"Call Leg/Transaction Does Not Exist\"");
+			LOG.info(
+					"CancelServer: " + "responding to CANCEL request with 481 \"Call Leg/Transaction Does Not Exist\"");
 			SipMessage resp=SipMessageFactory.createResponse(msg,481,null,null);
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 			ts.respondWith(resp);
 		}
-	}
-
-
-	/** Adds a new string to the default log. */
-	void log(String str) {
-		Logger logger=sip_provider.getLogger();
-		if (logger!=null) logger.log(LogLevel.INFO,"CancelServer: "+str);  
 	}
 
 }

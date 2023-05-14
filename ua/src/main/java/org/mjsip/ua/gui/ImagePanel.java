@@ -30,7 +30,6 @@ class ImagePanel extends Panel {
 	}
 
 	public void paint(Graphics g) {
-		//System.out.print("*");
 		if (image!=null) {
 			int width=this.getSize().width;
 			int height=this.getSize().height;

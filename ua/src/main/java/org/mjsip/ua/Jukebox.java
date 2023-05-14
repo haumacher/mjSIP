@@ -96,7 +96,6 @@ public class Jukebox extends MultipleUAS {
 	public static void main(String[] args) {
 		
 		UA.println("Jukebox "+SipStack.version);
-		SipStack.debug_level=8;
 
 		int media_ports=MEDIA_PORTS;
 		boolean prompt_exit=false;

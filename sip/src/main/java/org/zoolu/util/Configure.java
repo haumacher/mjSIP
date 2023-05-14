@@ -34,12 +34,14 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 
+import org.slf4j.LoggerFactory;
 
 /** Configure helps the loading and saving of configuration data.
   */
 public class Configure {
 	
-
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Configure.class);
+	
 	/** String 'NONE' used as undefined value (i.e. null). */
 	public static String NONE="NONE";
 
@@ -83,7 +85,7 @@ public class Configure {
 			readFrom(new FileReader(file));
 		}
 		catch (Exception e) {
-			System.err.println("WARNING: error reading file \""+file+"\"");
+			LOG.warn("error reading file \""+file+"\"", e);
 			return;
 		}
 	}
@@ -99,7 +101,7 @@ public class Configure {
 			readFrom(new InputStreamReader(url.openStream()));
 		}
 		catch (Exception e) {
-			System.err.println("WARNING: error reading from \""+url+"\"");
+			LOG.warn("error reading from \""+url+"\"", e);
 			return;
 		}
 	}
@@ -113,7 +115,7 @@ public class Configure {
 			writeTo(new FileWriter(file));
 		}
 		catch (IOException e) {
-			System.err.println("ERROR writing on file \""+file+"\"");
+			LOG.error("Failed writing file \""+file+"\"", e);
 		}         
 	}
 

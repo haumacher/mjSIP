@@ -37,6 +37,7 @@ import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipParser;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.ByteUtils;
 
 
@@ -52,9 +53,10 @@ import org.zoolu.util.ByteUtils;
   */
 public abstract class BasicSipMessage {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(BasicSipMessage.class);
 
 	/** Whether printing debugging information on standard error output. */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 
 
 	/** UDP */
@@ -137,8 +139,7 @@ public abstract class BasicSipMessage {
 		}
 		catch (Exception e) {
 			if (DEBUG) {
-				System.err.println("DEBUG: BasicSipMessage: BasicSipMessage(byte[],int,int): parser error");
-				e.printStackTrace();
+				LOG.debug("BasicSipMessage(byte[],int,int): parser error", e);
 			}
 		}
 	}
@@ -151,8 +152,7 @@ public abstract class BasicSipMessage {
 		}
 		catch (Exception e) {
 			if (DEBUG) {
-				System.err.println("DEBUG: BasicSipMessage: BasicSipMessage(String): parser error");
-				e.printStackTrace();
+				LOG.debug("BasicSipMessage(String): parser error", e);
 			}
 		}
 	}

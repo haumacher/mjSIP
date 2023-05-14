@@ -15,6 +15,7 @@ package org.zoolu.sound.codec.g726;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.sound.BufferedAudioInputStream;
 import org.zoolu.sound.codec.G726;
 import org.zoolu.sound.codec.G726_24;
@@ -27,6 +28,8 @@ import org.zoolu.sound.codec.G726_40;
   */
 class G726ToPcmAudioInputStream extends BufferedAudioInputStream {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(G726ToPcmAudioInputStream.class);
+
 	/** G726 codec */
 	G726 decoder;
 	
@@ -37,7 +40,9 @@ class G726ToPcmAudioInputStream extends BufferedAudioInputStream {
 	/** Creates a new G726ToPcmAudioInputStream. */
 	public G726ToPcmAudioInputStream(AudioInputStream input_stream/*, AudioFormat source_format*/) {
 		super(input_stream,input_stream.getFormat(),16);
-		printOut("G726ToPcmAudioInputStream()");
+		if (DEBUG) {
+			LOG.debug("G726ToPcmAudioInputStream()");
+		}
 		AudioFormat.Encoding g726_encoding=input_stream.getFormat().getEncoding();
 		
 		int size=0;
@@ -56,7 +61,7 @@ class G726ToPcmAudioInputStream extends BufferedAudioInputStream {
 			size=5;
 		}
 		else {
-			System.err.println("ERROR: G726ToPcmAudioInputStream: unknown G726 encoding type: "+g726_encoding.toString());  
+			LOG.error("unknown G726 encoding type: " + g726_encoding.toString());
 		}
 
 		aux_buffer=new byte[size];

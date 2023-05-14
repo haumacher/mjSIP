@@ -16,6 +16,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.sound.codec.AMR;
 
 
@@ -36,6 +37,8 @@ import org.zoolu.sound.codec.AMR;
   */
 public class AmrFormatConversionProvider extends FormatConversionProvider {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AmrFormatConversionProvider.class);
+
 	/** No encodings */
 	public static final AudioFormat.Encoding[] NO_ENCODINGS={};
 
@@ -52,8 +55,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	public static final AudioFormat[] NO_FORMAT={};
 
 	/** Debug mode */
-	//public static boolean DEBUG=true;
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 
 
 	/** Obtains the set of source format encodings from which format conversion
@@ -82,7 +84,8 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * @param source_format format of the incoming data.
 	  * @return array of supported target format encodings. */
 	public AudioFormat.Encoding[] getTargetEncodings(final AudioFormat source_format) {
-		printOut("getTargetEncodings(): source_format="+source_format.toString());
+		if (DEBUG)
+			LOG.debug("getTargetEncodings(): source_format="+source_format.toString());
 
 		if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED)) {
 			return AMR_ENCODINGS;
@@ -105,8 +108,10 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * @return array of supported target formats.
 	  */
 	public AudioFormat[] getTargetFormats(final AudioFormat.Encoding target_encoding, final AudioFormat source_format) {
-		printOut("getTargetFormats(): source format="+source_format.toString());
-		printOut("getTargetFormats(): target encoding="+target_encoding.toString());
+		if (DEBUG)
+			LOG.debug("getTargetFormats(): source format="+source_format.toString());
+		if (DEBUG)
+			LOG.debug("getTargetFormats(): target encoding="+target_encoding.toString());
 
 		AudioFormat[] formats={};
 		if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) && target_encoding instanceof AmrEncoding) {
@@ -139,8 +144,10 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
 	public AudioInputStream getAudioInputStream(final AudioFormat.Encoding target_encoding, final AudioInputStream source_stream) {
-		printOut("getAudioInputStream(Encoding,AudioInputStream): source format="+source_stream.getFormat().toString());
-		printOut("getAudioInputStream(Encoding,AudioInputStream): target encoding="+target_encoding.toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(Encoding,AudioInputStream): source format="+source_stream.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(Encoding,AudioInputStream): target encoding="+target_encoding.toString());
 		AudioFormat source_format=source_stream.getFormat();
 		if (isConversionSupported(target_encoding,source_format)) {
 			AudioFormat[] formats=getTargetFormats(target_encoding,source_format);
@@ -160,8 +167,10 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
 	public AudioInputStream getAudioInputStream(final AudioFormat target_format, final AudioInputStream source_stream) {
-		printOut("getAudioInputStream(AudioFormat,AudioInputStream): source format="+source_stream.getFormat().toString());
-		printOut("getAudioInputStream(AudioFormat,AudioInputStream): target format="+target_format.toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): source format="+source_stream.getFormat().toString());
+		if (DEBUG)
+			LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): target format="+target_format.toString());
 		AudioFormat source_format=source_stream.getFormat();
 		if (isConversionSupported(target_format,source_format)) {
 			AudioFormat[] formats=getTargetFormats(target_format.getEncoding(),source_format);
@@ -203,11 +212,5 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 		else  {
 			throw new IllegalArgumentException("Target format not found");
 		}
-	}
-
-
-	/** Prints debug information. */
-	private void printOut(String str) {
-		if (DEBUG) System.err.println("DEBUG: AMR codec: "+str);
 	}
 }

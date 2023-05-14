@@ -23,12 +23,11 @@ package org.mjsip.server.sbc;
 
 
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpPacket;
 import org.zoolu.net.UdpProvider;
 import org.zoolu.net.UdpSocket;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 
 
 
@@ -37,6 +36,8 @@ import org.zoolu.util.Logger;
  */
 public class InterceptingUdpRelay extends SymmetricUdpRelay {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InterceptingUdpRelay.class);
+
 	/** Left side intercept udp interface. */
 	UdpProvider left_intercept_udp=null;  
 	/** Right side intercept udp interface. */
@@ -56,22 +57,22 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 											int right_port, SocketAddress right_soaddr,
 											int left_intercept_port, SocketAddress left_intercept_soaddr,
 											int right_intercept_port, SocketAddress right_intercept_soaddr,
-											boolean active_interception, long relay_time, Logger logger, SymmetricUdpRelayListener listener) {
+			boolean active_interception, long relay_time, SymmetricUdpRelayListener listener) {
 		
-		super(left_port,left_soaddr,right_port,right_soaddr,relay_time,logger,listener);
+		super(left_port, left_soaddr, right_port, right_soaddr, relay_time, listener);
 		this.left_intercept_soaddr=left_intercept_soaddr;
 		this.right_intercept_soaddr=right_intercept_soaddr;
 		this.active_interception=active_interception;
 
 		try {
 			left_intercept_udp=new UdpProvider(new UdpSocket(left_intercept_port),0,this);
-			log(LogLevel.INFO,"intercept udp interface: "+left_intercept_udp.toString()+" started");    
+			LOG.info("intercept udp interface: "+left_intercept_udp.toString()+" started");    
 	
 			right_intercept_udp=new UdpProvider(new UdpSocket(right_intercept_port),0,this);
-			log(LogLevel.INFO,"intercept udp interface: "+right_intercept_udp.toString()+" started");
+			LOG.info("intercept udp interface: "+right_intercept_udp.toString()+" started");
 		}   
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}
 
@@ -132,7 +133,7 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 	/** When UdpProvider stops receiving UDP datagrams. */
 	public void onServiceTerminated(UdpProvider udp_service, Exception error) {
 		if (udp_service==left_intercept_udp || udp_service==right_intercept_udp) {
-			log(LogLevel.INFO,"udp interface: "+udp_service.toString()+" terminated");
+			LOG.info("udp interface: "+udp_service.toString()+" terminated");
 			udp_service.getUdpSocket().close();
 		}
 		else {
@@ -146,14 +147,4 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 		return left_soaddr+"<-->"+left_udp.getUdpSocket().getLocalPort()+"<-->"+left_intercept_soaddr+"] ["+right_intercept_soaddr+"<-->"+right_udp.getUdpSocket().getLocalPort()+"<-->"+right_soaddr;
 	}
 
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"InterceptingUdpRelay: "+str);  
-	}
-
 }
-
-  

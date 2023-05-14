@@ -33,7 +33,7 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
-import org.zoolu.util.SystemUtils;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -62,8 +62,10 @@ import org.zoolu.util.SystemUtils;
   */
 public class SimpleAudioSystem {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SimpleAudioSystem.class);
+
 	/** Whether printing debugging information on standard error output. */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 	
 	/** Internal buffer size */
 	public static final int INTERNAL_BUFFER_SIZE=40960;
@@ -92,23 +94,23 @@ public class SimpleAudioSystem {
 			AudioFormat.Encoding[] codecs=AudioSystem.getTargetEncodings(base_format);
 			String codec_list="";
 			for (int i=0; i<codecs.length; i++) codec_list+=" "+codecs[i].toString();
-			debug("Input: Supported codecs:"+codec_list);
+			LOG.debug("Input: Supported codecs:"+codec_list);
 		}
 		// check if the input line with the selected format is supported
 		DataLine.Info lineInfo=new DataLine.Info(TargetDataLine.class,base_format,INTERNAL_BUFFER_SIZE);
 		if (!AudioSystem.isLineSupported(lineInfo)) {
-			error("ERROR: AudioLine not supported by this system.");
+			LOG.error("AudioLine not supported by this system.");
 		}
 		// create the input line (TargetDataLine) and open it
 		try {
 			//target_line=(TargetDataLine)AudioSystem.getLine(lineInfo);
 			target_line=selectTargetDataLine(lineInfo,-1);
-			if (DEBUG) debug("Input: TargetDataLine: "+target_line.getFormat());
+			if (DEBUG)
+				LOG.debug("Input: TargetDataLine: "+target_line.getFormat());
 			target_line.open(base_format,INTERNAL_BUFFER_SIZE);
 		}
 		catch (Exception e) {
-			error("ERROR: Exception when trying to init audio input: "+e.getMessage());
-			//e.printStackTrace();
+			LOG.error("Exception when trying to init audio input: "+e.getMessage(), e);
 		}
 	}
 	
@@ -122,17 +124,17 @@ public class SimpleAudioSystem {
 			Mixer m=AudioSystem.getMixer(mi);
 			Line.Info[] line_infos=m.getTargetLineInfo();
 			if(line_infos.length>=1 && line_infos[0].getLineClass().equals(TargetDataLine.class)) {
-				System.out.println(SimpleAudioSystem.class.getSimpleName()+": Input: --- TargetDataLine["+i+"]: "+mi.getName());
+				LOG.info("Input: --- TargetDataLine["+i+"]: "+mi.getName());
 			}
 		}
 		if (line_index>=0) {
 			Mixer m=AudioSystem.getMixer(mixer_infos[line_index]);
 			TargetDataLine target_line=(TargetDataLine)m.getLine(m.getTargetLineInfo()[0]);
-			System.out.println(SimpleAudioSystem.class.getSimpleName()+": Input: --- Selected TargetDataLine #"+line_index+": "+mixer_infos[line_index].getName());
+			LOG.info("Input: --- Selected TargetDataLine #"+line_index+": "+mixer_infos[line_index].getName());
 			return target_line;
 		}
 		else {
-			System.out.println(SimpleAudioSystem.class.getSimpleName()+": Input: --- Using the default TargetDataLine");
+			LOG.info("Input: --- Using the default TargetDataLine");
 			return (TargetDataLine)AudioSystem.getLine(line_info);			
 		}
 	}
@@ -154,23 +156,23 @@ public class SimpleAudioSystem {
 			AudioFormat.Encoding[] codecs=AudioSystem.getTargetEncodings(base_format);
 			String codec_list=""; 
 			for (int i=0; i<codecs.length; i++) codec_list+=" "+codecs[i].toString();
-			debug("Output: Supported codecs:"+codec_list);
+			LOG.debug("Output: Supported codecs:"+codec_list);
 		}
 
 		DataLine.Info lineInfo=new DataLine.Info(SourceDataLine.class, base_format, INTERNAL_BUFFER_SIZE);
 
 		if (!AudioSystem.isLineSupported(lineInfo)) {
-			error("ERROR: AudioLine not supported by this System.");
+			LOG.error("AudioLine not supported by this System.");
 		}
 
 		try {
 			source_line=(SourceDataLine)AudioSystem.getLine(lineInfo);
-			if (DEBUG) debug("Output: SourceDataLine: "+source_line.getFormat());
+			if (DEBUG)
+				LOG.debug("Output: SourceDataLine: "+source_line.getFormat());
 			source_line.open(base_format,INTERNAL_BUFFER_SIZE);
 		}
 		catch (Exception e) {
-			error("ERROR: Exception when trying to init audio output at SimpleAudioSystem: "+e.getMessage());
-			//e.printStackTrace();
+			LOG.error("Exception when trying to init audio output: "+e.getMessage(), e);
 		}
 	}
 
@@ -186,7 +188,7 @@ public class SimpleAudioSystem {
 		if (target_line==null) initAudioInputLine(DEFAULT_AUDIO_FORMAT.getSampleRate(),DEFAULT_AUDIO_FORMAT.getChannels()); 
 		if (target_line.isOpen()) target_line.start();
 		else {
-			error("WARNING: Audio play error: target line is not open.");
+			LOG.error("Audio play error: target line is not open.");
 		}
 	}
 
@@ -195,7 +197,7 @@ public class SimpleAudioSystem {
 	public static void stopAudioInputLine() {
 		if (target_line.isOpen()) target_line.stop();
 		else {
-			error("WARNING: Audio stop error: target line is not open.");
+			LOG.error("Audio stop error: target line is not open.");
 		}
 		//target_line.close();
 	}
@@ -206,7 +208,7 @@ public class SimpleAudioSystem {
 		if (source_line==null) initAudioOutputLine(DEFAULT_AUDIO_FORMAT.getSampleRate(),DEFAULT_AUDIO_FORMAT.getChannels());
 		if (source_line.isOpen()) source_line.start();
 		else {
-			error("WARNING: Audio play error: source line is not open.");
+			LOG.error("Audio play error: source line is not open.");
 		}
 	}
 
@@ -218,7 +220,7 @@ public class SimpleAudioSystem {
 			source_line.stop();
 		}
 		else {
-			error("WARNING: Audio stop error: source line is not open.");
+			LOG.error("Audio stop error: source line is not open.");
 		}
 		//source_line.close();
 	}
@@ -281,7 +283,7 @@ public class SimpleAudioSystem {
 			audio_input_stream=AudioSystem.getAudioInputStream(format,base_audio_input_stream);
 		}
 		else {
-			error("WARNING: Audio init error: target line is not open.");
+			LOG.error("Audio init error: target line is not open.");
 		}
 
 		return audio_input_stream;
@@ -310,7 +312,7 @@ public class SimpleAudioSystem {
 		if (source_line==null) {
 			//debug("DEBUG: getOutputStream(): audio output line is initialized using the default sample rate "+DEFAULT_AUDIO_FORMAT.getSampleRate());
 			//initAudioOutputLine(DEFAULT_AUDIO_FORMAT.getSampleRate());
-			debug("DEBUG: getOutputStream(): audio output line is initialized using sample rate "+format.getSampleRate());
+			LOG.debug("DEBUG: getOutputStream(): audio output line is initialized using sample rate "+format.getSampleRate());
 			initAudioOutputLine(format.getSampleRate(),format.getChannels());
 		}
 		else
@@ -326,12 +328,11 @@ public class SimpleAudioSystem {
 				audio_output_stream=new SourceLineAudioOutputStream(format,source_line);
 			}
 			catch (Exception e) {
-				error("WARNING: Audio init error: impossible to get audio output stream of type ["+format+"] from source line of type ["+source_line.getFormat()+"]");
-				//e.printStackTrace();
+				LOG.error("Audio init error: impossible to get audio output stream of type ["+format+"] from source line of type ["+source_line.getFormat()+"]", e);
 			}
 		}
 		else {
-			error("WARNING: Audio init error: source line is not open.");
+			LOG.error("Audio init error: source line is not open.");
 		}
 
 		return audio_output_stream;
@@ -366,20 +367,6 @@ public class SimpleAudioSystem {
 			bits=16;
 		}
 		return new AudioFormat(encoding,sample_rate,bits,channels,codec.getFrameSize(),frame_rate,false);
-	}
-
-
-	/** Debug output */
-	private static void debug(String str) {
-		//System.out.println(SimpleAudioSystem.class.getSimpleName()+": "+str);
-		System.out.println(SystemUtils.getClassSimpleName(SimpleAudioSystem.class.getName())+": "+str);
-	}
-
-	
-	/** Error output */
-	private static void error(String str) {
-		//System.err.println(SimpleAudioSystem.class.getSimpleName()+": "+str);
-		System.err.println(SystemUtils.getClassSimpleName(SimpleAudioSystem.class.getName())+": "+str);
 	}
 
 }

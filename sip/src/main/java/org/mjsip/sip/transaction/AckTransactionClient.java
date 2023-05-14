@@ -28,7 +28,7 @@ package org.mjsip.sip.transaction;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionClientId;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -37,6 +37,7 @@ import org.zoolu.util.LogLevel;
   */ 
 public class AckTransactionClient extends Transaction {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AckTransactionClient.class);
 
 	/** the TransactionClientListener that captures the events fired by the AckTransactionClient */
 	TransactionClientListener transaction_listener;
@@ -48,12 +49,12 @@ public class AckTransactionClient extends Transaction {
 		request=new SipMessage(ack);
 		transaction_listener=listener;
 		transaction_id=new TransactionClientId(request);
-		log(LogLevel.INFO,"new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: "+transaction_id.toString());
 	}
 	
 	/** Starts the AckTransactionClient and sends the ACK request. */
 	public void request() {
-		log(LogLevel.TRACE,"start");
+		LOG.trace("start");
 		sip_provider.sendMessage(request);
 		changeStatus(STATE_TERMINATED);  
 		//if (transaction_listener!=null) transaction_listener.onAckCltTerminated(this); 
@@ -67,13 +68,4 @@ public class AckTransactionClient extends Transaction {
 		// (CHANGE-040421) free the link to transaction_listener
 		transaction_listener=null;
 	}
-  
-
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"AckTransactionClient#"+transaction_sqn+": "+str);  
-	}
-
 }

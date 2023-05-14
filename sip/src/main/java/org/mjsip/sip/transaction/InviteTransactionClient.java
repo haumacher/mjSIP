@@ -30,7 +30,7 @@ import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionClientId;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 
 
@@ -44,6 +44,8 @@ import org.zoolu.util.Timer;
   */
 public class InviteTransactionClient extends TransactionClient {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InviteTransactionClient.class);
+
 	/** the TransactionClientListener that captures the events fired by the InviteTransactionClient */
 	TransactionClientListener invite_tc_listener;
 
@@ -76,7 +78,7 @@ public class InviteTransactionClient extends TransactionClient {
 		retransmission_to=new Timer(SipStack.retransmission_timeout,null);
 		transaction_to=new Timer(SipStack.transaction_timeout,null);
 		end_to=new Timer(SipStack.transaction_timeout,null);
-		log(LogLevel.INFO,"new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
 	
@@ -84,7 +86,7 @@ public class InviteTransactionClient extends TransactionClient {
 
 	/** Starts the InviteTransactionClient and sends the invite request. */
 	public void request() {
-		log(LogLevel.TRACE,"start");
+		LOG.trace("start");
 		changeStatus(STATE_TRYING); 
 		transaction_to=new Timer(transaction_to.getTime(),this);
 		transaction_to.start(); 
@@ -123,7 +125,7 @@ public class InviteTransactionClient extends TransactionClient {
 						end_to.start();
 					}
 					else {
-						log(LogLevel.TRACE,"end_to=0 for reliable transport");
+						LOG.trace("end_to=0 for reliable transport");
 						onTimeout(end_to);
 					}
 				}
@@ -147,7 +149,7 @@ public class InviteTransactionClient extends TransactionClient {
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && statusIs(STATE_TRYING)) {
-				log(LogLevel.INFO,"Retransmission timeout expired");
+				LOG.info("Retransmission timeout expired");
 				// retransmission only in case of unreliable transport 
 				if (connection_id==null) {
 					sip_provider.sendMessage(request);
@@ -155,22 +157,22 @@ public class InviteTransactionClient extends TransactionClient {
 					retransmission_to=new Timer(timeout,this);
 					retransmission_to.start();
 				}
-				else log(LogLevel.TRACE,"No retransmissions for reliable transport ("+connection_id+")");
+				else LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
 			} 
 			if (to.equals(transaction_to)) {
-				log(LogLevel.INFO,"Transaction timeout expired");
+				LOG.info("Transaction timeout expired");
 				doTerminate();
 				if (invite_tc_listener!=null) invite_tc_listener.onTransTimeout(this);
 				invite_tc_listener=null;
 			}  
 			if (to.equals(end_to)) {
-				log(LogLevel.INFO,"End timeout expired");
+				LOG.info("End timeout expired");
 				doTerminate();
 				invite_tc_listener=null; // already null..
 			}
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}
 

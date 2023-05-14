@@ -26,11 +26,8 @@ package org.mjsip.sip.provider;
 
 
 import org.mjsip.sip.message.SipMethods;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Configure;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.LogRotationWriter;
-import org.zoolu.util.LogWriter;
-import org.zoolu.util.Logger;
 import org.zoolu.util.Parser;
 import org.zoolu.util.Timer;
 
@@ -43,6 +40,8 @@ import org.zoolu.util.Timer;
   */
 public class SipStack extends Configure {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipStack.class);
+
 	// ********************** private attributes **********************
 
 	/** Whether SipStack configuration has been already loaded */
@@ -176,44 +175,6 @@ public class SipStack extends Configure {
 	public static int regc_auth_attempts=3;
 
 
-	// ************************ debug and logs ************************
-
-	/** Log level. Only logs with a level less or equal to this are written.
-	  * Default value: debug_level=0, that means no logs. */
-	//public static int debug_level=1;
-	public static int debug_level=0;
-	/** Path for the log folder where log files are written.
-	  * By default, it is used the current "." folder. */
-	//public static String log_path="log";
-	public static String log_path=".";
-	/** The size limit of the log file [kB] */
-	public static int max_logsize=2048; // 2MB
-	/** The number of rotations of log files. Use '0' for NO rotation, '1' for rotating a single file */
-	public static int log_rotations=0; // no rotation
-	/** The rotation period, in MONTHs or DAYs or HOURs or MINUTEs
-	  * examples: log_rotation_time=3 MONTHS, log_rotations=90 DAYS 
-	  * Default value: log_rotation_time=2 MONTHS */
-	private static String log_rotation_time=null;
-	/** The rotation time scale */
-	public static int rotation_scale=LogRotationWriter.MONTH;
-	/** The rotation time value */
-	public static int rotation_time=2;
-
-	/** Event log file name; the log file will be opened only when method init() is called */
-	public static String event_log_filename=null;
-	/** Event logger.
-	  * If 'null', a different event log file is instantiated for each SIP provider.
-	  * Default value: event_logger=null */
-	public static Logger event_logger=null;
-
-	/** Message log file name; the log file will be opened only when method init() is called */
-	public static String message_log_filename=null;
-	/** Message logger.
-	  * If 'null', a different message log file is instantiated for each SIP provider.
-	  * Default value: message_logger=null */
-	public static Logger message_logger=null;
-
-
 	// ************************** extensions **************************
 
 	/** Whether forcing this node to stay within the dialog route as peer,
@@ -276,24 +237,15 @@ public class SipStack extends Configure {
 		if (attribute.equals("regc_max_attempt_timeout")) { regc_max_attempt_timeout=par.getInt(); return; }
 		if (attribute.equals("regc_auth_attempts")) { regc_auth_attempts=par.getInt(); return; }
 
-		// debug and logs
-		if (attribute.equals("debug_level"))    { debug_level=par.getInt(); return; }
-		if (attribute.equals("log_path"))       { log_path=par.getString(); return; }
-		if (attribute.equals("max_logsize"))    { max_logsize=par.getInt(); return; }
-		if (attribute.equals("log_rotations"))  { log_rotations=par.getInt(); return; }
-		if (attribute.equals("log_rotation_time"))   { log_rotation_time=par.getRemainingString(); return; }
-		if (attribute.equals("event_log_filename"))  { event_log_filename=par.getString(); return; }
-		if (attribute.equals("message_log_filename")){ message_log_filename=par.getString(); return; }
-
 		// extensions
 		if (attribute.equals("on_dialog_route")){ on_dialog_route=(par.getString().toLowerCase().startsWith("y")); return; }
 		//if (attribute.equals("alternative_transaction_id")){ alternative_transaction_id=(par.getString().toLowerCase().startsWith("y")); return; }
 
 		// old parameters
-		if (attribute.equals("host_addr")) printOut("WARNING: parameter 'host_addr' is no more supported; use 'via_addr' instead.");
-		if (attribute.equals("all_interfaces")) printOut("WARNING: parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
-		if (attribute.equals("use_outbound")) printOut("WARNING: parameter 'use_outbound' is no more supported; use 'outbound_addr' for setting an outbound proxy or let it undefined.");
-		if (attribute.equals("log_file")) printOut("WARNING: parameter 'log_file' is no more supported.");
+		if (attribute.equals("host_addr")) LOG.warn("parameter 'host_addr' is no more supported; use 'via_addr' instead.");
+		if (attribute.equals("all_interfaces")) LOG.warn("parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
+		if (attribute.equals("use_outbound")) LOG.warn("parameter 'use_outbound' is no more supported; use 'outbound_addr' for setting an outbound proxy or let it undefined.");
+		if (attribute.equals("log_file")) LOG.warn("parameter 'log_file' is no more supported.");
 	}  
 		
 	/** Converts the entire object into lines (to be saved into the config file) */
@@ -326,39 +278,6 @@ public class SipStack extends Configure {
 		// timers
 		Timer.DEFAULT_DAEMON_MODE=timer_daemon_mode;
 
-		// logs
-		if (debug_level>0) {
-			if (log_rotation_time!=null) {
-				SipParser par=new SipParser(log_rotation_time);
-				rotation_time=par.getInt();
-				String scale=par.getString();
-				if (scale==null) scale="null";
-				if (scale.toUpperCase().startsWith("MONTH")) rotation_scale=LogRotationWriter.MONTH;
-				else
-				if (scale.toUpperCase().startsWith("DAY")) rotation_scale=LogRotationWriter.DAY;
-				else
-				if (scale.toUpperCase().startsWith("HOUR")) rotation_scale=LogRotationWriter.HOUR;
-				else
-				if (scale.toUpperCase().startsWith("MINUTE")) rotation_scale=LogRotationWriter.MINUTE;
-				else {
-					rotation_time=7;
-					rotation_scale=LogRotationWriter.DAY;
-					printOut("Error with the log rotation time. Logs will rotate every week.");
-				}
-			}
-			if (event_log_filename!=null && event_log_filename.length()>0) {
-				String path_filename=log_path+"//"+event_log_filename;
-				if (event_logger!=null && event_logger instanceof LogWriter) ((LogWriter)event_logger).close();
-				LogLevel logging_level=debug_level>=6? LogLevel.ALL : debug_level==5? LogLevel.TRACE : debug_level==4? LogLevel.DEBUG : debug_level==3? LogLevel.INFO : debug_level==2? LogLevel.WARNING : debug_level==1? LogLevel.SEVERE : LogLevel.OFF;
-				event_logger=new LogRotationWriter(path_filename,logging_level,max_logsize*1024,log_rotations,rotation_scale,rotation_time);
-			}
-			if (message_log_filename!=null && message_log_filename.length()>0) {
-				String path_filename=log_path+"//"+message_log_filename;
-				if (message_logger!=null && message_logger instanceof LogWriter) ((LogWriter)message_logger).close();
-				message_logger=new LogRotationWriter(path_filename,LogLevel.ALL,max_logsize*1024,log_rotations,rotation_scale,rotation_time);
-			}
-		}
-		
 		is_init=true;
 		//if (file!=null) printOut("SipStack loaded",1);
 	}
@@ -368,11 +287,4 @@ public class SipStack extends Configure {
 		return is_init;
 	}      
 
-
-	// ************************ private methods ***********************
-	
-	/** Logs a string message. */
-	private static void printOut(String str) {
-		System.out.println("SipStack: "+str);
-	}
 }

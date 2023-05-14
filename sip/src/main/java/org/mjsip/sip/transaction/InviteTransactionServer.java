@@ -32,7 +32,7 @@ import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionServerId;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 
 
@@ -49,6 +49,8 @@ import org.zoolu.util.Timer;
   */
 public class InviteTransactionServer extends TransactionServer {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InviteTransactionServer.class);
+
 	/** Default behavior for automatically sending 100 Trying on INVITE. */
 	//public static boolean AUTO_TRYING=true;
 
@@ -119,7 +121,7 @@ public class InviteTransactionServer extends TransactionServer {
 		retransmission_to=new Timer(SipStack.retransmission_timeout,null);
 		end_to=new Timer(SipStack.transaction_timeout,null);
 		clearing_to=new Timer(SipStack.clearing_timeout,null);
-		log(LogLevel.INFO,"new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
 
@@ -132,7 +134,7 @@ public class InviteTransactionServer extends TransactionServer {
 
 	/** Starts the InviteTransactionServer. */
 	public void listen() {
-		log(LogLevel.TRACE,"start");
+		LOG.trace("start");
 		if (statusIs(STATE_IDLE)) {
 			changeStatus(STATE_WAITING);  
 			//sip_provider.addSelectiveListener(new TransactionId(SipMethods.INVITE),this); 
@@ -165,7 +167,7 @@ public class InviteTransactionServer extends TransactionServer {
 				//end_to.start();
 			}
 			else {
-				log(LogLevel.TRACE,"No retransmissions for reliable transport ("+connection_id+")");
+				LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
 				//onTimeout(end_to);
 			}
 			end_to=new Timer(end_to.getTime(),this);
@@ -221,7 +223,7 @@ public class InviteTransactionServer extends TransactionServer {
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && statusIs(STATE_COMPLETED)) {
-				log(LogLevel.INFO,"Retransmission timeout expired");
+				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
 				if (timeout>SipStack.max_retransmission_timeout) timeout=SipStack.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this);
@@ -229,18 +231,18 @@ public class InviteTransactionServer extends TransactionServer {
 				sip_provider.sendMessage(response);
 			}
 			if (to.equals(end_to) && statusIs(STATE_COMPLETED)) {
-				log(LogLevel.INFO,"End timeout expired");
+				LOG.info("End timeout expired");
 				doTerminate();
 				invite_ts_listener=null;
 			}  
 			if (to.equals(clearing_to) && statusIs(STATE_CONFIRMED)) {
-				log(LogLevel.INFO,"Clearing timeout expired");
+				LOG.info("Clearing timeout expired");
 				doTerminate();
 				invite_ts_listener=null;
 			}  
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}   
 

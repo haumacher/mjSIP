@@ -27,6 +27,7 @@ package org.mjsip.sip.provider;
 
 import java.io.IOException;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.TcpServer;
@@ -35,8 +36,6 @@ import org.zoolu.net.TcpSocket;
 import org.zoolu.net.TlsContext;
 import org.zoolu.net.TlsServerFactory;
 import org.zoolu.net.TlsSocketFactory;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 
 
 
@@ -44,6 +43,8 @@ import org.zoolu.util.Logger;
   */
 public class TlsTransport extends SipTransportCO/* implements TcpServerListener*/ {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TlsTransport.class);
+
 	/** TLS protocol type */
 	public static final String PROTO_TLS="tls";
 	
@@ -63,8 +64,8 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 	  * @param cert_file file containing the node's certificate
 	  * @param trusted_certs files containing trusted certificates (for verifying server-side certificates)
 	  * @param logger the logger used for event logging */ 
-	public TlsTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, String key_file, String cert_file, String[] trusted_certs, Logger logger)   throws IOException {
-		super(local_port,nmax_connections,logger);
+	public TlsTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, String key_file, String cert_file, String[] trusted_certs)   throws IOException {
+		super(local_port,nmax_connections);
 		init(local_port,host_ipaddr,key_file,cert_file,trusted_certs,null,false);
 	}
 
@@ -77,8 +78,8 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 	  * @param cert_file file containing the node's certificate
 	  * @param trust_folder folder containing all trusted certificates (for verifying server-side certificates)
 	  * @param logger the logger used for event logging */ 
-	public TlsTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, String key_file, String cert_file, String trust_folder, Logger logger)   throws IOException {
-		super(local_port,nmax_connections,logger);
+	public TlsTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, String key_file, String cert_file, String trust_folder)   throws IOException {
+		super(local_port,nmax_connections);
 		init(local_port,host_ipaddr,key_file,cert_file,null,trust_folder,false);
 	}
 
@@ -91,8 +92,8 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 	  * @param key_file file containing the node's private key
 	  * @param cert_file file containing the node's certificate
 	  * @param logger the logger used for event logging */ 
-	public TlsTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, String key_file, String cert_file, Logger logger)   throws IOException {
-		super(local_port,nmax_connections,logger);
+	public TlsTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, String key_file, String cert_file)   throws IOException {
+		super(local_port,nmax_connections);
 		init(local_port,host_ipaddr,key_file,cert_file,null,null,true);
 	}
 
@@ -135,10 +136,10 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 			// tls client
 			tls_socket_factory=new TlsSocketFactory(tls_context);
 			// force the newest TLS version
-			//String[] ep=tls_socket_factory.getEnabledProtocols();
-			//String[] sp={ ep[ep.length-1] };
-			//tls_socket_factory.setEnabledProtocols(sp);
-			//System.err.println("DEBUG: TlsTransport: enabled protocols: "+sp[0]);
+			// String[] ep=tls_socket_factory.getEnabledProtocols();
+			// String[] sp={ ep[ep.length-1] };
+			// tls_socket_factory.setEnabledProtocols(sp);
+			// LOG.debug("enabled protocols: "+sp[0]);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -169,10 +170,10 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** From TcpServerListener. When a new incoming connection is established */ 
 	private void processIncomingConnection(TcpServer tcp_server, TcpSocket socket) {
-		log(LogLevel.DEBUG,"incoming connection from "+socket.getAddress()+":"+socket.getPort());
+		LOG.debug("incoming connection from "+socket.getAddress()+":"+socket.getPort());
 		if (tcp_server==this.tls_server) {
 			SipTransportConnection conn=new TlsTransportConnection(socket,this_conn_listener);
-			log(LogLevel.DEBUG,"tls connection "+conn+" opened");
+			LOG.debug("tls connection "+conn+" opened");
 			addConnection(conn);
 			if (listener!=null) listener.onIncomingTransportConnection(this,new SocketAddress(socket.getAddress(),socket.getPort()));
 		}
@@ -181,7 +182,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** From TcpServerListener. When TcpServer terminates. */
 	private void processServerTerminated(TcpServer tcp_server, Exception error)  {
-		log(LogLevel.DEBUG,"tls server "+tcp_server+" terminated");
+		LOG.debug("tls server "+tcp_server+" terminated");
 	}
 
 

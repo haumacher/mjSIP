@@ -43,7 +43,7 @@ public class SdesOfferAnswerModel /*extends OfferAnswerModel*/ {
 	
 	/** Whether working in loopback mode (useful for debugging and testing).
 	  * In this case the answered key parameters are the same as in (copied by) the offer. */
-	public static boolean DEBUG_LOOPBACK_MODE=false;
+	public static final boolean DEBUG_LOOPBACK_MODE=false;
 	
 	
 	/** Calculates a SDP product of a starting SDP and an offered SDP.

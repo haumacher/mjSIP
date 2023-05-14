@@ -29,7 +29,6 @@ import java.util.Vector;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.server.Proxy;
 import org.mjsip.server.ServerProfile;
-import org.mjsip.server.StatefulProxy;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
@@ -42,10 +41,9 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipStack;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.ExceptionPrinter;
 import org.zoolu.util.Flags;
-import org.zoolu.util.LogLevel;
 import org.zoolu.util.Parser;
 
 
@@ -77,6 +75,7 @@ import org.zoolu.util.Parser;
   */
 public class SessionBorderController extends Proxy {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SessionBorderController.class);
 
 	/** Keep-alive parameter that can be used in contact URIs to ask
 	  * the UAS to activate keep-alive service, i.e. sending keep-alive null messages
@@ -122,18 +121,18 @@ public class SessionBorderController extends Proxy {
 		if (sbc_profile.keepalive_time>0 && !sbc_profile.keepalive_aggressive) keepalive_daemons=new Hashtable();
 		if (sbc_profile.media_addr==null || sbc_profile.media_addr.equals("0.0.0.0")) sbc_profile.media_addr=sip_provider.getViaAddress();
 		
-		media_gw=new MediaGw(sbc_profile,logger);
+		media_gw = new MediaGw(sbc_profile);
 
 		// be sure to stay on route
 		//server_profile.on_route=true;
 
-		log(LogLevel.INFO,"Available media ports: ["+sbc_profile.media_ports.elementAt(0)+":"+sbc_profile.media_ports.elementAt(sbc_profile.media_ports.size()-1)+"] ("+sbc_profile.media_ports.size()+")");
+		LOG.info("Available media ports: ["+sbc_profile.media_ports.elementAt(0)+":"+sbc_profile.media_ports.elementAt(sbc_profile.media_ports.size()-1)+"] ("+sbc_profile.media_ports.size()+")");
 	}
 
 
 	/** When a new request message is received for a local user. */
 	public void processRequestToLocalUser(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside processRequestToLocalUser(msg)");
+		LOG.debug("inside processRequestToLocalUser(msg)");
 		msg=SipMangler.unmangleRequestLine(msg);
 		if (isResponsibleFor(msg) && !SipMangler.isRequestLineMangled(msg)) super.processRequestToLocalUser(msg);
 		else super.processRequestToRemoteUA(msg);
@@ -151,7 +150,7 @@ public class SessionBorderController extends Proxy {
 	/** Processes the Proxy headers of the request.
 	  * Such headers are: Via, Record-Route, Route, Max-Forwards, etc. */
 	protected SipMessage updateProxyingRequest(SipMessage req) {
-		log(LogLevel.DEBUG,"inside updateProxyingRequest(req)");
+		LOG.debug("inside updateProxyingRequest(req)");
 		
 		// before doing anything, force the use of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {
@@ -203,7 +202,7 @@ public class SessionBorderController extends Proxy {
 	/** Processes the Proxy headers of the response.
 	  * Such headers are: Via, .. */
 	protected SipMessage updateProxyingResponse(SipMessage resp) {
-		log(LogLevel.DEBUG,"inside updateProxyingResponse(resp)");
+		LOG.debug("inside updateProxyingResponse(resp)");
 		resp=super.updateProxyingResponse(resp);
 		// mangle the sdp
 		if (resp.hasBody()) resp=mangleBody(resp);
@@ -252,14 +251,14 @@ public class SessionBorderController extends Proxy {
 							keepalive_daemons.remove(key);
 							keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepalive_time);
 							keepalive_daemons.put(key,keepalive);
-							log(LogLevel.DEBUG,"KeepAlive: restart: "+soaddr+" ("+time+"secs)");
+							LOG.debug("KeepAlive: restart: "+soaddr+" ("+time+"secs)");
 						}
-						else log(LogLevel.DEBUG,"KeepAlive: update: "+soaddr+" ("+time+"secs)");
+						else LOG.debug("KeepAlive: update: "+soaddr+" ("+time+"secs)");
 					}
 					else {
 						keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepalive_time);
 						keepalive_daemons.put(key,keepalive);
-						log(LogLevel.DEBUG,"KeepAlive: start: "+soaddr+" ("+time+"secs)");
+						LOG.debug("KeepAlive: start: "+soaddr+" ("+time+"secs)");
 					}
 					keepalive.setExpirationTime(((long)time)*1000);
 				}
@@ -269,7 +268,7 @@ public class SessionBorderController extends Proxy {
 						SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
 						keepalive_daemons.remove(key);
 						keepalive.halt();
-						log(LogLevel.DEBUG,"KeepAlive: halt: "+soaddr);
+						LOG.debug("KeepAlive: halt: "+soaddr);
 					}
 				}
 			}
@@ -280,7 +279,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Mangles the body */
 	private SipMessage mangleBody(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside mangleBody()");
+		LOG.debug("inside mangleBody()");
 
 		String content_type=msg.getContentTypeHeader().getContentType();
 		if (content_type.equalsIgnoreCase("application/sdp")) {
@@ -298,7 +297,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Unangles the request-URI. */
 	/*private SipMessage unmangleRequestUri(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside mangleRequestUri(msg)");
+		LOG.debug("inside mangleRequestUri(msg)");
 		String username=msg.getRequestLine().getAddress().getUserName();
 		if (username!=null && username.startsWith(SipMangler.magic_cookie)) {
 			msg=SipMangler.unmangleRequestLine(msg);
@@ -309,7 +308,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Mangles the Contact header filed. */
 	/*private SipMessage mangleContact(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside mangleContact()");
+		LOG.debug("inside mangleContact()");
 		msg=SipMangler.mangleContact(msg,sip_provider.getViaAddress(),sip_provider.getPort());   
 		return msg;
 	}*/
@@ -317,7 +316,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Unangles the Contact header filed. */
 	/*private SipMessage unmangleContact(SipMessage msg) {
-		log(LogLevel.DEBUG,"inside mangleContact()");
+		LOG.debug("inside mangleContact()");
 		msg=SipMangler.unmangleContact(msg);   
 		return msg;
 	}*/
@@ -349,20 +348,6 @@ public class SessionBorderController extends Proxy {
 		n+=Integer.parseInt(par.getWord(separators));
 		return n;
 	}
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"SBC: "+str);
-	}
-
-	/** Adds the Exception message to the default Log. */
-	private void log(LogLevel level, Exception e) {
-		log(level,"Exception: "+ExceptionPrinter.getStackTraceOf(e));
-	}
-
 
 	// ****************************** MAIN *****************************
 

@@ -10,13 +10,13 @@
 
 package org.zoolu.sound.codec;
 
-
-
+import org.slf4j.LoggerFactory;
 
 /** Adaptive Multi-Rate (AMR-NB) CODEC. 
   */
 public class AMR {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AMR.class);
 
 	/* Mode AMR 4.75 kbps */
 	public static final int M0_0475=0;
@@ -114,10 +114,10 @@ public class AMR {
 			System.loadLibrary("amr-64");
 		}
 		catch (Error e_64) {
-			System.err.println(e_64.getMessage());
+			LOG.info("Error loading 64 bit lib: " + e_64.getMessage());
 			try { System.loadLibrary("amr-32"); }
 			catch (Error e_32) {
-				System.err.println(e_32.getMessage());
+				LOG.info("Error loading 32 bit lib: " + e_32.getMessage());
 				System.loadLibrary("amr");
 			}
 		}
@@ -170,7 +170,7 @@ public class AMR {
 		try {
 			if (decoder==0) decoder=initDecoder();
 			if (decoder!=0 && inbuf!=null && frame!=null) decode(decoder,inbuf,frame,0);
-			else System.err.println("DEBUG: org.zoolu.ext.sound.codec.AMR: decode("+decoder+","+inbuf+","+frame+",0): Invalid parameter(s).");
+			else LOG.debug("decode("+decoder+","+inbuf+","+frame+",0): Invalid parameter(s).");
 		}
 		catch (Throwable t) {  t.printStackTrace();  }
 	}

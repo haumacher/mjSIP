@@ -23,10 +23,9 @@ package org.mjsip.server.sbc;
 
 
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpSocket;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
 import org.zoolu.util.Timer;
 
 
@@ -36,20 +35,23 @@ import org.zoolu.util.Timer;
   */
 public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SymmetricRegulatedUdpRelay.class);
+
 	/** Minimum inter-packet departure time */
 	long inter_time=0; 
 
 
 	/** Costructs a new SymmetricRegulatedUdpRelay. */
-	public SymmetricRegulatedUdpRelay(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr, long relay_time, long inter_time, Logger logger, SymmetricUdpRelayListener listener) {
+	public SymmetricRegulatedUdpRelay(int left_port, SocketAddress left_soaddr, int right_port,
+			SocketAddress right_soaddr, long relay_time, long inter_time, SymmetricUdpRelayListener listener) {
 		super();
-		init(left_port,left_soaddr,right_port,right_soaddr,relay_time,inter_time,logger,listener);
+		init(left_port, left_soaddr, right_port, right_soaddr, relay_time, inter_time, listener);
 	}
 
 
 	/** Initializes the SymmetricUdpRelay. */
-	private void init(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr, long relay_time, long inter_time, Logger logger, SymmetricUdpRelayListener listener) {
-		this.logger=logger;
+	private void init(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr,
+			long relay_time, long inter_time, SymmetricUdpRelayListener listener) {
 		//this.left_port=left_port;
 		this.left_soaddr=left_soaddr;
 		//this.right_port=right_port;
@@ -61,16 +63,16 @@ public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 		try {
 			//left_udp=new UdpProvider(new OutputRegulatedUdpSocket(left_port,inter_time),0,this);
 			left_udp=new InputRegulatedUdpProvider(new UdpSocket(left_port),0,inter_time,this);
-			log(LogLevel.INFO,"udp interfce: "+left_udp.toString()+" started");    
-			log(LogLevel.INFO,"udp interfce regulated with "+inter_time+" millisecs of minimum inter-packet departure time");    
+			LOG.info("udp interfce: "+left_udp.toString()+" started");    
+			LOG.info("udp interfce regulated with "+inter_time+" millisecs of minimum inter-packet departure time");    
 	
 			//right_udp=new UdpProvider(new OutputRegulatedUdpSocket(right_port,inter_time),0,this);
 			right_udp=new InputRegulatedUdpProvider(new UdpSocket(right_port),0,inter_time,this);
-			log(LogLevel.INFO,"udp interfce: "+right_udp.toString()+" started");
-			log(LogLevel.INFO,"udp interfce regulated with "+inter_time+" millisecs of minimum inter-packet departure time");    
+			LOG.info("udp interfce: "+right_udp.toString()+" started");
+			LOG.info("udp interfce regulated with "+inter_time+" millisecs of minimum inter-packet departure time");    
 		}   
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	
 		if (relay_time>0) {
@@ -80,14 +82,6 @@ public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 			timer.start();
 		}
 		last_left_change=last_right_change=System.currentTimeMillis();
-	}
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"SymmetricRegulatedUdpRelay: "+str);  
 	}
 
 }

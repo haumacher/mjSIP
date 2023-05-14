@@ -29,7 +29,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionClientId;
-import org.zoolu.util.LogLevel;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
 
 
@@ -40,6 +40,8 @@ import org.zoolu.util.Timer;
   */
 public class TransactionClient extends Transaction {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TransactionClient.class);
+
 	/** The TransactionClientListener that captures the events fired by the TransactionClient */
 	TransactionClientListener transaction_listener;
 
@@ -74,7 +76,7 @@ public class TransactionClient extends Transaction {
 		retransmission_to=new Timer(SipStack.retransmission_timeout,null);
 		transaction_to=new Timer(SipStack.transaction_timeout,null);
 		clearing_to=new Timer(SipStack.clearing_timeout,null);
-		log(LogLevel.INFO,"new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: "+transaction_id.toString());
 	}
 
 
@@ -82,7 +84,7 @@ public class TransactionClient extends Transaction {
 
 	/** Starts the TransactionClient and sends the transaction request. */
 	public void request() {
-		log(LogLevel.TRACE,"start");
+		LOG.trace("start");
 		changeStatus(STATE_TRYING);
 		transaction_to=new Timer(transaction_to.getTime(),this);
 		transaction_to.start(); 
@@ -123,7 +125,7 @@ public class TransactionClient extends Transaction {
 					clearing_to.start();
 				}
 				else {
-					log(LogLevel.TRACE,"clearing_to=0 for reliable transport");
+					LOG.trace("clearing_to=0 for reliable transport");
 					onTimeout(clearing_to);
 				}
 				return;
@@ -135,7 +137,7 @@ public class TransactionClient extends Transaction {
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING))) {
-				log(LogLevel.INFO,"Retransmission timeout expired");
+				LOG.info("Retransmission timeout expired");
 				// retransmission only for unreliable transport 
 				if (connection_id==null) {
 					sip_provider.sendMessage(request);
@@ -144,21 +146,21 @@ public class TransactionClient extends Transaction {
 					retransmission_to=new Timer(timeout,this);
 					retransmission_to.start();
 				}
-				else log(LogLevel.TRACE,"No retransmissions for reliable transport ("+connection_id+")");
+				else LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
 			} 
 			if (to.equals(transaction_to)) {
-				log(LogLevel.INFO,"Transaction timeout expired");
+				LOG.info("Transaction timeout expired");
 				doTerminate();
 				if (transaction_listener!=null) transaction_listener.onTransTimeout(this);
 				transaction_listener=null;
 			}  
 			if (to.equals(clearing_to)) {
-				log(LogLevel.INFO,"Clearing timeout expired");
+				LOG.info("Clearing timeout expired");
 				doTerminate();
 			}
 		}
 		catch (Exception e) {
-			log(LogLevel.INFO,e);
+			LOG.info("Exception.", e);
 		}
 	}
 	
@@ -173,14 +175,6 @@ public class TransactionClient extends Transaction {
 			sip_provider.removeSelectiveListener(transaction_id);
 			changeStatus(STATE_TERMINATED);
 		}
-	}
-
-
-	// ****************************** Logs *****************************
-
-	/** Adds a new string to the default log. */
-	protected void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"TransactionClient#"+transaction_sqn+": "+str);  
 	}
 
 }

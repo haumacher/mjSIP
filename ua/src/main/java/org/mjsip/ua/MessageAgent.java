@@ -33,8 +33,7 @@ import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Simple Message Agent (MA).
@@ -43,8 +42,7 @@ import org.zoolu.util.Logger;
   */
 public class MessageAgent implements SipProviderListener, TransactionClientListener {
 	
-	/** Logger */
-	protected Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MessageAgent.class);
 
 	/** UserProfile */
 	protected UserAgentProfile user_profile;
@@ -59,7 +57,6 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 	/** Costructs a new MessageAgent. */
 	public MessageAgent(SipProvider sip_provider, UserAgentProfile user_profile, MessageAgentListener listener) {
 		this.sip_provider=sip_provider;
-		this.logger=sip_provider.getLogger();
 		this.listener=listener;
 		this.user_profile=user_profile;
 		// init unconfigured user params
@@ -136,7 +133,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
  
 	/** When the delivery successes. */
 	private void onDeliverySuccess(TransactionClient tc, String result) {
-		log("Message successfully delivered ("+result+").");
+		LOG.info("Message successfully delivered ("+result+").");
 		SipMessage req=tc.getRequestMessage();
 		NameAddress recipient=req.getToHeader().getNameAddress();
 		String subject=null;
@@ -146,25 +143,12 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 
 	/** When the delivery fails. */
 	private void onDeliveryFailure(TransactionClient tc, String result) {
-		log("Message delivery failed ("+result+").");
+		LOG.info("Message delivery failed ("+result+").");
 		SipMessage req=tc.getRequestMessage();
 		NameAddress recipient=req.getToHeader().getNameAddress();
 		String subject=null;
 		if (req.hasSubjectHeader()) subject=req.getSubjectHeader().getSubject();
 		if (listener!=null) listener.onMaDeliveryFailure(this,recipient,subject,result);
-	}
-
-	//**************************** Logs ****************************/
-
-	/** Adds a new string to the default Log. */
-	private void log(String str) {
-		log(LogLevel.INFO,str);
-	}
-
-	/** Adds a new string to the default Log. */
-	private void log(LogLevel level, String str) {
-		if (logger!=null) logger.log(level,"MessageAgent: "+str);
-		//System.out.println("MA: "+str);  
 	}
 
 }

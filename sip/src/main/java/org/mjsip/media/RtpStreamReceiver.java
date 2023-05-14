@@ -29,6 +29,7 @@ import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPacket;
 import org.mjsip.rtp.RtpPayloadFormat;
 import org.mjsip.rtp.RtpSocket;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.util.Encoder;
@@ -39,8 +40,10 @@ import org.zoolu.util.Encoder;
   */
 public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RtpStreamReceiver.class);
+	
 	/** Whether working in debug mode. */
-	public static boolean DEBUG=false;
+	public static final boolean DEBUG = LOG.isDebugEnabled();
 
 	/** Time waited before starting playing out packets (in millisecs). All packet received in the meantime are dropped in order to reduce the effect of an eventual initial packet burst. */
 	public static final int EARLY_DROP_TIME=200;
@@ -242,7 +245,7 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	public void run() {
 		
 		if (rtp_socket==null) {
-			if (DEBUG) println("ERROR: RTP socket is null");
+			LOG.error("RTP socket is null");
 			return;
 		}
 		//else
@@ -252,8 +255,10 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 
 		running=true;    
 
-		if (DEBUG) println("RTP: localhost:"+rtp_socket.getUdpSocket().getLocalPort()+" <-- remotesocket");
-		if (DEBUG) println("RTP: receiving pkts of MAXIMUM "+buffer.length+" bytes");
+		if (DEBUG)
+			LOG.debug("RTP: localhost:" + rtp_socket.getUdpSocket().getLocalPort() + " <-- remotesocket");
+		if (DEBUG)
+			LOG.debug("RTP: receiving pkts of MAXIMUM " + buffer.length + " bytes");
 
 		Exception error=null;
 		try {
@@ -346,7 +351,8 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 		catch (Exception e) {
 			running=false;
 			error=e;
-			if (DEBUG) e.printStackTrace();
+			if (DEBUG)
+				LOG.debug("Exception.", e);
 		}
 		
 		// close RtpSocket and local UdpSocket
@@ -358,7 +364,8 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 		output_stream=null;
 		rtp_socket=null;
 		
-		if (DEBUG) println("rtp receiver terminated");
+		if (DEBUG)
+			LOG.debug("rtp receiver terminated");
 		if (listener!=null) listener.onRtpStreamReceiverTerminated(this,error);
 	}
 
@@ -403,13 +410,6 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 		this.silence_padding=silence_padding;
 		if (silence_padding) sequence_check=true;
 	}
-
-
-	/** Debug output */
-	private static void println(String str) {
-		System.err.println("RtpStreamReceiver: "+str);
-	}
-	
 
 	public static int byte2int(byte b) {
 		//return (b>=0)? b : -((b^0xFF)+1);

@@ -34,16 +34,14 @@ import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.zoolu.util.LogLevel;
-import org.zoolu.util.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Simple UAS that responds to OPTIONS requests.
   */
 public class OptionsServer implements SipProviderListener {
 	
-	/** Logger */
-	Logger logger;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(OptionsServer.class);
 	
 	/** SipProvider. */
 	SipProvider sip_provider;
@@ -82,7 +80,6 @@ public class OptionsServer implements SipProviderListener {
 	/** Inits the OptionsServer. */
 	private void init(SipProvider sip_provider, String allow, String accept, String accept_encoding, String accept_language, String[] supported_option_tags) {
 		this.sip_provider=sip_provider;
-		logger=sip_provider.getLogger();
 		this.allow=allow;
 		this.accept=accept;
 		this.accept_encoding=accept_encoding;
@@ -96,7 +93,6 @@ public class OptionsServer implements SipProviderListener {
 	public void halt() {
 		if (sip_provider!=null) sip_provider.removeSelectiveListener(new MethodId(SipMethods.OPTIONS));
 		sip_provider=null;
-		logger=null;
 	}   
 
 
@@ -106,7 +102,7 @@ public class OptionsServer implements SipProviderListener {
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond to OPTIONS request
 		if (msg.isRequest() && msg.isOptions()) {
-			log("responding to a new OPTIONS request");
+			LOG.info("OptionsServer: " + "responding to a new OPTIONS request");
 			SipMessage resp=SipMessageFactory.createResponse(msg,200,null,null);
 			if (allow!=null) resp.setAllowHeader(new AllowHeader(allow));
 			if (accept!=null) resp.setAcceptHeader(new AcceptHeader(accept));
@@ -116,14 +112,6 @@ public class OptionsServer implements SipProviderListener {
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 			ts.respondWith(resp);
 		}
-	}
-
-
-	// ******************************** Logs *******************************
-
-	/** Adds a new string to the default log. */
-	void log(String str) {
-		if (logger!=null) logger.log(LogLevel.INFO,"OptionsServer: "+str);  
 	}
 
 }
