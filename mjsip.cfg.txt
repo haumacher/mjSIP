@@ -367,10 +367,10 @@
 #registrar=example.net
 
 # Contact URL.
-# If not defined (default), it is formed as sip:user@via_address:host_port.
+# If not defined (default), it is formed as sip:user@via_addr:host_port.
 # Normally you can leave it undefined.
 #contact_url=sip:alice@192.168.0.55:5070
-  
+
 # User's name used for server authentication.
 #auth_user=alice
 
@@ -383,7 +383,15 @@
 # Absolute path (or complete URL) of the jar archive, where various UA media (gif, wav, etc.) are stored.
 # Use value 'NONE' for getting resources from external folders.
 # Default value: ua_jar=lib/ua.jar
-#ua_jar=./ua.jar
+#ua_jar=lib/ua.jar
+
+# Absolute path (or complete URI) of the folder containing UA's resources.
+# By default, the local folder "resources" is used.
+#res_path=resources
+
+# Relative path of UA media resources (gif, wav, etc.) within the UA jar file or within the resources folder. 
+# By default, the folder "media/local/ua" is used.
+#media_path=media/local/ua
 
 # Absolute path (or complete URL) of the buddy list file where the buddy list is and loaded from (and saved to).
 # Default value: buddy_list_file=buddy.lst

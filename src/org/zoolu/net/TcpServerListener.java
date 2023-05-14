@@ -28,11 +28,11 @@ package org.zoolu.net;
 
 /** Listener for TcpServer events.
   */
-public interface TcpServerListener
-{
-   /** When a new incoming connection is established. */ 
-   public void onIncomingConnection(TcpServer tcp_server, TcpSocket socket);
-   
-   /** When TcpServer terminates. */
-   public void onServerTerminated(TcpServer tcp_server, Exception error);   
+public interface TcpServerListener {
+	
+	/** When a new incoming connection is established. */ 
+	public void onIncomingConnection(TcpServer tcp_server, TcpSocket socket);
+	
+	/** When TcpServer terminates. */
+	public void onServerTerminated(TcpServer tcp_server, Exception error);   
 }

@@ -25,130 +25,149 @@ package org.zoolu.net;
 
 
 
-import java.io.*;
-import java.net.Socket;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import javax.net.ssl.*;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 
 
 /** TLS socket factory.
   */
-public class TlsSocketFactory
-{
+public class TlsSocketFactory {
+	
 
-   /** SSLSocketFactory */
-   SSLSocketFactory ssl_factory;
+	/** SSLSocketFactory */
+	SSLSocketFactory ssl_factory;
 
-   /** Whether using client mode in first TLS handshake */
-   boolean client_mode=true;
+	/** Whether using client mode in first TLS handshake */
+	boolean client_mode=true;
 
-   /* Supported protocol versions */
-   String[] supported_protocols=null;
+	/* Supported protocol versions */
+	String[] supported_protocols=null;
 
-   /* Enabled protocol versions */
-   String[] enabled_protocols=null;
-
-
-
-   /** Creates a new TlsSocketFactory */
-   public TlsSocketFactory(TlsContext tls_context) throws java.security.KeyStoreException, java.security.KeyManagementException, java.security.UnrecoverableKeyException, java.security.NoSuchAlgorithmException
-   {  KeyStore ks=tls_context.getKeyStore();
-      // get key managers
-      KeyManagerFactory key_manager_factory=KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      key_manager_factory.init(ks,TlsContext.DEFAULT_PASSWORD);            
-      KeyManager[] key_managers=key_manager_factory.getKeyManagers();
-      TrustManager[] trust_managers;
-      // get trust managers
-      if (tls_context.isTrustAll())
-      {  X509TrustManager trust_all=new X509TrustManager()
-         {  public X509Certificate[] getAcceptedIssuers() {  return new X509Certificate[0];  }
-            public void checkClientTrusted(X509Certificate[] certs, String auth_type) {}
-            public void checkServerTrusted(X509Certificate[] certs, String auth_type) {}
-         };
-         trust_managers=new TrustManager[] { trust_all };  
-      }
-      else
-      {  TrustManagerFactory trust_manager_factory=TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-         trust_manager_factory.init(ks);            
-         trust_managers=trust_manager_factory.getTrustManagers();      
-      }
-      // install only the trust managers
-      SSLContext sc=SSLContext.getInstance("SSL");
-      sc.init(key_managers,trust_managers,null/*new java.security.SecureRandom()*/);
-      // get the socket factory
-      ssl_factory=sc.getSocketFactory();
-   }
+	/* Enabled protocol versions */
+	String[] enabled_protocols=null;
 
 
-   /** Sets whether using client (or server) mode in its first handshake.
-     * Servers normally authenticate themselves, and clients are not required to do so. */
-   public void setUseClientMode(boolean flag)
-   {  client_mode=flag;
-   }
+
+	/** Creates a new TlsSocketFactory */
+	public TlsSocketFactory(TlsContext tls_context) throws java.security.KeyStoreException, java.security.KeyManagementException, java.security.UnrecoverableKeyException, java.security.NoSuchAlgorithmException {
+		KeyStore ks=tls_context.getKeyStore();
+		// get key managers
+		KeyManagerFactory key_manager_factory=KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+		key_manager_factory.init(ks,TlsContext.DEFAULT_PASSWORD);            
+		KeyManager[] key_managers=key_manager_factory.getKeyManagers();
+		TrustManager[] trust_managers;
+		// get trust managers
+		if (tls_context.isTrustAll()) {
+			X509TrustManager trust_all=new X509TrustManager() {
+				public X509Certificate[] getAcceptedIssuers() {  return new X509Certificate[0];  }
+				public void checkClientTrusted(X509Certificate[] certs, String auth_type) {}
+				public void checkServerTrusted(X509Certificate[] certs, String auth_type) {}
+			};
+			trust_managers=new TrustManager[] { trust_all };  
+		}
+		else {
+			TrustManagerFactory trust_manager_factory=TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			trust_manager_factory.init(ks);            
+			trust_managers=trust_manager_factory.getTrustManagers();      
+		}
+		// install only the trust managers
+		SSLContext sc=SSLContext.getInstance("SSL");
+		sc.init(key_managers,trust_managers,null/*new java.security.SecureRandom()*/);
+		// get the socket factory
+		ssl_factory=sc.getSocketFactory();
+	}
 
 
-   /** Whether using client (or server) mode in its first handshake.
-     * Servers normally authenticate themselves, and clients are not required to do so. */
-   public boolean getUseClientMode()
-   {  return client_mode;
-   }
+	/** Sets whether using client (or server) mode in its first handshake.
+	  * Servers normally authenticate themselves, and clients are not required to do so. */
+	public void setUseClientMode(boolean flag) {
+		client_mode=flag;
+	}
 
 
-   /** Gets the list of supported protocol versions. */
-   public String[] getSupportedProtocols()
-   {  if (supported_protocols==null) initSupportedProtocols();
-      return supported_protocols;
-   }
+	/** Whether using client (or server) mode in its first handshake.
+	  * Servers normally authenticate themselves, and clients are not required to do so. */
+	public boolean getUseClientMode() {
+		return client_mode;
+	}
 
 
-   /** Gets the list of enabled protocol versions. */
-   public String[] getEnabledProtocols()
-   {  if (enabled_protocols==null) initSupportedProtocols();
-      return enabled_protocols;
-   }
+	/** Gets the list of supported protocol versions. */
+	public String[] getSupportedProtocols() {
+		if (supported_protocols==null) initSupportedProtocols();
+		return supported_protocols;
+	}
 
 
-   /** Sets the list of enabled protocol versions. */
-   public void setEnabledProtocols(String[] enabled_protocols)
-   {  this.enabled_protocols=enabled_protocols;
-   }
+	/** Gets the list of enabled protocol versions. */
+	public String[] getEnabledProtocols() {
+		if (enabled_protocols==null) initSupportedProtocols();
+		return enabled_protocols;
+	}
 
 
-   /** Inits supported and enabled protocol versions. */
-   private void initSupportedProtocols()
-   {  try
-      {  SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
-         if (supported_protocols==null) supported_protocols=ssl_socket.getSupportedProtocols();
-         if (enabled_protocols==null) enabled_protocols=ssl_socket.getEnabledProtocols();
-         ssl_socket.close();
-      }
-      catch (Exception e) {  e.printStackTrace();  }
-   }
+	/** Sets the list of enabled protocol versions. */
+	public void setEnabledProtocols(String[] enabled_protocols) {
+		this.enabled_protocols=enabled_protocols;
+	}
 
 
-   /** Creates a new TlsSocket */
-   public TlsSocket createTlsSocket(String host, int port) throws java.io.IOException
-   {  //SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket(host,port);
-      //return new TlsSocket(ssl_socket);
-      SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
-      if (!client_mode) ssl_socket.setUseClientMode(false);
-      if (enabled_protocols!=null) ssl_socket.setEnabledProtocols(enabled_protocols);
-      ssl_socket.connect(new java.net.InetSocketAddress(host,port));
-      return new TlsSocket(ssl_socket);
-   }
+	/** Inits supported and enabled protocol versions. */
+	private void initSupportedProtocols() {
+		try {
+			SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
+			if (supported_protocols==null) supported_protocols=ssl_socket.getSupportedProtocols();
+			if (enabled_protocols==null) enabled_protocols=ssl_socket.getEnabledProtocols();
+			ssl_socket.close();
+		}
+		catch (Exception e) {  e.printStackTrace();  }
+	}
 
 
-   /** Creates a new TlsSocket */
-   public TlsSocket createTlsSocket(IpAddress ipaddr, int port) throws java.io.IOException
-   {  //SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket(ipaddr.getInetAddress(),port);
-      //return new TlsSocket(ssl_socket);
-      SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
-      if (!client_mode) ssl_socket.setUseClientMode(false);
-      if (enabled_protocols!=null) ssl_socket.setEnabledProtocols(enabled_protocols);
-      ssl_socket.connect(new java.net.InetSocketAddress(ipaddr.getInetAddress(),port));
-      return new TlsSocket(ssl_socket);
-   }
-   
+	/** Creates a new TlsSocket */
+	public TlsSocket createTlsSocket(String host, int port) throws java.io.IOException {
+		//SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket(host,port);
+		//return new TlsSocket(ssl_socket);
+		SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
+		if (!client_mode) ssl_socket.setUseClientMode(false);
+		if (enabled_protocols!=null) ssl_socket.setEnabledProtocols(enabled_protocols);
+		ssl_socket.connect(new java.net.InetSocketAddress(host,port));
+		return new TlsSocket(ssl_socket);
+	}
+
+
+	/** Creates a new TlsSocket */
+	public TlsSocket createTlsSocket(IpAddress ipaddr, int port) throws java.io.IOException {
+		//SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket(ipaddr.getInetAddress(),port);
+		//return new TlsSocket(ssl_socket);
+		SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
+		if (!client_mode) ssl_socket.setUseClientMode(false);
+		if (enabled_protocols!=null) ssl_socket.setEnabledProtocols(enabled_protocols);
+		ssl_socket.connect(new java.net.InetSocketAddress(ipaddr.getInetAddress(),port));
+		return new TlsSocket(ssl_socket);
+	}
+
+
+	/** Creates a new TlsSocket */
+	public TlsSocket createTlsSocket(IpAddress ipaddr, int port, IpAddress local_ipaddr, int local_port) throws java.io.IOException {
+		//SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket(ipaddr.getInetAddress(),port);
+		//return new TlsSocket(ssl_socket);
+		SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
+		ssl_socket.bind(new java.net.InetSocketAddress(local_ipaddr.getInetAddress(),local_port));
+		if (!client_mode) ssl_socket.setUseClientMode(false);
+		if (enabled_protocols!=null) ssl_socket.setEnabledProtocols(enabled_protocols);
+		ssl_socket.connect(new java.net.InetSocketAddress(ipaddr.getInetAddress(),port));
+		return new TlsSocket(ssl_socket);
+	}
+	
 }

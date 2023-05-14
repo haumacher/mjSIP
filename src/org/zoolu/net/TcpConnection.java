@@ -25,175 +25,193 @@ package org.zoolu.net;
 
 
 //import java.net.InetAddress;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
 
 
 /** TcpConnection provides a TCP connection oriented transport service.
   */
-public class TcpConnection extends Thread
-{
-   /** The reading buffer size */
-   static final int BUFFER_SIZE=65535;
+public class TcpConnection extends Thread {
+	
+	/** The reading buffer size */
+	static final int BUFFER_SIZE=65535;
 
-   /** Default value for the maximum time that the tcp connection can remain active after been halted (in milliseconds) */
-   public static final int DEFAULT_SOCKET_TIMEOUT=2000; // 2sec 
+	/** Default value for the maximum time that the tcp connection can remain active after been halted (in milliseconds) */
+	public static final int DEFAULT_SOCKET_TIMEOUT=2000; // 2sec 
 
-   /** The TCP socket */ 
-   TcpSocket socket;  
+	/** The TCP socket */ 
+	TcpSocket socket;  
 
-   /** Maximum time that the connection can remain active after been halted (in milliseconds) */
-   int socket_timeout;
+	/** Maximum time that the connection can remain active after been halted (in milliseconds) */
+	int socket_timeout;
 
-   /** Maximum time that the connection remains active without receiving data (in milliseconds) */
-   long alive_time; 
+	/** Maximum time that the connection remains active without receiving data (in milliseconds) */
+	long alive_time; 
 
-   /** The InputStream */
-   InputStream istream;
-   
-   /** The OutputStream */
-   OutputStream ostream;
+	/** The InputStream */
+	InputStream istream;
+	
+	/** The OutputStream */
+	OutputStream ostream;
 
-   /** InputStream/OutputStream error */
-   Exception error;
+	/** InputStream/OutputStream error */
+	Exception error;
 
-   /** Whether it has been halted */
-   boolean stop; 
+	/** Whether it has been halted */
+	boolean stop; 
 
-   /** Whether it is running */
-   boolean is_running; 
+	/** Whether it is running */
+	boolean is_running; 
 
-   /** TcpConnection listener */
-   TcpConnectionListener listener;
-
-
-   /** Costructs a new TcpConnection */
-   public TcpConnection(TcpSocket socket, TcpConnectionListener listener)
-   {  init(socket,0,listener);
-      start();
-   }
+	/** TcpConnection listener */
+	TcpConnectionListener listener;
 
 
-   /** Costructs a new TcpConnection */
-   public TcpConnection(TcpSocket socket, long alive_time, TcpConnectionListener listener)
-   {  init(socket,alive_time,listener);
-      start();
-   }
+
+	/** Costructs a new TcpConnection. */
+	public TcpConnection(TcpSocket socket, TcpConnectionListener listener) {
+		init(socket,0,listener);
+		start();
+	}
 
 
-   /** Inits the TcpConnection */
-   private void init(TcpSocket socket, long alive_time, TcpConnectionListener listener)
-   {  this.listener=listener;
-      this.socket=socket;
-      this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
-      this.alive_time=alive_time;
-      this.stop=false; 
-      this.is_running=true; 
-
-      this.istream=null;
-      this.ostream=null;
-      this.error=null;
-      try
-      {  istream=new BufferedInputStream(socket.getInputStream());
-         ostream=new BufferedOutputStream(socket.getOutputStream());
-      }
-      catch (Exception e)
-      {  error=e;
-      }
-   }
+	/** Costructs a new TcpConnection. */
+	public TcpConnection(TcpSocket socket, long alive_time, TcpConnectionListener listener) {
+		init(socket,alive_time,listener);
+		start();
+	}
 
 
-   /** Whether the service is running */
-   public boolean isRunning()
-   {  return is_running;
-   }
+	/** Inits the TcpConnection. */
+	private void init(TcpSocket socket, long alive_time, TcpConnectionListener listener) {
+		this.listener=listener;
+		this.socket=socket;
+		this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
+		this.alive_time=alive_time;
+		this.stop=false; 
+		this.is_running=true; 
+
+		this.istream=null;
+		this.ostream=null;
+		this.error=null;
+		try {
+			istream=new BufferedInputStream(socket.getInputStream());
+			ostream=new BufferedOutputStream(socket.getOutputStream());
+		}
+		catch (Exception e) {
+			error=e;
+		}
+	}
 
 
-   /** Gets the TcpSocket */ 
-   public TcpSocket getSocket()
-   {  return socket;
-   }
+	/** Whether the service is running. */
+	public boolean isRunning() {
+		return is_running;
+	}
 
 
-   /** Gets the remote IP address */
-   public IpAddress getRemoteAddress()
-   {  return socket.getAddress();
-   }
-
-   
-   /** Gets the remote port */
-   public int getRemotePort()
-   {  return socket.getPort();
-   }
-
-  
-   /** Stops running */
-   public void halt()
-   {  stop=true;
-   }
+	/** Gets the TcpSocket. */ 
+	public TcpSocket getSocket() {
+		return socket;
+	}
 
 
-   /** Sends data */
-   public void send(byte[] buff, int offset, int len)  throws IOException
-   {  if (!stop && ostream!=null)
-      {  ostream.write(buff,offset,len);
-         ostream.flush();
-      }
-   }
+	/** Gets the remote IP address. */
+	public IpAddress getRemoteAddress() {
+		return socket.getAddress();
+	}
+
+	
+	/** Gets the remote port. */
+	public int getRemotePort() {
+		return socket.getPort();
+	}
 
 
-   /** Sends data */
-   public void send(byte[] buff)  throws IOException
-   {  send(buff,0,buff.length);
-   }
+	/** Gets the local address. */
+	public IpAddress getLocalAddress() {
+		return socket.getLocalAddress();
+	}
 
 
-   /** Runs the tcp receiver */
-   public void run()
-   {
-      byte[] buff=new byte[BUFFER_SIZE];
-      long expire=0;
-      if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
-      try
-      {  if (error!=null) throw error;
-         socket.setSoTimeout(socket_timeout);         
-         // loop
-         while(!stop)
-         {  int len=0;
-            if (istream!=null)
-            {  try
-               {  len=istream.read(buff);
-               }
-               catch (InterruptedIOException ie)
-               {  if (alive_time>0 && System.currentTimeMillis()>expire) halt();
-                  continue;
-               }
-            }
-            if (len<0)
-            {  //error=new Exception("TCP connection closed");
-               stop=true;
-            }
-            else
-            if (len>0)
-            {  if (listener!=null) listener.onReceivedData(this,buff,len);
-               if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
-            }
-         }
-      }
-      catch (Exception e)
-      {  error=e;
-         stop=true;
-      }
-      is_running=false;
-      if (istream!=null) try {  istream.close();  } catch (Exception e) {}
-      if (ostream!=null) try {  ostream.close();  } catch (Exception e) {}
-      if (listener!=null) listener.onConnectionTerminated(this,error);
-      listener=null;
-   } 
+	/** Gets the local port. */
+	public int getLocalPort() {
+		return socket.getLocalPort();
+	}
+
+
+	/** Stops running. */
+	public void halt() {
+		stop=true;
+	}
+
+
+	/** Sends data. */
+	public void send(byte[] buff, int offset, int len)  throws IOException {
+		if (!stop && ostream!=null) {
+			ostream.write(buff,offset,len);
+			ostream.flush();
+		}
+	}
+
+
+	/** Sends data. */
+	public void send(byte[] buff)  throws IOException {
+		send(buff,0,buff.length);
+	}
+
+
+	/** Runs the tcp receiver. */
+	public void run() {
+		
+		byte[] buff=new byte[BUFFER_SIZE];
+		long expire=0;
+		if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
+		try {
+			if (error!=null) throw error;
+			socket.setSoTimeout(socket_timeout);         
+			// loop
+			while(!stop) {
+				int len=0;
+				if (istream!=null) {
+					try {
+						len=istream.read(buff);
+					}
+					catch (InterruptedIOException ie) {
+						if (alive_time>0 && System.currentTimeMillis()>expire) halt();
+						continue;
+					}
+				}
+				if (len<0) {
+					//error=new Exception("TCP connection closed");
+					stop=true;
+				}
+				else
+				if (len>0) {
+					if (listener!=null) listener.onReceivedData(this,buff,len);
+					if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
+				}
+			}
+		}
+		catch (Exception e) {
+			error=e;
+			stop=true;
+		}
+		is_running=false;
+		if (istream!=null) try {  istream.close();  } catch (Exception e) {}
+		if (ostream!=null) try {  ostream.close();  } catch (Exception e) {}
+		if (listener!=null) listener.onConnectionTerminated(this,error);
+		listener=null;
+	} 
 
  
-   /** Gets a String representation of the Object */
-   public String toString()
-   {  return "tcp:"+socket.getLocalAddress()+":"+socket.getLocalPort()+"<->"+socket.getAddress()+":"+socket.getPort();
-   }
+	/** Gets a String representation of the Object. */
+	public String toString() {
+		return "tcp:"+socket.getLocalAddress()+":"+socket.getLocalPort()+"<->"+socket.getAddress()+":"+socket.getPort();
+	}
 
 }

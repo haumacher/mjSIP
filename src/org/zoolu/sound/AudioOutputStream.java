@@ -22,70 +22,71 @@
 package org.zoolu.sound;
 
 
-import javax.sound.sampled.AudioFormat;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.sound.sampled.AudioFormat;
 
 
 /** AudioOutputStream has been created to provide a useful API for audio output
   * equivalent to javax.sound.sampled.AudioInputStream used for audio input.
   */
-public class AudioOutputStream extends OutputStream
-{
-   /** Audio format */
-   AudioFormat format;
-   
-   /** OutputStream */
-   OutputStream os;
+public class AudioOutputStream extends OutputStream {
+	
+	/** Audio format */
+	AudioFormat format;
+	
+	/** OutputStream */
+	OutputStream os;
 
   
-   /** Creates a new AudioOutputStream. */
-   protected AudioOutputStream(AudioFormat format)
-   {  this.format=format;
-      this.os=null;
-   }
+	/** Creates a new AudioOutputStream. */
+	protected AudioOutputStream(AudioFormat format) {
+		this.format=format;
+		this.os=null;
+	}
 
 
-   /** Creates a new AudioOutputStream. */
-   public AudioOutputStream(OutputStream os, AudioFormat format)
-   {  this.format=format;
-      this.os=os;
-   }
+	/** Creates a new AudioOutputStream. */
+	public AudioOutputStream(OutputStream os, AudioFormat format) {
+		this.format=format;
+		this.os=os;
+	}
 
 
-   /** Gets the AudioFormat. */
-   public AudioFormat getFormat()
-   {  return format;
-   }
+	/** Gets the AudioFormat. */
+	public AudioFormat getFormat() {
+		return format;
+	}
 
 
-   /** Closes this output stream and releases any system resources associated with this stream. */
-   public void close() throws IOException
-   {  os.close();
-   }
-
-  
-   /** Flushes this output stream and forces any buffered output bytes to be written out. */
-   public void flush() throws IOException
-   {  os.flush();
-   }
-
-   
-   /** Writes b.length bytes from the specified byte array to this output stream. */
-   public void write(byte[] buf) throws IOException
-   {  os.write(buf);
-   }
-
-   
-   /** Writes len bytes from the specified byte array starting at offset off to this output stream. */
-   public void write(byte[] buf, int off, int len) throws IOException
-   {  os.write(buf,off,len);
-   }
+	/** Closes this output stream and releases any system resources associated with this stream. */
+	public void close() throws IOException {
+		os.close();
+	}
 
   
-   /** Writes the specified byte to this output stream. */
-   public void write(int b) throws IOException
-   {  os.write(b);
-   }
+	/** Flushes this output stream and forces any buffered output bytes to be written out. */
+	public void flush() throws IOException {
+		os.flush();
+	}
+
+	
+	/** Writes b.length bytes from the specified byte array to this output stream. */
+	public void write(byte[] buf) throws IOException {
+		os.write(buf);
+	}
+
+	
+	/** Writes len bytes from the specified byte array starting at offset off to this output stream. */
+	public void write(byte[] buf, int off, int len) throws IOException {
+		os.write(buf,off,len);
+	}
+
+  
+	/** Writes the specified byte to this output stream. */
+	public void write(int b) throws IOException {
+		os.write(b);
+	}
 
 }

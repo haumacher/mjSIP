@@ -28,11 +28,11 @@ package org.zoolu.net;
 
 /** Listener for UdpProvider events.
   */
-public interface UdpProviderListener
-{
-   /** When a new UDP datagram is received. */
-   public void onReceivedPacket(UdpProvider udp, UdpPacket packet);
+public interface UdpProviderListener {
+	
+	/** When a new UDP datagram is received. */
+	public void onReceivedPacket(UdpProvider udp, UdpPacket packet);
 
-   /** When UdpProvider terminates. */
-   public void onServiceTerminated(UdpProvider udp, Exception error);   
+	/** When UdpProvider terminates. */
+	public void onServiceTerminated(UdpProvider udp, Exception error);   
 }

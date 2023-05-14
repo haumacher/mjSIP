@@ -24,161 +24,161 @@
 package org.zoolu.net;
 
 
-import java.net.ServerSocket;
-import java.net.InetAddress;
 import java.io.InterruptedIOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 
 
 
 /** TcpServer implements a TCP server wainting for incoming connection.
   */
-public class TcpServer extends Thread
-{  
-   /** Default value for the maximum time that the tcp server can remain active after been halted (in milliseconds) */
-   public static final int DEFAULT_SOCKET_TIMEOUT=5000; // 5sec 
+public class TcpServer extends Thread {
+	
+	/** Default value for the maximum time that the tcp server can remain active after been halted (in milliseconds) */
+	public static final int DEFAULT_SOCKET_TIMEOUT=5000; // 5sec 
 
-   /** Default ServerSocket backlog value */
-   public static int DEFAULT_SOCKET_BACKLOG=50;
+	/** Default ServerSocket backlog value */
+	public static int DEFAULT_SOCKET_BACKLOG=50;
 
-   /** The protocol type */ 
-   //protected static final String PROTO="tcp";
+	/** The protocol type */ 
+	//protected static final String PROTO="tcp";
 
-   /** The TCP server port. */ 
-   int server_port;
+	/** The TCP server port. */ 
+	int server_port;
 
-   /** The TCP server address; null if the server is bound to all interfaces. */ 
-   IpAddress server_ipaddr;
+	/** The TCP server address; null if the server is bound to all interfaces. */ 
+	IpAddress server_ipaddr;
 
-   /** The TCP server socket */ 
-   ServerSocket server_socket;
+	/** The TCP server socket */ 
+	ServerSocket server_socket;
 
-   /** Maximum time that the connection can remain active after been halted (in milliseconds) */
-   int socket_timeout;
+	/** Maximum time that the connection can remain active after been halted (in milliseconds) */
+	int socket_timeout;
 
-   /** Maximum time that the server remains active without incoming connections (in milliseconds) */
-   long alive_time; 
+	/** Maximum time that the server remains active without incoming connections (in milliseconds) */
+	long alive_time; 
 
-   /** Whether it has been halted */
-   boolean stop; 
+	/** Whether it has been halted */
+	boolean stop; 
 
-   /** Whether it is running */
-   boolean is_running; 
+	/** Whether it is running */
+	boolean is_running; 
 
-   /** TcpServer listener */
-   TcpServerListener listener;
-
-
-
-   /** Costructs a new TcpServer */
-   public TcpServer(ServerSocket server_socket, TcpServerListener listener)  throws java.io.IOException
-   {  int port=server_socket.getLocalPort();
-      InetAddress iaddress=server_socket.getInetAddress();
-      IpAddress bind_ipaddr=(iaddress!=null)? new IpAddress(iaddress) : null;
-      init(server_socket,port,bind_ipaddr,0,listener);
-      start();
-   }
+	/** TcpServer listener */
+	TcpServerListener listener;
 
 
-   /** Costructs a new TcpServer */
-   public TcpServer(int port, TcpServerListener listener)  throws java.io.IOException
-   {  init(null,port,null,0,listener);
-      start();
-   }
+
+	/** Costructs a new TcpServer */
+	public TcpServer(ServerSocket server_socket, TcpServerListener listener)  throws java.io.IOException {
+		int port=server_socket.getLocalPort();
+		InetAddress iaddress=server_socket.getInetAddress();
+		IpAddress bind_ipaddr=(iaddress!=null)? new IpAddress(iaddress) : null;
+		init(server_socket,port,bind_ipaddr,0,listener);
+		start();
+	}
 
 
-   /** Costructs a new TcpServer */
-   public TcpServer(int port, IpAddress bind_ipaddr, TcpServerListener listener)  throws java.io.IOException
-   {  init(null,port,bind_ipaddr,0,listener);
-      start();
-   }
+	/** Costructs a new TcpServer */
+	public TcpServer(int port, TcpServerListener listener)  throws java.io.IOException {
+		init(null,port,null,0,listener);
+		start();
+	}
 
 
-   /** Costructs a new TcpServer */
-   public TcpServer(int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener)  throws java.io.IOException
-   {  init(null,port,bind_ipaddr,alive_time,listener);
-      start();
-   }
+	/** Costructs a new TcpServer */
+	public TcpServer(int port, IpAddress bind_ipaddr, TcpServerListener listener)  throws java.io.IOException {
+		init(null,port,bind_ipaddr,0,listener);
+		start();
+	}
 
 
-   /** Inits the TcpServer */
-   private void init(ServerSocket server_socket, int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException
-   {  this.listener=listener;
-      this.server_port=port;
-      this.server_ipaddr=bind_ipaddr;
-      if (server_socket==null)
-      {  if (bind_ipaddr==null) server_socket=new ServerSocket(port);
-         else server_socket=new ServerSocket(port,DEFAULT_SOCKET_BACKLOG,bind_ipaddr.getInetAddress());
-      }
-      this.server_socket=server_socket;
-      this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
-      this.alive_time=alive_time;
-      this.stop=false; 
-      this.is_running=true;
-   }
+	/** Costructs a new TcpServer */
+	public TcpServer(int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener)  throws java.io.IOException {
+		init(null,port,bind_ipaddr,alive_time,listener);
+		start();
+	}
 
 
-   /** Gets server port */
-   public int getPort()
-   {  return server_port;
-   }
+	/** Inits the TcpServer */
+	private void init(ServerSocket server_socket, int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException {
+		this.listener=listener;
+		this.server_port=port;
+		this.server_ipaddr=bind_ipaddr;
+		if (server_socket==null) {
+			if (bind_ipaddr==null) server_socket=new ServerSocket(port);
+			else server_socket=new ServerSocket(port,DEFAULT_SOCKET_BACKLOG,bind_ipaddr.getInetAddress());
+		}
+		this.server_socket=server_socket;
+		this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
+		this.alive_time=alive_time;
+		this.stop=false; 
+		this.is_running=true;
+	}
 
 
-   /** Whether the service is running */
-   public boolean isRunning()
-   {  return is_running;
-   }
+	/** Gets server port */
+	public int getPort() {
+		return server_port;
+	}
 
 
-   /** Stops running */
-   public void halt()
-   {  stop=true;
-   }
+	/** Whether the service is running */
+	public boolean isRunning() {
+		return is_running;
+	}
 
 
-   /** Runs the server */
-   public void run()
-   {  Exception error=null;
-      try
-      {  server_socket.setSoTimeout(socket_timeout);         
-         long expire=0;
-         if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
-         // loop
-         while (!stop)
-         {  TcpSocket socket=null;
-            try
-            {  socket=new TcpSocket(server_socket.accept());
-            }
-            catch (InterruptedIOException ie)
-            {  if (alive_time>0 && System.currentTimeMillis()>expire) halt();
-               continue;
-            }
-            if (listener!=null) listener.onIncomingConnection(this,socket);
-            if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
-         }
-      }
-      catch (Exception e)
-      {  error=e;
-         e.printStackTrace();
-         stop=true;
-      }
-      is_running=false;
-      try
-      {  server_socket.close();
-      }
-      catch (java.io.IOException e) {}
-      server_socket=null;
-      
-      if (listener!=null) listener.onServerTerminated(this,error);
-      listener=null;
-   }  
+	/** Stops running */
+	public void halt() {
+		stop=true;
+	}
 
 
-   /** Gets a String representation of the Object */
-   public String toString()
-   {  //if (server_socket!=null) return "tcp:"+server_socket.getInetAddress()+":"+server_socket.getLocalPort();
-      //else return "tcp:unknown";
-      if (server_ipaddr==null) return "tcp:0.0.0.0:"+server_port;
-      else return "tcp:"+server_ipaddr.toString()+":"+server_port;
-   }   
+	/** Runs the server */
+	public void run() {
+		Exception error=null;
+		try {
+			server_socket.setSoTimeout(socket_timeout);         
+			long expire=0;
+			if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
+			// loop
+			while (!stop) {
+				TcpSocket socket=null;
+				try {
+					socket=new TcpSocket(server_socket.accept());
+				}
+				catch (InterruptedIOException ie) {
+					if (alive_time>0 && System.currentTimeMillis()>expire) halt();
+					continue;
+				}
+				if (listener!=null) listener.onIncomingConnection(this,socket);
+				if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
+			}
+		}
+		catch (Exception e) {
+			error=e;
+			e.printStackTrace();
+			stop=true;
+		}
+		is_running=false;
+		try {
+			server_socket.close();
+		}
+		catch (java.io.IOException e) {}
+		server_socket=null;
+		
+		if (listener!=null) listener.onServerTerminated(this,error);
+		listener=null;
+	}  
+
+
+	/** Gets a String representation of the Object */
+	public String toString() {
+		//if (server_socket!=null) return "tcp:"+server_socket.getInetAddress()+":"+server_socket.getLocalPort();
+		//else return "tcp:unknown";
+		if (server_ipaddr==null) return "tcp:0.0.0.0:"+server_port;
+		else return "tcp:"+server_ipaddr.toString()+":"+server_port;
+	}   
 
 }

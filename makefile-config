@@ -12,15 +12,8 @@
 # You can set the following variables here according to where you 
 # have put things. These values are used in the makefiles.
 #
-# JDK_HOME : is the directory where the JDK is installed 
-# OS       : is the Operative System (Windows, Linux, Unix, etc.)
-#
 #####################################################################
 
-
-# Selects the proper OS
-#OS= Linux
-OS= Windows
 
 
 # Selects the proper shell
@@ -34,18 +27,11 @@ MAKE= make
 #MAKE= c:\programmi\bin\make
 
 
-# Selects the proper jdk home
-ifeq (${OS},Windows) 
-	JDK_HOME= c:/programmi/jdk1.4.2
-else
-	JDK_HOME= /user/local/jdk1.4.2
-endif
-
-
 # Selects the proper java tools
-#JDK_BIN=$(JDK_HOME)/bin/
+#JDK_BIN= /user/local/jdk1.4.2/bin/
 JDK_BIN=
 JAVA=     $(JDK_BIN)java
+#JAVAC=    $(JDK_BIN)javac -source 1.4 -target 1.4
 JAVAC=    $(JDK_BIN)javac
 JAVADOC=  $(JDK_BIN)javadoc
 JAR=      $(JDK_BIN)jar

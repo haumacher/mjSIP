@@ -1,27 +1,42 @@
-Make MjSIP HOW-TO
+Make-MjSIP HOW-TO
 __________________________________________________________________
-(by Luca Veltri, 29/6/2010)
-
-
-Note: Now JMF (Java Multimedia Framework) has been made optional. In order to build a standard java SIP UA you have just to make the UA (make ua) without any other configuration. If still you encounter JMF-related problems you can simply remove the folder 'local.media.jmf'.
+(by Luca Veltri, 21/4/2016)
 
 
 
-1) How to compile all packages under Windows OS (see section 3 for building mjUA with JMF support):
+1) How to compile all packages 
 --------------------------------------
-- just run 'make all'
-- otherwise you can separately do 'make' with the selected target (e.g. 'make ua')
+# execute the following commands:
+javac -d classes src/org/zoolu/net/*.java src/org/zoolu/rtp/*.java src/org/zoolu/sdp/*.java src/org/zoolu/sound/*.java src/org/zoolu/util/*.java
+javac -classpath classes -d classes src/org/zoolu/sip/address/*.java src/org/zoolu/sip/authentication/*.java src/org/zoolu/sip/call/*.java src/org/zoolu/sip/dialog/*.java src/org/zoolu/sip/header/*.java src/org/zoolu/sip/message/*.java src/org/zoolu/sip/provider/*.java  src/org/zoolu/sip/transaction/*.java
+javac -classpath classes -d classes src/local/media/*.java src/local/net/*.java src/local/ua/*.java
+javac -classpath classes -d classes src/local/server/*.java src/local/sbc/*.java
 
 
-
-2) How to compile all packages under linux OS (see section 3 for building mjUA with JMF support):
+2) How to make the jar files
 --------------------------------------
-- in file 'makefile-config' set 'OS=Linux'
-- just run 'make all'
-- otherwise you can separately do 'make' with the selected target (e.g. 'make ua')
+# execute the following commands:
+cd classes
+jar -cf ../lib/sip.jar org -C ../lib COPYRIGHT.txt -C ../lib license.txt
+jar -cf ../lib/ua.jar local/media local/net local/ua -C ../resources media/local/ua
+jar -cf ../lib/server.jar local/server
+jar -cf ../lib/sbc.jar local/net local/sbc
+cd ..
 
 
-
-3) How to build mjUA with JMF support:
+3) Alternatively, how to compile all packages and make all jars with 'make' under Windows OS
 --------------------------------------
-- if you have JMF installed you can bulid a JMF-powered UA with video support; you can do this byusing the jmf' target, i.e. run 'make jmf'
+# just run 'make all'
+# otherwise you can separately do 'make' with the selected target (e.g. 'make sip' or 'make ua')
+
+
+4) Alternatively, how to compile all packages and make all jars with 'make' under linux OS
+--------------------------------------
+# in file 'makefile-config' set 'OS=Linux'
+# run 'make all'
+# otherwise you can separately do 'make' with the selected target (e.g. 'make sip' or 'make ua')
+
+
+5) Problems with JDK bin folder
+--------------------------------------
+# if you have not the JDK bin folder correctly configured in your PATH environment variable, you may modify the file 'make-config' and properly set the parameters 'JDK_HOME=..' and 'JDK_BIN=$(JDK_HOME)/bin/'

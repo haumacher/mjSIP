@@ -28,83 +28,118 @@ package org.zoolu.net;
 
 /** A SocketAddress is a pair { address, port }.
   */
-public class SocketAddress
-{
-   /** The IpAddress */
-   IpAddress ipaddr;
+public class SocketAddress {
+	
+	/** The IpAddress */
+	IpAddress ipaddr;
 
-   /** The port */
-   int port;
+	/** The port */
+	int port;
  
-   
-   /** Creates a SocketAddress. */
-   public SocketAddress(IpAddress ipaddr, int port)
-   {  init(ipaddr,port);
-   }
+	
+	/** Creates a SocketAddress. */
+	public SocketAddress(IpAddress ipaddr, int port) {
+		init(ipaddr,port);
+	}
 
-   /** Creates a SocketAddress. */
-   public SocketAddress(String addr, int port)
-   {  init(new IpAddress(addr),port);
-   }
+	/** Creates a SocketAddress. */
+	public SocketAddress(String addr, int port) {
+		init(new IpAddress(addr),port);
+	}
 
-   /** Creates a SocketAddress. */
-   public SocketAddress(String soaddr)
-   {  String addr=null;
-      int port=-1;
-      int colon=soaddr.indexOf(':');
-      if (colon<0) addr=soaddr;
-      else
-      {  addr=soaddr.substring(0,colon);
-         try {  port=Integer.parseInt(soaddr.substring(colon+1));  } catch (Exception e) {}
-      }
-      init(new IpAddress(addr),port);
-   }
+	/** Creates a SocketAddress. */
+	public SocketAddress(String soaddr) {
+		String addr=null;
+		int port=-1;
+		soaddr=soaddr.trim();
+		if (soaddr.charAt(0)=='[') {
+			// IPv6 address and port number
+			int end=soaddr.indexOf(']');
+			if (end<0) throw new RuntimeException("Malformed IPv6 address: "+soaddr);
+			// else
+			addr=soaddr.substring(1,end);
+			int colon=soaddr.indexOf(':',end+1);
+			if (colon>0) port=Integer.parseInt(soaddr.substring(colon+1));
+		}
+		else
+		if (soaddr.indexOf('.')>0) {
+			// IPv4 address
+			int colon=soaddr.indexOf(':');
+			if (colon<0) addr=soaddr;
+			else {
+				// IPv4 address and port
+				addr=soaddr.substring(0,colon);
+				port=Integer.parseInt(soaddr.substring(colon+1));
+			}
+		}
+		else {
+			int colon=soaddr.indexOf(':');
+			if (colon>=0)  {
+				if (soaddr.indexOf(':',colon+1)>0) {
+					// IPv6 address, no port
+					addr=soaddr;
+				}
+				else {
+					// name and port
+					addr=soaddr.substring(0,colon);
+					port=Integer.parseInt(soaddr.substring(colon+1));
+				}
+			}
+			else {
+				// name, no port
+				addr=soaddr;
+			}
+		}
+		init(new IpAddress(addr),port);
+	}
 
-   /** Creates a SocketAddress. */
-   public SocketAddress(SocketAddress soaddr)
-   {  init(soaddr.ipaddr,soaddr.port);
-   }
+	/** Creates a SocketAddress. */
+	public SocketAddress(SocketAddress soaddr) {
+		init(soaddr.ipaddr,soaddr.port);
+	}
 
-   /** Inits the SocketAddress. */
-   private void init(IpAddress ipaddr, int port)
-   {  this.ipaddr=ipaddr;
-      this.port=port;
-   }
-   
-   /** Gets the host address. */
-   public IpAddress getAddress()
-   {  return ipaddr;
-   }
+	/** Inits the SocketAddress. */
+	private void init(IpAddress ipaddr, int port) {
+		this.ipaddr=ipaddr;
+		this.port=port;
+	}
+	
+	/** Gets the host address. */
+	public IpAddress getAddress() {
+		return ipaddr;
+	}
 
-   /** Gets the port. */
-   public int getPort()
-   {  return port;
-   }
+	/** Gets the port. */
+	public int getPort() {
+		return port;
+	}
 
-   /** Makes a copy. */
-   public Object clone()
-   {  return new SocketAddress(this);
-   }
+	/** Makes a copy. */
+	public Object clone() {
+		return new SocketAddress(this);
+	}
 
-   /** Whether it is equal to Object <i>obj</i>. */
-   public boolean equals(Object obj)
-   {  try
-      {  SocketAddress saddr=(SocketAddress)obj;
-         if (port!=saddr.port) return false;
-         if (!ipaddr.equals(saddr.ipaddr)) return false;
-         return true;
-      }
-      catch (Exception e) {  return false;  }
-   }
+	/** Whether it is equal to Object <i>obj</i>. */
+	public boolean equals(Object obj) {
+		try {
+			SocketAddress saddr=(SocketAddress)obj;
+			if (port!=saddr.port) return false;
+			if (!ipaddr.equals(saddr.ipaddr)) return false;
+			return true;
+		}
+		catch (Exception e) {  return false;  }
+	}
 
-   /** Returns a hash code value for the object. */
-   public int hashCode()
-   {  return toString().hashCode();
-   }
+	/** Returns a hash code value for the object. */
+	public int hashCode() {
+		return toString().hashCode();
+	}
 
-   /** Returns a String representation of this object. */
-   public String toString()
-   {  return (ipaddr.toString()+":"+port);
-   }
+	/** Returns a String representation of this object. */
+	public String toString() {
+		String addr=ipaddr!=null? ipaddr.toString() : null;
+		if (addr!=null && addr.indexOf(':')>=0) addr="["+addr+"]";
+		return addr+":"+port;
+	}
 
 }

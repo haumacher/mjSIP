@@ -31,37 +31,37 @@ import javax.net.ssl.SSLSocket;
 
 /** TlsSocket provides a uniform interface to TLS transport protocol.
   */
-public class TlsSocket extends TcpSocket
-{
+public class TlsSocket extends TcpSocket {
+	
 
-   /** Creates a new TlsSocket */ 
-   TlsSocket()
-   {  super();
-   }
+	/** Creates a new TlsSocket */ 
+	TlsSocket() {
+		super();
+	}
 
-   /** Creates a new TlsSocket */ 
-   TlsSocket(SSLSocket sock)
-   {  super(sock);
-   }
+	/** Creates a new TlsSocket */ 
+	TlsSocket(SSLSocket sock) {
+		super(sock);
+	}
 
-   /** Creates a new TlsSocket */ 
-   /*public TlsSocket(String host, int port) throws java.io.IOException
-   {  super(host,port);
-   }*/
+	/** Creates a new TlsSocket */ 
+	/*public TlsSocket(String host, int port) throws java.io.IOException {
+		super(host,port);
+	}*/
 
-   /** Creates a new TlsSocket */ 
-   /*public TlsSocket(String host, int port, IpAddress local_ipaddr, int local_port) throws java.io.IOException
-   {  super(host,port,local_ipaddr,local_port);
-   }*/
+	/** Creates a new TlsSocket */ 
+	/*public TlsSocket(String host, int port, IpAddress local_ipaddr, int local_port) throws java.io.IOException {
+		super(host,port,local_ipaddr,local_port);
+	}*/
 
-   /** Creates a new TlsSocket */ 
-   /*public TlsSocket(IpAddress ipaddr, int port) throws java.io.IOException
-   {  super(ipaddr,port);
-   }*/
+	/** Creates a new TlsSocket */ 
+	/*public TlsSocket(IpAddress ipaddr, int port) throws java.io.IOException {
+		super(ipaddr,port);
+	}*/
 
-   /** Creates a new TlsSocket */ 
-   /*public TlsSocket(IpAddress ipaddr, int port, IpAddress local_ipaddr, int local_port) throws java.io.IOException
-   {  super(ipaddr,port,local_ipaddr,local_port);
-   }*/
+	/** Creates a new TlsSocket */ 
+	/*public TlsSocket(IpAddress ipaddr, int port, IpAddress local_ipaddr, int local_port) throws java.io.IOException {
+		super(ipaddr,port,local_ipaddr,local_port);
+	}*/
 
 }

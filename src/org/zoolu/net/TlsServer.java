@@ -31,27 +31,27 @@ import javax.net.ssl.SSLServerSocket;
 
 /** TlsServer implements a TLS server wainting for incoming connection.
   */
-public class TlsServer extends TcpServer
-{  
+public class TlsServer extends TcpServer {
+	
 
-   /** Costructs a new TlsServer */
-   TlsServer(SSLServerSocket ssl_server, TcpServerListener listener) throws java.io.IOException
-   {  super(ssl_server,listener);
-   }
+	/** Costructs a new TlsServer */
+	TlsServer(SSLServerSocket ssl_server, TcpServerListener listener) throws java.io.IOException {
+		super(ssl_server,listener);
+	}
 
-   /** Costructs a new TlsServer */
-   /*public TlsServer(int port, TcpServerListener listener) throws java.io.IOException
-   {  super(port,null,listener);
-   }*/
-   
-   /** Costructs a new TlsServer */
-   /*public TlsServer(int port, IpAddress bind_ipaddr, TcpServerListener listener) throws java.io.IOException
-   {  super(port,bind_ipaddr,0,listener);
-   }*/
+	/** Costructs a new TlsServer */
+	/*public TlsServer(int port, TcpServerListener listener) throws java.io.IOException {
+		super(port,null,listener);
+	}*/
+	
+	/** Costructs a new TlsServer */
+	/*public TlsServer(int port, IpAddress bind_ipaddr, TcpServerListener listener) throws java.io.IOException {
+		super(port,bind_ipaddr,0,listener);
+	}*/
 
-   /** Costructs a new TlsServer */
-   /*public TlsServer(int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException
-   {  super(port,bind_ipaddr,alive_time,listener);
-   }*/
+	/** Costructs a new TlsServer */
+	/*public TlsServer(int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException {
+		super(port,bind_ipaddr,alive_time,listener);
+	}*/
 
 }
