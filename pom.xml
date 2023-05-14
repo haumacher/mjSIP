@@ -18,4 +18,26 @@
 
 	<dependencies>
 	</dependencies>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-sip</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-ua</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>
