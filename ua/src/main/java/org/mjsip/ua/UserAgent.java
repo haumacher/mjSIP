@@ -23,8 +23,6 @@ package org.mjsip.ua;
 
 
 
-import java.io.File;
-import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -56,7 +54,6 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Archive;
 import org.zoolu.util.ExceptionPrinter;
 import org.zoolu.util.LogLevel;
 import org.zoolu.util.Logger;
@@ -213,10 +210,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// in case of rat, do not load and play audio clips
 		if (!ua_profile.use_rat && !ua_profile.no_system_audio) {
 			try {
-				clip_on=getAudioClip(ua_profile.ua_jar,ua_profile.res_path,ua_profile.media_path+"/"+CLIP_ON);
-				clip_off=getAudioClip(ua_profile.ua_jar,ua_profile.res_path,ua_profile.media_path+"/"+CLIP_OFF);
-				clip_ring=getAudioClip(ua_profile.ua_jar,ua_profile.res_path,ua_profile.media_path+"/"+CLIP_RING);
-				clip_progress=getAudioClip(ua_profile.ua_jar,ua_profile.res_path,ua_profile.media_path+"/"+CLIP_PROGRESS);
+				clip_on=getAudioClip(ua_profile.media_path+"/"+CLIP_ON);
+				clip_off=getAudioClip(ua_profile.media_path+"/"+CLIP_OFF);
+				clip_ring=getAudioClip(ua_profile.media_path+"/"+CLIP_RING);
+				clip_progress=getAudioClip(ua_profile.media_path+"/"+CLIP_PROGRESS);
 				
 				clip_ring.setLoop();
 				clip_progress.setLoop();
@@ -948,17 +945,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	// **************************** Static ****************************
 
-	private static AudioClipPlayer getAudioClip(String jar_file, String res_path, String image_file) throws java.io.IOException {
-		if (jar_file!=null && new File(jar_file).canRead()) {
-			return new AudioClipPlayer(Archive.getJarURL(jar_file,image_file),null);
-		}
-		else
-		if (new File(res_path+"/"+image_file).canRead()) {
-			return new AudioClipPlayer(res_path+"/"+image_file,null);
-		}
-		else {
-			return new AudioClipPlayer(new URL(res_path+"/"+image_file),null);
-		}   
+	private static AudioClipPlayer getAudioClip(String image_file) throws java.io.IOException {
+		return new AudioClipPlayer(UserAgent.class.getResource("/" + image_file), null);
 	}
 
 

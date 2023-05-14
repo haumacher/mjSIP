@@ -1,7 +1,6 @@
 package org.mjsip.ua;
 
 
-import java.io.File;
 import java.util.Vector;
 
 import org.mjsip.media.MediaDesc;
@@ -66,15 +65,6 @@ public class UserAgentProfile extends Configure {
 	public String auth_realm=null;
 	/** User's passwd used for server authentication. */
 	public String auth_passwd=null;
-
-	/** Absolute path (or complete URI) of the jar archive, where various UA media (gif, wav, etc.) are stored.
-	  * Use value 'NONE' for getting resources from external folders.
-	  * By default, the file "lib/ua.jar" or "lib/mjua.jar" is used. */
-	public static String ua_jar=null;
-
-	/** Absolute path (or complete URI) of the folder containing UA resources.
-	 * By default, the local folder "resources" is used. */
-  public static String res_path="resources";
 
 	/** Relative path of UA media resources (gif, wav, etc.) within the UA jar file or within the resources folder. 
 	  * By default, the folder "media/org/mjsip/ua" is used. */
@@ -299,19 +289,6 @@ public class UserAgentProfile extends Configure {
 		
 		if (media_port>0) setMediaPort(media_port);
 		
-		if (ua_jar==null) {
-			if (new File("ua.jar").canRead()) ua_jar="ua.jar";
-			else
-			if (new File("lib/ua.jar").canRead()) ua_jar="lib/ua.jar";
-			else
-			if (new File("mjua.jar").canRead()) ua_jar="mjua.jar";
-			else
-			if (new File("lib/mjua.jar").canRead()) ua_jar="lib/mjua.jar";
-		}
-		else {
-			if (ua_jar!=null && ua_jar.equalsIgnoreCase(Configure.NONE)) ua_jar=null;			
-		}
-
 		setUnconfiguredAttributes(null);
 	}
 
@@ -421,8 +398,6 @@ public class UserAgentProfile extends Configure {
 		if (attribute.equals("auth_realm"))     {  auth_realm=par.getRemainingString().trim();  return;  }
 		if (attribute.equals("auth_passwd"))    {  auth_passwd=par.getRemainingString().trim();  return;  }
 
-		if (attribute.equals("ua_jar"))         {  ua_jar=par.getStringUnquoted();  return;  }      
-		if (attribute.equals("res_path"))       {  res_path=par.getStringUnquoted();  return;  }      
 		if (attribute.equals("media_path"))     {  media_path=par.getStringUnquoted();  return;  }      
 		if (attribute.equals("buddy_list_file")){  buddy_list_file=par.getStringUnquoted();  return;  }      
 

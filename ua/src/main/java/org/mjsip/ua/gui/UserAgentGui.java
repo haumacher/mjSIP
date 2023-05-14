@@ -179,8 +179,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		
 		// load icons
 		try {
-			icon_call=getImageIcon(ua_profile.ua_jar,ua_profile.res_path,ua_profile.media_path+"/"+CALL_GIF);
-			icon_hangup=getImageIcon(ua_profile.ua_jar,ua_profile.res_path,ua_profile.media_path+"/"+HANGUP_GIF);
+			icon_call=getImageIcon(ua_profile.media_path+"/"+CALL_GIF);
+			icon_hangup=getImageIcon(ua_profile.media_path+"/"+HANGUP_GIF);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -603,17 +603,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 	// ****************************** Static ******************************
 
-	private static ImageIcon getImageIcon(String jar_file, String res_path, String image_file) throws java.io.IOException {
-		if (jar_file!=null && new File(jar_file).canRead()) {
-			return Archive.getImageIcon(Archive.getJarURL(jar_file,image_file));
-		}
-		else
-		if (new File(res_path+"/"+image_file).canRead()) {
-			return Archive.getImageIcon(res_path+"/"+image_file);
-		}
-		else {
-			return Archive.getImageIcon(new URL(res_path+"/"+image_file));
-		}
+	private static ImageIcon getImageIcon(String image_file) throws java.io.IOException {
+		return Archive.getImageIcon(UserAgent.class.getResource("/" + image_file));
 	}
 
 
