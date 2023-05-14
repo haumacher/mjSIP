@@ -1,0 +1,251 @@
+/*
+ * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * 
+ * This source code is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This source code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this source code; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * Author(s):
+ * Luca Veltri (luca.veltri@unipr.it)
+ */
+
+package local.media;
+
+
+import local.net.RtpPacket;
+import local.net.RtpSocket;
+
+import javax.sound.sampled.*;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.DatagramSocket;
+
+
+/** AudioOutput allows the access of system audio output in pure-java manner.
+  * It uses the javax.sound library (package).
+  */
+public class AudioOutput
+{
+
+   // ####################### BEGIN STATIC #######################
+
+   static boolean DEBUG=true;
+   
+   static final int INTERNAL_BUFFER_SIZE=40960;
+   
+   private static SourceDataLine source_line;
+   
+   private static AudioFormat line_format;
+
+   static final int RESILIENCE_TIME=50; // milliseconds
+   
+   /** Init the static system audio output line */
+   public static void initAudioLine()
+   {
+      /*println("Available Mixers:");
+      Mixer.Info[] aInfos=AudioSystem.getMixerInfo();
+      for (int i=0; i < aInfos.length; i++) print("   "+i+") "+aInfos[i].getName()+"\n");      
+      if (aInfos.length == 0)
+      {  println("WARNING: NO mixers available.");
+         //System.exit(0);
+         return;
+      }*/
+
+      // 44100 Hz, Linear, 16bit, Stereo :
+      //float fFrameRate = 44100.0F;
+      //AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, fFrameRate, 16, 2, 4, fFrameRate, false);
+      
+      // 44100 Hz, Linear, 16bit, Mono :
+      //float fFrameRate = 44100.0F;
+      //AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, fFrameRate, 16, 1, 2, fFrameRate, false);
+
+      // 8000 Hz, Linear, 16bit, Mono :
+      float fFrameRate=8000.0F;
+      line_format=new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, fFrameRate, 16, 1, 2, fFrameRate, false);
+      
+      DataLine.Info lineInfo=new DataLine.Info(SourceDataLine.class, line_format, INTERNAL_BUFFER_SIZE);
+
+      if (!AudioSystem.isLineSupported(lineInfo))
+      {  System.err.println("ERROR: AudioLine not supported by this System.");
+      }
+      try
+      {  source_line=(SourceDataLine)AudioSystem.getLine(lineInfo);
+         if (DEBUG) println("SourceDataLine: "+source_line);
+         source_line.open(line_format,INTERNAL_BUFFER_SIZE);
+      }
+      catch (LineUnavailableException e) 
+      {  System.err.println("ERROR: LineUnavailableException at AudioReceiver()");
+         e.printStackTrace();
+      }      
+   }          
+
+   /** Closes the static system audio output line */
+   static public void closeAudioLine()
+   {  source_line.close();
+   }
+
+
+   // ######################## END STATIC ########################
+
+
+   AudioInputStream audio_input_stream=null;
+
+   PipedOutputStream output_stream=null;   
+   
+   /** The internal AudioPlayer */
+   AudioPlayer audio_player=null;
+
+
+
+   /** Constructs an AudioOutput with audio_format=[8000 Hz, ULAW, 8bit, Mono] */
+   public AudioOutput()
+   {  init(null);
+   }          
+
+   /** Constructs an AudioOutput */
+   public AudioOutput(AudioFormat audio_format)
+   {  init(audio_format);
+   }          
+
+   /** Inits an AudioOutput */
+   private void init(AudioFormat format)
+   {
+      if (source_line==null) initAudioLine();
+      
+      if (format==null) 
+      {  // by default use 8000 Hz, ULAW, 8bit, Mono
+         float fFrameRate=8000.0F;
+         format=new AudioFormat(AudioFormat.Encoding.ULAW, fFrameRate, 8, 1, 1, fFrameRate, false);
+      }
+      
+      try
+      {  
+         PipedInputStream input_stream=new PipedInputStream();
+         output_stream=new PipedOutputStream(input_stream);
+         
+         audio_input_stream=new AudioInputStream(input_stream,format,-1);
+         if (audio_input_stream==null) println("ERROR: audio stream null");
+         audio_input_stream=AudioSystem.getAudioInputStream(line_format,audio_input_stream);
+         if (audio_input_stream==null) println("ERROR: audio stream null (after codec conversion)");
+      } 
+      catch (Exception e) {  e.printStackTrace();  }
+      
+   } 
+   
+   
+   /** Gets the audio OuputStream */
+   public OutputStream getOuputStream()
+   {  return output_stream;
+   }
+  
+
+   /** Starts playing */
+   public void play()
+   {  audio_player=new AudioPlayer(audio_input_stream);
+   }
+
+   /** Stops playing */
+   public void stop()
+   {  if (audio_player!=null)
+      {  // stop the player
+         audio_player.halt();
+         // wait in order to not break the pipe (i think it is a java bug..)
+         while (audio_player.isRunning());
+      }
+   }
+
+
+   // ************ Begin of class AudioPlayer ************
+
+   /** Size of the read buffer */
+   //private static final int BUFFER_SIZE=200;
+   private static final int BUFFER_SIZE=40960;
+
+   /** AudioPlayer */
+   class AudioPlayer extends Thread
+   { 
+      /** The AudioInputStream to be played */
+      AudioInputStream audio_input_stream;
+      
+      /** Whether the player is running */
+      boolean running=false;
+
+      /** Whether the player has to stop */
+      boolean stop;
+
+     /** Costructs a new AudioPlayer */
+      AudioPlayer (AudioInputStream audio_input_stream)
+      {  this.audio_input_stream=audio_input_stream;
+         start();
+      }
+      
+      /** Whether is running */
+      public boolean isRunning()
+      {  return running;
+      }
+
+
+      /** Stops playing */
+      public void halt()
+      {  stop=true;
+      }
+    
+      /** Play it in a new Thread. */
+      public void run()
+      {      
+         AudioOutput.source_line.start();
+                           
+         byte[] buffer=new byte[BUFFER_SIZE];
+   
+         running=true;
+         stop=false;
+   
+         try
+         {  while (!stop)
+            {  if (audio_input_stream.available()>0)
+               {  System.out.println("DEBUG AudioOutput: "+audio_input_stream.available());
+                  int num=audio_input_stream.read(buffer, 0, buffer.length);
+                  AudioOutput.source_line.write(buffer,0,num);
+               }
+               else
+               {  // wait a while beafore check for new samples, otherwise it starves the CPU
+                  try { Thread.sleep(AudioOutput.RESILIENCE_TIME); } catch (Exception e) {}
+               }
+            }
+         }
+         catch (IOException e)  {  e.printStackTrace();  }
+         running=false;
+            
+         AudioOutput.source_line.stop();
+         //AudioOutput.source_line.close();
+   
+         if (DEBUG) AudioOutput.println("audio terminated");
+      }
+   }
+
+   // ************* End of class AudioPlayer *************
+   
+
+   /** Debug output */
+   private static void println(String str)
+   {  System.out.println("AudioOutput: "+str);
+   }
+
+   /** Debug output */
+   private static void print(String str)
+   {  System.out.print("AudioOutput: "+str);
+   }
+
+}
+
+

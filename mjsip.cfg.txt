@@ -1,0 +1,494 @@
+# 
+#                   MjSip-1.6 Configuration File
+# ________________________________________________________________
+#
+# This file inclues all MjSip configuration parameters.
+# MjSip parameters are organized into 6 sections:
+#  o Section 1: SipStack base configuration
+#  o Section 2: Logs
+#  o Section 3: SipProvider configuration
+#  o Section 4: Server configuration
+#  o Section 5: UA configuration
+#  o Section 6: SBC configuration
+#
+
+
+
+# ________________________________________________________________
+#
+# Section 1: SipStack base configuration
+# ________________________________________________________________
+#
+# Normally, you do not have to change the base configuration,
+# and you can go directly to Section 2.
+# SIP and transport layer configurations are handled in Section 3. 
+#
+
+# Default SIP port
+# Note that this is not the port used by the running stack, but simply the standard default SIP port.
+# Normally it sould be set to 5060 as defined by RFC 3261. Using a different value may cause
+# some problems when interacting with other unaware SIP UAs. 
+# Default value: default_port=5060
+#default_port=5060
+
+# Default supported transport protocols.
+# Default value: default_transport_protocols=udp,tcp
+#default_transport_protocols=udp
+
+# Default max number of contemporary open transport connections.
+# Default value: default_nmax_connections=32
+#default_nmax_connections=0
+
+# Whether adding 'rport' parameter on via header fields of outgoing requests.
+# Default value: use_rport=yes
+#use_rport=no
+
+# Whether adding (forcing) 'rport' parameter on via header field of incoming responses.
+# Default value: force_rport=no
+#force_rport=yes
+
+# Default max-forwards value (RFC3261 recommends value 70).
+# Default value: max_forwards=70
+#max_forwards=10
+
+# Starting retransmission timeout (milliseconds); called T1 in RFC2361; they suggest T1=500ms 
+# Default value: retransmission_timeout=500
+#retransmission_timeout=2000 
+
+# Maximum retransmission timeout (milliseconds); called T2 in RFC2361; they suggest T2=4sec 
+# Default value: max_retransmission_timeout=4000  
+#max_retransmission_timeout=4000  
+
+# Transaction timeout (milliseconds); RFC2361 suggests 64*T1=32000ms 
+# Default value: transaction_timeout=32000
+#transaction_timeout=10000    
+
+# Clearing timeout (milliseconds); T4 in RFC2361; they suggest T4=5sec 
+# Default value: clearing_timeout=5000
+#clearing_timeout=5000
+       
+# Whether using only one thread for all timer instances.
+# Default value: single_timer=no
+#single_timer=yes
+
+# Whether 1xx responses create an "early dialog" for methods that create dialog.
+# Default value: early_dialog=no
+#early_dialog=yes
+
+# Default 'expires' time in seconds. RFC2361 gives as default value expires=3600 
+# Default value: default_expires=3600
+#default_expires=1800
+
+# UA info included in request messages (in the User-Agent header field).
+# Use 'NONE' string or let it blank if the User-Agent header filed must be added.
+# Default: ua_info=<the mjsip release>
+# ua_info=NONE
+
+# Server info included in request messages (in the Server header field).
+# Use 'NONE' string or let it blank if the Server header filed must be added.
+# Default: server_info=<the mjsip release>
+# server_info=NONE
+
+
+
+# ________________________________________________________________
+#
+# Section 2: Logs
+# ________________________________________________________________
+#
+# Change these parameters in order to customize how log-files are handled.
+# By default log files are placed into the ./log folder, they are not rotated,
+# and the maximum size is 2M.
+#
+
+# Log level. Only logs with a level less or equal to this are written.
+# Default value: debug_level=3
+#debug_level=0
+
+# Path for the log folder where log files are written.
+# By default, it is used the "./log" folder
+# Use ".", to store logs in the current root folder
+# Default value: log_path=./log
+#log_path= .
+
+#The size limit of the log file [kB].
+# Default value: max_logsize=2048
+#max_logsize=4096
+
+# The number of rotations of log files. Use '0' for NO rotation, '1' for rotating a single file.
+# Default value: log_rotations=0
+#log_rotations=4
+
+# The rotation period in MONTHs, DAYs, HOURs, or MINUTEs.
+# example: "log_rotation_time=3 MONTHS", that is equivalent to "log_rotations=90 DAYS"
+# Default value: log_rotation_time=2 MONTHS
+#log_rotation_time=7 DAYS
+
+
+
+# ________________________________________________________________
+#
+# Section 3: SipProvider configuration
+# ________________________________________________________________
+#
+# Change these parameters in order to customize the SIP transport layer.
+# Usually you have to deal with some of these configuration parameters.
+#
+
+# Via address/name.
+# Use 'AUTO-CONFIGURATION' for auto detection, or let it undefined.
+# Default value: host_addr=AUTO-CONFIGURATION
+#host_addr=192.168.0.33
+
+# Local SIP port 
+# Default value: host_port=5060
+#host_port=5060  
+
+# Network interface (IP address) used by SIP.
+# Use 'all-interfaces' for binding SIP to all interfaces (or let it undefined).
+# Default value: host_ifaddr=ALL-INTERFACES
+#host_ifaddr=192.168.0.33
+
+# List of enabled transport protocols (the first protocol is used as default)
+# Default value: transport_protocols=udp
+#transport_protocols=udp,tcp
+
+# Max number of contemporary open transport connections.
+# Default value: nmax_connections=32
+#nmax_connections=0
+
+# Outbound proxy (host_addr[:host_port]).
+# Use 'NONE' for not using an outbound proxy (or let it undefined).
+# Default value: outbound_proxy=NONE
+#outbound_proxy=proxy.wonderland.net:5060
+
+# Whether logging all packets (including non-SIP keepalive tokens).
+# Default value: log_all_packets=no
+#log_all_packets=yes
+
+
+
+# ________________________________________________________________
+#
+# Section 4: Server configuration
+# ________________________________________________________________
+#
+# Change these parameters in order to customize the Server behaviour.
+# You need to edit this section only if you are using a MjSip Server.
+#
+
+# The domain name(s) that the server administers.
+# It lists the domain names for which the Location Service wmaintains user bindings. 
+# Use 'auto-configuration' for automatic configuration of the domain name.
+#domain_names=wonderland.net biloxi.example.com
+#domain_names=AUTO-CONFIGURATION
+
+# Whether consider any port as valid local domain port (regardless which sip port is used).
+# Default value: domain_port_any=no
+#domain_port_any=yes
+
+# Whether the Server should act as Registrar (i.e. respond to REGISTER requests).    
+# Default value: is_registrar=yes
+#is_registrar=no
+
+# Maximum expires time (in seconds).
+# Default value: expires=3600
+#expires=1800
+
+# Whether the Registrar can register new users (i.e. REGISTER requests from unregistered users).    
+# Default value: register_new_users=yes
+#register_new_users=no
+
+# Whether the Server relays requests for (or to) non-local users.   
+# Default value: is_open_proxy=yes
+#is_open_proxy=no
+
+# The type of location service.
+# You can specify the location service type (e.g. local, ldap, radius, mysql)
+# or the class name (e.g. local.server.LocationServiceImpl).
+# Default value: location_service=local
+#location_service=ldap
+
+# The name of the location DB.
+# Default value: location_db=users.db
+#location_db=config/users.db
+
+# Whether location DB has to be cleaned at startup.
+# Default value: location_db_clean=no
+#location_db_clean=yes
+
+# Whether the Server authenticates local users.   
+# Default value: do_authentication=no
+#do_authentication=yes
+
+# The authentication scheme.
+# You can specify the authentication scheme name (e.g. Digest, AKA, etc.)
+# or the class name (e.g. local.server.AuthenticationServerImpl).
+# Default value: authentication_scheme=Digest
+#authentication_scheme=AKA
+
+# The authentication realm.
+# If not defined or equal to 'NONE' (default), the used via address is used instead.
+# Default value: authentication_realm=NONE
+#authentication_realm=wonderland.net
+
+# The type of authentication service.
+# You can specify the authentication service type (e.g. local, ldap, radius, mysql)
+# or the class name (e.g. local.server.AuthenticationServiceImpl).
+# Default value: authentication_service=local
+#authentication_service=ldap
+
+# The name of the authentication DB.
+# Default value: authentication_db=aaa.db
+#authentication_db=config/aaa.db
+
+# Whether maintaining a complete call log.   
+# Default value: call_log=no
+#call_log=yes
+
+# Whether the server should stay in the signaling path (uses Record-Route/Route).
+# Default value: on_route=no
+#on_route=yes
+
+# Whether implementing the RFC3261 Loose Route (or RFC2543 Strict Route) rule.
+# Default value: loose_route=yes
+#loose_route=no
+
+# Whether checking for loops before forwarding a request (Loop Detection). In RFC3261 it is optional.
+# Default value: loop_detection=yes
+#loop_detection=no
+
+# Sequence of pairs of username or phone prefix and corresponding nexthop address.
+# It provides static rules for routing number-based SIP-URL the server is responsible for.
+# Use "default" (or "*") as default prefix.
+# Example, request URL sip:01234567@zoopera.com received by a server responsible for domain name 'zoopera.com'.
+#phone_routing_rules={prefix=0123,nexthop=127.0.0.2:7002} {prefix=*,nexthop=127.0.0.3:7003}
+
+# Sequence of pairs of destination domain and corresponding nexthop address.
+# It provides static rules for routing domain-based SIP-URL the server is NOT responsible for.
+# It make the server acting (also) as 'Interrogating' Proxy, i.e. I-CSCF in the 3G networks.
+# domain_routing_rules={domain=wonderland.net,nexthop=neverland.net:5060} */
+
+
+# ________________________________________________________________
+#
+# Section 5: UA configuration
+# ________________________________________________________________
+#
+# Change these parameters in order to customize the UA profile.
+# You need to edit this section only if you are using a MjSip UA or
+# you are managing 3PCC services.
+#
+
+# User's AOR (Address Of Record), used also as From URL.
+# The AOR is the SIP address used to register with the user's registrar server (if requested).
+# The address of the registrar is taken from the hostport field of the AOR, i.e. the value(s) host[:port] after the '@' character.
+# If not defined (default), it equals the 'contact_url' parameter
+#from_url=sip:alice@wonderland.net
+
+# Contact URL.
+# If not defined (default), it is formed by sip:username@host_address:host_port
+#contact_url=sip:alice@192.168.0.55:5070
+  
+# User's name (used to build the contact_url if not explitely defined).
+#username=alice
+
+# User's realm.
+#realm=wonderland.net
+
+# User's passwd.
+#passwd=mypassword
+
+# Path for the 'ua.jar' lib, used to retrive various UA media (gif, wav, etc.).
+# Default value: ua_jar=lib/ua.jar
+#ua_jar=./ua.jar
+
+# Path for the 'contacts.lst' file where save and load the list of VisualUA contacts.
+# Default value: contacts_file=config/contacts.lst
+#contacts_file=contacts.lst
+
+# Whether registering with the registrar server.
+# Default value: do_register=no
+#do_register=yes
+
+# Whether unregistering the contact address.
+# Default value: do_unregister=no
+#do_unregister=yes
+
+# Whether unregistering all contacts beafore registering the contact address.
+# Default value: do_unregister_all=no
+#do_unregister_all=yes
+
+# Expires time.
+# Default value: expires=3600
+#expires=1800
+
+# Rate of keep-alive packets sent toward the registrar server (in milliseconds).
+# Set keepalive_time=0 to disable the sending of keep-alive datagrams.
+# Default value: keepalive_time=0
+#keepalive_time=8000
+
+# Automatic call a remote user secified by the 'call_to' value.
+# Use value 'NONE' for manual calls (or let it undefined).
+# Default value: call_to=NONE
+#call_to=sip:alice@wonderland.net   
+   
+# Automatic answer time in seconds; time<0 corresponds to manual answer mode.
+# Default value: accept_time=-1       
+#accept_time=0
+
+# Automatic hangup time (call duartion) in seconds; time<=0 corresponds to manual hangup mode.
+# Default value: hangup_time=-1
+#hangup_time=10
+
+# Automatic call transfer time in seconds; time<0 corresponds to no auto transfer mode.
+# Default value: transfer_time=-1
+#transfer_time=10
+
+# Automatic re-inviting time in seconds; time<0 corresponds to no auto re-invite mode.
+# Default value: re_invite_time=-1
+#re_invite_time=10
+
+# Redirect incoming call to the secified url.
+# Use value 'NONE' for not redirecting incoming calls (or let it undefined).
+# Default value: redirect_to=NONE
+#redirect_to=sip:alice@wonderland.net
+
+# Transfer calls to the secified url.
+# Use value 'NONE' for not transferring calls (or let it undefined).
+# Default value: transfer_to=NONE
+#transfer_to=sip:alice@wonderland.net
+
+# No offer in the invite.
+# Default value: no_offer=no
+#no_offer=yes
+
+# Whether using audio.
+# Default value: audio=no
+#audio=yes
+
+# Whether using video.
+# Default value: video=no
+#video=yes
+
+# Whether playing in receive only mode.
+# Default value: recv_only=no
+#recv_only=yes
+
+# Whether playing in send only mode.
+# Default value: send_only=no
+#send_only=yes
+
+# Whether playing a test tone in send only mode.
+# Default value: send_tone=no
+#send_tone=yes
+
+# Audio file to be played.
+# Default value: send_file=NONE
+#send_file=audio1.in
+
+# Audio file to be recored.
+# Default value: recv_file=NONE
+#recv_file=audio1.out
+
+# Audio port.
+# Default value: audio_port=21068
+#audio_port=4000
+
+# Audio avp.
+# Default value: audio_avp=0
+#audio_avp=101
+
+# Audio codec.
+# Default value: audio_codec=PCMU
+#audio_codec=GSM
+
+# Audio sample rate.
+# Default value: audio_sample_rate=8000
+#audio_sample_rate=16000
+
+# Audio sample size.
+# Default value: audio_sample_size=1
+#audio_sample_size=2
+
+# Audio frame size.
+# Default value: audio_frame_size=160
+#audio_frame_size=500
+
+# Video port.
+# Default value: video_port=21070
+#video_port=4002
+
+# Video avp.
+# Default value: video_avp=17
+#video_avp=101
+
+# Whether using JMF for audio/video streaming.
+# Default value: use_jmf=no
+#use_jmf=yes
+
+# Whether using RAT (Robust Audio Tool) as audio sender/receiver.
+# Default value: use_rat=no
+#use_rat=yes
+
+# RAT command-line executable.
+# Default value: bin_rat=rat
+#bin_rat=c:\programmi\mbone\rat
+
+# Whether using VIC (Video Conferencing Tool) as video sender/receiver.
+# Default value: use_vic=no
+#use_vic=yes
+
+# VIC command-line executable.
+# Default value: bin_vic=vic
+#bin_vic=c:\programmi\mbone\rat
+
+
+# ________________________________________________________________
+#
+# Section 6: SBC
+# ________________________________________________________________
+#
+# Change these parameters in order to customize the SessionBorderController (SBC) behaviour.
+# You need to edit this section only if you are using a SBC.
+#
+
+# Maximum time that the UDP relay remains active without receiving UDP datagrams (in milliseconds).
+# Default value: relay_timeout=60000
+
+# Refresh time of address-binding cache (in milliseconds)
+# Default value: binding_timeout=3600000
+
+# Minimum time between two changes of peer address (in milliseconds)
+# Default value: handover_time=0
+
+# Rate of keep-alive datagrams sent toward all registered UAs (in milliseconds).
+# Set keepalive_time=0 to disable the sending of keep-alive datagrams
+# Default value: keepalive_time=0
+
+# Whether sending keepalive datagram to all contacted UAs (also toward non-registered UAs)
+# Default value: keepalive_aggressive=no
+
+# Whether intercepting media traffics.
+# Default value: do_interception=no
+
+# Whether injecting new media flows.
+# Default value: do_active_interception=no
+
+# Sink address for media traffic interception.
+# Default value: sink_addr=127.0.0.1
+
+# Sink port for media traffic interception.
+# Default value: sink_port=0
+
+# Media address.
+# Default value: media_addr=0.0.0.0
+
+# Available media ports.
+# Default value: media_ports=41000-41499
+
+# Backend proxy where all requests not coming from it are passed to. 
+# It can be specified as FQDN or host_addr[:host_port].
+# Use 'NONE' for not using a backend proxy (or let it undefined).
+# Default value: backend_proxy=NONE
+#backend_proxy=127.0.0.2:5069

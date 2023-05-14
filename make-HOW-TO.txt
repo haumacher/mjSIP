@@ -1,0 +1,26 @@
+Make MjSIP HOW-TO
+__________________________________________________________________
+(by Luca Veltri, 16/10/2005)
+
+
+1) How to compile all packages under Windows OS (see section 3 for compiling without JMF support):
+--------------------------------------
+- just run 'make all'
+- otherwise you can separately do 'make' with the selected target (e.g. 'make server')
+
+2) How to compile all packages under linux OS (see section 3 for compiling without JMF support):
+--------------------------------------
+- in file 'makefile-config' set 'OS=Linux'
+- just run 'make all'
+- otherwise you can separately do 'make' with the selected target (e.g. 'make server')
+
+
+3) How to remove the dipendences to JMF in order to compile ua and media packages without JMF support:
+--------------------------------------
+- remove the following files:
+src/local/ua/JMFAudioLaucher.java
+src/local/ua/JMFVideoLaucher.java
+src/local/media/JMediaReceiver.java
+src/local/media/JMediaReceiverListener.java
+src/local/media/JMediaSender.java
+src/local/media/JVisualReceiver.java

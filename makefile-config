@@ -1,0 +1,68 @@
+#####################################################################
+# This file defines where various build tools live and gets included
+# in each of the makefiles. 
+#
+# The distribution ships with everything you need except for the Java 
+# development kit (get this from www.javasoft.com) and cygwin if you are 
+# under windows. You need cygwin for building it using the makefiles
+# There are also several shell scriptsfor starting things up in various 
+# places. No problem under unixen but for windows, you need to install 
+# cygwin. 
+#
+# You can set the following variables here according to where you 
+# have put things. These values are used in the makefiles.
+#
+# JDK_HOME : is the directory where the JDK is installed 
+# OS       : is the Operative System (Windows, Linux, Unix, etc.)
+#
+#####################################################################
+
+
+
+# Selects the proper OS
+#OS= Linux
+OS= Windows
+
+
+# Selects the proper shell
+# On MS-DOS systems, COMSPEC variable refers to the default shell (usually c:\windows\command.com)
+#SHELL= COMSPEC
+SHELL= sh
+
+
+# Selects the proper make tool
+MAKE= make
+#MAKE= c:\programmi\bin\make
+
+
+# Selects the proper jdk home
+ifeq (${OS},Windows) 
+	JDK_HOME= c:/programmi/jdk1.3.1
+else
+	JDK_HOME= /user/local/jdk1.3.1
+endif
+
+
+# Selects the proper java tools
+#JDK_BIN=$(JDK_HOME)/bin/
+JDK_BIN=
+JAVA=   $(JDK_BIN)java
+JAVAC=  $(JDK_BIN)javac
+JAVADOC=$(JDK_BIN)javadoc
+JAR=    $(JDK_BIN)jar
+
+
+# Tries to select the proper make-dir command
+ifeq (${SHELL},$(COMSPEC)) 
+	MKDIR= mkdir
+else
+	MKDIR= mkdir -p
+endif
+
+# Tries to select the proper remove command
+ifeq (${SHELL},$(COMSPEC)) 
+	RM= del
+else
+	RM= rm -f
+endif
+
