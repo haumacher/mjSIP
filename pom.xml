@@ -7,18 +7,23 @@
 	<groupId>org.mjsip</groupId>
 	<artifactId>mjsip-parent</artifactId>
 	<version>1.9.0-SNAPSHOT</version>
-	
+
 	<packaging>pom</packaging>
-	
+
 	<modules>
 		<module>sip</module>
 		<module>server</module>
 		<module>ua</module>
 	</modules>
 
+	<properties>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+	</properties>
+
 	<dependencies>
 	</dependencies>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -26,13 +31,13 @@
 				<artifactId>mjsip-sip</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.mjsip</groupId>
 				<artifactId>mjsip-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.mjsip</groupId>
 				<artifactId>mjsip-ua</artifactId>
@@ -40,4 +45,18 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>..</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>COPYRIGHT.txt</include>
+					<include>LICENSE.txt</include>
+				</includes>
+				<targetPath>META-INF</targetPath>
+			</resource>
+		</resources>
+	</build>
 </project>
