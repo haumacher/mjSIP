@@ -32,6 +32,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
+import org.zoolu.util.TimerListener;
 
 
 
@@ -42,7 +43,7 @@ import org.zoolu.util.Timer;
   * <BR> The changes of the internal status and the received messages are fired
   * to the TransactionListener passed to the InviteTransactionClient object.
   */
-public class InviteTransactionClient extends TransactionClient {
+public class InviteTransactionClient extends TransactionClient implements TimerListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InviteTransactionClient.class);
 

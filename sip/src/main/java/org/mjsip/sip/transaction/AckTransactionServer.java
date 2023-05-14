@@ -33,6 +33,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
+import org.zoolu.util.TimerListener;
 
 
 
@@ -40,7 +41,7 @@ import org.zoolu.util.Timer;
   * The AckTransactionServer sends the final response message and retransmits it
   * several times until the method terminate() is called or the trasaction timeout fires.
   */ 
-public class AckTransactionServer extends Transaction implements SipProviderListener {
+public class AckTransactionServer extends Transaction implements SipProviderListener, TimerListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AckTransactionServer.class);
 

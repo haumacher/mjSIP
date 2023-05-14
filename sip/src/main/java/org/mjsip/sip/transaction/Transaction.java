@@ -31,8 +31,6 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.TransactionId;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
@@ -45,7 +43,7 @@ import org.zoolu.util.TimerListener;
   * The changes of the internal status and the received messages are fired to the
   * corrsponding transaction listener.
   */
-public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ implements SipProviderListener, TimerListener {
+public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ implements SipProviderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Transaction.class);
 
@@ -188,14 +186,6 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 		//do nothing
 	}
 	
-	/** Method derived from interface TimerListener.
-	  * It's fired from an active Timer.
-	  */
-	@Override
-	public void onTimeout(Timer to) {
-		//do nothing
-	}
-
 	/** Terminates the transaction. */
 	public abstract void terminate();
 	

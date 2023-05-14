@@ -30,12 +30,13 @@ import org.mjsip.sip.transaction.InviteTransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
+import org.zoolu.util.TimerListener;
 
 
 /** ProxyInviteTransactionClient extends InviteTransactionClient adding "Timer C"
   * as defined in RFC 3261.
   */ 
-public class ProxyInviteTransactionClient extends InviteTransactionClient {
+public class ProxyInviteTransactionClient extends InviteTransactionClient implements TimerListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ProxyInviteTransactionClient.class);
 

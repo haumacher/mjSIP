@@ -33,6 +33,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
+import org.zoolu.util.TimerListener;
 
 
 
@@ -41,7 +42,7 @@ import org.zoolu.util.Timer;
   * The changes of the internal status and the received messages are fired to the TransactionListener passed to the TransactionServer object.<BR>
   * When costructing a new TransactionServer, the transaction type is passed as String parameter to the costructor (e.g. "CANCEL", "BYE", etc..)
   */
-public class TransactionServer extends Transaction {
+public class TransactionServer extends Transaction implements TimerListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TransactionServer.class);
 

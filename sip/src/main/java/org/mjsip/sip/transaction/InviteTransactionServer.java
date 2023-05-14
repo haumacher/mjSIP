@@ -34,6 +34,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
+import org.zoolu.util.TimerListener;
 
 
 
@@ -47,7 +48,7 @@ import org.zoolu.util.Timer;
   * a "100 Trying" response when the INVITE message is received
   * (as suggested by RFC3261) 
   */
-public class InviteTransactionServer extends TransactionServer {
+public class InviteTransactionServer extends TransactionServer implements TimerListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InviteTransactionServer.class);
 
