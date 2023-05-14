@@ -31,41 +31,46 @@ import java.io.IOException;
 
 /** UdpTransport provides an UDP transport service for SIP.
   */
-class UdpTransport implements Transport, UdpProviderListener
+public class UdpTransport implements Transport, UdpProviderListener
 {
    /** UDP protocol type */
    public static final String PROTO_UDP="udp";
 
-
    /** UDP provider */
    UdpProvider udp_provider;  
 
-       
-   /** The protocol type */ 
-   String proto;
-
    /** Transport listener */
-   TransportListener listener;   
+   TransportListener listener=null;   
+
+
 
 
    /** Creates a new UdpTransport */ 
-   public UdpTransport(int port, TransportListener listener) throws IOException
-   {  this.listener=listener;
-      UdpSocket socket=new UdpSocket(port);
-      udp_provider=new UdpProvider(socket,this);
+   public UdpTransport(UdpSocket socket)
+   {  udp_provider=new UdpProvider(socket,this);
    }
 
-   /** Creates a new UdpTransport */ 
-   public UdpTransport(int port, IpAddress ipaddr, TransportListener listener) throws IOException
-   {  this.listener=listener;
-      UdpSocket socket=new UdpSocket(port,ipaddr);
-      udp_provider=new UdpProvider(socket,this);
-   }
 
    /** Creates a new UdpTransport */ 
-   public UdpTransport(UdpSocket socket, TransportListener listener)
-   {  this.listener=listener;
+   public UdpTransport(int local_port) throws IOException
+   {  initUdp(local_port,null);
+   }
+
+
+   /** Creates a new UdpTransport */ 
+   public UdpTransport(int local_port, IpAddress host_ipaddr) throws IOException
+   {  initUdp(local_port,host_ipaddr);
+   }
+
+
+   /** Inits the UdpTransport */ 
+   protected void initUdp(int local_port, IpAddress host_ipaddr) throws IOException
+   {  if (udp_provider!=null) udp_provider.halt();
+      // start udp
+      UdpSocket socket=(host_ipaddr==null)? new UdpSocket(local_port) : new UdpSocket(local_port,host_ipaddr);
+      //UdpSocket socket=(host_ipaddr==null)? new org.zoolu.net.JumboUdpSocket(local_port,500) : new org.zoolu.net.JumboUdpSocket(local_port,host_ipaddr,500);
       udp_provider=new UdpProvider(socket,this);
+      
    }
 
 
@@ -75,15 +80,30 @@ class UdpTransport implements Transport, UdpProviderListener
    }
 
 
+   /** Gets port */ 
+   public int getLocalPort()
+   {  try {  return udp_provider.getUdpSocket().getLocalPort();  } catch (Exception e) {  return 0;  }
+      
+   }
+
+
+   /** Sets transport listener */
+   public void setListener(TransportListener listener)
+   {  this.listener=listener;
+   }
+
+
    /** Sends a Message to a destination address and port */
-   public void sendMessage(Message msg, IpAddress dest_ipaddr, int dest_port) throws IOException
+   public TransportConn sendMessage(Message msg, IpAddress dest_ipaddr, int dest_port, int ttl) throws IOException
    {  if (udp_provider!=null)
       {  byte[] data=msg.toString().getBytes();
          UdpPacket packet=new UdpPacket(data,data.length);
+         // if (ttl>0 && multicast_address) do something?
          packet.setIpAddress(dest_ipaddr);
          packet.setPort(dest_port);
          udp_provider.send(packet);
       }
+      return null;
    }
 
 

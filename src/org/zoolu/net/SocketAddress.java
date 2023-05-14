@@ -30,7 +30,7 @@ package org.zoolu.net;
   */
 public class SocketAddress
 {
-   /** The InetAddress */
+   /** The IpAddress */
    IpAddress ipaddr;
 
    /** The port */
@@ -86,7 +86,7 @@ public class SocketAddress
    {  return new SocketAddress(this);
    }
 
-   /** Wthether it is equal to Object <i>obj</i>. */
+   /** Whether it is equal to Object <i>obj</i>. */
    public boolean equals(Object obj)
    {  try
       {  SocketAddress saddr=(SocketAddress)obj;
@@ -97,7 +97,12 @@ public class SocketAddress
       catch (Exception e) {  return false;  }
    }
 
-   /** Gets a String representation of the Object. */
+   /** Returns a hash code value for the object. */
+   public int hashCode()
+   {  return toString().hashCode();
+   }
+
+   /** Returns a String representation of this object. */
    public String toString()
    {  return (ipaddr.toString()+":"+port);
    }

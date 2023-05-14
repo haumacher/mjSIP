@@ -6,6 +6,8 @@ import org.zoolu.sip.header.AuthorizationHeader;
 import org.zoolu.sip.header.ProxyAuthorizationHeader;
 import org.zoolu.sip.header.WwwAuthenticateHeader;
 import org.zoolu.tools.MD5;
+import org.zoolu.tools.Random;
+import org.zoolu.tools.BinTools;
 
 
 /** The HTTP Digest Authentication as defined in RFC2617.
@@ -50,11 +52,19 @@ public class DigestAuthentication
    }
 
    /** Costructs a new DigestAuthentication. */
-   public DigestAuthentication(String method, String uri, WwwAuthenticateHeader ah, String qop, String body, String username, String passwd)
+   public DigestAuthentication(String method, String uri, WwwAuthenticateHeader ah, String qop, String cnonce, int nc, String body, String username, String passwd)
    {  init(method,ah,body,passwd);
       this.uri=uri;
       this.qop=qop;
       this.username=username;
+      if (this.qop!=null)
+      {  if (this.cnonce!=null) this.cnonce=cnonce;
+         else this.cnonce=BinTools.asHex(Random.nextBytes(4));
+         if (nc>0)
+         {  this.nc=BinTools.asHex(BinTools.intTo4Bytes(nc));
+         }
+         else this.nc="00000001";
+      }
    }
 
    /** Costructs a new DigestAuthentication. */
@@ -112,6 +122,7 @@ public class DigestAuthentication
       if (algorithm!=null) ah.addAlgorithParam(algorithm);
       if (opaque!=null) ah.addOpaqueParam(opaque);
       if (qop!=null) ah.addQopParam(qop);
+      if (cnonce!=null) ah.addCnonceParam(cnonce);
       if (nc!=null) ah.addNcParam(nc);
       String response=getResponse();
       ah.addResponseParam(response);
@@ -234,7 +245,7 @@ public class DigestAuthentication
 
    /** Calculates the HEX of an array of bytes. */
    private static String HEX(byte[] bb)
-   {  return MD5.asHex(bb);
+   {  return BinTools.asHex(bb);
    }
 
 

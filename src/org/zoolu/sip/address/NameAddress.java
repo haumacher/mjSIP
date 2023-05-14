@@ -24,7 +24,9 @@
 package org.zoolu.sip.address;
 
 
+
 import org.zoolu.sip.provider.SipParser;
+
 
 
 /** Class <i>NameAddress</i> is used to rapresent any valid SIP Name Address.
@@ -35,46 +37,53 @@ import org.zoolu.sip.provider.SipParser;
 */
 public class NameAddress
 {
+   /** Display name. */
    String name;
+
+   /** URL. */
    SipURL url;
 
 
-   public NameAddress(String displayname, SipURL sipurl)
-   {  name=displayname;
-      url=sipurl;
+   /** Creates a new NameAddress. */
+   public NameAddress(String display_name, SipURL url)
+   {  this.name=display_name;
+      this.url=url;
    }
 
-   public NameAddress(SipURL sipurl)
-   {  name=null;
-      url=sipurl;
+   /** Creates a new NameAddress. */
+   public NameAddress(SipURL url)
+   {  this.name=null;
+      this.url=url;
    }
 
-   public NameAddress(NameAddress name_address)
-   {  name=name_address.getDisplayName();
-      url=name_address.getAddress();
+   /** Creates a new NameAddress. */
+   public NameAddress(NameAddress naddr)
+   {  name=naddr.getDisplayName();
+      url=naddr.getAddress();
    }
 
-   public NameAddress(String naddr)
-   {  SipParser par=new SipParser(naddr);
-      NameAddress na=par.getNameAddress();
-      //DEBUG
-      //if (na==null)
-      //{  System.out.println("DEBUG: NameAddress: par:\r\n"+par.getWholeString());
-      //   System.exit(0);
-      //}
-      name=na.name;
-      url=na.url;
+   /** Creates a new NameAddress. */
+   public NameAddress(String str)
+   {  SipParser par=new SipParser(str);
+      NameAddress naddr=par.getNameAddress();
+      name=naddr.name;
+      url=naddr.url;
    }
    
-   /** Creates and returns a copy of NameAddress */
+   /** Creates a copy of this object. */
    public Object clone()
    {  return new NameAddress(this);
    }
 
-   /** Indicates whether some other Object is "equal to" this NameAddress */
+   /** Whether object <i>obj</i> is "equal to" this. */
    public boolean equals(Object obj)
-   {  NameAddress naddr=(NameAddress)obj;
-      return url.equals(naddr.getAddress());
+   {  try
+      {  NameAddress naddr=(NameAddress)obj;
+         return ((name==naddr.name) || (name.equals(naddr.name)) && url.equals(naddr.url));
+      }
+      catch (Exception e)
+      {  return false;
+      }
    }
 
    /** Gets address of NameAddress */
@@ -82,44 +91,37 @@ public class NameAddress
    {  return url;
    }
 
-   /** Gets display name of NameAddress (Returns null id display name does not exist) */
+   /** Gets display name (returns null id display name does not exist). */
    public String getDisplayName()
    {  return name;
    }
 
-   /** Gets boolean value to indicate if NameAddress has display name */
+   /** Whether there is a display name. */
    public boolean hasDisplayName()
    {  return name!=null;
    }
 
-   /** Removes display name from NameAddress (if it exists) */
+   /** Removes display name (if present). */
    public void removeDisplayName()
    {  name=null;
    }
 
-   /** Sets address of NameAddress */
-   public void setAddress(SipURL address)
-   {  url=address;
+   /** Sets URL. */
+   public void setAddress(SipURL url)
+   {  this.url=url;
    }
 
-   /** Sets display name of Header */
-   public void setDisplayName(String displayName)
-   {  name=displayName;
+   /** Sets display name. */
+   public void setDisplayName(String display_name)
+   {  this.name=display_name;
    }
 
-   /** Whether two NameAddresses are equals */
-   public boolean equals(NameAddress naddr)
-   {  return (name==naddr.name && url==naddr.url);
-   }
-
-   /** Gets string representation of NameAddress */
+   /** Gets string representation of this object. */
    public String toString()
-   {  String str;
-      if (hasDisplayName())
-         str="\""+name+"\" <"+url+">";
-      else str="<"+url+">";
-         
-      return str;
+   {  StringBuffer sb=new StringBuffer();
+      if (hasDisplayName()) sb.append('\"').append(name).append("\" <").append(url).append('>');
+      else sb.append('<').append(url).append('>');
+      return sb.toString();
    }
 
 }

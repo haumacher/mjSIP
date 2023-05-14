@@ -50,10 +50,10 @@ public abstract class BaseSipMethods
    public static final String INFO="INFO";
    /** Whether <i>str</i> is INFO */
    public static boolean isInfo(String str) { return same(str,INFO); }
-   /** String "OPTION" */
-   public static final String OPTION="OPTION";
-   /** Whether <i>str</i> is OPTION */
-   public static boolean isOption(String str) { return same(str,OPTION); }
+   /** String "OPTIONS" */
+   public static final String OPTIONS="OPTIONS";
+   /** Whether <i>str</i> is OPTIONS */
+   public static boolean isOptions(String str) { return same(str,OPTIONS); }
    /** String "REGISTER" */
    public static final String REGISTER="REGISTER";
    /** Whether <i>str</i> is REGISTER */
@@ -70,7 +70,7 @@ public abstract class BaseSipMethods
    } 
    
    /** Array of standard methods */
-   public static final String[] methods={ INVITE,ACK,CANCEL,BYE,INFO,OPTION,REGISTER,UPDATE };
+   public static final String[] methods={ INVITE,ACK,CANCEL,BYE,INFO,OPTIONS,REGISTER,UPDATE };
 
    /** Array of standards methods that creates a dialog */
    public static final String[] dialog_methods={ INVITE };

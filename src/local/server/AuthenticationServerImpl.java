@@ -32,9 +32,9 @@ import org.zoolu.sip.message.*;
 import org.zoolu.sip.provider.SipStack;
 import org.zoolu.sip.authentication.DigestAuthentication;
 import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
 import org.zoolu.tools.Parser;
 import org.zoolu.tools.MD5;
+import org.zoolu.tools.BinTools;
 
 
 /** Class AuthenticationServerImpl implements an AuthenticationServer
@@ -50,7 +50,7 @@ public class AuthenticationServerImpl implements AuthenticationServer
    protected static final int PROXY_AUTHENTICATION=1;
 
 
-   /** Event logger. */
+   /** Log */
    protected Log log=null;
 
    /** The repository of users's authentication data. */
@@ -63,7 +63,8 @@ public class AuthenticationServerImpl implements AuthenticationServer
    protected String authentication_scheme="Digest";
 
    /** The authentication qop-options. */
-   protected String qop_options="auth,auth-int";
+   //protected String qop_options="auth,auth-int";
+   protected String qop_options="auth";
 
    /** The current random value. */
    protected byte[] rand;
@@ -117,7 +118,7 @@ public class AuthenticationServerImpl implements AuthenticationServer
    }
 
 
-   /** Authenticates a SIP request.
+   /** Authenticates a proxying SIP request.
      * @param msg is the SIP request to be authenticated
      * @return it returns the error Message in case of authentication failure,
      * or null in case of authentication success. */
@@ -155,43 +156,44 @@ public class AuthenticationServerImpl implements AuthenticationServer
          {  
             if (authentication_scheme.equalsIgnoreCase(scheme))
             {  
-               DigestAuthentication auth=new DigestAuthentication(msg.getRequestLine().getMethod(),ah,null,keyToPasswd(authentication_service.getUserKey(user)));
+               DigestAuthentication auth=new DigestAuthentication(msg.getRequestLine().getMethod(),ah,msg.getBody(),keyToPasswd(authentication_service.getUserKey(user)));
 
                // check user's authentication response
-               boolean is_authorized=auth.checkResponse(); 
+               boolean is_authorized=auth.checkResponse();
 
                rand=pickRandBytes();        
                   
                if (!is_authorized)
                {  // authentication/authorization failed
                   int result=403; // response code 403 ("Forbidden")
-                  err_resp=MessageFactory.createResponse(msg,result,SipResponses.reasonOf(result),null);
-                  printLog("LOGIN ERROR: Authentication of '"+user+"' failed",LogLevel.HIGH);
+                  err_resp=MessageFactory.createResponse(msg,result,null,null);
+                  printLog("LOGIN ERROR: Authentication of '"+user+"' failed",Log.LEVEL_HIGH);
                }
                else
                {  // authentication/authorization successed
-                  printLog("Authentication of '"+user+"' successed",LogLevel.HIGH);
+                  printLog("Authentication of '"+user+"' successed",Log.LEVEL_HIGH);
                }
             }
             else
             {  // authentication/authorization failed
                int result=400; // response code 400 ("Bad request")
-               err_resp=MessageFactory.createResponse(msg,result,SipResponses.reasonOf(result),null);
-               printLog("Authentication method '"+scheme+"' not supported.",LogLevel.HIGH);
+               err_resp=MessageFactory.createResponse(msg,result,null,null);
+               printLog("Authentication method '"+scheme+"' not supported.",Log.LEVEL_HIGH);
             }
          }
          else
          {  // no authentication credential found for this user
             int result=404; // response code 404 ("Not Found")
-            err_resp=MessageFactory.createResponse(msg,result,SipResponses.reasonOf(result),null);  
+            err_resp=MessageFactory.createResponse(msg,result,null,null);  
          }
       }
       else
       {  // no Authorization header found
+         printLog("No Authorization header found or nonce mismatching",Log.LEVEL_HIGH);
          int result;
          if (type==SERVER_AUTHENTICATION) result=401; // response code 401 ("Unauthorized")
          else result=407; // response code 407 ("Proxy Authentication Required")
-         err_resp=MessageFactory.createResponse(msg,result,SipResponses.reasonOf(result),null);
+         err_resp=MessageFactory.createResponse(msg,result,null,null);
          WwwAuthenticateHeader wah;
          if (type==SERVER_AUTHENTICATION) wah=new WwwAuthenticateHeader("Digest");
          else wah=new ProxyAuthenticateHeader("Digest");
@@ -236,14 +238,14 @@ public class AuthenticationServerImpl implements AuthenticationServer
 
    /** Calculates the HEX of an array of bytes. */
    private static String HEX(byte[] bb)
-   {  return MD5.asHex(bb);
+   {  return BinTools.asHex(bb);
    }
 
    // ****************************** Logs *****************************
 
    /** Adds a new string to the default Log */
    protected void printLog(String str, int level)
-   {  if (log!=null) log.println("AuthenticationServer: "+str,level+SipStack.LOG_LEVEL_UA);  
+   {  if (log!=null) log.println("AuthenticationServer: "+str,ServerEngine.LOG_OFFSET+level);  
    }
 
 }

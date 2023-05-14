@@ -43,12 +43,12 @@ public class Iterator
    {  return i<(v.size()-1);
    }
 
-   public Object next()
+   public synchronized Object next()
    {  if (++i<v.size()) return v.elementAt(i);
       else return null;
    }
 
-   public void remove()
+   public synchronized void remove()
    {  v.removeElementAt(i);
       i--;
    }

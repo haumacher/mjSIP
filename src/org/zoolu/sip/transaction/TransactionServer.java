@@ -29,7 +29,7 @@ import org.zoolu.tools.TimerListener;
 import org.zoolu.sip.address.SipURL;
 import org.zoolu.sip.provider.*;
 import org.zoolu.sip.message.*;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Log;
 
 
 /** Generic server transaction as defined in RFC 3261 (Section 17.2.2).
@@ -50,48 +50,59 @@ public class TransactionServer extends Transaction
    Timer clearing_to;
 
 
-   /** Costructs a new TransactionServer. */
+   // ************************** Costructors **************************
+
+   /** Creates a new TransactionServer. */
    protected TransactionServer(SipProvider sip_provider)
    {  super(sip_provider);
       transaction_listener=null;
       response=null;
    } 
-   
+
    /** Creates a new TransactionServer of type <i>method</i>. */
    public TransactionServer(SipProvider sip_provider, String method, TransactionServerListener listener)
    {  super(sip_provider);
-      init(listener,new TransactionIdentifier(method),null);
+      init(listener,new TransactionId(method),null);
    }  
 
    /** Creates a new TransactionServer for the already received request <i>req</i>. */
    public TransactionServer(SipProvider provider, Message req, TransactionServerListener listener)
    {  super(provider);
       request=new Message(req);
-      init(listener,request.getTransactionId(),request.getConnectionId());
+      init(listener,request.getTransactionServerId(),request.getTransportConnId());
       
-      printLog("start",LogLevel.LOW);
+      printLog("start",Log.LEVEL_LOW);
       changeStatus(STATE_TRYING);
-      sip_provider.addSipProviderListener(transaction_id,this); 
+      sip_provider.addSelectiveListener(transaction_id,this); 
    }  
 
-   /** Initializes timeouts and listener. */
-   void init(TransactionServerListener listener, TransactionIdentifier transaction_id, ConnectionIdentifier connaction_id)
+   /** Initializes it. */
+   protected void init(TransactionServerListener listener, TransactionId transaction_id, TransportConnId connection_id)
    {  this.transaction_listener=listener;
       this.transaction_id=transaction_id;
       this.connection_id=connection_id;
       this.response=null;
-      clearing_to=new Timer(SipStack.transaction_timeout,"Clearing",this);
-      printLog("id: "+String.valueOf(transaction_id),LogLevel.HIGH);
-      printLog("created",LogLevel.HIGH);
+      // init the timer just to set the timeout value and label, without listener (never started)
+      clearing_to=new Timer(SipStack.transaction_timeout,"Clearing",null);
+      printLog("new transaction-id: "+transaction_id.toString(),Log.LEVEL_HIGH);
    }  
+
+
+   // ************************ Public methods *************************
 
    /** Starts the TransactionServer. */
    public void listen()
    {  if (statusIs(STATE_IDLE))
-      {  printLog("start",LogLevel.LOW);
+      {  printLog("start",Log.LEVEL_LOW);
          changeStatus(STATE_WAITING);  
-         sip_provider.addSipProviderListener(transaction_id,this); 
+         sip_provider.addSelectiveListener(transaction_id,this); 
       }
+   }  
+
+   /** Sends a response message */
+   public void respondWith(int code)
+   {  Message resp=MessageFactory.createResponse(request,code,null,null);
+      respondWith(resp);
    }  
 
    /** Sends a response message */
@@ -105,9 +116,12 @@ public class TransactionServer extends Transaction
          }
          if (code>=200 && code<700)
          {  changeStatus(STATE_COMPLETED);
-            if (connection_id==null) clearing_to.start();
+            if (connection_id==null)
+            {  clearing_to=new Timer(clearing_to.getTime(),clearing_to.getLabel(),this);
+               clearing_to.start();
+            }
             else
-            {  printLog("clearing_to=0 for reliable transport",LogLevel.LOW);
+            {  printLog("clearing_to=0 for reliable transport",Log.LEVEL_LOW);
                onTimeout(clearing_to);
             }
          }
@@ -120,17 +134,17 @@ public class TransactionServer extends Transaction
    {  if (msg.isRequest())
       {  if (statusIs(STATE_WAITING))
          {  request=new Message(msg);
-            connection_id=msg.getConnectionId();
-            sip_provider.removeSipProviderListener(transaction_id);
-            transaction_id=request.getTransactionId();
-            sip_provider.addSipProviderListener(transaction_id,this); 
+            connection_id=msg.getTransportConnId();
+            sip_provider.removeSelectiveListener(transaction_id);
+            transaction_id=request.getTransactionServerId();
+            sip_provider.addSelectiveListener(transaction_id,this); 
             changeStatus(STATE_TRYING);
             if (transaction_listener!=null) transaction_listener.onTransRequest(this,msg);
             return;
          }
          if (statusIs(STATE_PROCEEDING) || statusIs(STATE_COMPLETED))
          {  // retransmission of the last response
-            printLog("response retransmission",LogLevel.LOW);
+            printLog("response retransmission",Log.LEVEL_LOW);
             sip_provider.sendMessage(response,connection_id);
             return;
          }
@@ -142,35 +156,40 @@ public class TransactionServer extends Transaction
    public void onTimeout(Timer to)
    {  try
       {  if (to.equals(clearing_to))
-         {  printLog("Clearing timeout expired",LogLevel.HIGH);
-            sip_provider.removeSipProviderListener(transaction_id);
-            changeStatus(STATE_TERMINATED);
-            transaction_listener=null;
-            //clearing_to=null;
+         {  printLog("Clearing timeout expired",Log.LEVEL_HIGH);
+            doTerminate();
          }
       }
       catch (Exception e)
-      {  printException(e,LogLevel.HIGH);
+      {  printException(e,Log.LEVEL_HIGH);
       }
    }   
 
    /** Terminates the transaction. */
    public void terminate()
+   {  doTerminate();
+      transaction_listener=null;
+   }
+
+
+   // *********************** Protected methods ***********************
+
+   /** Moves to terminate state. */
+   protected void doTerminate()
    {  if (!statusIs(STATE_TERMINATED))
       {  clearing_to.halt();
-         sip_provider.removeSipProviderListener(transaction_id);
-         changeStatus(STATE_TERMINATED);
-         transaction_listener=null;
          //clearing_to=null;
+         sip_provider.removeSelectiveListener(transaction_id);
+         changeStatus(STATE_TERMINATED);
       }
    }
 
 
-   //**************************** Logs ****************************/
+   // ****************************** Logs *****************************
 
    /** Adds a new string to the default Log */
    protected void printLog(String str, int level)
-   {  if (log!=null) log.println("TransactionServer#"+transaction_sqn+": "+str,level+SipStack.LOG_LEVEL_TRANSACTION);  
+   {  if (log!=null) log.println("TransactionServer#"+transaction_sqn+": "+str,Transaction.LOG_OFFSET+level);  
    }
 
 }

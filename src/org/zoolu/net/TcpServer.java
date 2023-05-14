@@ -25,6 +25,7 @@ package org.zoolu.net;
 
 
 import java.net.ServerSocket;
+import java.net.InetAddress;
 import java.io.InterruptedIOException;
 
 
@@ -37,10 +38,16 @@ public class TcpServer extends Thread
    public static final int DEFAULT_SOCKET_TIMEOUT=5000; // 5sec 
 
    /** Default ServerSocket backlog value */
-   static int socket_backlog=50;
+   public static int DEFAULT_SOCKET_BACKLOG=50;
 
    /** The protocol type */ 
    //protected static final String PROTO="tcp";
+
+   /** The TCP server port. */ 
+   int server_port;
+
+   /** The TCP server address; null if the server is bound to all interfaces. */ 
+   IpAddress server_ipaddr;
 
    /** The TCP server socket */ 
    ServerSocket server_socket;
@@ -61,36 +68,58 @@ public class TcpServer extends Thread
    TcpServerListener listener;
 
 
+
    /** Costructs a new TcpServer */
-   public TcpServer(int port, TcpServerListener listener)  throws java.io.IOException
-   {  init(port,null,0,listener);
+   public TcpServer(ServerSocket server_socket, TcpServerListener listener)  throws java.io.IOException
+   {  int port=server_socket.getLocalPort();
+      InetAddress iaddress=server_socket.getInetAddress();
+      IpAddress bind_ipaddr=(iaddress!=null)? new IpAddress(iaddress) : null;
+      init(server_socket,port,bind_ipaddr,0,listener);
       start();
    }
-   
-   
+
+
+   /** Costructs a new TcpServer */
+   public TcpServer(int port, TcpServerListener listener)  throws java.io.IOException
+   {  init(null,port,null,0,listener);
+      start();
+   }
+
+
    /** Costructs a new TcpServer */
    public TcpServer(int port, IpAddress bind_ipaddr, TcpServerListener listener)  throws java.io.IOException
-   {  init(port,bind_ipaddr,0,listener);
+   {  init(null,port,bind_ipaddr,0,listener);
       start();
    }
 
 
    /** Costructs a new TcpServer */
    public TcpServer(int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener)  throws java.io.IOException
-   {  init(port,bind_ipaddr,alive_time,listener);
+   {  init(null,port,bind_ipaddr,alive_time,listener);
       start();
    }
 
 
    /** Inits the TcpServer */
-   private void init(int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException
+   private void init(ServerSocket server_socket, int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException
    {  this.listener=listener;
-      if (bind_ipaddr==null) server_socket=new ServerSocket(port);
-      else server_socket=new ServerSocket(port,socket_backlog,bind_ipaddr.getInetAddress());
+      this.server_port=port;
+      this.server_ipaddr=bind_ipaddr;
+      if (server_socket==null)
+      {  if (bind_ipaddr==null) server_socket=new ServerSocket(port);
+         else server_socket=new ServerSocket(port,DEFAULT_SOCKET_BACKLOG,bind_ipaddr.getInetAddress());
+      }
+      this.server_socket=server_socket;
       this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
       this.alive_time=alive_time;
       this.stop=false; 
-      this.is_running=true; 
+      this.is_running=true;
+   }
+
+
+   /** Gets server port */
+   public int getPort()
+   {  return server_port;
    }
 
 
@@ -129,6 +158,7 @@ public class TcpServer extends Thread
       }
       catch (Exception e)
       {  error=e;
+         e.printStackTrace();
          stop=true;
       }
       is_running=false;
@@ -145,7 +175,10 @@ public class TcpServer extends Thread
 
    /** Gets a String representation of the Object */
    public String toString()
-   {  return "tcp:"+server_socket.getInetAddress()+":"+server_socket.getLocalPort();
+   {  //if (server_socket!=null) return "tcp:"+server_socket.getInetAddress()+":"+server_socket.getLocalPort();
+      //else return "tcp:unknown";
+      if (server_ipaddr==null) return "tcp:0.0.0.0:"+server_port;
+      else return "tcp:"+server_ipaddr.toString()+":"+server_port;
    }   
 
 }

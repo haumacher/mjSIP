@@ -24,16 +24,16 @@
 package org.zoolu.sip.call;
 
 
-import org.zoolu.sip.call.*;
+
 import org.zoolu.sip.provider.SipStack;
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.message.Message;
 import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
 import org.zoolu.sdp.*;
 //import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.Vector;
+
 
 
 /** Class CallListenerAdapter implements CallListener interface
@@ -43,7 +43,7 @@ import java.util.Vector;
   * This class exists as convenience for creating call listener objects. 
   * <br> You can extend this class overriding only methods corresponding to events
   * you want to handle.
-  * <p> <i>onCallIncoming(NameAddress,String)</i> is the only non-empty method.
+  * <p> <i>onCallInvite(NameAddress,String)</i> is the only non-empty method.
   * It signals the receiver the ring status (by using method Call.ring()),
   * adapts the sdp body and accepts the call (by using method Call.accept(sdp)). 
   */
@@ -77,17 +77,34 @@ public abstract class CallListenerAdapter implements ExtendedCallListener
 
    /** Accepts an incoming call.
      * Callback function called when arriving a new INVITE method (incoming call) */
-   public void onCallIncoming(Call call, NameAddress callee, NameAddress caller, String sdp, Message invite)
+   public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, Message invite)
    {  //printLog("INCOMING");
       call.ring();
+      // accept immediatly
       String local_session;
       if (sdp!=null && sdp.length()>0)
       {  SessionDescriptor remote_sdp=new SessionDescriptor(sdp);     
          SessionDescriptor local_sdp=new SessionDescriptor(call.getLocalSessionDescriptor());
-         SessionDescriptor new_sdp=new SessionDescriptor(remote_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
+         SessionDescriptor new_sdp=new SessionDescriptor(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
          new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-         new_sdp=SdpTools.sdpMediaProduct(new_sdp,remote_sdp.getMediaDescriptors());
-         new_sdp=SdpTools.sdpAttirbuteSelection(new_sdp,"rtpmap");
+         new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);
+         local_session=new_sdp.toString();
+      }
+      else local_session=call.getLocalSessionDescriptor();
+      call.accept(local_session);
+   }
+
+   /** Changes the call when remotly requested.
+     * Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
+   public void onCallModify(Call call, String sdp, Message invite)
+   {  //printLog("RE-INVITE/MODIFY");
+      String local_session;
+      if (sdp!=null && sdp.length()>0)
+      {  SessionDescriptor remote_sdp=new SessionDescriptor(sdp);
+         SessionDescriptor local_sdp=new SessionDescriptor(call.getLocalSessionDescriptor());
+         SessionDescriptor new_sdp=new SessionDescriptor(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
+         new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+         new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);
          local_session=new_sdp.toString();
       }
       else local_session=call.getLocalSessionDescriptor();
@@ -95,23 +112,10 @@ public abstract class CallListenerAdapter implements ExtendedCallListener
       call.accept(local_session);
    }
 
-   /** Changes the call when remotly requested.
-     * Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
-   public void onCallModifying(Call call, String sdp, Message invite)
-   {  //printLog("RE-INVITE/MODIFY");
-      String local_session;
-      if (sdp!=null && sdp.length()>0)
-      {  SessionDescriptor remote_sdp=new SessionDescriptor(sdp);
-         SessionDescriptor local_sdp=new SessionDescriptor(call.getLocalSessionDescriptor());
-         SessionDescriptor new_sdp=new SessionDescriptor(remote_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
-         new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-         new_sdp=SdpTools.sdpMediaProduct(new_sdp,remote_sdp.getMediaDescriptors());
-         new_sdp=SdpTools.sdpAttirbuteSelection(new_sdp,"rtpmap");
-         local_session=new_sdp.toString();
-      }
-      else local_session=call.getLocalSessionDescriptor();
-      // accept immediatly
-      call.accept(local_session);
+   /** Does nothing.
+     * Callback function called when arriving a 183 Session Progress */
+   public void onCallProgress(Call call, Message resp)
+   {  //printLog("PROGRESS");
    }
 
    /** Does nothing.
@@ -134,9 +138,10 @@ public abstract class CallListenerAdapter implements ExtendedCallListener
 
    /** Redirects the call when remotly requested.
      * Callback function called when arriving a 3xx (call redirection) */
-   public void onCallRedirection(Call call, String reason, Vector contact_list, Message resp)
+   public void onCallRedirected(Call call, String reason, Vector contact_list, Message resp)
    {  //printLog("REDIRECTION ("+reason+")");
-      call.call((String)contact_list.elementAt(0)); 
+      NameAddress first_contact=new NameAddress((String)contact_list.elementAt(0));
+      call.call(first_contact); 
    }
 
    /** Does nothing.
@@ -171,13 +176,13 @@ public abstract class CallListenerAdapter implements ExtendedCallListener
 
    /** Does nothing.
      * Callback function called when arriving a CANCEL request */
-   public void onCallCanceling(Call call, Message cancel)
+   public void onCallCancel(Call call, Message cancel)
    {  //printLog("CANCELING");
    }
 
    /** Does nothing.
      * Callback function that may be overloaded (extended). Called when arriving a BYE request */
-   public void onCallClosing(Call call, Message bye)
+   public void onCallBye(Call call, Message bye)
    {  //printLog("CLOSING");
    }
 
@@ -191,6 +196,11 @@ public abstract class CallListenerAdapter implements ExtendedCallListener
    /** Does nothing.
      * Callback function called when arriving a new REFER method (transfer request) */
    public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, Message refer)
+   {  //printLog("REFER-TO/TRANSFER");
+   }
+
+   /** Callback function called when arriving a new REFER method (transfer request) with Replaces header, replacing an existing call. */
+   public void onCallAttendedTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, String replcall_id, Message refer)
    {  //printLog("REFER-TO/TRANSFER");
    }
 

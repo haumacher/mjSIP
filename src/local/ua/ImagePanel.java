@@ -11,7 +11,7 @@ import java.awt.Color;
 
 /** A Panel with a backgroung image
  */
-public class ImagePanel extends Panel
+class ImagePanel extends Panel
 {
    Image image=null;
 

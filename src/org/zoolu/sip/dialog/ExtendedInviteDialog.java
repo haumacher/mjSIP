@@ -26,25 +26,21 @@ package org.zoolu.sip.dialog;
 
 import org.zoolu.sip.provider.*;
 import org.zoolu.sip.address.NameAddress;
-import org.zoolu.sip.header.StatusLine;
-import org.zoolu.sip.header.RequestLine;
-import org.zoolu.sip.header.AuthorizationHeader;
-import org.zoolu.sip.header.WwwAuthenticateHeader;
-import org.zoolu.sip.header.ProxyAuthenticateHeader;
+import org.zoolu.sip.header.*;
 import org.zoolu.sip.transaction.*;
 import org.zoolu.sip.message.*;
 import org.zoolu.sip.authentication.DigestAuthentication;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Log;
 
 import java.util.Hashtable;
 
 
 /** Class ExtendedInviteDialog can be used to manage extended invite dialogs.
   * <p>
-  * An ExtendedInviteDialog allows the user:
-  * <br>- to handle authentication
-  * <br>- to handle refer/notify
-  * <br>- to capture all methods within the dialog
+  * ExtendedInviteDialog extends the basic InviteDialog in order to:
+  * <br>- support UAS and proxy authentication,
+  * <br>- handle REFER/NOTIFY methods,
+  * <br>- capture all methods within the dialog.
   */
 public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
 {  
@@ -52,7 +48,7 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
    static final int MAX_ATTEMPTS=3;
 
    /** ExtendedInviteDialog listener. */
-   ExtendedInviteDialogListener dialog_listener;
+   ExtendedInviteDialogListener ext_listener;
    
    /** Acive transactions. */
    Hashtable transactions;
@@ -80,23 +76,48 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
 
 
    /** Creates a new ExtendedInviteDialog. */
-   public ExtendedInviteDialog(SipProvider provider, ExtendedInviteDialogListener listener)
-   {  super(provider,listener);
+   public ExtendedInviteDialog(SipProvider sip_provider, ExtendedInviteDialogListener listener)
+   {  super(sip_provider,listener);
       init(listener);
    }
       
+   /** Creates a new ExtendedInviteDialog for the already received INVITE request <i>invite</i>. */
+   public ExtendedInviteDialog(SipProvider sip_provider, Message invite, ExtendedInviteDialogListener listener)
+   {  super(sip_provider,listener);
+      init(listener);    
+
+      changeStatus(D_INVITED);
+      invite_req=invite;
+      invite_ts=new InviteTransactionServer(sip_provider,invite_req,this);
+      update(Dialog.UAS,invite_req);
+   }
+   
    /** Creates a new ExtendedInviteDialog. */
-   public ExtendedInviteDialog(SipProvider provider, String username, String realm, String passwd, ExtendedInviteDialogListener listener)
-   {  super(provider,listener);
+   public ExtendedInviteDialog(SipProvider sip_provider, String username, String realm, String passwd, ExtendedInviteDialogListener listener)
+   {  super(sip_provider,listener);
       init(listener);
       this.username=username;
       this.realm=realm;
       this.passwd=passwd;
    }
 
+   /** Creates a new ExtendedInviteDialog for the already received INVITE request <i>invite</i>. */
+   public ExtendedInviteDialog(SipProvider sip_provider, Message invite, String username, String realm, String passwd, ExtendedInviteDialogListener listener)
+   {  super(sip_provider,listener);
+      init(listener);    
+      this.username=username;
+      this.realm=realm;
+      this.passwd=passwd;
+
+      changeStatus(D_INVITED);
+      invite_req=invite;
+      invite_ts=new InviteTransactionServer(sip_provider,invite_req,this);
+      update(Dialog.UAS,invite_req);
+   }
+   
    /** Inits the ExtendedInviteDialog. */
    private void init(ExtendedInviteDialogListener listener)
-   {  this.dialog_listener=listener;
+   {  this.ext_listener=listener;
       this.transactions=new Hashtable();
       this.username=null;
       this.realm=null;
@@ -125,7 +146,15 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
    {  Message req=MessageFactory.createReferRequest(this,refer_to,referred_by);
       request(req);
    }
-   
+
+
+   /** Sends a new REFER within the dialog */
+   public void refer(NameAddress refer_to, NameAddress referred_by, Dialog replaced_dialog)
+   {  Message req=MessageFactory.createReferRequest(this,refer_to,referred_by);
+      req.setReplacesHeader(new ReplacesHeader(replaced_dialog.getCallID(),replaced_dialog.getRemoteTag(),replaced_dialog.getLocalTag()));
+      request(req);
+   }
+
 
    /** Sends a new NOTIFY within the dialog */
    public void notify(int code, String reason)
@@ -141,44 +170,44 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
 
    /** Responds with <i>resp</i> */
    public void respond(Message resp)
-   {  printLog("inside respond(resp)",LogLevel.MEDIUM);
+   {  printLog("inside respond(resp)",Log.LEVEL_MEDIUM);
       String method=resp.getCSeqHeader().getMethod();
       if (method.equals(SipMethods.INVITE) || method.equals(SipMethods.CANCEL) || method.equals(SipMethods.BYE))
       {  super.respond(resp);
       }
       else
-      {  TransactionIdentifier transaction_id=resp.getTransactionId();
-         printLog("transaction-id="+transaction_id,LogLevel.MEDIUM);
+      {  TransactionId transaction_id=resp.getTransactionServerId();
+         printLog("transaction-id="+transaction_id,Log.LEVEL_MEDIUM);
          if (transactions.containsKey(transaction_id))
-         {  printLog("responding",LogLevel.LOW);
+         {  printLog("responding",Log.LEVEL_LOW);
             TransactionServer t=(TransactionServer)transactions.get(transaction_id);
             t.respondWith(resp);
          }
          else
-            printLog("transaction server not found; message discarded",LogLevel.MEDIUM);
+            printLog("transaction server not found; message discarded",Log.LEVEL_MEDIUM);
       }
    } 
 
 
    /** Accept a REFER */
    public void acceptRefer(Message req)
-   {  printLog("inside acceptRefer(refer)",LogLevel.MEDIUM);
-      Message resp=MessageFactory.createResponse(req,202,SipResponses.reasonOf(200),null);
+   {  printLog("inside acceptRefer(refer)",Log.LEVEL_MEDIUM);
+      Message resp=MessageFactory.createResponse(req,202,null,null);
       respond(resp);
    } 
 
 
    /** Refuse a REFER */
    public void refuseRefer(Message req)
-   {  printLog("inside refuseRefer(refer)",LogLevel.MEDIUM);
-      Message resp=MessageFactory.createResponse(req,603,SipResponses.reasonOf(603),null);
+   {  printLog("inside refuseRefer(refer)",Log.LEVEL_MEDIUM);
+      Message resp=MessageFactory.createResponse(req,603,null,null);
       respond(resp);
    } 
 
 
    /** Inherited from class SipProviderListener. */
    public void onReceivedMessage(SipProvider provider, Message msg)
-   {  printLog("Message received: "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')),LogLevel.LOW);
+   {  printLog("Message received: "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')),Log.LEVEL_LOW);
       if (msg.isResponse())
       {  super.onReceivedMessage(provider,msg);
       }
@@ -189,27 +218,26 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
       else
       {  TransactionServer t=new TransactionServer(sip_provider,msg,this);
          transactions.put(t.getTransactionId(),t);
-         //t.listen();
          
          if (msg.isRefer())
-         {  //Message resp=MessageFactory.createResponse(msg,202,"Accepted",null,null);
+         {  //Message resp=MessageFactory.createResponse(msg,202,null,null,null);
             //respond(resp);
             NameAddress refer_to=msg.getReferToHeader().getNameAddress();
             NameAddress referred_by=null;
             if (msg.hasReferredByHeader()) referred_by=msg.getReferredByHeader().getNameAddress();
-            dialog_listener.onDlgRefer(this,refer_to,referred_by,msg);
+            if (ext_listener!=null) ext_listener.onDlgRefer(this,refer_to,referred_by,msg);
          } 
          else
          if (msg.isNotify())
-         {  Message resp=MessageFactory.createResponse(msg,200,SipResponses.reasonOf(200),null);
+         {  Message resp=MessageFactory.createResponse(msg,200,null,null);
             respond(resp);
             String event=msg.getEventHeader().getValue();
             String sipfragment=msg.getBody();
-            dialog_listener.onDlgNotify(this,event,sipfragment,msg);
+            if (ext_listener!=null) ext_listener.onDlgNotify(this,event,sipfragment,msg);
          } 
          else
-         {  printLog("Received alternative request "+msg.getRequestLine().getMethod(),LogLevel.MEDIUM);
-            dialog_listener.onDlgAltRequest(this,msg.getRequestLine().getMethod(),msg.getBody(),msg);
+         {  printLog("Received alternative request "+msg.getRequestLine().getMethod(),Log.LEVEL_MEDIUM);
+            if (ext_listener!=null) ext_listener.onDlgAltRequest(this,msg.getRequestLine().getMethod(),msg.getBody(),msg);
          }
       }
    }
@@ -218,7 +246,7 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
    /** Inherited from TransactionClientListener.
      * When the TransactionClientListener goes into the "Completed" state, receiving a failure response */
    public void onTransFailureResponse(TransactionClient tc, Message msg)
-   {  printLog("inside onTransFailureResponse("+tc.getTransactionId()+",msg)",LogLevel.LOW);
+   {  printLog("inside onTransFailureResponse("+tc.getTransactionId()+",msg)",Log.LEVEL_LOW);
       String method=tc.getTransactionMethod();
       StatusLine status_line=msg.getStatusLine();
       int code=status_line.getCode();
@@ -229,20 +257,26 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
        || (code==407 && attempts<MAX_ATTEMPTS && msg.hasProxyAuthenticateHeader() && msg.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)))  
       {  attempts++;
          Message req=tc.getRequestMessage();
-         req.setCSeqHeader(req.getCSeqHeader().incSequenceNumber());
+         CSeqHeader csh=req.getCSeqHeader().incSequenceNumber();
+         req.setCSeqHeader(csh);
+         ViaHeader vh=req.getViaHeader();
+         req.removeViaHeader();
+         vh.setBranch(SipProvider.pickBranch());
+         req.addViaHeader(vh);
          WwwAuthenticateHeader wah;
          if (code==401) wah=msg.getWwwAuthenticateHeader();
          else wah=msg.getProxyAuthenticateHeader();
          String qop_options=wah.getQopOptionsParam();
          qop=(qop_options!=null)? "auth" : null;
          RequestLine rl=req.getRequestLine();
-         DigestAuthentication digest=new DigestAuthentication(rl.getMethod(),rl.getAddress().toString(),wah,qop,null,username,passwd);
+         DigestAuthentication digest=new DigestAuthentication(rl.getMethod(),rl.getAddress().toString(),wah,qop,null,0,null,username,passwd);
          AuthorizationHeader ah;
          if (code==401) ah=digest.getAuthorizationHeader();
          else ah=digest.getProxyAuthorizationHeader();
          req.setAuthorizationHeader(ah);
          transactions.remove(tc.getTransactionId());
-         tc=new TransactionClient(sip_provider,req,this);
+         if (req.isInvite()) tc=new InviteTransactionClient(sip_provider,req,this);
+         else tc=new TransactionClient(sip_provider,req,this);
          transactions.put(tc.getTransactionId(),tc);
          tc.request();
       }
@@ -254,19 +288,19 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
       else
       if (tc.getTransactionMethod().equals(SipMethods.REFER))
       {  transactions.remove(tc.getTransactionId());
-         dialog_listener.onDlgReferResponse(this,code,reason,msg);       
+         if (ext_listener!=null) ext_listener.onDlgReferResponse(this,code,reason,msg);       
       }
       else
       {  String body=msg.getBody();
          transactions.remove(tc.getTransactionId());
-         dialog_listener.onDlgAltResponse(this,method,code,reason,body,msg);       
+         if (ext_listener!=null) ext_listener.onDlgAltResponse(this,method,code,reason,body,msg);       
       }
    }
 
    /** Inherited from TransactionClientListener.
      * When an TransactionClientListener goes into the "Terminated" state, receiving a 2xx response  */
    public void onTransSuccessResponse(TransactionClient t, Message msg)
-   {  printLog("inside onTransSuccessResponse("+t.getTransactionId()+",msg)",LogLevel.LOW);
+   {  printLog("inside onTransSuccessResponse("+t.getTransactionId()+",msg)",Log.LEVEL_LOW);
       attempts=0;
       String method=t.getTransactionMethod();
       StatusLine status_line=msg.getStatusLine();
@@ -279,19 +313,19 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
       else
       if (t.getTransactionMethod().equals(SipMethods.REFER))
       {  transactions.remove(t.getTransactionId());
-         dialog_listener.onDlgReferResponse(this,code,reason,msg);       
+         if (ext_listener!=null) ext_listener.onDlgReferResponse(this,code,reason,msg);       
       }
       else
       {  String body=msg.getBody();
          transactions.remove(t.getTransactionId());
-         dialog_listener.onDlgAltResponse(this,method,code,reason,body,msg);       
+         if (ext_listener!=null) ext_listener.onDlgAltResponse(this,method,code,reason,body,msg);       
       }
    }
 
    /** Inherited from TransactionClientListener.
      * When the TransactionClient goes into the "Terminated" state, caused by transaction timeout */
    public void onTransTimeout(TransactionClient t)
-   {  printLog("inside onTransTimeout("+t.getTransactionId()+",msg)",LogLevel.LOW);
+   {  printLog("inside onTransTimeout("+t.getTransactionId()+",msg)",Log.LEVEL_LOW);
       String method=t.getTransactionMethod();
       if (method.equals(SipMethods.INVITE) || method.equals(SipMethods.BYE))
       {  super.onTransTimeout(t);
@@ -307,7 +341,7 @@ public class ExtendedInviteDialog extends org.zoolu.sip.dialog.InviteDialog
 
    /** Adds a new string to the default Log */
    protected void printLog(String str, int level)
-   {  if (log!=null) log.println("ExtendedInviteDialog#"+dialog_sqn+": "+str,level+SipStack.LOG_LEVEL_DIALOG);  
+   {  if (log!=null) log.println("ExtendedInviteDialog#"+dialog_sqn+": "+str,Dialog.LOG_OFFSET+level);  
    }
 
 }

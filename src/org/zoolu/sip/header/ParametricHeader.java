@@ -48,7 +48,7 @@ public abstract class ParametricHeader extends Header
    }
    
    /** Gets the first word.
-     * @returns the first word or null if no value is present beafore parameters. */
+     * @return the first word or null if no value is present beafore parameters. */
    /*protected String getFirstWord() 
    {  int index=indexOfFirstSemi();
       if (index<0) return value;
@@ -56,43 +56,48 @@ public abstract class ParametricHeader extends Header
    }*/
 
    /** Returns the index of the first semicolon before the first parameter.
-     * @returns the index of the semicolon before the first parameter, or -1 if no parameter is present. */
+     * @return the index of the semicolon before the first parameter, or -1 if no parameter is present. */
    protected int indexOfFirstSemi()
    {  //int index=(new Parser(value)).goToSkippingQuoted(';').skipChar().skipWSP().getPos();
       int index=(new Parser(value)).goToSkippingQuoted(';').getPos();
       return (index>=value.length())? -1 : index;
    }
 
-   /** Gets the value of specified parameter.
-     * @returns the parameter value or null if parameter does not exist or doesn't have a value (i.e. in case of flag parameter). */
-   public String getParameter(String name) 
+   /** Gets the string of all parameters.
+     * @return Returns a string of all parameters or null if no parameter is present. */
+   public String getParameters() 
    {  int index=indexOfFirstSemi();
       if (index<0) return null;
-      return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).getParameter(name);
+      return getValue().substring(index+1);
+   }
+   
+   /** Gets the value of specified parameter.
+     * @return Returns the value of the specified parameter or null if not present. */
+   public String getParameter(String pname) 
+   {  int index=indexOfFirstSemi();
+      if (index<0) return null;
+      return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).getParameter(pname);
    }
     
    /** Gets a String Vector of parameter names.
-     * @returns a Vector of String */
+     * @return Returns a String Vector of all parameter names or null if no parameter is present. */
    public Vector getParameterNames() 
    {  int index=indexOfFirstSemi();
       if (index<0) return new Vector();
-      return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).getParameters();
+      return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).getParameterNames();
    }
-
 
    /** Whether there is the specified parameter */
-   public boolean hasParameter(String name)
+   public boolean hasParameter(String pname)
    {  int index=indexOfFirstSemi();
       if (index<0) return false;
-      return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).hasParameter(name);
+      return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).hasParameter(pname);
    }
-
 
    /** Whether there are any parameters */
    public boolean hasParameters()
    {  return indexOfFirstSemi()>=0;
    }
-
 
    /** Removes all parameters (if any) */
    public void removeParameters() 
@@ -105,9 +110,8 @@ public abstract class ParametricHeader extends Header
       setValue(header);
    }
 
-
    /** Removes specified parameter (if present) */
-   public void removeParameter(String name) 
+   public void removeParameter(String pname) 
    {  int index=indexOfFirstSemi();
       if (index<0) return;
       String header=getValue();
@@ -115,7 +119,7 @@ public abstract class ParametricHeader extends Header
       while (par.hasMore())
       {  int begin_param=par.getPos();
          par.skipChar();
-         if (par.getWord(SipParser.param_separators).equals(name))
+         if (par.getWord(SipParser.param_separators).equals(pname))
          {  String top=header.substring(0,begin_param); 
             par.goToSkippingQuoted(';');
             String bottom="";
@@ -129,15 +133,14 @@ public abstract class ParametricHeader extends Header
       }
    }
 
-
    /** Sets the value of a specified parameter.
      * Zero-length String is returned in case of flag parameter (without value). */
-   public void setParameter(String name, String value) 
+   public void setParameter(String pname, String pvalue) 
    {  if (getValue()==null) setValue("");
-      if (hasParameter(name)) removeParameter(name);
+      if (hasParameter(pname)) removeParameter(pname);
       String header=getValue();
-      header=header.concat(";"+name);
-      if (value!=null) header=header.concat("="+value);
+      header=header.concat(";"+pname);
+      if (pvalue!=null) header=header.concat("="+pvalue);
       setValue(header);          
    }
 }

@@ -32,7 +32,7 @@ import org.zoolu.sip.header.ContactHeader;
 import org.zoolu.sip.header.MultipleHeader;
 import org.zoolu.sip.header.RouteHeader;
 import org.zoolu.sip.header.SipHeaders;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Log;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -51,38 +51,38 @@ public class Redirect extends Registrar
       
    /** When a new request message is received for a local user */
    public void processRequestToLocalUser(Message msg)
-   {  printLog("inside processRequestToLocalUser(msg)",LogLevel.MEDIUM);
+   {  printLog("inside processRequestToLocalUser(msg)",Log.LEVEL_MEDIUM);
       
       // message targets
       Vector contacts=getTargets(msg);
 
       if (contacts.isEmpty())
-      {  printLog("No target found, message discarded",LogLevel.HIGH);
-         if (!msg.isAck()) sip_provider.sendMessage(MessageFactory.createResponse(msg,404,SipResponses.reasonOf(404),null));
+      {  printLog("No target found, message discarded",Log.LEVEL_HIGH);
+         if (!msg.isAck()) sip_provider.sendMessage(MessageFactory.createResponse(msg,404,null,null));
          return;
       } 
                 
-      printLog("message will be redirect to all user's contacts",LogLevel.MEDIUM);         
+      printLog("message will be redirect to all user's contacts",Log.LEVEL_MEDIUM);         
       // create the response with all contact urls, and send it 
       MultipleHeader mc=new MultipleHeader(SipHeaders.Contact,contacts);
       mc.setCommaSeparated(true);
-      Message resp=MessageFactory.createResponse(msg,302,SipResponses.reasonOf(302),null);
+      Message resp=MessageFactory.createResponse(msg,302,null,null);
       resp.setContacts(mc);
       sip_provider.sendMessage(resp);      
    }
    
    /** When a new request message is received for a remote UA */
    public void processRequestToRemoteUA(Message msg)
-   {  printLog("inside processRequestToRemoteUA(msg)",LogLevel.MEDIUM);
-      printLog("request not for local server",LogLevel.HIGH);
-      if (!msg.isAck()) sip_provider.sendMessage(MessageFactory.createResponse(msg,404,SipResponses.reasonOf(404),null));
-      else printLog("message discarded",LogLevel.HIGH);
+   {  printLog("inside processRequestToRemoteUA(msg)",Log.LEVEL_MEDIUM);
+      printLog("request not for local server",Log.LEVEL_HIGH);
+      if (!msg.isAck()) sip_provider.sendMessage(MessageFactory.createResponse(msg,404,null,null));
+      else printLog("message discarded",Log.LEVEL_HIGH);
    }   
 
    /** When a new response message is received */
    public void processResponse(Message resp)
-   {  printLog("inside processResponse(msg)",LogLevel.MEDIUM);
-      printLog("request not for local server: message discarded",LogLevel.HIGH);
+   {  printLog("inside processResponse(msg)",Log.LEVEL_MEDIUM);
+      printLog("request not for local server: message discarded",Log.LEVEL_HIGH);
    }
    
 
@@ -91,7 +91,7 @@ public class Redirect extends Registrar
 
    /** Adds a new string to the default Log */
    private void printLog(String str, int level)
-   {  if (log!=null) log.println("Redirect: "+str,level+SipStack.LOG_LEVEL_UA);  
+   {  if (log!=null) log.println("Redirect: "+str,ServerEngine.LOG_OFFSET+level);  
    }
 
 

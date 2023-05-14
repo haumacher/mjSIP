@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * Copyright (C) 2010 Luca Veltri - University of Parma - Italy
  * 
  * This source code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,23 +22,27 @@
 package local.media;
 
 
+
 import local.net.RtpPacket;
 import local.net.RtpSocket;
+//import java.net.*;
+import org.zoolu.net.*;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.DatagramSocket;
 
 
-/** RtpStreamReceiver is a generic stream receiver.
-  * It receives packets from RTP and writes them into an OutputStream.
+
+/** RtpStreamReceiver is a generic RTP receiver.
+  * It receives packets from RTP and writes media into a given OutputStream.
   */
 public class RtpStreamReceiver extends Thread
 {
 
    /** Whether working in debug mode. */
-   //private static final boolean DEBUG=true;
    public static boolean DEBUG=false;
+
+   /** Time waited before starting playing out packets (in millisecs). All packet received in the meantime are dropped in order to reduce the effect of an eventual initial packet burst. */
+   public static final int EARLY_DROP_TIME=200;
 
    /** Size of the read buffer */
    public static final int BUFFER_SIZE=32768;
@@ -53,35 +57,84 @@ public class RtpStreamReceiver extends Thread
    RtpSocket rtp_socket=null;
 
    /** Whether the socket has been created here */
-   boolean socket_is_local=false;
+   boolean socket_is_local_attribute=false;
+
+   /** Remote socket address */
+   SocketAddress remote_soaddr=null;
 
    /** Whether it is running */
    boolean running=false;
+
+   /** Packet drop rate (actually it is the inverse of the packet drop rate) */
+   protected int packet_drop_rate=0;
+
+   /** Packet counter (incremented only if packet_drop_rate>0) */
+   protected int packet_counter=0;
+
+   /** Listener */
+   RtpStreamReceiverListener listener=null;
+
 
 
    /** Constructs a RtpStreamReceiver.
      * @param output_stream the stream sink
      * @param local_port the local receiver port */
    public RtpStreamReceiver(OutputStream output_stream, int local_port)
-   {  try
-      {  DatagramSocket socket=new DatagramSocket(local_port);
-         socket_is_local=true;
-         init(output_stream,socket);
-      }
-      catch (Exception e) {  e.printStackTrace();  }
+   {  init(output_stream,local_port,null);
    }
 
    /** Constructs a RtpStreamReceiver.
      * @param output_stream the stream sink
-     * @param socket the local receiver DatagramSocket */
-   public RtpStreamReceiver(OutputStream output_stream, DatagramSocket socket)
-   {  init(output_stream,socket);
+     * @param local_port the local receiver port
+     * @listener the RtpStreamReceiver listener */
+   //public RtpStreamReceiver(OutputStream output_stream, int local_port, RtpStreamReceiverListener listener)
+   //{  init(output_stream,local_port,listener);
+   //}
+
+   /** Constructs a RtpStreamReceiver.
+     * @param output_stream the stream sink
+     * @param socket the local receiver UdpSocket
+     * @listener the RtpStreamReceiver listener */
+   public RtpStreamReceiver(OutputStream output_stream, UdpSocket socket)
+   {  init(output_stream,socket,null);
    }
 
-   /** Inits the RtpStreamReceiver */
-   private void init(OutputStream output_stream, DatagramSocket socket)
+   /** Constructs a RtpStreamReceiver.
+     * @param output_stream the stream sink
+     * @param socket the local receiver UdpSocket
+     * @listener the RtpStreamReceiver listener */
+   public RtpStreamReceiver(OutputStream output_stream, UdpSocket socket, RtpStreamReceiverListener listener)
+   {  init(output_stream,socket,listener);
+   }
+
+   /** Inits the RtpStreamReceiver.
+     * @param output_stream the stream sink
+     * @param local_port the local receiver port
+     * @listener the RtpStreamReceiver listener */
+   private void init(OutputStream output_stream, int local_port, RtpStreamReceiverListener listener)
+   {  try
+      {  UdpSocket socket=new UdpSocket(local_port);
+         socket_is_local_attribute=true;
+         init(output_stream,socket,listener);
+      }
+      catch (Exception e) {  e.printStackTrace();  }
+   }
+
+   /** Inits the RtpStreamReceiver.
+     * @param output_stream the stream sink
+     * @param socket the local receiver UdpSocket
+     * @listener the RtpStreamReceiver listener */
+   private void init(OutputStream output_stream, UdpSocket udp_socket, RtpStreamReceiverListener listener)
    {  this.output_stream=output_stream;
-      if (socket!=null) rtp_socket=new RtpSocket(socket);
+      this.listener=listener;
+      if (udp_socket!=null) rtp_socket=new RtpSocket(udp_socket);
+   }
+
+
+   /** Gets the local port. */
+   public int getLocalPort()
+   {  if (rtp_socket!=null) return rtp_socket.getUdpSocket().getLocalPort();
+      else return 0;
    }
 
 
@@ -90,10 +143,12 @@ public class RtpStreamReceiver extends Thread
    {  return running;
    }
 
+
    /** Stops running */
    public void halt()
    {  running=false;
    }
+
 
    /** Runs it in a new Thread. */
    public void run()
@@ -107,44 +162,41 @@ public class RtpStreamReceiver extends Thread
       byte[] buffer=new byte[BUFFER_SIZE];
       RtpPacket rtp_packet=new RtpPacket(buffer,0);
 
-      if (DEBUG) println("Reading blocks of max "+buffer.length+" bytes");
+      running=true;    
 
-      //byte[] aux=new byte[BUFFER_SIZE];
+      if (DEBUG) println("RTP: localhost:"+rtp_socket.getUdpSocket().getLocalPort()+" <-- remotesocket");
+      if (DEBUG) println("RTP: receiving pkts of MAXIMUM "+buffer.length+" bytes");
 
-      running=true;
       try
-      {  rtp_socket.getDatagramSocket().setSoTimeout(SO_TIMEOUT);
+      {  rtp_socket.getUdpSocket().setSoTimeout(SO_TIMEOUT);
+         long early_drop_to=(EARLY_DROP_TIME>0)? System.currentTimeMillis()+EARLY_DROP_TIME : -1;
          while (running)
          {  try
             {  // read a block of data from the rtp socket
                rtp_socket.receive(rtp_packet);
-               //if (DEBUG) System.out.print(".");
-               
+               // drop the first packets in order to reduce the effect of an eventual initial packet burst
+               if (early_drop_to>0 && System.currentTimeMillis()<early_drop_to) continue; else early_drop_to=-1;
+
                // write this block to the output_stream (only if still running..)
-               if (running) output_stream.write(rtp_packet.getPacket(), rtp_packet.getHeaderLength(), rtp_packet.getPayloadLength());
-               /*if (running)
-               {  byte[] pkt=rtp_packet.getPacket();
-                  int offset=rtp_packet.getHeaderLength();
-                  int len=rtp_packet.getPayloadLength();
-                  int pos=0;
-                  for (int i=0; i<len; i++)
-                  {  int linear=G711.ulaw2linear(pkt[offset+i]);
-                     //aux[pos++]=(byte)(linear&0xFF);
-                     //aux[pos++]=(byte)((linear&0xFF00)>>8);
-                     aux[pos++]=(byte)G711.linear2ulaw(linear);
-                  }
-                  output_stream.write(aux,0,pos);
-               }*/
+               if (running) write(output_stream,rtp_packet.getPacket(),rtp_packet.getHeaderLength(),rtp_packet.getPayloadLength());
+
+               // check if remote socket address is changed
+               String addr=rtp_socket.getRemoteAddress().toString();
+               int port=rtp_socket.getRemotePort();
+               if (remote_soaddr==null || !remote_soaddr.getAddress().toString().equals(addr) || remote_soaddr.getPort()!=port)
+               {  remote_soaddr=new SocketAddress(addr,port);
+                  if (listener!=null) listener.onRemoteSoAddressChanged(this,remote_soaddr);
+               }
             }
             catch (java.io.InterruptedIOException e) { }
          }
       }
       catch (Exception e) {  running=false;  e.printStackTrace();  }
 
-      // close RtpSocket and local DatagramSocket
-      DatagramSocket socket=rtp_socket.getDatagramSocket();
+      // close RtpSocket and local UdpSocket
+      UdpSocket udp_socket=rtp_socket.getUdpSocket();
       rtp_socket.close();
-      if (socket_is_local && socket!=null) socket.close();
+      if (socket_is_local_attribute && udp_socket!=null) udp_socket.close();
       
       // free all
       output_stream=null;
@@ -154,9 +206,32 @@ public class RtpStreamReceiver extends Thread
    }
 
 
+   /** Sets the random early drop (RED) rate. Actually it sets the inverse of the packet drop rate. */
+   public void setRED(int rate)
+   {  this.packet_drop_rate=rate;
+   }
+
+
+   /** Gets the random early drop (RED) rate. Actually it gets the inverse of the packet drop rate. */
+   public int getRED()
+   {  return packet_drop_rate;
+   }
+
+
+   /** Writes a block of bytes to an InputStream taken from a given buffer.
+     * This method is used by the RtpStreamReceiver to process incoming RTP packets,
+     * and can be re-defined by a class that extends RtpStreamReceiver in order to
+     * implement new RTP decoding mechanisms. */
+   protected void write(OutputStream output_stream, byte[] buff, int off, int len) throws Exception
+   {  if (packet_drop_rate>0 && (++packet_counter)%packet_drop_rate==0) return;        
+      // else
+      output_stream.write(buff,off,len);
+   }
+
+
    /** Debug output */
    private static void println(String str)
-   {  System.out.println("RtpStreamReceiver: "+str);
+   {  System.err.println("RtpStreamReceiver: "+str);
    }
    
 

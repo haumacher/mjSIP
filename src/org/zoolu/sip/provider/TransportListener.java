@@ -29,7 +29,7 @@ import org.zoolu.sip.message.Message;
 
 /** Listener for Transport events.
   */
-interface TransportListener
+public interface TransportListener
 {
    /** When a new SIP message is received. */
    public void onReceivedMessage(Transport transport, Message msg);

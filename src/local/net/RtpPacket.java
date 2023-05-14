@@ -214,24 +214,24 @@ public class RtpPacket
    {  packet=buffer;
       packet_len=packet_length;
       if (packet_len<12) packet_len=12;
-      init(0x0F);
+      //init(0x0F);
    }
 
 
-   /** init the RTP packet header (only PT) */ 
-   public void init(int ptype)
-   {  init(ptype,Random.nextLong());
+   /** Inits the RTP packet header (only PT) */ 
+   public void setHeader(int ptype)
+   {  setHeader(ptype,Random.nextLong());
    }
 
 
-   /** init the RTP packet header (PT and SSCR) */ 
-   public void init(int ptype, long sscr)
-   {  init(ptype,Random.nextInt(),Random.nextLong(),sscr);
+   /** Inits the RTP packet header (PT and SSCR) */ 
+   public void setHeader(int ptype, long sscr)
+   {  setHeader(ptype,Random.nextInt(),Random.nextLong(),sscr);
    }
    
 
-   /** init the RTP packet header (PT, SQN, TimeStamp, SSCR) */ 
-   public void init(int ptype, int seqn, long timestamp, long sscr)
+   /** Inits the RTP packet header (PT, SQN, TimeStamp, SSCR) */ 
+   public void setHeader(int ptype, int seqn, long timestamp, long sscr)
    {  setVersion(2);
       setPayloadType(ptype);
       setSequenceNumber(seqn);
@@ -242,12 +242,12 @@ public class RtpPacket
    // *********************** Private and Static ***********************
 
    /** Gets int value */
-   private static int getInt(byte b)
+   static int getInt(byte b)
    {  return ((int)b+256)%256;
    }
 
    /** Gets long value */
-   private static long getLong(byte[] data, int begin, int end)
+   static long getLong(byte[] data, int begin, int end)
    {  long n=0;
       for (; begin<end; begin++)
       {  n<<=8;
@@ -257,7 +257,7 @@ public class RtpPacket
    }
 
    /** Sets long value */
-   private static void setLong(long n, byte[] data, int begin, int end)
+   static void setLong(long n, byte[] data, int begin, int end)
    {  for (end-- ; end>=begin; end--)
       {  data[end]=(byte)(n%256);
          n>>=8;
@@ -265,22 +265,22 @@ public class RtpPacket
    }
 
    /** Gets Int value */
-   private static int getInt(byte[] data, int begin, int end)
+   static int getInt(byte[] data, int begin, int end)
    {  return (int)getLong(data,begin,end);
    }
 
    /** Sets Int value */
-   private static void setInt(int n, byte[] data, int begin, int end)
+   static void setInt(int n, byte[] data, int begin, int end)
    {  setLong(n,data,begin,end);
    }
 
    /** Gets bit value */
-   private static boolean getBit(byte b, int bit)
+   static boolean getBit(byte b, int bit)
    {  return (b>>bit)==1;
    }
 
    /** Sets bit value */
-   private static void setBit(boolean value, byte b, int bit)
+   static void setBit(boolean value, byte b, int bit)
    {  if (value) b=(byte)(b|(1<<bit));
       else b=(byte)((b|(1<<bit))^(1<<bit));
    }

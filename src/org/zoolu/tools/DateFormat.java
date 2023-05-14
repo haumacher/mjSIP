@@ -28,7 +28,8 @@ import java.util.Date;
 import java.util.Calendar;
 
 
-/** Class DateFormat replaces the format method of java.text.DateFormat.  
+/** Class DateFormat can be used to properly format Date information.
+  * It substantially replaces method format() of class java.text.DateFormat.  
   */
 public class DateFormat
 {

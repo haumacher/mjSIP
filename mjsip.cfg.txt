@@ -1,5 +1,5 @@
 # 
-#                   MjSip-1.6 Configuration File
+#                   MjSip-1.7 Configuration File
 # ________________________________________________________________
 #
 # This file inclues all MjSip configuration parameters.
@@ -24,12 +24,18 @@
 # SIP and transport layer configurations are handled in Section 3. 
 #
 
-# Default SIP port
+# Default SIP port.
 # Note that this is not the port used by the running stack, but simply the standard default SIP port.
 # Normally it sould be set to 5060 as defined by RFC 3261. Using a different value may cause
 # some problems when interacting with other unaware SIP UAs. 
 # Default value: default_port=5060
 #default_port=5060
+
+# Default SIP port for TLS transport (SIPS).
+# Note that this is not the port used by the running stack, but simply the standard default SIPS port.
+# Normally it sould be set to 5061 as defined by RFC 3261. Using a different value may cause
+# some problems when interacting with other unaware SIP UAs.
+#default_tls_port=5061
 
 # Default supported transport protocols.
 # Default value: default_transport_protocols=udp,tcp
@@ -47,10 +53,6 @@
 # Default value: force_rport=no
 #force_rport=yes
 
-# Default max-forwards value (RFC3261 recommends value 70).
-# Default value: max_forwards=70
-#max_forwards=10
-
 # Starting retransmission timeout (milliseconds); called T1 in RFC2361; they suggest T1=500ms 
 # Default value: retransmission_timeout=500
 #retransmission_timeout=2000 
@@ -66,10 +68,18 @@
 # Clearing timeout (milliseconds); T4 in RFC2361; they suggest T4=5sec 
 # Default value: clearing_timeout=5000
 #clearing_timeout=5000
-       
-# Whether using only one thread for all timer instances.
-# Default value: single_timer=no
-#single_timer=yes
+
+# Default max-forwards value (RFC3261 recommends value 70).
+# Default value: max_forwards=70
+#max_forwards=10
+
+# Whether using only one thread for all timer instances (less precise but more efficient).
+# Default value: single_timer=yes
+#single_timer=no
+
+# Whether at UAS side automatically sending (by default) a 100 Trying on INVITE.
+# Default value: auto_trying=yes
+#auto_trying=no
 
 # Whether 1xx responses create an "early dialog" for methods that create dialog.
 # Default value: early_dialog=no
@@ -81,15 +91,31 @@
 
 # UA info included in request messages (in the User-Agent header field).
 # Use 'NONE' string or let it blank if the User-Agent header filed must be added.
-# Default: ua_info=<the mjsip release>
+# Default value: ua_info=<the mjsip release>
 # ua_info=NONE
 
 # Server info included in request messages (in the Server header field).
 # Use 'NONE' string or let it blank if the Server header filed must be added.
-# Default: server_info=<the mjsip release>
+# Default value: server_info=<the mjsip release>
 # server_info=NONE
 
+# Starting registration timeout (msecs) after a registration failure due to request timeout.
+# Default value: regc_min_attempt_timeout=60*1000 (that is 1min)
+#regc_min_attempt_timeout=30*1000
 
+# Maximum registration timeout (msecs) after a registration failure due to request timeout.
+# Default value: regc_max_attempt_timeout=900*1000 (that is 15min)
+#regc_max_attempt_timeout=600*1000
+
+# Maximum number of consecutive registration authentication attempts before giving up.
+# Default value: regc_auth_attempts=3
+#regc_auth_attempts=5
+
+# Whether forcing this node to stay within the dialog route as peer,
+# by means of the insertion of a RecordRoute header.
+# This is a non-standard behaviour and is normally not necessary.
+# Default value: on_dialog_route=no
+#on_dialog_route=yes
 
 # ________________________________________________________________
 #
@@ -135,14 +161,14 @@
 # Usually you have to deal with some of these configuration parameters.
 #
 
-# Via address/name.
-# Use 'AUTO-CONFIGURATION' for auto detection, or let it undefined.
-# Default value: host_addr=AUTO-CONFIGURATION
-#host_addr=192.168.0.33
+# Via IP address or fully-qualified domanin name (FQDN).
+# Use 'AUTO-CONFIGURATION' for auto detection (or let it undefined).
+# Default value: via_addr=AUTO-CONFIGURATION
+#via_addr=192.168.0.33
 
-# Local SIP port 
+# Local SIP port.
 # Default value: host_port=5060
-#host_port=5060  
+#host_port=5060
 
 # Network interface (IP address) used by SIP.
 # Use 'all-interfaces' for binding SIP to all interfaces (or let it undefined).
@@ -153,19 +179,40 @@
 # Default value: transport_protocols=udp
 #transport_protocols=udp,tcp
 
+# List of transport ports, ordered as the corresponding transport_protocols.
+#transport_ports=5060,5060
+
 # Max number of contemporary open transport connections.
 # Default value: nmax_connections=32
 #nmax_connections=0
 
-# Outbound proxy (host_addr[:host_port]).
+# Outbound proxy URL ([sip:]host_addr[:host_port][;transport=proto]).
 # Use 'NONE' for not using an outbound proxy (or let it undefined).
 # Default value: outbound_proxy=NONE
-#outbound_proxy=proxy.wonderland.net:5060
+#outbound_proxy=proxy.example.net:5060
 
 # Whether logging all packets (including non-SIP keepalive tokens).
 # Default value: log_all_packets=no
 #log_all_packets=yes
 
+# For TLS. Whether all client and server certificates should be considered trusted.
+# By default, trust_all=no
+#trust_all=yes
+
+# For TLS. Path of the folder where trusted certificates are placed.
+# All certificates (with file extension ".crt") found in this folder are considered trusted.
+# By default, the folder "./cert" is used.
+#trust_folder=cert
+
+# For TLS. Absolute file name of the certificate (containing the public key) of the local node.
+# The file name includes the full path starting from the current working folder.
+# By default, the file "./cert/ssl.crt" is used.
+#cert_file=cert/tls.crt
+
+# For TLS. Absolute file name of the private key of the local node.
+# The file name includes the full path starting from the current working folder.
+# By default, the file "./cert/ssl.key" is used.
+#key_file=cert/tls.key
 
 
 # ________________________________________________________________
@@ -180,7 +227,7 @@
 # The domain name(s) that the server administers.
 # It lists the domain names for which the Location Service wmaintains user bindings. 
 # Use 'auto-configuration' for automatic configuration of the domain name.
-#domain_names=wonderland.net biloxi.example.com
+#domain_names=example.net example.com
 #domain_names=AUTO-CONFIGURATION
 
 # Whether consider any port as valid local domain port (regardless which sip port is used).
@@ -214,12 +261,16 @@
 #location_db=config/users.db
 
 # Whether location DB has to be cleaned at startup.
-# Default value: location_db_clean=no
-#location_db_clean=yes
+# Default value: clean_location_db=no
+#clean_location_db=yes
 
 # Whether the Server authenticates local users.   
 # Default value: do_authentication=no
 #do_authentication=yes
+
+# Whether the Proxy authenticates users.
+# Default value: do_proxy_authentication=no
+#do_proxy_authentication=yes
 
 # The authentication scheme.
 # You can specify the authentication scheme name (e.g. Digest, AKA, etc.)
@@ -230,7 +281,7 @@
 # The authentication realm.
 # If not defined or equal to 'NONE' (default), the used via address is used instead.
 # Default value: authentication_realm=NONE
-#authentication_realm=wonderland.net
+#authentication_realm=example.net
 
 # The type of authentication service.
 # You can specify the authentication service type (e.g. local, ldap, radius, mysql)
@@ -258,16 +309,31 @@
 # Default value: loop_detection=yes
 #loop_detection=no
 
+# Proxy transaction timeout (in milliseconds), that corresponds to Timer "C" of RFC2361;
+# RFC2361 suggests C>3min=180000ms.
+# Default value: proxy_transaction_timeout=180000
+#proxy_transaction_timeout=120000
+
 # Sequence of pairs of username or phone prefix and corresponding nexthop address.
-# It provides static rules for routing number-based SIP-URL the server is responsible for.
+# It provides static rules for proxying number-based SIP-URL the server is responsible for.
 # Use "default" (or "*") as default prefix.
-# Example, request URL sip:01234567@zoopera.com received by a server responsible for domain name 'zoopera.com'.
-#phone_routing_rules={prefix=0123,nexthop=127.0.0.2:7002} {prefix=*,nexthop=127.0.0.3:7003}
+# Example:
+#   server is responsible for the domain 'example.com'
+#   phone_proxying_rules={prefix=0123,nexthop=127.0.0.2:7002} {prefix=4567,nexthop=127.0.0.2:7003} {prefix=*,nexthop=127.0.0.3:7004}
+#   a message with recipient 'sip:01234567@example.com' is forwarded to 'sip:01234567@127.0.0.2:7002'
+#authenticated_phone_proxying_rules={prefix=0123,nexthop=127.0.0.2:7002}
+#phone_proxying_rules={prefix=4567,nexthop=127.0.0.2:7003} {prefix=*,nexthop=127.0.0.3:7004}
 
 # Sequence of pairs of destination domain and corresponding nexthop address.
-# It provides static rules for routing domain-based SIP-URL the server is NOT responsible for.
+# It provides static rules for proxying domain-based SIP-URL the server is NOT responsible for.
 # It make the server acting (also) as 'Interrogating' Proxy, i.e. I-CSCF in the 3G networks.
-# domain_routing_rules={domain=wonderland.net,nexthop=neverland.net:5060} */
+# Example: <br>
+#   server is responsible for the domain 'example.com'
+#   domain_proxying_rules={domain=domain1.foo,nexthop=proxy.example.net:5060}
+#   a message with recipient 'sip:01234567@domain1.foo' is forwarded to 'sip:01234567@proxy.example.net:5060'
+#authenticated_domain_proxying_rules={domain=domain1.foo,nexthop=192.168.0.4:5060}
+#domain_proxying_rules={domain=domain2.foo,nexthop=192.168.0.5:5060}
+
 
 
 # ________________________________________________________________
@@ -280,32 +346,48 @@
 # you are managing 3PCC services.
 #
 
-# User's AOR (Address Of Record), used also as From URL.
-# The AOR is the SIP address used to register with the user's registrar server (if requested).
-# The address of the registrar is taken from the hostport field of the AOR, i.e. the value(s) host[:port] after the '@' character.
-# If not defined (default), it equals the 'contact_url' parameter
-#from_url=sip:alice@wonderland.net
+# Display name for the user.
+# It is used in the user's AOR registered to the registrar server and used as From URL.
+#display_name=Alice
+
+# User's name.
+# It is used to build the user's AOR registered to the registrar server and used as From URL.
+#user=alice
+
+# Fully qualified domain name (or address) of the proxy server.
+# It is part of the user's AOR registered to the registrar server and used as From URL.
+# If 'proxy' is not defined, the 'registrar' value is used in its place.
+# If 'registrar' is not defined, the 'proxy' value is used in its place.
+#proxy=proxy.example.net
+
+# Fully qualified domain name (or address) of the registrar server.
+# It is used as recipient for REGISTER requests.
+# If 'registrar' is not defined, the 'proxy' value is used in its place.
+# If 'proxy' is not defined, the 'registrar' value is used in its place.
+#registrar=example.net
 
 # Contact URL.
-# If not defined (default), it is formed by sip:username@host_address:host_port
+# If not defined (default), it is formed as sip:user@via_address:host_port.
+# Normally you can leave it undefined.
 #contact_url=sip:alice@192.168.0.55:5070
   
-# User's name (used to build the contact_url if not explitely defined).
-#username=alice
+# User's name used for server authentication.
+#auth_user=alice
 
-# User's realm.
-#realm=wonderland.net
+# User's realm used for server authentication.
+#auth_realm=example.net
 
-# User's passwd.
-#passwd=mypassword
+# User's passwd used for server authentication.
+#auth_passwd=mypassword
 
-# Path for the 'ua.jar' lib, used to retrive various UA media (gif, wav, etc.).
+# Absolute path (or complete URL) of the jar archive, where various UA media (gif, wav, etc.) are stored.
+# Use value 'NONE' for getting resources from external folders.
 # Default value: ua_jar=lib/ua.jar
 #ua_jar=./ua.jar
 
-# Path for the 'contacts.lst' file where save and load the list of VisualUA contacts.
-# Default value: contacts_file=config/contacts.lst
-#contacts_file=contacts.lst
+# Absolute path (or complete URL) of the buddy list file where the buddy list is and loaded from (and saved to).
+# Default value: buddy_list_file=buddy.lst
+#buddy_list_file=config/buddy.lst
 
 # Whether registering with the registrar server.
 # Default value: do_register=no
@@ -323,16 +405,21 @@
 # Default value: expires=3600
 #expires=1800
 
-# Rate of keep-alive packets sent toward the registrar server (in milliseconds).
-# Set keepalive_time=0 to disable the sending of keep-alive datagrams.
+# Rate of keep-alive tokens (datagrams) sent toward the outbound proxy (if present) or toward the registrar server.
+# Its value specifies the delta-time (in millesconds) between two keep-alive tokens.
+# Set keepalive_time=0 for not sending keep-alive datagrams.
 # Default value: keepalive_time=0
 #keepalive_time=8000
 
 # Automatic call a remote user secified by the 'call_to' value.
 # Use value 'NONE' for manual calls (or let it undefined).
 # Default value: call_to=NONE
-#call_to=sip:alice@wonderland.net   
+#call_to=sip:alice@example.com   
    
+# Response time in seconds; it is the maximum time the user can wait before responding to an incoming call;
+# after such time the call is automatically declined (refused).
+# Default value: refuse_time=20
+
 # Automatic answer time in seconds; time<0 corresponds to manual answer mode.
 # Default value: accept_time=-1       
 #accept_time=0
@@ -352,12 +439,12 @@
 # Redirect incoming call to the secified url.
 # Use value 'NONE' for not redirecting incoming calls (or let it undefined).
 # Default value: redirect_to=NONE
-#redirect_to=sip:alice@wonderland.net
+#redirect_to=sip:alice@home.example.net
 
 # Transfer calls to the secified url.
 # Use value 'NONE' for not transferring calls (or let it undefined).
 # Default value: transfer_to=NONE
-#transfer_to=sip:alice@wonderland.net
+#transfer_to=sip:alice@home.example.net
 
 # No offer in the invite.
 # Default value: no_offer=no
@@ -370,6 +457,10 @@
 # Whether using video.
 # Default value: video=no
 #video=yes
+
+# Whether looping the received media streams back to the sender.
+# Default value: loopback=no
+#loopback=yes
 
 # Whether playing in receive only mode.
 # Default value: recv_only=no
@@ -391,41 +482,44 @@
 # Default value: recv_file=NONE
 #recv_file=audio1.out
 
-# Audio port.
-# Default value: audio_port=21068
-#audio_port=4000
+# Media address (use it ONLY if you want to specify a media address different from the via address).
+#media_addr=10.0.0.5
 
-# Audio avp.
-# Default value: audio_avp=0
-#audio_avp=101
+# First media port (use it ONLY if you want to specify media ports different from those specified by the 'media' parameter).
+#media_port=7000
 
-# Audio codec.
-# Default value: audio_codec=PCMU
-#audio_codec=GSM
+# Whether using symmetric_rtp.
+# Default value: symmetric_rtp=no
+#symmetric_rtp=yes
 
-# Audio sample rate.
-# Default value: audio_sample_rate=8000
-#audio_sample_rate=16000
+# Media descriptors:
+# One or more 'media' (or 'media_desc') parameters specify for each supported media: the media type, port, and protocol/codec.
+# Zero or more 'media_spec' parameters can be used to specify media attributes such as: codec name, sample rate, and frame size.
+# Examples:
+#   media=audio 4000 rtp/avp
+#   media_spec=audio 0 PCMU 8000 160
+#   media_spec=audio 8 PCMA 8000 160
+#   media_spec=audio 101 G726-32 8000 80
+#   media_spec=audio 102 G726-24 8000 60
+#   media=video 3002 rtp/avp
+#   media_spec=video 101
+# Alternatively media attributes can be specified also within the 'media' parameter as comma-separated list between brackets.
+# Examples:
+#   media=audio 4000 rtp/avp {audio 0 PCMU 8000 160, audio 8 PCMA 8000 160}
+#   media=video 3002 rtp/avp {video 101}
+# Default values:
+#media=audio 4000 rtp/avp
+#media_spec=audio 0 PCMU 8000 160
+#media=video 4002 rtp/avp
+#media_spec=video 101
 
-# Audio sample size.
-# Default value: audio_sample_size=1
-#audio_sample_size=2
+# Whether using JMF for audio streaming.
+# Default value: use_jmf_audio=no
+#use_jmf_audio=yes
 
-# Audio frame size.
-# Default value: audio_frame_size=160
-#audio_frame_size=500
-
-# Video port.
-# Default value: video_port=21070
-#video_port=4002
-
-# Video avp.
-# Default value: video_avp=17
-#video_avp=101
-
-# Whether using JMF for audio/video streaming.
-# Default value: use_jmf=no
-#use_jmf=yes
+# Whether using JMF for video streaming.
+# Default value: use_jmf_video=yes
+#use_jmf_video=no
 
 # Whether using RAT (Robust Audio Tool) as audio sender/receiver.
 # Default value: use_rat=no
@@ -463,11 +557,15 @@
 # Default value: handover_time=0
 
 # Rate of keep-alive datagrams sent toward all registered UAs (in milliseconds).
-# Set keepalive_time=0 to disable the sending of keep-alive datagrams
+# Set keepalive_time=0 to disable the sending of keep-alive datagrams.
 # Default value: keepalive_time=0
 
 # Whether sending keepalive datagram to all contacted UAs (also toward non-registered UAs)
 # Default value: keepalive_aggressive=no
+
+# Minimum inter-packet departure time (in milliseconds).
+# Set interpacket_time=0 to disable this option.
+# Default value: interpacket_time=0 
 
 # Whether intercepting media traffics.
 # Default value: do_interception=no

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * Copyright (C) 2007 Luca Veltri - University of Parma - Italy
  * 
  * This source code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,213 +22,119 @@
 package local.ua;
 
 
-import org.zoolu.sip.address.*;
+
+import local.media.MediaDesc;
+import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.provider.SipStack;
 import org.zoolu.sip.provider.SipProvider;
-import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
-import java.io.*;
+
+import java.util.Vector;
+import java.io.File;
 
 
-/** Jukebox is a simple audio server that automatically responds to all incoming calls
-  * and sends the audio file as selected by the caller through the request-line parameter
-  * 'audiofile'.
+
+/** Jukebox is a simple audio server.
+  * It automatically responds to incoming calls and sends the audio file
+  * as selected by the caller through the request-line parameter 'audiofile'.
   */
-public class Jukebox implements UserAgentListener, RegisterAgentListener
+public class Jukebox extends MultipleUAS
 {           
 
+   /** URI resource parameter */
    public static String PARAM_RESOURCE="resource";
-
-   /** Event logger. */
-   Log log;
    
-   /** UserAgentProfile */
-   UserAgentProfile user_profile;
-         
-   /** SipProvider */
-   SipProvider sip_provider;
+   /** Default available ports */
+   public static int MEDIA_PORTS=20;
 
-   /** Standard output */
-   PrintStream stdout=null; 
+   /** Maximum life time (call duration) in seconds */
+   public static int MAX_LIFE_TIME=600;
+
+   /** Media file path */
+   public static String MEDIA_PATH=".";
+
+   /** First media port */
+   int first_media_port;
+
+   /** Last media port */
+   int last_media_port;
 
 
-   /** Costructs a new Jukebox. */
-   public Jukebox(SipProvider sip_provider, UserAgentProfile user_profile)
-   {  log=sip_provider.getLog();
-      this.user_profile=user_profile;
-      this.sip_provider=sip_provider;
 
-      if (user_profile.contact_url==null) user_profile.contact_url=user_profile.username+"@"+sip_provider.getViaAddress()+":"+sip_provider.getPort();
-
-      if (!user_profile.no_prompt) stdout=System.out; 
-
-      if (user_profile.do_register)
-      {  RegisterAgent ra=new RegisterAgent(sip_provider,user_profile.from_url,user_profile.contact_url,user_profile.username,user_profile.realm,user_profile.passwd,this);
-         ra.loopRegister(user_profile.expires,user_profile.expires/2);
-      }         
-      
-      UserAgent ua=new UserAgent(sip_provider,user_profile,this);      
-      ua.listen(); 
+   /** Creates a new Jukebox. */
+   public Jukebox(SipProvider sip_provider, UserAgentProfile ua_profile, int media_ports)
+   {  super(sip_provider,ua_profile);
+      if (ua_profile.media_port<0) ua_profile.media_port=((MediaDesc)ua_profile.media_descs.elementAt(0)).getPort();
+      first_media_port=ua_profile.media_port;
+      last_media_port=first_media_port+media_ports-1;
    } 
 
 
-   // ******************* UserAgent callback functions ******************
-
-   /** When a new call is incoming */
-   public void onUaCallIncoming(UserAgent ua, NameAddress callee, NameAddress caller)
-   {  printOut("Incoming Call from "+caller.toString());
-
-      String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
-      if (audio_file!=null) if (new File(audio_file).isFile()) user_profile.send_file=audio_file;
-
-      if (user_profile.send_file!=null) ua.accept(); else ua.hangup();
-
-      user_profile.audio_port++;
-      ua=new UserAgent(sip_provider,user_profile,this);      
-      ua.listen(); 
+   /** From UserAgentListener. When a new call is incoming. */
+   public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, Vector media_descs)
+   {  String audio_file=MEDIA_PATH+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
+      if (audio_file!=null) if (new File(audio_file).isFile()) ua_profile.send_file=audio_file;
+      if (ua_profile.send_file!=null) ua.accept(); else ua.hangup();
+      if ((++ua_profile.media_port)>last_media_port) ua_profile.media_port=first_media_port;
    }
    
-   /** When an ougoing call is remotly ringing */
-   public void onUaCallRinging(UserAgent ua)
-   {  
+
+   /** Prints out a message to stantard output. */
+   void printOut(String str)
+   {  if (stdout!=null) stdout.println(str);
    }
 
-   /** When an ougoing call has been accepted */
-   public void onUaCallAccepted(UserAgent ua)
-   {
-   }
-   
-   /** When a call has been trasferred */
-   public void onUaCallTrasferred(UserAgent ua)
-   {  
-   }
-
-   /** When an incoming call has been cancelled */
-   public void onUaCallCancelled(UserAgent ua)
-   {
-   }
-
-   /** When an ougoing call has been refused or timeout */
-   public void onUaCallFailed(UserAgent ua)
-   {  
-   }
-
-   /** When a call has been locally or remotely closed */
-   public void onUaCallClosed(UserAgent ua)
-   {  
-   }
-
-
-   // **************** RegisterAgent callback functions *****************
-
-   /** When a UA has been successfully (un)registered. */
-   public void onUaRegistrationSuccess(RegisterAgent ra, NameAddress target, NameAddress contact, String result)
-   {  printLog("Registration success: "+result,LogLevel.HIGH);
-   }
-
-   /** When a UA failed on (un)registering. */
-   public void onUaRegistrationFailure(RegisterAgent ra, NameAddress target, NameAddress contact, String result)
-   {  printLog("Registration failure: "+result,LogLevel.HIGH);
-   }
-
-   
-   // ******************************* MAIN *******************************
 
    /** The main method. */
    public static void main(String[] args)
    {         
-      String file=null;
-      boolean opt_regist=false;
-      int     opt_expires=0;
-      int     opt_hangup_time=0;
-      int     opt_media_port=21068;
-      String  opt_send_file=null;
-      boolean opt_no_prompt=false;
- 
-      try
-      {  
-         for (int i=0; i<args.length; i++)
-         {
-            if (args[i].equals("-f") && args.length>(i+1))
-            {  file=args[++i];
-               continue;
+      System.out.println("Jukebox "+SipStack.version);
+      SipStack.debug_level=8;
+
+      int media_ports=MEDIA_PORTS;
+      boolean prompt_exit=false;
+
+      for (int i=0; i<args.length; i++)
+      {  if (args[i].equals("--mports"))
+         {  try
+            {  media_ports=Integer.parseInt(args[i+1]);
+               args[i]="--skip";
+               args[++i]="--skip";
             }
-            if (args[i].equals("-g") && args.length>(i+1)) // registrate the contact url
-            {  opt_regist=true;
-               String time=args[++i];
-               if (time.charAt(time.length()-1)=='h') opt_expires=Integer.parseInt(time.substring(0,time.length()-1))*3600;
-               else opt_expires=Integer.parseInt(time);
-               continue;
-            }
-            if (args[i].equals("-p") && args.length>(i+1)) // set the local port
-            {  opt_media_port=Integer.parseInt(args[++i]);
-               continue;
-            }
-            if (args[i].equals("-t") && args.length>(i+1)) // set the call duration
-            {  opt_hangup_time=Integer.parseInt(args[++i]);
-               continue;
-            }
-            if (args[i].equals("--send-file")) // send audio file
-            {  opt_send_file=args[++i];
-               continue;
-            }
-            if (args[i].equals("--no-prompt")) // do not prompt
-            {  opt_no_prompt=true;
-               continue;
-            }
-            
-            // else, do:
-            if (!args[i].equals("-h"))
-               System.out.println("unrecognized param '"+args[i]+"'\n");
-            
-            System.out.println("usage:\n   java Jukebox [options]");
-            System.out.println("   options:");
-            System.out.println("   -h                 this help");
-            System.out.println("   -f <config_file>   specifies a configuration file");
-            System.out.println("   -g <time>          registers the contact URL with the registrar server");
-            System.out.println("                      where time is the duration of the registration, and can be");
-            System.out.println("                      in seconds (default) or hours ( -g 7200 is the same as -g 2h )");
-            System.out.println("   -t <secs>          specipies the call duration (0 means manual hangup)");
-            System.out.println("   -p <port>          local media port");
-            System.out.println("   --send-file <file> default audio file");
-            System.out.println("   --no-prompt        do not prompt");
-            System.exit(0);
+            catch (Exception e) {  e.printStackTrace();  }
          }
-                     
-         SipStack.init(file);
-         SipProvider sip_provider=new SipProvider(file);
-         UserAgentProfile user_profile=new UserAgentProfile(file);
-         
-         if (opt_regist) user_profile.do_register=true;
-         if (opt_expires>0) user_profile.expires=opt_expires;
-         if (opt_hangup_time>0) user_profile.hangup_time=opt_hangup_time;
-         if (opt_media_port!=21068) user_profile.video_port=(user_profile.audio_port=opt_media_port)+2;
-         if (opt_send_file!=null) user_profile.send_file=opt_send_file;
-         if (opt_no_prompt) user_profile.no_prompt=true;     
-         user_profile.audio=true;
-         user_profile.send_only=true;             
-
-         new Jukebox(sip_provider,user_profile);
+         else
+         if (args[i].equals("--mpath"))
+         {  MEDIA_PATH=args[i+1];
+            args[i]="--skip";
+            args[++i]="--skip";
+         }
+         else
+         if (args[i].equals("--prompt"))
+         {  prompt_exit=true;
+            args[i]="--skip";
+         }
       }
-      catch (Exception e)  {  e.printStackTrace(); System.exit(0);  }
+      if (!UA.init("Jukebox",args))
+      {  UA.printOut("   --mports            number of available media ports");
+         UA.printOut("   --mpath <path>      path of media folder");
+         UA.printOut("   --prompt            prompt for exit");
+         return;
+      }
+      // else
+      UA.ua_profile.audio=true;
+      UA.ua_profile.video=false;
+      UA.ua_profile.send_only=true;
+      if (UA.ua_profile.hangup_time<=0) UA.ua_profile.hangup_time=MAX_LIFE_TIME;
+      new Jukebox(UA.sip_provider,UA.ua_profile,media_ports);
+      
+      // promt before exit
+      if (prompt_exit) 
+      try
+      {  System.out.println("press 'enter' to exit");
+         (new java.io.BufferedReader(new java.io.InputStreamReader(System.in))).readLine();
+         System.exit(0);
+      }
+      catch (Exception e) {}
    }    
-   
-
-   // ****************************** Logs *****************************
-
-   /** Print to stantard output. */
-   void printOut(String str)
-   {  if (stdout!=null) System.out.println(str);
-   }
-
-   /** Adds a new string to the default Log */
-   void printLog(String str)
-   {  printLog(str,LogLevel.HIGH);
-   }
-
-   /** Adds a new string to the default Log */
-   void printLog(String str, int level)
-   {  if (log!=null) log.println("Jukebox: "+str,level+SipStack.LOG_LEVEL_UA);  
-   }
 
 }

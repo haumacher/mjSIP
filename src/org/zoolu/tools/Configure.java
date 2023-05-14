@@ -25,6 +25,7 @@ package org.zoolu.tools;
 
 
 import java.io.*;
+import java.net.URL;
 
 
 /** Configure helps the loading and saving of configuration data.
@@ -44,16 +45,19 @@ public class Configure
    {  // parse the text line..
    }
 
+
    /** Converts the entire object into lines (to be saved into the config file) */
    protected String toLines()
    {  // convert the object into to one or more text line..
       return "";
    }
 
+
    /** Costructs a Configure container */
    protected Configure()
    {  this.configurable=null;
    }
+
 
    /** Costructs a Configure container */
    public Configure(Configurable configurable, String file)
@@ -64,33 +68,33 @@ public class Configure
        
    /** Loads Configure attributes from the specified <i>file</i> */
    protected void loadFile(String file)
-   {  //System.out.println("DEBUG: loading Configuration");
-      if (file==null)
-      {  //System.out.println("DEBUG: no Configuration file");
-         return;
+   {  if (file==null)
+      {  return;
       }
       //else
-      BufferedReader in=null;
       try
-      {  in=new BufferedReader(new FileReader(file));
-                
-         while (true)
-         {  String line=null;
-            try { line=in.readLine(); } catch (Exception e) { e.printStackTrace(); System.exit(0); }
-            if (line==null) break;
-         
-            if (!line.startsWith("#"))
-            {  if (configurable==null) parseLine(line); else configurable.parseLine(line);
-            }
-         } 
-         in.close();
+      {  readFrom(new FileReader(file));
       }
       catch (Exception e)
       {  System.err.println("WARNING: error reading file \""+file+"\"");
-         //System.exit(0);
          return;
       }
-      //System.out.println("DEBUG: loading Configuration: done.");
+   }
+
+
+   /** Loads Configure attributes from the specified URL <i>url</i> */
+   protected void loadFile(URL url)
+   {  if (url==null)
+      {  return;
+      }
+      //else
+      try
+      {  readFrom(new InputStreamReader(url.openStream()));
+      }
+      catch (Exception e)
+      {  System.err.println("WARNING: error reading from \""+url+"\"");
+         return;
+      }
    }
 
 
@@ -99,13 +103,35 @@ public class Configure
    {  if (file==null) return;
       //else
       try
-      {  BufferedWriter out=new BufferedWriter(new FileWriter(file));
-         out.write(toLines());
-         out.close();
+      {  writeTo(new FileWriter(file));
       }
       catch (IOException e)
       {  System.err.println("ERROR writing on file \""+file+"\"");
       }         
    }
+
    
+   /** Reads Configure attributes from the specified Reader <i>rd</i> */
+   protected void readFrom(Reader rd) throws java.io.IOException
+   {  BufferedReader in=new BufferedReader(rd);           
+      while (true)
+      {  String line=null;
+         try { line=in.readLine(); } catch (Exception e) { e.printStackTrace(); System.exit(0); }
+         if (line==null) break;
+      
+         if (!line.startsWith("#"))
+         {  if (configurable==null) parseLine(line); else configurable.parseLine(line);
+         }
+      } 
+      in.close();
+   }
+
+
+   /** Writes Configure attributes to the specified Writer <i>wr</i> */
+   protected void writeTo(Writer wr) throws java.io.IOException
+   {  BufferedWriter out=new BufferedWriter(wr);
+      out.write(toLines());
+      out.close();
+   }
+
 }

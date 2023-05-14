@@ -30,9 +30,9 @@ package org.zoolu.net;
   */
 public interface TcpServerListener
 {
-   /** When a new incoming connection is established */ 
+   /** When a new incoming connection is established. */ 
    public void onIncomingConnection(TcpServer tcp_server, TcpSocket socket);
    
-   /** When ConnectionServer terminates. */
+   /** When TcpServer terminates. */
    public void onServerTerminated(TcpServer tcp_server, Exception error);   
 }

@@ -21,24 +21,24 @@ public class CallLoggerImpl implements CallLogger
    /** Maximum number of concurrent calls. */
    static final int MAX_SIZE=10000;
 
-   /** Table : call_id (String) --> invite date. */
+   /** Table : (String)call_id --> (Long)invite date. */
    Hashtable invite_dates;
-   /** Table : call_id (String) --> 2xx date (Long). */
+   /** Table : (String)call_id --> (Long)2xx date. */
    Hashtable accepted_dates;
-   /** Table : call_id (String) --> 4xx date (Long). */
+   /** Table : (String)call_id --> (Long)4xx date. */
    Hashtable refused_dates;
-   /** Table : call_id (String) --> bye date (Long). */
+   /** Table : (String)call_id --> (Long)bye date. */
    Hashtable bye_dates;
    
-   /** Table : call_id (String) --> caller (String). */
+   /** Table : (String)call_id --> (String)caller. */
    Hashtable callers;
-   /** Table : call_id (String) --> callee (String). */
+   /** Table : (String)call_id --> (String)callee. */
    Hashtable callees;
 
-   /** Set : call_id (String). */
+   /** Set : (String)call_id. */
    Vector calls;
 
-   /** Logger. */
+   /** Log. */
    Log call_log;
 
    
@@ -53,7 +53,7 @@ public class CallLoggerImpl implements CallLogger
       callers=new Hashtable();
       callees=new Hashtable();
       
-      call_log=new Log(filename,null,1,-1,true);
+      call_log=new Log(filename,1,-1,true);
       call_log.println("Date \tCall-Id \tStatus \tCaller \tCallee \tSetup Time \tCall Time");
    }
  

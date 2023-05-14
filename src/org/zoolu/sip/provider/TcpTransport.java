@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * Copyright (C) 2009 Luca Veltri - University of Parma - Italy
  * 
  * This file is part of MjSip (http://www.mjsip.org)
  * 
@@ -24,52 +24,46 @@
 package org.zoolu.sip.provider;
 
 
+
 import org.zoolu.net.*;
-import org.zoolu.sip.message.Message;
+import org.zoolu.tools.Log;
 import java.io.IOException;
 
 
-/** TcpTransport provides a TCP trasport service for SIP.
+
+/** TcpTransport provides a TCP-based transport service for SIP.
   */
-class TcpTransport implements ConnectedTransport, TcpConnectionListener
-{
+public class TcpTransport extends ConnectedTransport
+{        
    /** TCP protocol type */
    public static final String PROTO_TCP="tcp";
-
-   /** TCP connection */
-   TcpConnection tcp_conn;  
-
-   /** TCP connection */
-   ConnectionIdentifier connection_id;  
-
-   /** The last time that has been used (in milliseconds) */
-   long last_time;
    
-   /** the current received text. */
-   String text;
-     
-   /** Transport listener */
-   TransportListener listener;   
+   /** TCP server */
+   TcpServer tcp_server=null;
+
+
 
 
    /** Creates a new TcpTransport */ 
-   public TcpTransport(IpAddress remote_ipaddr, int remote_port, TransportListener listener) throws IOException
-   {  this.listener=listener;
-      TcpSocket socket=new TcpSocket(remote_ipaddr,remote_port);
-      tcp_conn=new TcpConnection(socket,this);
-      connection_id=new ConnectionIdentifier(this);
-      last_time=System.currentTimeMillis();
-      text="";
+   public TcpTransport(int local_port, int nmax_connections, Log log) throws IOException
+   {  super(local_port,nmax_connections,log);
+      initTcp(local_port,null);
    }
 
 
-   /** Costructs a new TcpTransport */
-   public TcpTransport(TcpSocket socket, TransportListener listener)
-   {  this.listener=listener;
-      tcp_conn=new TcpConnection(socket,this);
-      connection_id=null;
-      last_time=System.currentTimeMillis();
-      text="";
+   /** Creates a new TcpTransport */ 
+   public TcpTransport(int local_port, IpAddress host_ipaddr, int nmax_connections, Log log) throws IOException
+   {  super(local_port,nmax_connections,log);
+      initTcp(local_port,host_ipaddr);
+   }
+
+
+   /** Inits the TcpTransport */ 
+   protected void initTcp(int local_port, IpAddress host_ipaddr) throws IOException
+   {  if (tcp_server!=null) tcp_server.halt();
+      // start tcp
+      if (host_ipaddr==null) tcp_server=new TcpServer(local_port,this);
+      else tcp_server=new TcpServer(local_port,host_ipaddr,this);
    }
 
 
@@ -79,89 +73,42 @@ class TcpTransport implements ConnectedTransport, TcpConnectionListener
    }
 
 
-   /** Gets the remote IpAddress */
-   public IpAddress getRemoteAddress()
-   {  if (tcp_conn!=null) return tcp_conn.getRemoteAddress();
-      else return null;
-   }
-   
-   
-   /** Gets the remote port */
-   public int getRemotePort()
-   {  if (tcp_conn!=null) return tcp_conn.getRemotePort();
+   /** Gets local port */ 
+   public int getLocalPort()
+   {  if (tcp_server!=null) return tcp_server.getPort();
       else return 0;
-   }
-
-
-   /** Gets the last time the Connection has been used (in millisconds) */
-   public long getLastTimeMillis()
-   {  return last_time;
-   }
-
-
-   /** Sends a Message through the connection. Parameters <i>dest_addr</i>/<i>dest_addr</i>
-     * are not used, and the message is addressed to the connection remote peer.
-     * <p>Better use sendMessage(Message msg) method instead. */      
-   public void sendMessage(Message msg, IpAddress dest_ipaddr, int dest_port) throws IOException
-   {  sendMessage(msg);
-   }
-
-
-   /** Sends a Message */      
-   public void sendMessage(Message msg) throws IOException
-   {  if (tcp_conn!=null)
-      {  last_time=System.currentTimeMillis();
-         byte[] data=msg.toString().getBytes();
-         tcp_conn.send(data);
-      }
    }
 
 
    /** Stops running */
    public void halt()
-   {  if (tcp_conn!=null) tcp_conn.halt();
+   {  super.halt();
+      if (tcp_server!=null) tcp_server.halt();
+   }
+
+
+   /** From TcpServerListener. When a new incoming connection is established */ 
+   public void onIncomingConnection(TcpServer tcp_server, TcpSocket socket)
+   {  printLog("incoming connection from "+socket.getAddress()+":"+socket.getPort(),Log.LEVEL_MEDIUM);
+      if (tcp_server==this.tcp_server)
+      {  TransportConn conn=new TcpTransportConn(socket,this);
+         printLog("tcp connection "+conn+" opened",Log.LEVEL_MEDIUM);
+         addConnection(conn);
+      }
+   }
+
+
+   /** Creates a transport connection to the remote end-point. */
+   protected TransportConn createTransportConn(IpAddress dest_ipaddr, int dest_port) throws IOException
+   {  TcpSocket tcp_socket=new TcpSocket(dest_ipaddr,dest_port);
+      return new TcpTransportConn(tcp_socket,this);
    }
 
 
    /** Gets a String representation of the Object */
    public String toString()
-   {  if (tcp_conn!=null) return tcp_conn.toString();
+   {  if (tcp_server!=null) return tcp_server.toString();
       else return null;
-   }
-
-
-   //************************* Callback methods *************************
-   
-   /** When new data is received through the TcpConnection. */
-   public void onReceivedData(TcpConnection tcp_conn, byte[] data, int len)
-   {  last_time=System.currentTimeMillis();
-      
-      text+=new String(data,0,len);
-      SipParser par=new SipParser(text);
-      Message msg=par.getSipMessage();
-      while (msg!=null)
-      {  //System.out.println("DEBUG: message len: "+msg.getLength());
-         msg.setRemoteAddress(tcp_conn.getRemoteAddress().toString());
-         msg.setRemotePort(tcp_conn.getRemotePort());
-         msg.setTransport(PROTO_TCP);
-         msg.setConnectionId(connection_id);
-         if (listener!=null) listener.onReceivedMessage(this,msg);
-
-         text=par.getRemainingString();
-         //System.out.println("DEBUG: text left: "+text.length());
-         par=new SipParser(text);
-         msg=par.getSipMessage();
-      }     
-   }   
-
-
-   /** When TcpConnection terminates. */
-   public void onConnectionTerminated(TcpConnection tcp_conn, Exception error)  
-   {  if (listener!=null) listener.onTransportTerminated(this,error);
-      TcpSocket socket=tcp_conn.getSocket();
-      if (socket!=null) try { socket.close(); } catch (Exception e) {}
-      this.tcp_conn=null;
-      this.listener=null;
    }
 
 }

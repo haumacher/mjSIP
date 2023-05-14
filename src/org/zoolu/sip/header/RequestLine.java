@@ -33,26 +33,30 @@ import org.zoolu.sip.address.*;
   */
 public class RequestLine
 {
+   /** Request method */
    protected String method;
+
+   /** Request target */
    protected SipURL url;
 
-   /** Construct RequestLine <i>request</i> with <i>sipurl</i> as recipient */
+   /** Creates a new RequestLine <i>request</i> with <i>sipurl</i> as recipient. */
    public RequestLine(String request, String sipUrl)
    {  method=request;
       url=new SipURL(sipUrl);
    }
 
+   /** Creates a new RequestLine <i>request</i> with <i>sipurl</i> as recipient. */
    public RequestLine(String request, SipURL sipUrl)
    {  method=request;
       url=sipUrl;
    }
 
-   /** Create a new copy of the RequestLine*/
+   /** Creates a new copy of the RequestLine. */
    public Object clone()
    {  return new RequestLine(getMethod(),getAddress());
    }
 
-   /** Indicates whether some other Object is "equal to" this RequestLine */
+   /** Whether Object <i>obj</i> is "equal to" this RequestLine. */
    public boolean equals(Object obj)
    {  //if (o.getClass().getSuperclass()!=this.getClass().getSuperclass()) return false;
       try
@@ -63,15 +67,19 @@ public class RequestLine
       catch (Exception e) {  return false;  }
    }
 
+   /** Gets String value of this Object. */
    public String toString()
    {  return method+" "+url+" SIP/2.0\r\n";
    }
 
+   /** Gets the request method. */
    public String getMethod()
    {  return method;
    }
 
+   /** Gets the request target. */
    public SipURL getAddress()
    {  return url;
    }
+   
 }

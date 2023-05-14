@@ -47,7 +47,10 @@ public class UdpProvider extends Thread
    public static final int DEFAULT_SOCKET_TIMEOUT=2000; // 2sec 
 
    /** UDP socket */
-   UdpSocket socket;  
+   protected UdpSocket socket;  
+
+   /** UdpProvider listener */
+   protected UdpProviderListener listener;   
 
    /** Maximum time that the UDP receiver can remain active after been halted (in milliseconds) */
    int socket_timeout;
@@ -63,9 +66,6 @@ public class UdpProvider extends Thread
 
    /** Whether it is running */
    boolean is_running; 
-
-   /** UdpProvider listener */
-   UdpProviderListener listener;   
 
        
    /** Creates a new UdpProvider */ 

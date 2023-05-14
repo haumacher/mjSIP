@@ -27,7 +27,7 @@ package org.zoolu.sip.header;
 
 /** Header is the base Class for all SIP Headers
  */
-public class Header
+public class Header/* extends org.zoolu.tools.MonitoredObject*/
 {
    /** The header type */
    protected String name;

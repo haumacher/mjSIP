@@ -24,26 +24,33 @@
 package org.zoolu.tools;
 
 
+
 import java.io.*;
-import java.util.Date;
-//import java.util.Locale;
-//import java.text.DateFormat;
-//import java.text.SimpleDateFormat;
+
 
 
 /** Class Log allows the printing of log messages onto standard output
   * or files or any PrintStream.
   * <p>
-  * Every Log has a <i>verboselevel</i> associated with it;
-  * any log request with <i>loglevel</i> less or equal
-  * to the <i>verbose-level</i> is logged.
-  * <br>Verbose level 0 indicates no log. The log levels should be greater than 0.
-  * <p>
-  * Parameter <i>logname</i>, if non-null, is used as log header
-  * (i.e. written at the begin of each log row).  
+  * Every Log has a <i>verbose_level</i> associated with it;
+  * any log request with <i>logl_evel</i> less or equal
+  * to the <i>verbose_level</i> is logged.
+  * <br/>
+  * Verbose level 0 indicates no log. The log levels should be greater than 0.
   */
 public class Log
 {
+   /********************************* Statics ********************************/
+
+   /** Default level for hight priority logs. */
+   public static final int LEVEL_HIGH=1;
+   /** Default level for medium priority logs. */
+   public static final int LEVEL_MEDIUM=3;
+   /** Default level for low priority logs. */
+   public static final int LEVEL_LOW=5;  
+   /** Default level for very low priority logs. */
+   public static final int LEVEL_LOWER=9; 
+
 
    /******************************* Attributes *******************************/
 
@@ -54,11 +61,8 @@ public class Log
    /** The log output stream */
    PrintStream out_stream;
 
-   /** The log tag at the beginning of each log row */
-   String log_tag;
-
-   /** The <i>log_level</i>.
-     * <p>Only messages with a level less or equal this <i>log_level</i>
+   /** The <i>verbose_level</i>.
+     * <p>Only messages with a level less or equal this <i>verbose_level</i>
      * are effectively logged */
    int verbose_level;
    
@@ -66,59 +70,65 @@ public class Log
      * Value -1 indicates no maximum size */
    long max_size;
      
-   /** The size of the log tag (e.g. "MyLog: " has tag_size=7) */
-   int tag_size;
-
    /** Whether messages are logged */
-   boolean do_log;
+   boolean pause=false;
+
+   /** Whether writing a timestamp header */
+   boolean timestamp=true;
 
    /** The char counter of the already logged data */
-   long counter;
+   long counter=0;
 
 
    /****************************** Constructors ******************************/
 
-   /** Associates a new Log to the PrintStream <i>outstream</i>.
+   /** Associates a new Log to another Log.
+     * The <i>verbose_level</i> is incremented of <i>verbose_offset</i>. */
+   /*public Log(Log log, int verbose_offset)
+   {  init(log.out_stream,log.verbose_level+verbose_offset,log.max_size);
+   }*/
+
+   /** Associates a new Log to the PrintStream <i>out_stream</i>.
      * Log size has no bound */
-   public Log(PrintStream out_stream, String log_tag, int verbose_level)
-   {  init(out_stream,log_tag,verbose_level,-1);
+   public Log(PrintStream out_stream, int verbose_level)
+   {  init(out_stream,verbose_level,-1);
    }
 
-   /** Associates a new Log to the file <i>filename</i>.
-     * Log size is limited to the MAX_SIZE */
-   public Log(String file_name, String log_tag, int verbose_level)
+   /** Associates a new Log to the file <i>file_name</i>.
+     * Log size is limited to the MAX_SIZE. */
+   public Log(String file_name, int verbose_level)
    {  PrintStream os=null;
       if (verbose_level>0)
       {  try { os=new PrintStream(new FileOutputStream(file_name)); } catch (IOException e) { e.printStackTrace(); }
-         init(os,log_tag,verbose_level,MAX_SIZE);
+         init(os,verbose_level,MAX_SIZE);
       }
    }
 
-   /** Associates a new Log to the file <i>filename</i>.
-     * Log size is limited to <i>logsize</i> [bytes] */
-   public Log(String file_name, String log_tag, int verbose_level, long max_size)
+   /** Associates a new Log to the file <i>file_name</i>.
+     * Log size is limited to <i>max_size</i> [bytes]. */
+   public Log(String file_name, int verbose_level, long max_size)
    {  PrintStream os=null;
       if (verbose_level>0)
       {  try { os=new PrintStream(new FileOutputStream(file_name)); } catch (IOException e) { e.printStackTrace(); }
-         init(os,log_tag,verbose_level,max_size);
+         init(os,verbose_level,max_size);
       }
       else
-      {  init(null,log_tag,0,0);
-         do_log=false;
+      {  init(null,0,0);
       }
    }
 
    /** Associates a new Log to the file <i>filename</i>.
-     * Log size is limited to <i>logsize</i> [bytes] */
-   public Log(String file_name, String log_tag, int verbose_level, long max_size, boolean append)
+     * The file is opened in rewrite or append mode depending on
+     * the <i>append</i> parameter value.
+     * Log size is limited to <i>logsize</i> [bytes]. */
+   public Log(String file_name, int verbose_level, long max_size, boolean append)
    {  PrintStream os=null;
       if (verbose_level>0)
       {  try { os=new PrintStream(new FileOutputStream(file_name,append)); } catch (IOException e) { e.printStackTrace(); }
-         init(os,log_tag,verbose_level,max_size);
+         init(os,verbose_level,max_size);
       }
       else
-      {  init(null,log_tag,0,0);
-         do_log=false;
+      {  init(null,0,0);
       }
    }
 
@@ -126,15 +136,10 @@ public class Log
    /**************************** Protected methods ****************************/
 
    /** Initializes the log */
-   protected void init(PrintStream out_stream, String log_tag, int verbose_level, long max_size) 
+   protected void init(PrintStream out_stream, int verbose_level, long max_size) 
    {  this.out_stream=out_stream;
-      this.log_tag=log_tag;
       this.verbose_level=verbose_level;
       this.max_size=max_size;
-      
-      if (log_tag!=null) tag_size=log_tag.length()+2; else tag_size=0;
-      do_log=true;
-      counter=0;
    }
 
    /** Flushes */
@@ -146,60 +151,46 @@ public class Log
 
    /***************************** Public methods *****************************/
 
-   /** Closes the log */
+   /** Whether writing a timestamp header. */
+   public void setTimestamp(boolean timestamp) 
+   {  this.timestamp=timestamp;
+   }
+
+   /** Whether stopping logging new message. */
+   public void setPause(boolean pause) 
+   {  this.pause=!pause;
+   }
+
+   /** Closes the log. */
    public void close() 
-   {  do_log=false;
-      out_stream.close();
+   {  if (out_stream!=null) out_stream.close();
+      out_stream=null;
    }
 
-   /** Logs the Exception */
-   public Log printException(Exception e, int level)
-   {  //ByteArrayOutputStream err=new ByteArrayOutputStream();
-      //e.printStackTrace(new PrintStream(err));
-      //return println("Exception: "+err.toString(),level);
-      return println("Exception: "+ExceptionPrinter.getStackTraceOf(e),level);
-   }
-
-   /** Logs the Exception.toString() and Exception.printStackTrace() */
-   public Log printException(Exception e)
-   {  return printException(e,1);
-   }
-
-   /** Logs the packet timestamp */
-   public Log printPacketTimestamp(String proto, String remote_addr, int remote_port, int len, String message, int level)
-   {  String str=remote_addr+":"+remote_port+"/"+proto+" ("+len+" bytes)";
-      if (message!=null) str+=": "+message;
-      println(DateFormat.formatHHMMSS(new Date())+", "+str,level);
-      return this;
-   }
-
-   /** Prints the <i>log</i> if <i>level</i> isn't greater than the Log <i>verbose_level</i> */
-   public Log println(String message, int level)
-   {  return print(message+"\r\n",level).flush();
-   }
-
-   /** Prints the <i>log</i> if the Log <i>verbose_level</i> is greater than 0 */
+   /** Prints the <i>message</i> if the Log <i>verbose_level</i> is greater than 0. */
    public Log println(String message)
    {  return println(message,1);
    }
 
-   /** Prints the <i>log</i> if the Log <i>verbose_level</i> is greater than 0 */
+   /** Prints the <i>message</i> if <i>level</i> is less than or equal to the <i>verbose_level</i>. */
+   public Log println(String message, int level)
+   {  return print(message+"\r\n",level).flush();
+   }
+
+   /** Prints the <i>message</i> if the Log <i>verbose_level</i> is greater than 0. */
    public Log print(String message)
    {  return print(message,1);
    }
 
-   /** Prints the <i>log</i> if <i>level</i> isn't greater than the Log <i>verbose_level</i> */
-   public Log print(String message, int level)
-   {  if (do_log && level<=verbose_level)
-      {  
-         if (log_tag!=null) out_stream.print(log_tag+": "+message);
-         else out_stream.print(message);
-         
+   /** Prints the <i>message</i> if <i>level</i> is less than or equal to the <i>verbose_level</i>. */
+   synchronized public Log print(String message, int level)
+   {  if (out_stream!=null && level<=verbose_level)
+      {  if (timestamp) message=System.currentTimeMillis()+": "+message;
+         out_stream.print(message);
          if (max_size>=0)
-         {  counter+=tag_size+message.length();
+         {  counter+=message.length();
             if (counter>max_size)
             {  out_stream.println("\r\n----MAXIMUM LOG SIZE----\r\nSuccessive logs are lost.");
-               do_log=false;
             }
          }
       }

@@ -141,7 +141,7 @@ public class MediaDescriptor
       return v;
    } 
 
-   /** Adds a new attribute
+   /** Adds a new attribute.
      * @param attribute the new AttributeField
      * @return this MediaDescriptor */
    public MediaDescriptor addAttribute(AttributeField attribute)
@@ -149,7 +149,15 @@ public class MediaDescriptor
       return this;
    } 
 
-   /** Whether it has a particular attribute
+   /** Adds a new attributes.
+     * @param attribute the new AttributeField
+     * @return this MediaDescriptor */
+   public MediaDescriptor addAttributes(Vector attributes)
+   {  for (int i=0; i<attributes.size(); i++) addAttribute((AttributeField)attributes.elementAt(i));
+      return this;
+   } 
+
+   /** Whether it has a particular attribute.
      * @param a_name the attribute name
      * @return true if found, otherwise returns null */
    public boolean hasAttribute(String a_name)
@@ -159,7 +167,7 @@ public class MediaDescriptor
       return false;
    } 
    
-   /** Gets a particular attribute
+   /** Gets a particular attribute.
      * @param a_name the attribute name
      * @return the AttributeField, or null if not found */
    public AttributeField getAttribute(String a_name)

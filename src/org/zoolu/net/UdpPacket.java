@@ -52,6 +52,16 @@ public class UdpPacket
 
 
    /** Creates a new UdpPacket */ 
+   public UdpPacket(byte[] data)
+   {  packet=new DatagramPacket(data,data.length);
+   }
+
+   /** Creates a new UdpPacket */ 
+   public UdpPacket(byte[] data, IpAddress ipaddr, int port)
+   {  packet=new DatagramPacket(data,data.length,ipaddr.getInetAddress(),port);
+   }
+
+   /** Creates a new UdpPacket */ 
    public UdpPacket(byte[] buf, int length)
    {  packet=new DatagramPacket(buf,length);
    }
@@ -119,6 +129,14 @@ public class UdpPacket
    /** Sets the port number on the remote host to which this datagram is being sent. */
    public void setPort(int iport)
    {  packet.setPort(iport);
+   }
+
+   /** Makes a copy of a given UdpPacket. */
+   public void copy(UdpPacket udp_pkt)
+   {  setData(udp_pkt.getData(),udp_pkt.getOffset(),udp_pkt.getLength());
+      setLength(udp_pkt.getLength());
+      setIpAddress(udp_pkt.getIpAddress());
+      setPort(udp_pkt.getPort());
    }
 
 }

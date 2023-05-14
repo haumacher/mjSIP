@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * Copyright (C) 2006 Luca Veltri - University of Parma - Italy
  * 
  * This file is part of MjSip (http://www.mjsip.org)
  * 
@@ -26,6 +26,7 @@ package org.zoolu.net;
 
 
 import java.net.InetAddress;
+import java.util.Enumeration;
 
 
 
@@ -112,12 +113,44 @@ public class IpAddress
 
    /** Detects the default IP address of this host. */
    public static IpAddress getLocalHostAddress()
-   {  try
-      {  return new IpAddress(java.net.InetAddress.getLocalHost());
+   {  // Note:
+      // 1) in this method, java reflection is used in order to keep backward compatibility
+      //    with java3 VM (e.g. jdk1.3) at both compiling and/or execution time
+      // 2) it can be compiled with java3, regardless it is executed with java3 or java4 VMs
+      IpAddress ip_address=null;
+      try
+      {  // continue only with java4 VM (e.g. jdk1.4) or later, otherwise ClassNotFoundException is thrown
+         Class network_interface_class=Class.forName("java.net.NetworkInterface");
+         Class inet4_address_class=Class.forName("java.net.Inet4Address");
+         //System.out.println("IpAddress: java4 VM (or later) detected");
+         // only with java4 VM
+         //Enumeration networks=java.net.NetworkInterface.getNetworkInterfaces(); // this line can be compiled only with java4
+         Enumeration networks=(Enumeration)network_interface_class.getMethod("getNetworkInterfaces",null).invoke(null,null);
+         while (networks.hasMoreElements())
+         {  //Enumeration iaddrs=((java.net.NetworkInterface)networks.nextElement()).getInetAddresses(); // this line can be compiled only with java4
+            Enumeration iaddrs=(Enumeration)network_interface_class.getMethod("getInetAddresses",null).invoke(networks.nextElement(),null);
+            while (iaddrs.hasMoreElements())
+            {  java.net.InetAddress iaddr=(java.net.InetAddress)iaddrs.nextElement();
+               //if (iaddr.getClass().getName().equals("java.net.Inet4Address") && !iaddr.isLoopbackAddress()) return new IpAddress(iaddr); // this line can be compiled only with java4
+               if (iaddr.getClass().getName().equals("java.net.Inet4Address") && !((Boolean)inet4_address_class.getMethod("isLoopbackAddress",null).invoke(iaddr,null)).booleanValue()) ip_address=new IpAddress(iaddr);
+            }
+         }
       }
-      catch (java.net.UnknownHostException e)
-      {  return new IpAddress("127.0.0.1");
+      catch (java.lang.ClassNotFoundException e) {}
+      catch (Exception e) {}
+      // else
+      if (ip_address==null)
+      {  try
+         {  //System.out.println("IpAddress: java3 VM detected");
+            ip_address=new IpAddress(InetAddress.getLocalHost());
+         }
+         catch (java.net.UnknownHostException e) {}
       }
+      // else
+      if (ip_address==null) ip_address=new IpAddress("127.0.0.1");
+      
+      //System.out.println("IpAddress: "+ip_address.toString());
+      return ip_address;
    }
 
 }

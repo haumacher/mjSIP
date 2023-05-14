@@ -81,7 +81,7 @@ public class Parser
    /** Gets the rest of the (unparsed) string. */
    public String getRemainingString() { return str.substring(index); }
    
-   /** Returns a new the Parser of <i>len</i> chars statirng from the current position. */
+   /** Returns a new Parser of <i>len</i> chars starting from the current position. */
    public Parser subParser(int len) {  return new Parser(str.substring(index,index+len));  }   
 
    /** Length of unparsed string. */
@@ -379,13 +379,39 @@ public class Parser
    
    //********************** Vectors/arrays **********************
 
-   /** Gets all string of chars separated by any char belonging to <i>separators</i> */
+   /** Gets all integers separated by any char belonging to <i>separators</i> */
+   public Vector getIntVector(char[] separators)
+   {  Vector list=new Vector();
+      do { list.addElement(Integer.valueOf(getWord(separators))); } while (hasMore());
+      return list;
+   }
+   /** Gets all integers */
+   public Vector getIntVector()
+   {  Vector list=new Vector();
+      do { list.addElement(Integer.valueOf(getString())); } while (hasMore());
+      return list;
+   }
+   /** Gets all integers separated by any char belonging to <i>separators</i> */
+   public int[] getIntArray(char[] separators)
+   {  Vector list=getIntVector(separators);
+      int[] array=new int[list.size()];
+      for (int i=0; i<list.size(); i++) array[i]=((Integer)list.elementAt(i)).intValue();
+      return array;
+   }
+   /** Gets all integers */
+   public int[] getIntArray()
+   {  Vector list=getIntVector();
+      int[] array=new int[list.size()];
+      for (int i=0; i<list.size(); i++) array[i]=((Integer)list.elementAt(i)).intValue();
+      return array;
+   }
+   /** Gets all strings of chars separated by any char belonging to <i>separators</i> */
    public Vector getWordVector(char[] separators)
    {  Vector list=new Vector();
       do { list.addElement(getWord(separators)); } while (hasMore());
       return list;
    }
-   /** Gets all string of chars separated by any char belonging to <i>separators</i> */
+   /** Gets all strings of chars separated by any char belonging to <i>separators</i> */
    public String[] getWordArray(char[] separators)
    {  Vector list=getWordVector(separators);
       String[] array=new String[list.size()];

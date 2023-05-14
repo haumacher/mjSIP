@@ -10,7 +10,7 @@ import javax.swing.*;
 
 /** Popup frame
  */
-public class PopupFrame extends Frame
+class PopupFrame extends Frame
 {
    String title;
    Frame caller;

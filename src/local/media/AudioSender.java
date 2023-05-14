@@ -1,6 +1,8 @@
 package local.media;
 
 
+import org.zoolu.sound.ExtendedAudioSystem;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.AudioInputStream;
@@ -126,15 +128,13 @@ public class AudioSender
 
       try
       {  RtpStreamSender sender;
-         AudioInput audio_input=null;
          
-         if (sound) AudioInput.initAudioLine();
+         if (sound) ExtendedAudioSystem.initAudioInputLine();
          
          if (sound)
          {  AudioFormat format=new AudioFormat(codec,sample_rate,8*sample_size,1,sample_size,sample_rate,big_endian);
             System.out.println("System audio format: "+format);
-            audio_input=new AudioInput(format);
-            sender=new RtpStreamSender(audio_input.getInputStream(),false,payload_type,frame_rate,frame_size,daddr,dport);
+            sender=new RtpStreamSender(ExtendedAudioSystem.getInputStream(format),false,payload_type,frame_rate,frame_size,daddr,dport);
          }
          else
          if (filename!=null)
@@ -157,14 +157,14 @@ public class AudioSender
          if (sender!=null)
          {  
             sender.start();      
-            if (sound) audio_input.play();
+            if (sound) ExtendedAudioSystem.startAudioInputLine();
          
             System.out.println("Press 'Return' to stop");
             System.in.read();
          
             sender.halt();
-            if (sound) audio_input.stop();
-            if (sound) AudioInput.closeAudioLine();
+            if (sound) ExtendedAudioSystem.stopAudioInputLine();
+            if (sound) ExtendedAudioSystem.closeAudioInputLine();
          }
          else
          {  System.out.println("Error creating the rtp stream.");

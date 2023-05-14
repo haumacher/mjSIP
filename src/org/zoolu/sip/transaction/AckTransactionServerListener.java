@@ -27,10 +27,13 @@ package org.zoolu.sip.transaction;
 import org.zoolu.sip.message.Message;
 
 
-/** A AckTransactionServerListener listens for AckTransactionServer onTransAckTimeout(AckTransactionServer) events.
+/** An AckTransactionServerListener listens for AckTransactionServer events.
   */
 public interface AckTransactionServerListener
 {  
-   /** When the AckTransactionServer goes into the "Terminated" state, caused by transaction timeout */
-   public void onTransAckTimeout(AckTransactionServer transaction);
+   /** When the AckTransactionServer receives the ACK and goes into the "Terminated" state. */
+   //public void onTransAck(AckTransactionServer ts, Message ack);
+
+   /** When the AckTransactionServer goes into the "Terminated" state, caused by transaction . */
+   public void onTransAckTimeout(AckTransactionServer ts);
 }

@@ -26,10 +26,14 @@ package org.zoolu.sip.header;
 
 
 
-/** SIP Status-line, i.e. the first line of a response message */
+/** SIP Status-line, i.e. the first line of a response message.
+  */
 public class StatusLine
 {
+   /** Status code */
    protected int code;
+
+   /** Status reason */
    protected String reason;
 
    /** Construct StatusLine  */
@@ -38,12 +42,12 @@ public class StatusLine
       reason=r;
    }
 
-   /** Create a new copy of the request-line*/
+   /** Creates a new copy of the request-line. */
    public Object clone()
    {  return new StatusLine(getCode(),getReason());
    }
 
-   /** Indicates whether some other Object is "equal to" this StatusLine */
+   /** Whether Object <i>obj</i> is "equal to" this StatusLine. */
    public boolean equals(Object obj)
    {  //if (o.getClass().getSuperclass()!=this.getClass().getSuperclass()) return false;
       try
@@ -54,14 +58,17 @@ public class StatusLine
       catch (Exception e) {  return false;  }
    }
 
+   /** Gets String value of this Object. */
    public String toString()
    {  return "SIP/2.0 "+code+" "+reason+"\r\n";
    }
 
+   /** Gets status code. */
    public int getCode()
    {  return code;
    }
 
+   /** Gets status reason. */
    public String getReason()
    {  return reason;
    }

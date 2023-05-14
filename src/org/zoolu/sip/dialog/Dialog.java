@@ -29,7 +29,7 @@ import org.zoolu.sip.message.*;
 import org.zoolu.sip.header.*;
 import org.zoolu.sip.provider.*;
 import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.ExceptionPrinter;
 import org.zoolu.tools.AssertException;
 
 
@@ -54,14 +54,13 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
    
    // ************************ Static attributes *************************
 
-    /** Dialogs counter */
-   private static int dialog_counter=0;
-
-
    /** Identifier for the transaction client side of a dialog (UAC). */
    public final static int UAC=0;
    /** Identifier for the transaction server side of a dialog (UAS). */
    public final static int UAS=1;
+
+   /** Dialogs counter */
+   private static int dialog_counter=0;
 
 
    // *********************** Protected attributes ***********************
@@ -69,7 +68,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
    /** Dialog sequence number */
    protected int dialog_sqn;
 
-   /** Event logger. */
+   /** Log. */
    protected Log log;
  
   /** SipProvider */
@@ -79,7 +78,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
    protected int status;
    
    /** Dialog identifier */
-   protected DialogIdentifier dialog_id;
+   protected DialogId dialog_id;
 
 
    // ************************* Abstract methods *************************
@@ -118,16 +117,16 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
    /** Changes the internal dialog state */
    protected void changeStatus(int newstatus)
    {  status=newstatus;
-      printLog("changed dialog state: "+getStatus(),LogLevel.MEDIUM);
+      printLog("changed dialog state: "+getStatus(),Log.LEVEL_MEDIUM);
       
       // remove the sip_provider listener when going to "terminated" state
       if (isTerminated())
-      {  if (dialog_id!=null && sip_provider.getListeners().containsKey(dialog_id)) sip_provider.removeSipProviderListener(dialog_id);
+      {  if (dialog_id!=null && sip_provider.getListeners().containsKey(dialog_id)) sip_provider.removeSelectiveListener(dialog_id);
       }
       else
       // add sip_provider listener when going to "early" or "confirmed" state
       if (isEarly() || isConfirmed())
-      {  if (dialog_id!=null && !sip_provider.getListeners().containsKey(dialog_id)) sip_provider.addSipProviderListener(dialog_id,this);
+      {  if (dialog_id!=null && !sip_provider.getListeners().containsKey(dialog_id)) sip_provider.addSelectiveListener(dialog_id,this);
       }
    }
 
@@ -147,7 +146,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
 
 
    /** Gets the inique Dialog-ID </i> */
-   public DialogIdentifier getDialogID()
+   public DialogId getDialogID()
    {  return dialog_id;
    } 
 
@@ -158,7 +157,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
    public void update(int side, Message msg)
    {  
       if (isTerminated())
-      {  printWarning("trying to update a terminated dialog: do nothing.",LogLevel.HIGH);
+      {  printWarning("trying to update a terminated dialog: do nothing.",Log.LEVEL_HIGH);
          return;
       }
       // else
@@ -231,23 +230,47 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
                route.insertElementAt((new RecordRouteHeader((Header)rr.elementAt(i))).getNameAddress(),i);
          }
       }
-
+      // REMOVE THE LOCAL NODE FROM THE ROUTE SET (ELIMINATE FIRST-HOP LOOP)
+      if (SipStack.on_dialog_route)
+      {  if (route!=null && route.size()>0)
+         {  SipURL url=((NameAddress)route.elementAt(0)).getAddress();
+            if (url.getHost().equals(sip_provider.getViaAddress()) && url.getPort()==sip_provider.getPort())
+            {  route.removeElementAt(0);
+            }
+         }
+         if (route!=null && route.size()>0)
+         {  SipURL url=((NameAddress)route.elementAt(route.size()-1)).getAddress();
+            if (url.getHost().equals(sip_provider.getViaAddress()) && url.getPort()==sip_provider.getPort())
+            {  route.removeElementAt(route.size()-1);
+            }
+         }
+      }
       // update dialog_id and sip_provider listener
-      DialogIdentifier new_id=new DialogIdentifier(call_id,local_tag,remote_tag);
+      DialogId new_id=new DialogId(call_id,local_tag,remote_tag);
       if (dialog_id==null || !dialog_id.equals(new_id))
-      {  if (dialog_id!=null && sip_provider!=null && sip_provider.getListeners().containsKey(dialog_id)) sip_provider.removeSipProviderListener(dialog_id);
+      {  printLog("new dialog-id: "+new_id,Log.LEVEL_HIGH);
+         if (sip_provider!=null) sip_provider.addSelectiveListener(new_id,this);
+         if (dialog_id!=null && sip_provider!=null) sip_provider.removeSelectiveListener(dialog_id);
          dialog_id=new_id;
-         printLog("new dialog id: "+dialog_id,LogLevel.HIGH);
-         if (sip_provider!=null) sip_provider.addSipProviderListener(dialog_id,this);
+      }
+      // update secure
+      if (!secure && msg.isRequest())
+      {  if (msg.getRequestLine().getAddress().isSecure() && msg.getViaHeader().getProtocol().equalsIgnoreCase("tls"))
+         {  secure=true;
+            printLog("secure dialog: on",Log.LEVEL_HIGH);
+         }
       }
    }
 
  
    //**************************** Logs ****************************/
 
+   /** Default log level offset */
+   static final int LOG_OFFSET=2;
+   
    /** Adds a new string to the default Log */
    protected void printLog(String str, int level)
-   {  if (log!=null) log.println("Dialog#"+dialog_sqn+": "+str,level+SipStack.LOG_LEVEL_DIALOG);  
+   {  if (log!=null) log.println("Dialog#"+dialog_sqn+": "+str,Dialog.LOG_OFFSET+level);  
    }
 
    /** Adds a Warning message to the default Log */
@@ -257,7 +280,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener
 
    /** Adds the Exception message to the default Log */
    protected final void printException(Exception e, int level)
-   {  if (log!=null) log.printException(e,level+SipStack.LOG_LEVEL_DIALOG);
+   {  printLog("Exception: "+ExceptionPrinter.getStackTraceOf(e),level);
    }
 
    /** Verifies the correct status; if not logs the event. */

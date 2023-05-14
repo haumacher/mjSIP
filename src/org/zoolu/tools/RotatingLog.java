@@ -67,10 +67,10 @@ public class RotatingLog extends Log
 
    /****************************** Constructors ******************************/
 
-   /** Creates a new RotatingLog file <i>filename</i>
-     * . RotatingLog size is limited to <i>logsize</i> [bytes] */
-   public RotatingLog(String filename, String logname, int loglevel, long logsize, int n_rotations, int t_scale, int t_value)
-   {  super(filename,logname,loglevel,logsize);
+   /** Creates a new RotatingLog file <i>filename</i>.
+     * RotatingLog size is limited to <i>logsize</i> [bytes] */
+   public RotatingLog(String filename, int loglevel, long logsize, int n_rotations, int t_scale, int t_value)
+   {  super(filename,loglevel,logsize);
       rInit(filename,n_rotations,t_scale,t_value);
    }
 
@@ -87,13 +87,13 @@ public class RotatingLog extends Log
          if (num_rotations>1) rename(file_name,file_name+1);
          // reset the log
          try { out_stream=new PrintStream(new FileOutputStream(file_name)); } catch (IOException e) { e.printStackTrace(); }
-         init(out_stream,log_tag,verbose_level,max_size);
+         init(out_stream,verbose_level,max_size);
       }
       return this; 
    }  
    
    /** Prints the <i>log</i> if <i>level</i> isn't greater than the Log <i>verbose_level</i> */
-   public Log print(String message, int level)
+   synchronized public Log print(String message, int level)
    {  //long now=GregorianCalendar.getInstance().getTime().getTime();
       long now=Calendar.getInstance().getTime().getTime();
       if (now>next_rotation)

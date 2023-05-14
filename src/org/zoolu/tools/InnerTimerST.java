@@ -25,20 +25,47 @@ package org.zoolu.tools;
 
 
 /** Class InnerTimerST implements a single-thread timer.
-  * The same thread is used for all instances of class InnerTimerST. */
+  * InnerTimerST uses the java.util.Timer in order to share the same thread
+  * with all other InnerTimerST instances (that are simply viewed as java.util.Timer's tasks).
+  * <p/>
+  * If an error occurs while scheduling the InnerTimerST,
+  * a new Timer is istatiated and the InnerTimerST is re-scheduled.
+  */
 class InnerTimerST extends java.util.TimerTask
 {
-   static java.util.Timer single_timer=new java.util.Timer(true);
-   
-   //long timeout;
+   /** Whether running as separate daemon */
+   static final boolean IS_DAEMON=true;
+
+   /** Maximum number of attempts to schedule an instance of InnerTimerST */
+   static final int MAX_ATTEPTS=2;
+
+   /** Timer used to schedule all InnerTimerST instances */
+   static java.util.Timer single_timer=new java.util.Timer(IS_DAEMON);
+
+  
+   /** Timer listener */
    InnerTimerListener listener;
+
    
+   /** Creates a new InnerTimerST. */
    public InnerTimerST(long timeout, InnerTimerListener listener)
-   {  //this.timeout=timeout;
-      this.listener=listener;
-      single_timer.schedule(this,timeout);
+   {  this.listener=listener;
+      int attempts=0;
+      boolean success=false;
+      while (!success && attempts<MAX_ATTEPTS)
+      {  try 
+         {  single_timer.schedule(this,timeout);
+            success=true;
+         }
+         catch (IllegalStateException e)
+         {  attempts++;
+            single_timer=new java.util.Timer(IS_DAEMON);
+         }
+      }
    }  
 
+
+   /** From TimerTask. The action to be performed by this timer task. */
    public void run()
    {  if (listener!=null)
       {  listener.onInnerTimeout();

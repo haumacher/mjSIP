@@ -79,6 +79,11 @@ public abstract class EndPointHeader extends NameAddressHeader
    {  return this.getParameter("tag");
    }
    
+   /** Sets 'tag' parameter. */
+   public void setTag(String tag)
+   {  this.setParameter("tag",tag);
+   }
+   
    /** Whether it has 'tag' parameter. */
    public boolean hasTag()
    {  return this.hasParameter("tag");

@@ -77,24 +77,18 @@ public abstract class BaseMessageFactory
       via.setBranch(branch);
       req.addViaHeader(via);
       req.setMaxForwardsHeader(new MaxForwardsHeader(70));
-      if (remote_tag==null) req.setToHeader(new ToHeader(to));
-         else req.setToHeader(new ToHeader(to,remote_tag));
+      //if (remote_tag==null) req.setToHeader(new ToHeader(to)); else req.setToHeader(new ToHeader(to,remote_tag));
+      req.setToHeader(new ToHeader(to,remote_tag));
       req.setFromHeader(new FromHeader(from,local_tag));
       req.setCallIdHeader(new CallIdHeader(call_id));
       req.setCSeqHeader(new CSeqHeader(cseq,method));
       //optional headers:
-      if (contact!=null)
-      {  MultipleHeader contacts=new MultipleHeader(SipHeaders.Contact);
-         contacts.addBottom(new ContactHeader(contact));
-         //System.out.println("DEBUG: Contact: "+contact.toString());
-         req.setContacts(contacts);
-      }
+      if (contact!=null) req.addContactHeader(new ContactHeader(contact));
       req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipStack.default_expires)));
       // add User-Agent header field
       if (SipStack.ua_info!=null) req.setUserAgentHeader(new UserAgentHeader(SipStack.ua_info));
       //if (body!=null) req.setBody(body); else req.setBody("");
       req.setBody(body);
-      //System.out.println("DEBUG: MessageFactory: request:\n"+req);
       return req;
    }
 
@@ -112,9 +106,9 @@ public abstract class BaseMessageFactory
       int host_port=sip_provider.getPort();
       boolean rport=sip_provider.isRportSet();
       String proto;
-      if (request_uri.hasTransport()) proto=request_uri.getTransport();
+      if (request_uri.isSecure()) proto=BaseMessage.PROTO_TLS;
+      else if (request_uri.hasTransport()) proto=request_uri.getTransport();
       else proto=sip_provider.getDefaultTransport();    
-
       return createRequest(method,request_uri,to,from,contact,proto,via_addr,host_port,rport,call_id,cseq,local_tag,remote_tag,branch,body);
    }
 
@@ -177,10 +171,13 @@ public abstract class BaseMessageFactory
       int host_port=sip_provider.getPort();
       boolean rport=sip_provider.isRportSet();
       String proto;
-      if (target.getAddress().hasTransport()) proto=target.getAddress().getTransport();
+      if (dialog.isSecure()) proto=BaseMessage.PROTO_TLS;
+      else if (target.getAddress().isSecure()) proto=BaseMessage.PROTO_TLS;
+      else if (target.getAddress().hasTransport()) proto=target.getAddress().getTransport();
       else proto=sip_provider.getDefaultTransport();    
       NameAddress contact=dialog.getLocalContact();
-      if (contact==null) contact=from;
+      //if (contact==null) contact=from;
+      if (contact==null) contact=new NameAddress(new SipURL(sip_provider.getViaAddress(),sip_provider.getPort()));
       // increment the CSeq, if method is not ACK nor CANCEL
       if (!SipMethods.isAck(method) && !SipMethods.isCancel(method)) dialog.incLocalCSeq();
       String call_id=dialog.getCallID();
@@ -190,8 +187,7 @@ public abstract class BaseMessageFactory
       //String branch=SipStack.pickBranch();
       Message req=createRequest(method,request_uri,to,from,contact,proto,via_addr,host_port,rport,call_id,cseq,local_tag,remote_tag,null,body);
       Vector route=dialog.getRoute();
-      if (route!=null && route.size()>0)
-         req.addRoutes(new MultipleHeader(SipHeaders.Route,route));
+      if (route!=null && route.size()>0) req.addRoutes(new MultipleHeader(SipHeaders.Route,route));
       req.rfc2543RouteAdapt();
       return req;
    }
@@ -204,7 +200,8 @@ public abstract class BaseMessageFactory
       int cseq=SipProvider.pickInitialCSeq();
       String local_tag=SipProvider.pickTag();
       //String branch=SipStack.pickBranch();
-      if (contact==null) contact=from;
+      //if (contact==null) contact=from;
+      if (contact==null) contact=new NameAddress(new SipURL(sip_provider.getViaAddress(),sip_provider.getPort()));
       return createRequest(sip_provider,SipMethods.INVITE,request_uri,to,from,contact,call_id,cseq,local_tag,null,null,body);
    }
 
@@ -232,7 +229,8 @@ public abstract class BaseMessageFactory
       int host_port=sip_provider.getPort();
       boolean rport=sip_provider.isRportSet();
       String proto;
-      if (request_uri.hasTransport()) proto=request_uri.getTransport();
+      if (request_uri.isSecure()) proto=BaseMessage.PROTO_TLS;
+      else if (request_uri.hasTransport()) proto=request_uri.getTransport();
       else proto=sip_provider.getDefaultTransport();    
       String branch=method.getViaHeader().getBranch();
       NameAddress contact=null;
@@ -271,18 +269,22 @@ public abstract class BaseMessageFactory
 
    
    /** Creates a CANCEL request. */
-   public static Message createCancelRequest(Message method)
-   {  ToHeader to=method.getToHeader();
-      FromHeader from=method.getFromHeader();
-      SipURL request_uri=method.getRequestLine().getAddress();
-      NameAddress contact=method.getContactHeader().getNameAddress();
-      ViaHeader via=method.getViaHeader();
+   public static Message createCancelRequest(Message req)
+   {  ToHeader to=req.getToHeader();
+      FromHeader from=req.getFromHeader();
+      SipURL request_uri=req.getRequestLine().getAddress();
+      NameAddress contact=req.getContactHeader().getNameAddress();
+      ViaHeader via=req.getViaHeader();
       String host_addr=via.getHost();
       int host_port=via.getPort();
       boolean rport=via.hasRport();
       String proto=via.getProtocol();
-      String branch=method.getViaHeader().getBranch();
-      return createRequest(SipMethods.CANCEL,request_uri,to.getNameAddress(),from.getNameAddress(),contact,proto,host_addr,host_port,rport,method.getCallIdHeader().getCallId(),method.getCSeqHeader().getSequenceNumber(),from.getParameter("tag"),to.getParameter("tag"),branch,"");
+      String branch=req.getViaHeader().getBranch();
+      //return createRequest(SipMethods.CANCEL,request_uri,to.getNameAddress(),from.getNameAddress(),contact,proto,host_addr,host_port,rport,req.getCallIdHeader().getCallId(),req.getCSeqHeader().getSequenceNumber(),from.getParameter("tag"),to.getParameter("tag"),branch,"");
+      Message cancel=createRequest(SipMethods.CANCEL,request_uri,to.getNameAddress(),from.getNameAddress(),contact,proto,host_addr,host_port,rport,req.getCallIdHeader().getCallId(),req.getCSeqHeader().getSequenceNumber(),from.getParameter("tag"),to.getParameter("tag"),branch,"");
+      if (req.hasAuthorizationHeader()) cancel.setAuthorizationHeader(req.getAuthorizationHeader());
+      if (req.hasProxyAuthorizationHeader()) cancel.setProxyAuthorizationHeader(req.getProxyAuthorizationHeader());
+      return cancel;
    }
 
 
@@ -296,15 +298,17 @@ public abstract class BaseMessageFactory
 
 
    /** Creates a new REGISTER request.
-     * <p> If contact is null, set contact as star * (register all) */
-   public static Message createRegisterRequest(SipProvider sip_provider, NameAddress to, NameAddress from, NameAddress contact)
+     * <p> If <i>contact</i> is null, it sets contact as star * (that is for registering all contacts).
+     * <p> If <i>registrar</i> is null, it uses the hostport fields of the <i>to</i> URL. */
+   public static Message createRegisterRequest(SipProvider sip_provider, SipURL registrar, NameAddress to, NameAddress from, NameAddress contact)
    {  SipURL to_url=to.getAddress();
-      SipURL registrar=new SipURL(to_url.getHost(),to_url.getPort());     
+      if (registrar==null) registrar=new SipURL(to_url.getHost(),to_url.getPort());     
       String via_addr=sip_provider.getViaAddress();
       int host_port=sip_provider.getPort();
       boolean rport=sip_provider.isRportSet();
       String proto;
-      if (to_url.hasTransport()) proto=to_url.getTransport();
+      if (to_url.isSecure()) proto=BaseMessage.PROTO_TLS;
+      else if (to_url.hasTransport()) proto=to_url.getTransport();
       else proto=sip_provider.getDefaultTransport();    
       String call_id=sip_provider.pickCallId();
       int cseq=SipProvider.pickInitialCSeq();
@@ -337,14 +341,13 @@ public abstract class BaseMessageFactory
      * @param local_tag the local tag in the 'To' header
      * @param body the message body */
    public static Message createResponse(Message req, int code, String reason, String local_tag, NameAddress contact, String content_type, String body)
-   {  Message resp=new Message(); 
+   {  Message resp=new Message();
+      if (reason==null) reason=SipResponses.reasonOf(code);
       resp.setStatusLine(new StatusLine(code,reason));
       resp.setVias(req.getVias());
-      if (code>=180 && code<300 && req.hasRecordRouteHeader())
-         resp.setRecordRoutes(req.getRecordRoutes());
+      if (code>=180 && code<300 && req.hasRecordRouteHeader()) resp.setRecordRoutes(req.getRecordRoutes());
       ToHeader toh=req.getToHeader();
-      if (local_tag!=null)
-         toh.setParameter("tag",local_tag);
+      if (local_tag!=null) toh.setTag(local_tag);
       resp.setToHeader(toh);
       resp.setFromHeader(req.getFromHeader());
       resp.setCallIdHeader(req.getCallIdHeader());
@@ -355,7 +358,6 @@ public abstract class BaseMessageFactory
       //if (body!=null) resp.setBody(body); else resp.setBody("");
       if (content_type==null) resp.setBody(body);
       else resp.setBody(content_type,body);
-      //System.out.println("DEBUG: MessageFactory: response:\n"+resp.toString());
       return resp;
    }
 

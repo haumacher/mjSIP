@@ -24,12 +24,13 @@
 package org.zoolu.sip.transaction;
 
 
+
 import org.zoolu.sip.address.SipURL;
 import org.zoolu.sip.provider.*;
 import org.zoolu.sip.message.*;
 import org.zoolu.tools.Timer;
 import org.zoolu.tools.TimerListener;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Log;
 
 
 
@@ -48,14 +49,13 @@ public class AckTransactionClient extends Transaction
    {  super(sip_provider);
       request=new Message(ack);
       transaction_listener=listener;
-      transaction_id=request.getTransactionId();
-      printLog("id: "+String.valueOf(transaction_id),LogLevel.HIGH);
-      printLog("created",LogLevel.HIGH);
+      transaction_id=request.getTransactionClientId();
+      printLog("new transaction-id: "+transaction_id.toString(),Log.LEVEL_HIGH);
    }
    
    /** Starts the AckTransactionClient and sends the ACK request. */
    public void request()
-   {  printLog("start",LogLevel.LOW);
+   {  printLog("start",Log.LEVEL_LOW);
       sip_provider.sendMessage(request);
       changeStatus(STATE_TERMINATED);  
       //if (transaction_listener!=null) transaction_listener.onAckCltTerminated(this); 
@@ -75,7 +75,7 @@ public class AckTransactionClient extends Transaction
 
    /** Adds a new string to the default Log */
    protected void printLog(String str, int level)
-   {  if (log!=null) log.println("AckTransactionClient#"+transaction_sqn+": "+str,level+SipStack.LOG_LEVEL_TRANSACTION);  
+   {  if (log!=null) log.println("AckTransactionClient#"+transaction_sqn+": "+str,Transaction.LOG_OFFSET+level);  
    }
 
 }

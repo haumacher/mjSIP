@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * Copyright (C) 2008 Luca Veltri - University of Parma - Italy
  * 
  * This source code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,7 @@
 package local.net;
 
 
-import org.zoolu.tools.LogLevel;
-
-import java.net.*;
+import org.zoolu.net.*;
 import java.io.InterruptedIOException;
 
 
@@ -35,17 +33,17 @@ import java.io.InterruptedIOException;
 public class UdpRelay extends Thread
 {
    // The maximum IP packet size
-   //public static final int MAX_PKT_SIZE=65536;
-   public static final int MAX_PKT_SIZE=2000;
+   //public static final int MAX_PKT_SIZE=2000;
+   public static final int MAX_PKT_SIZE=32000;
 
    /** Local receiver/sender port */
    int local_port;  
    /** Remote source address */
-   String src_addr;
+   IpAddress src_addr;
    /** Remote source port */
    int src_port;  
    /** Destination address */
-   String dest_addr;
+   IpAddress dest_addr;
    /** Destination port */
    int dest_port;  
    /** Whether it is running */
@@ -75,11 +73,11 @@ public class UdpRelay extends Thread
    /** Inits a new UDP relay */
    private void init(int local_port, String dest_addr, int dest_port, int alive_time, UdpRelayListener listener)
    {  this.local_port=local_port;     
-      this.dest_addr=dest_addr;
+      this.dest_addr=new IpAddress(dest_addr);
       this.dest_port=dest_port;
       this.alive_to=alive_time;
       this.listener=listener;
-      src_addr="0.0.0.0";
+      src_addr=new IpAddress("0.0.0.0");
       src_port=0;
       stop=false;
    }
@@ -101,7 +99,7 @@ public class UdpRelay extends Thread
 
    /** Sets a new destination address */
    public UdpRelay setDestAddress(String dest_addr)
-   {  this.dest_addr=dest_addr;
+   {  this.dest_addr=new IpAddress(dest_addr);
       return this;
    }
 
@@ -135,12 +133,12 @@ public class UdpRelay extends Thread
    public void run()
    {  //System.out.println("DEBUG: starting UdpRelay "+toString()+" (it expires after "+alive_to+" sec)");     
       try   
-      {  DatagramSocket socket=new DatagramSocket(local_port);
+      {  UdpSocket socket=new UdpSocket(local_port);
          byte []buf=new byte[MAX_PKT_SIZE];
                            
          socket.setSoTimeout(socket_to);
          // datagram packet
-         DatagramPacket packet=new DatagramPacket(buf, buf.length);
+         UdpPacket packet=new UdpPacket(buf, buf.length);
          
          // convert alive_to in milliseconds
          long keepalive_to=((1000)*(long)alive_to)-socket_to;
@@ -161,32 +159,30 @@ public class UdpRelay extends Thread
                continue;
             }
             // check whether the source address and port are changed
-            if (src_port!=packet.getPort() || !src_addr.equals(packet.getAddress().getHostAddress().toString()))
+            if (src_port!=packet.getPort() || !src_addr.equals(packet.getIpAddress()))
             {  src_port=packet.getPort();
-               src_addr=packet.getAddress().getHostAddress();
-               if (listener!=null) listener.onUdpRelaySourceChanged(this,src_addr,src_port);
+               src_addr=packet.getIpAddress();
+               if (listener!=null) listener.onUdpRelaySourceChanged(this,src_addr.toString(),src_port);
             }
             // relay
-            packet.setAddress(InetAddress.getByName(dest_addr));
+            packet.setIpAddress(dest_addr);
             packet.setPort(dest_port);
             socket.send(packet);
             // reset
-            packet=new DatagramPacket(buf, buf.length);
+            packet=new UdpPacket(buf, buf.length);
             expire=System.currentTimeMillis()+keepalive_to;
          }
          socket.close();
          if (listener!=null) listener.onUdpRelayTerminated(this);
       }
       catch (Exception e) { e.printStackTrace(); } 
-
-      //System.out.println("DEBUG: closing UdpRelay "+toString())");     
    }
    
    
       
    /** Gets a String representation of the Object */
    public String toString()
-   {  return Integer.toString(local_port)+"-->"+dest_addr+":"+dest_port;
+   {  return "localhost:"+Integer.toString(local_port)+"-->"+dest_addr+":"+dest_port;
    }
 
 

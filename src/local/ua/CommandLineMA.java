@@ -24,8 +24,9 @@ package local.ua;
 
 import org.zoolu.sip.address.*;
 import org.zoolu.sip.provider.*;
+import org.zoolu.sip.call.RegistrationClient;
+import org.zoolu.sip.call.RegistrationClientListener;
 import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
 
 import java.io.*;
 
@@ -33,16 +34,16 @@ import java.io.*;
 /** Simple command-line short-message UA.
   * It allows a user to send and receive short messages, using a command-line interface.
   */
-public class CommandLineMA implements RegisterAgentListener, MessageAgentListener
+public class CommandLineMA implements RegistrationClientListener, MessageAgentListener
 {     
-   /** Event logger. */
+   /** Log */
    Log log;
    
    /** Message Agent */
    MessageAgent ma;
 
-   /** Register Agent */
-   RegisterAgent ra;
+   /** RegistrationClient */
+   RegistrationClient rc;
 
    /** Remote user. */
    NameAddress remote_user;
@@ -53,7 +54,9 @@ public class CommandLineMA implements RegisterAgentListener, MessageAgentListene
    {  log=sip_provider.getLog();
       ma=new MessageAgent(sip_provider,user_profile,this);
       ma.receive();
-      ra=new RegisterAgent(sip_provider,user_profile.from_url,user_profile.contact_url,this);
+      if (user_profile.do_register || user_profile.do_unregister || user_profile.do_unregister_all)
+      {  rc=new RegistrationClient(sip_provider,new SipURL(user_profile.registrar),user_profile.getUserURI(),user_profile.getUserURI(),this);
+      }
    }
 
    
@@ -65,19 +68,19 @@ public class CommandLineMA implements RegisterAgentListener, MessageAgentListene
 
    /** Register with the registrar server. */
    public void register(int expire_time)
-   {  ra.register(expire_time);
+   {  rc.register(expire_time);
    }
 
 
    /** Unregister with the registrar server */
    public void unregister()
-   {  ra.unregister();
+   {  rc.unregister();
    }
 
 
    /** Unregister all contacts with the registrar server */
    public void unregisterall()
-   {  ra.unregisterall();
+   {  rc.unregisterall();
    }
 
 
@@ -100,22 +103,22 @@ public class CommandLineMA implements RegisterAgentListener, MessageAgentListene
 
    /** When a message delivery successes. */
    public void onMaDeliverySuccess(MessageAgent ma, NameAddress recipient, String subject, String result)
-   {  //printLog("Delivery success: "+result,LogLevel.HIGH);
+   {  //printLog("Delivery success: "+result,Log.LEVEL_HIGH);
    }
 
    /** When a message delivery fails. */
    public void onMaDeliveryFailure(MessageAgent ma, NameAddress recipient, String subject, String result)
-   {  //printLog("Delivery failure: "+result,LogLevel.HIGH);
+   {  //printLog("Delivery failure: "+result,Log.LEVEL_HIGH);
    }
 
    /** When a UA has been successfully (un)registered. */
-   public void onUaRegistrationSuccess(RegisterAgent ra, NameAddress target, NameAddress contact, String result)
-   {  printLog("Registration success: "+result,LogLevel.HIGH);
+   public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, String result)
+   {  printLog("Registration success: "+result,Log.LEVEL_HIGH);
    }
 
    /** When a UA failed on (un)registering. */
-   public void onUaRegistrationFailure(RegisterAgent ra, NameAddress target, NameAddress contact, String result)
-   {  printLog("Registration failure: "+result,LogLevel.HIGH);
+   public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result)
+   {  printLog("Registration failure: "+result,Log.LEVEL_HIGH);
    }
 
  
@@ -130,7 +133,7 @@ public class CommandLineMA implements RegisterAgentListener, MessageAgentListene
       boolean opt_regist=false;
       boolean opt_unregist=false;
       boolean opt_unregist_all=false;
-      int     opt_expires=0;
+      int opt_expires=0;
       
       for (int i=0; i<args.length; i++)
       {  if (args[i].equals("-f") && args.length>(i+1))
@@ -216,17 +219,14 @@ public class CommandLineMA implements RegisterAgentListener, MessageAgentListene
    
    //**************************** Logs ****************************/
 
-   /** Starting log level for this class */
-   //private static final int LOG_OFFSET=SipStack.LOG_LEVEL_UA;
-
    /** Adds a new string to the default Log */
    private void printLog(String str)
-   {  printLog(str,LogLevel.HIGH);
+   {  printLog(str,Log.LEVEL_HIGH);
    }
 
    /** Adds a new string to the default Log */
    private void printLog(String str, int level)
-   {  if (log!=null) log.println("CommandLineMA: "+str,level+SipStack.LOG_LEVEL_UA);
+   {  if (log!=null) log.println("CommandLineMA: "+str,UserAgent.LOG_OFFSET+level);
       System.out.println("MA: "+str);  
    }
 }

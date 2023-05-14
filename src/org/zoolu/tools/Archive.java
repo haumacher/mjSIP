@@ -24,6 +24,7 @@
 package org.zoolu.tools;
 
 
+
 import java.io.*;
 import java.net.URL;
 //import java.net.URI;
@@ -32,6 +33,7 @@ import java.awt.Toolkit;
 import javax.swing.ImageIcon;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+
 
 
 /** Collection of static methods for handling files and jar archives.
@@ -44,7 +46,20 @@ public class Archive
    //public static String BASE_PATH="\\My Documents\\Lavoro\\";
 
 
-   /** Gets the complete url of a file included within a jar archive. */
+
+   /** Gets a URL from a String. */
+   public static URL getURL(String url)
+   {  try 
+      {  return new URL(url);
+      }
+      catch (java.net.MalformedURLException e)
+      {  System.err.println("ERROR: malformed url "+url);
+         return null;
+      } 
+   }
+
+
+   /** Gets the complete URL of a file included within a jar archive. */
    public static URL getJarURL(String jar_archive, String file_name)
    {  if (jar_archive==null || file_name==null) return null;
       // else
@@ -59,7 +74,7 @@ public class Archive
    }
 
 
-   /** Gets the complete url of a file. */
+   /** Gets the complete URL of a file. */
    public static URL getFileURL(String file_name)
    {  if (file_name==null) return null;
       // else

@@ -31,7 +31,7 @@ import java.util.Date;
   * location repository.
   * <p> A LocationService allows the maintinance of bindings between users and contacts.
   * <br> For each user the LocationService should maintain information regarding:
-  * <br> - username, that is a fully qualified name for this service (e.g. alice@wonderland.net)
+  * <br> - username, that is a fully qualified name for this service (e.g. alice@example.net)
   * <br> - data, that is an opaque block of data (a string),
   *        that can be set and fetched for any service-depending use,
   * <br> - contacts/expires, that is the list of user contacts with the time when it expires,
@@ -87,6 +87,20 @@ public interface LocationService extends Repository
    
    /** Removes all contacts from the database.
      * @return this object */
-   public LocationService removeAllContacts();
+   //public LocationService removeAllContacts();
 
+   /** Adds a 'static' contact that never expires.
+     * A static contact is a sort of 'alias' for the user's AOR.
+     * @param user the user name
+     * @param name_addresss the contact NameAddress
+     * @return this object */
+   public LocationService addUserStaticContact(String user, NameAddress name_addresss);
+
+   /** Whether the contact is 'static', that is it never expires.
+     * A static contact is a sort of 'alias' for the user's AOR.
+     * @param user the user name
+     * @param url the contact URL
+     * @return true if it static */
+   public boolean isUserContactStatic(String user, String url);
+   
 }

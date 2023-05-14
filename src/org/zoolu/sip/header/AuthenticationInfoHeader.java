@@ -88,8 +88,8 @@ public class AuthenticationInfoHeader extends AuthenticationHeader
    }
    
    /** Gets a String Vector of parameter names.
-     * @returns a Vector of String. */
-   public Vector getParameters()
+     * @return Returns a String Vector of all parameter names or null if no parameter is present. */
+   public Vector getParameterNames()
    {  char[] name_separators={'=', ' ', '\t'};
       SipParser par=new SipParser(value);
       //par.skipString(); // skip the auth_scheme

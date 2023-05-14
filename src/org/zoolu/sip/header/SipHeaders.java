@@ -39,6 +39,11 @@ public class SipHeaders extends BaseSipHeaders
    /** Whether <i>str</i> is "Referred-By" */
    public static boolean isReferredBy(String str) { return same(str,Referred_By); }
 
+   /** String "Replaces" */
+   public static final String Replaces="Replaces"; 
+   /** Whether <i>str</i> is "Replaces" */
+   public static boolean isReplaces(String str) { return same(str,Replaces); }
+
    /** String "Event" */
    public static final String Event="Event";
    /** String "o" */

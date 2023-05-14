@@ -65,18 +65,7 @@ public abstract class MessageDigest
 
    /** Gets the Message Digest as string of hex values. */
    public String asHex()
-   {   return asHex(doFinal());
-   }
-
-
-   /** Transforms an array of bytes into a string of hex values. */
-   public static String asHex(byte[] buf)
-   {  String str=new String();
-      for (int i=0; i<buf.length; i++)
-      {  str+=Integer.toHexString((buf[i]>>>4)&0x0F);
-         str+=Integer.toHexString(buf[i]&0x0F);
-      }
-      return str;
+   {   return BinTools.asHex(doFinal());
    }
 
 }

@@ -28,7 +28,7 @@ import org.zoolu.sip.provider.SipParser;
 import org.zoolu.sip.header.SipHeaders;
 import org.zoolu.sip.header.ContactHeader;
 import org.zoolu.tools.Parser;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Log;
 import java.io.*;
 import java.util.*;
 import java.text.*;
@@ -40,19 +40,27 @@ import java.text.*;
   */
 public class LocationServiceImpl implements LocationService
 {
+   /** Maximum expiration date (equivalent to NEVER).
+     * <p/>
+     * Note: time 3116354400000 is 2/10/2068, that is when I will be 100 years old.. good luck! ;) */
+   static final long NEVER=(long)31163544*100000;
+
+
    /** LocationService name. */
-   String filename=null;
+   String file_name=null;
    
    /** Whether the Location DB has been changed without saving. */
    boolean changed=false;
    
    /** Users bindings. Set of pairs of { (String)user , (UserBindingInfo)binding }. */
    Hashtable users;
+   
 
    
    /** Creates a new LocationServiceImpl */
    public LocationServiceImpl(String file_name)
-   {  filename=file_name;
+   {  this.file_name=file_name;
+      if (file_name==null) System.err.println("WARNING: no file has been provided for location DB: only temporary memory (RAM) will be used.");
       users=new Hashtable();
       load();
    }
@@ -205,27 +213,39 @@ public class LocationServiceImpl implements LocationService
       return getUserBindingInfo(user).isExpired(url);
    }
    
-   /** Gets the String value of user information.
-     * @return the String value for that user */
-   /*public String userToString(String user)
-   {  return getUserBindingInfo(user).toString();
-   }*/
-
    /** Removes all contacts from the database.
      * @return this object */
-   public LocationService removeAllContacts()
+   /*public LocationService removeAllContacts()
    {  for (Enumeration i=getUserBindings(); i.hasMoreElements(); )
       {  ((UserBindingInfo)i.nextElement()).removeContacts();
       }
       changed=true;
       return this;
+   }*/
+
+   /** Adds a 'static' contact that never expires.
+     * A static contact is a sort of 'alias' for the user's AOR.
+     * @param user the user name
+     * @param name_addresss the contact NameAddress
+     * @return this object */
+   public LocationService addUserStaticContact(String user, NameAddress name_addresss)
+   {  return addUserContact(user,name_addresss,new Date(NEVER));
+   }
+
+   /** Whether the contact is 'static', that is it never expires.
+     * A static contact is a sort of 'alias' for the user's AOR.
+     * @param user the user name
+     * @param url the contact URL
+     * @return true if it static */
+   public boolean isUserContactStatic(String user, String url)
+   {  return getUserContactExpirationDate(user,url).getTime()>=NEVER;
    }
 
 
    // ***************************** Private methods *****************************
 
    /** Returns the name of the database. */
-   private String getName() { return filename; }
+   private String getName() { return file_name; }
 
    /** Whether the database is changed. */
    private boolean isChanged() { return changed; }
@@ -249,16 +269,16 @@ public class LocationServiceImpl implements LocationService
    
    /** Loads the database */
    private void load()
-   {  BufferedReader in=null;
+   {  if (file_name==null) return;
+      // else
+      BufferedReader in=null;
       changed=false;
-      try { in = new BufferedReader(new FileReader(filename)); }
+      try { in = new BufferedReader(new FileReader(file_name)); }
       catch (FileNotFoundException e)
-      {  System.err.println("WARNING: file \""+filename+"\" not found: created new empty DB");
+      {  System.err.println("WARNING: file \""+file_name+"\" not found: created new empty DB");
          return;
       }   
       String user=null;
-      NameAddress name_address=null;
-      Date expire=null;
       while (true)
       {  String line=null;
          try { line=in.readLine(); }
@@ -276,11 +296,14 @@ public class LocationServiceImpl implements LocationService
          }
          if (line.startsWith(SipHeaders.Contact))
          {  SipParser par=new SipParser(line);
-            name_address=((SipParser)par.skipString()).getNameAddress();
-            //System.out.println("DEBUG: "+name_address);
-            expire=(new SipParser(par.goTo("expires=").skipN(8).getStringUnquoted())).getDate(); 
-            //System.out.println("DEBUG: "+expire);
-            getUserBindingInfo(user).addContact(name_address,expire);
+            NameAddress name_address=((SipParser)par.skipString()).getNameAddress();
+            String expire_value=par.goTo("expires=").skipN(8).getStringUnquoted();
+            if (expire_value.equalsIgnoreCase("NEVER")) addUserStaticContact(user,name_address);
+            else
+            {  Date expire_time=(new SipParser(expire_value)).getDate(); 
+               addUserContact(user,name_address,expire_time);
+            }
+            Date date=getUserContactExpirationDate(user,name_address.getAddress().toString());
             continue;
          }  
       }
@@ -289,16 +312,18 @@ public class LocationServiceImpl implements LocationService
  
  
    /** Saves the database */
-   private void save()
-   {  BufferedWriter out=null;
+   private synchronized void save()
+   {  if (file_name==null) return;
+      // else
+      BufferedWriter out=null;
       changed=false;
       try
-      {  out=new BufferedWriter(new FileWriter(filename));
+      {  out=new BufferedWriter(new FileWriter(file_name));
          out.write(this.toString());
          out.close();
       }
       catch (IOException e)
-      {  System.err.println("WARNING: error trying to write on file \""+filename+"\"");
+      {  System.err.println("WARNING: error trying to write on file \""+file_name+"\"");
          return;
       }
    }
@@ -322,7 +347,8 @@ class UserBindingInfo
    
    /** Hashtable of ContactHeader with String as key. */
    Hashtable contact_list;
-   
+
+
    /** Costructs a new UserBindingInfo for user <i>name</i>.
      * @param name the user name */
    public UserBindingInfo(String name)
@@ -354,7 +380,8 @@ class UserBindingInfo
      * @param expire the expire value (Date) 
      * @return this object */
    public UserBindingInfo addContact(NameAddress contact, Date expire)
-   {  contact_list.put(contact.getAddress().toString(),(new ContactHeader(contact)).setExpires(expire));
+   {  String key=contact.getAddress().toString();
+      if (!contact_list.containsKey(key)) contact_list.put(key,(new ContactHeader(contact)).setExpires(expire));
       return this;
    }
  
@@ -366,13 +393,6 @@ class UserBindingInfo
       return this;
    }  
    
-   /** Removes all contacts.
-     * @return this object */
-   public UserBindingInfo removeContacts()
-   {  contact_list.clear();
-      return this;
-   }
-
    /** Gets NameAddress of a contact.
      * @param url the contact url (String) 
      * @return the contact NameAddress, or null if the contact is not present */
@@ -393,19 +413,24 @@ class UserBindingInfo
      * @param url the contact url (String) 
      * @return the expire Date */
    public Date getExpirationDate(String url)
-   {  ContactHeader contact=(ContactHeader)contact_list.get(url);
-      //System.out.println("DEBUG: UserBindingInfo: ContactHeader: "+contact.toString());
-      //System.out.println("DEBUG: UserBindingInfo: expires param: "+contact.getParameter("expires"));
-      if (contact_list.containsKey(url)) return ((ContactHeader)contact_list.get(url)).getExpiresDate();
+   {  if (contact_list.containsKey(url)) return ((ContactHeader)contact_list.get(url)).getExpiresDate();
       else return null;
    }
-   
+
+   /** Removes all contacts.
+     * @return this object */
+   /*public UserBindingInfo removeContacts()
+   {  contact_list.clear();
+      return this;
+   }*/
+
    /** Gets the String value of this Object.
      * @return the String value */
    public String toString()
    {  String str="To: "+name+"\r\n";
       for (Enumeration i=getContacts(); i.hasMoreElements(); )
       {  ContactHeader ch=(ContactHeader)contact_list.get(i.nextElement());
+         if (ch.getExpiresDate().getTime()>=LocationServiceImpl.NEVER) (ch=new ContactHeader(ch)).removeExpires().setParameter("expires","\"NEVER\"");
          str+=ch.toString();
       }
       return str;

@@ -24,6 +24,7 @@
 package org.zoolu.net;
 
 
+import org.zoolu.net.*;
 import java.net.Socket;
 //import java.net.InetAddress;
 import java.io.InputStream;
@@ -38,6 +39,8 @@ public class TcpSocket
    /** Socket */
    Socket socket;
 
+
+
    /** Creates a new TcpSocket */ 
    TcpSocket()
    { socket=null;
@@ -45,7 +48,7 @@ public class TcpSocket
 
    /** Creates a new TcpSocket */ 
    TcpSocket(Socket sock)
-   { socket=sock;
+   {  socket=sock;
    }
 
    /** Creates a new TcpSocket */ 
@@ -58,16 +61,33 @@ public class TcpSocket
    {  socket=new Socket(host,port,local_ipaddr.getInetAddress(),local_port);
    }
 
-   /** Creates a new UdpSocket */ 
+   /** Creates a new TcpSocket */ 
    public TcpSocket(IpAddress ipaddr, int port) throws java.io.IOException
    {  socket=new Socket(ipaddr.getInetAddress(),port);
    }
 
-   /** Creates a new UdpSocket */ 
+   /** Creates a new TcpSocket */ 
    public TcpSocket(IpAddress ipaddr, int port, IpAddress local_ipaddr, int local_port) throws java.io.IOException
    {  socket=new Socket(ipaddr.getInetAddress(),port,local_ipaddr.getInetAddress(),local_port);
    }
 
+   /** Whether the socket is connected. */
+   public boolean isConnected()
+   {  try
+      {  // if java4 VM (e.g. jdk1.4) or later, use Socket's method 'isConnected()'
+         return ((Boolean)Class.forName("Socket").getMethod("isConnected",null).invoke(socket,null)).booleanValue(); 
+      }
+      catch (java.lang.ClassNotFoundException e) {}
+      catch (Exception e) {}
+      // else
+      try 
+      {  return socket.getInputStream()!=null;
+      }
+      catch (Exception e) {}
+      // else
+      return false;
+   }
+   
    /** Closes this socket. */
    public void close() throws java.io.IOException
    {  socket.close();
@@ -108,7 +128,7 @@ public class TcpSocket
    {  return socket.getSoTimeout();
    }
    
-   /** Enables/disables the socket timeou, in milliseconds. */
+   /** Enables/disables the socket timeout, in milliseconds. */
    public void setSoTimeout(int timeout)  throws java.net.SocketException
    {  socket.setSoTimeout(timeout);
    }

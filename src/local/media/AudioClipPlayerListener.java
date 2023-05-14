@@ -7,7 +7,7 @@ package local.media;
 public interface AudioClipPlayerListener
 {
    /** When the sound stops. */
-   public void onAudioClipStop(AudioClipPlayer player);
+   public void onAudioClipStopped(AudioClipPlayer player);
    
 }
 

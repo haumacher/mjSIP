@@ -190,7 +190,7 @@ public class AuthenticationServiceImpl implements AuthenticationService
    }
 
    /** Saves the database */
-   public void save()
+   public synchronized void save()
    {  BufferedWriter out=null;
       changed=false;
       try

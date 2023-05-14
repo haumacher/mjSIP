@@ -4,19 +4,23 @@ package local.ua;
 import org.zoolu.tools.Configure;
 import java.util.Vector;
 import java.io.*;
+import java.net.URL;
 
 
 /** Classs StringList handles a vector of Strings.
   * It can be used to load, manage, and save string values. 
   */
-public final class StringList extends Configure
+final class StringList extends Configure
 {
 
    /** The list */
    Vector list;
 
    /** File name */
-   String file_name;
+   String file_name=null;
+
+   /** File URL */
+   URL file_url=null;
 
 
    /** Costructs a new StringList from the specified <i>file</i> */
@@ -27,15 +31,25 @@ public final class StringList extends Configure
    }
    
 
+   /** Costructs a new StringList from the specified URL <i>url</i> */
+   public StringList(URL url)
+   {  list=new Vector();
+      file_url=url;
+      load();
+   }
+   
+
    /** Loads list */
    public void load()
-   {  loadFile(file_name);
+   {  if (file_name!=null) loadFile(file_name);
+      else
+      if (file_url!=null) loadFile(file_url);
    }
 
    
    /** Saves list */
    public void save()
-   {  saveFile(file_name);
+   {  if (file_name!=null) saveFile(file_name);
    }
 
 

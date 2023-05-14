@@ -1,6 +1,8 @@
 package local.media;
 
 
+import org.zoolu.sound.ExtendedAudioSystem;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.AudioFileFormat;
@@ -90,14 +92,13 @@ public class AudioReceiver
          codec=AudioFormat.Encoding.PCM_UNSIGNED;
 
       try
-      {  RtpStreamReceiver receiver;    
-         AudioOutput audio_output=null;
-         if (sound) AudioOutput.initAudioLine(); 
+      {  RtpStreamReceiver receiver;
+       
+         if (sound) ExtendedAudioSystem.initAudioOutputLine(); 
                          
          if (sound)
          {  AudioFormat format=new AudioFormat(codec,sample_rate,8*sample_size,1,sample_size,sample_rate,big_endian);
-            audio_output=new AudioOutput(format);
-            receiver=new RtpStreamReceiver(audio_output.getOuputStream(),port);
+            receiver=new RtpStreamReceiver(ExtendedAudioSystem.getOutputStream(format),port);
          }
          else
          //if (filename!=null)
@@ -113,14 +114,14 @@ public class AudioReceiver
          }
 
          receiver.start();
-         if (sound) audio_output.play();
+         if (sound) ExtendedAudioSystem.startAudioOutputLine();
 
          System.out.println("Press 'Return' to stop");
          System.in.read();
          
          receiver.halt();
-         if (sound) audio_output.stop();
-         if (sound) AudioOutput.closeAudioLine();
+         if (sound) ExtendedAudioSystem.stopAudioOutputLine();
+         if (sound) ExtendedAudioSystem.closeAudioOutputLine();
       }
       catch (Exception e) { e.printStackTrace(); }   
    }

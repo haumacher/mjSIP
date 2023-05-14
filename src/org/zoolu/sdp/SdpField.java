@@ -31,9 +31,14 @@ package org.zoolu.sdp;
   * <p>A SDP line field is of the form &lt;type&gt; = &lt;value&gt;
  */
 public class SdpField
-{  char type;
+{  
+   /** Field type */
+   char type;
+
+   /** Field value */
    String value;
-   
+
+
    /** Creates a new SdpField.
      * @param s_type the field type
      * @param s_value the field value */

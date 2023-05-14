@@ -34,10 +34,10 @@ import java.io.*;
 import java.util.Vector;
 
 
-/** SipStack includes all static attributes used by the sip stack.
+/** SipStack collects all static attributes used by the sip stack.
   * <p>
-  * Static attributes includes the logging configuration,
-  * default SIP port, deafult supported transport protocols, timeouts, etc.
+  * SipStack attributes are: the default SIP port, deafult supported transport protocols,
+  * timeouts, log configuration, etc.
   */
 public class SipStack extends Configure
 {
@@ -49,14 +49,14 @@ public class SipStack extends Configure
    /** The default SipProvider */
    //private static SipProvider provider=null;
 
-
    // *********************** software release ***********************
 
+   /** Version */
+   public static final String version="1.7";
    /** Release */
-   public static final String release="mjsip stack 1.6";
+   public static final String release="mjsip "+version;
    /** Authors */
    public static final String authors="Luca Veltri - University of Parma (Italy)";
-
 
    // ********************** static attributes ***********************
 
@@ -64,8 +64,7 @@ public class SipStack extends Configure
    //public static final String NO_UA_INFO="NO-UA-INFO";
 
    /** String value "no-server-info" used for setting no 'Server' header filed. */
-   //public static final String NO_SERVER_INFO="NO-SERVER-INFO";
-   
+   //public static final String NO_SERVER_INFO="NO-SERVER-INFO"; 
 
    // ************* default sip provider configurations **************
 
@@ -74,6 +73,11 @@ public class SipStack extends Configure
     * <br> Normally it sould be set to 5060 as defined by RFC 3261. Using a different value may cause
     * some problems when interacting with other unaware SIP UAs. */
    public static int default_port=5060; 
+   /** Default SIP port for TLS transport (SIPS).
+    * Note that this is not the port used by the running stack, but simply the standard default SIPS port.
+    * <br> Normally it sould be set to 5061 as defined by RFC 3261. Using a different value may cause
+    * some problems when interacting with other unaware SIP UAs. */
+   public static int default_tls_port=5061; 
    /** Default supported transport protocols. */
    public static String[] default_transport_protocols={ SipProvider.PROTO_UDP, SipProvider.PROTO_TCP };
    /** Default max number of contemporary open transport connections. */
@@ -83,11 +87,8 @@ public class SipStack extends Configure
    /** Whether adding (forcing) 'rport' parameter on via header fields of incoming requests. */
    public static boolean force_rport=false;
 
+   // ********************* transaction timeouts *********************
 
-   // ******************** general configurations ********************
-
-   /** default max-forwards value (RFC3261 recommends value 70) */
-   public static int max_forwards=70;
    /** starting retransmission timeout (milliseconds); called T1 in RFC2361; they suggest T1=500ms */
    public static long retransmission_timeout=500;  
    /** maximum retransmission timeout (milliseconds); called T2 in RFC2361; they suggest T2=4sec */
@@ -96,36 +97,36 @@ public class SipStack extends Configure
    public static long transaction_timeout=32000;    
    /** clearing timeout (milliseconds); T4 in RFC2361; they suggest T4=5sec */
    public static long clearing_timeout=5000;
-       
-   /** Whether using only one thread for all timer instances. */
-   public static boolean single_timer=false;
 
+   // ******************** general configurations ********************
+
+   /** default max-forwards value (RFC3261 recommends value 70) */
+   public static int max_forwards=70;
+   /** Whether using only one thread for all timer instances (less precise but more efficient). */
+   public static boolean single_timer=true;
+   /** Whether at UAS side automatically sending (by default) a 100 Trying on INVITE. */
+   public static boolean auto_trying=true;
    /** Whether 1xx responses create an "early dialog" for methods that create dialog. */
    public static boolean early_dialog=false;
-
    /** Default 'expires' value in seconds. RFC2361 suggests 3600s as default value. */
    public static int default_expires=3600;
-
    /** UA info included in request messages in the 'User-Agent' header field.
      * Use "NONE" if the 'User-Agent' header filed must not be added. */
    public static String ua_info=release;
    /** Server info included in response messages in the 'Server' header field
      * Use "NONE" if the 'Server' header filed must not be added. */
-   public static String server_info=release;
-   
+   public static String server_info=release; 
+
+   // ************** registration client configurations **************
+
+   /** starting registration timeout (msecs) after a registration failure due to request timeout */
+   public static long regc_min_attempt_timeout=60*1000; // 1min
+   /** maximum registration timeout (msecs) after a registration failure due to request timeout */
+   public static long regc_max_attempt_timeout=900*1000; // 15min  
+   /** maximum number of consecutive registration authentication attempts before giving up */
+   public static int regc_auth_attempts=3;
 
    // ************************ debug and logs ************************
-
-   /** Base level (offset) for logging Transport events */
-   public static int LOG_LEVEL_TRANSPORT=1;
-   /** Base level (offset) for logging Transaction events */
-   public static int LOG_LEVEL_TRANSACTION=2;
-   /** Base level (offset) for logging Dialog events */
-   public static int LOG_LEVEL_DIALOG=2;
-   /** Base level (offset) for logging Call events */
-   public static int LOG_LEVEL_CALL=1;
-   /** Base level (offset) for logging UA events */
-   public static int LOG_LEVEL_UA=0;
 
    /** Log level. Only logs with a level less or equal to this are written. */
    public static int debug_level=1;
@@ -146,9 +147,17 @@ public class SipStack extends Configure
    /** The rotation time value */
    public static int rotation_time=2;
 
+   // ************************** extensions **************************
+
+   /** Whether forcing this node to stay within the dialog route as peer,
+     * by means of the insertion of a RecordRoute header.
+     * This is a non-standard behaviour and is normally not necessary. */
+   public static boolean on_dialog_route=false;
+
+   /** Whether using an alternative transaction id that does not include the 'sent-by' value. */
+   public static boolean alternative_transaction_id=false;
 
    // ************************** costructor **************************
-
 
    /** Parses a single text line (read from the config file) */
    protected void parseLine(String line)
@@ -159,22 +168,33 @@ public class SipStack extends Configure
       else {  attribute=line; par=new Parser("");  }
       char[] delim={' ',','};
 
-      // general configurations
-      if (attribute.equals("default_port"))   { default_port=par.getInt(); return; }
+      // default sip provider configurations
+      if (attribute.equals("default_port")) { default_port=par.getInt(); return; }
+      if (attribute.equals("default_tls_port")) { default_tls_port=par.getInt(); return; }
       if (attribute.equals("default_transport_protocols")) { default_transport_protocols=par.getWordArray(delim); return; }
       if (attribute.equals("default_nmax_connections")) { default_nmax_connections=par.getInt(); return; }
       if (attribute.equals("use_rport")) { use_rport=(par.getString().toLowerCase().startsWith("y")); return; }
       if (attribute.equals("force_rport")) { force_rport=(par.getString().toLowerCase().startsWith("y")); return; }
-      if (attribute.equals("max_forwards"))   { max_forwards=par.getInt(); return; }
+
+      // transaction timeouts
       if (attribute.equals("retransmission_timeout")) { retransmission_timeout=par.getInt(); return; }
       if (attribute.equals("max_retransmission_timeout")) { max_retransmission_timeout=par.getInt(); return; }
       if (attribute.equals("transaction_timeout")) { transaction_timeout=par.getInt(); return; }
-      if (attribute.equals("clearing_timeout"))    { clearing_timeout=par.getInt(); return; }
+      if (attribute.equals("clearing_timeout")) { clearing_timeout=par.getInt(); return; }
+
+      // general configurations
+      if (attribute.equals("max_forwards"))   { max_forwards=par.getInt(); return; }
       if (attribute.equals("single_timer"))   { single_timer=(par.getString().toLowerCase().startsWith("y")); return; }
+      if (attribute.equals("auto_trying"))    { auto_trying=(par.getString().toLowerCase().startsWith("y")); return; }
       if (attribute.equals("early_dialog"))   { early_dialog=(par.getString().toLowerCase().startsWith("y")); return; }
       if (attribute.equals("default_expires")){ default_expires=par.getInt(); return; }
       if (attribute.equals("ua_info"))        { ua_info=par.getRemainingString().trim(); return; }
       if (attribute.equals("server_info"))    { server_info=par.getRemainingString().trim(); return; }
+
+      // registration client configurations
+      if (attribute.equals("regc_min_attempt_timeout")) { regc_min_attempt_timeout=par.getInt(); return; }
+      if (attribute.equals("regc_max_attempt_timeout")) { regc_max_attempt_timeout=par.getInt(); return; }
+      if (attribute.equals("regc_auth_attempts")) { regc_auth_attempts=par.getInt(); return; }
 
       // debug and logs
       if (attribute.equals("debug_level"))    { debug_level=par.getInt(); return; }
@@ -182,6 +202,10 @@ public class SipStack extends Configure
       if (attribute.equals("max_logsize"))    { max_logsize=par.getInt(); return; }
       if (attribute.equals("log_rotations"))  { log_rotations=par.getInt(); return; }
       if (attribute.equals("log_rotation_time"))   { log_rotation_time=par.getRemainingString(); return; }
+
+      // extensions
+      if (attribute.equals("on_dialog_route")){ on_dialog_route=(par.getString().toLowerCase().startsWith("y")); return; }
+      if (attribute.equals("alternative_transaction_id")){ alternative_transaction_id=(par.getString().toLowerCase().startsWith("y")); return; }
 
       // old parameters
       if (attribute.equals("host_addr")) printLog("WARNING: parameter 'host_addr' is no more supported; use 'via_addr' instead.");

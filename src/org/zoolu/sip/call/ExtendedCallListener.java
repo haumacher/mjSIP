@@ -39,6 +39,9 @@ public interface ExtendedCallListener extends CallListener
    /** Callback function called when arriving a new REFER method (transfer request). */
    public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, Message refer);
 
+   /** Callback function called when arriving a new REFER method (transfer request) with Replaces header, replacing an existing call. */
+   public void onCallAttendedTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, String replcall_id, Message refer);
+
    /** Callback function called when a call transfer is accepted. */
    public void onCallTransferAccepted(ExtendedCall call, Message resp);
 

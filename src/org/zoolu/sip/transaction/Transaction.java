@@ -31,38 +31,43 @@ import org.zoolu.sip.message.*;
 import org.zoolu.tools.Timer;
 import org.zoolu.tools.TimerListener;
 import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.ExceptionPrinter;
 
 
-/** Abstract class Transaction is hinerited by classes
- *  ClientTransaction, ServerTransaction, InviteClientTransaction and InviteServerTransaction.
- *  An Object Transaction is responsable to handle a new SIP transaction.<BR>
- *  The changes of the internal status and the received messages are fired to the
- *  TransactionListener passed to the Transaction Objects.<BR>
- */
-public abstract class Transaction implements SipProviderListener, TimerListener
+/** A generic SIP transaction (Invite, Non-Invite, Ack).
+  * It is hinerited by the following classes:
+  * ClientTransaction, ServerTransaction,
+  * InviteClientTransaction, InviteServerTransaction,
+  * AckTransactionClient, and AckTransactionServer.
+  * <p/>
+  * The changes of the internal status and the received messages are fired to the
+  * corrsponding transaction listener.
+  */
+public abstract class Transaction extends org.zoolu.tools.MonitoredObject implements SipProviderListener, TimerListener
 { 
    /** Transactions counter */
    protected static int transaction_counter=0;
 
    // all transaction states:
-   /** State Waiting, used only by server transactions */
-   static final int STATE_IDLE=0; 
-   /** State Waiting, used only by server transactions */
-   static final int STATE_WAITING=1; 
-   /** State Trying */
-   static final int STATE_TRYING=2; 
-   /** State Proceeding */
-   static final int STATE_PROCEEDING=3;
-   /** State Completed */
-   static final int STATE_COMPLETED=4;
-   /** State Confirmed, used only by invite server transactions */
-   static final int STATE_CONFIRMED=5;
-   /** State Waiting. */
-   static final int STATE_TERMINATED=7; 
+   
+   /** State Waiting (used only by server transactions) - When transaction is just created. */
+   protected static final int STATE_IDLE=0; 
+   /** State Waiting (used only by server transactions) - When the server transaction starts listening. */
+   protected static final int STATE_WAITING=1; 
+   /** State Trying - When sent/received the request. */
+   protected static final int STATE_TRYING=2; 
+   /** State Proceeding - When sent/received a provisional response. */
+   protected static final int STATE_PROCEEDING=3;
+   /** State Completed - When sent/received a final response. */
+   protected static final int STATE_COMPLETED=4;
+   /** State Confirmed (used only by invite server transactions) - When received an ACK request.  */
+   protected static final int STATE_CONFIRMED=5;
+   /** State Terminated - When the transaction is terminated. */
+   protected static final int STATE_TERMINATED=7; 
+
   
    /** Gets the transaction state. */
-   static String getStatus(int st)
+   protected static String getStatus(int st)
    {  switch (st)
       {  case STATE_IDLE       : return "T_Idle";
          case STATE_WAITING    : return "T_Waiting"; 
@@ -79,7 +84,7 @@ public abstract class Transaction implements SipProviderListener, TimerListener
    /** Transaction sequence number */
    int transaction_sqn;
 
-   /** Event logger. */
+   /** Log */
    Log log;
  
    /** Lower layer dispatcher that sends and receive messages.
@@ -94,10 +99,10 @@ public abstract class Transaction implements SipProviderListener, TimerListener
    Message request;
    
    /** the Transaction ID */
-   TransactionIdentifier transaction_id;
+   TransactionId transaction_id;
 
    /** Transaction connection id */
-   ConnectionIdentifier connection_id;
+   TransportConnId connection_id;
 
 
    /** Costructs a new Transaction */
@@ -112,21 +117,43 @@ public abstract class Transaction implements SipProviderListener, TimerListener
    }
 
    /** Changes the internal status */
-   void changeStatus(int newstatus)
+   protected void changeStatus(int newstatus)
    {  status=newstatus;
       //transaction_listener.onChangedTransactionStatus(status);
-      printLog("changed transaction state: "+getStatus(),LogLevel.MEDIUM);
+      printLog("changed transaction state: "+getStatus(),Log.LEVEL_MEDIUM);
    }
    
    /** Whether the internal status is equal to <i>st</i> */
-   boolean statusIs(int st)
+   protected boolean statusIs(int st)
    {  return status==st;
    }      
 
    /** Gets the current transaction state. */
-   String getStatus()
+   protected String getStatus()
    {  return getStatus(status);
    }
+
+
+   /** Whether the transaction is in TRYING state, i.e. it has sent/received the request. */
+   public boolean isTrying()
+   {  return status==STATE_TRYING;
+   }
+
+   /** Whether the transaction is in PROCEEDING state, i.e. it has sent/received a provisional response. */
+   public boolean isProceeding()
+   {  return status==STATE_PROCEEDING;
+   }
+
+   /** Whether the transaction is in COMPLETED state, i.e. it has sent/received a final response. */
+   public boolean isCompleted()
+   {  return status==STATE_COMPLETED;
+   }
+
+   /** Whether the transaction is in TERMINATED state, i.e. it is terminated. */
+   public boolean isTerminated()
+   {  return status==STATE_TERMINATED;
+   }
+
 
    /** Gets the SipProvider of this Transaction. */
    public SipProvider getSipProvider()
@@ -144,12 +171,12 @@ public abstract class Transaction implements SipProviderListener, TimerListener
    }
 
    /** Gets the transaction-ID */
-   public TransactionIdentifier getTransactionId()
+   public TransactionId getTransactionId()
    {  return transaction_id;
    }
 
    /** Gets the transaction connection id */
-   public ConnectionIdentifier getConnectionId()
+   public TransportConnId getTransportConnId()
    {  return connection_id;
    }
 
@@ -169,23 +196,26 @@ public abstract class Transaction implements SipProviderListener, TimerListener
 
    /** Terminates the transaction. */
    public abstract void terminate();
-   
 
+   
    //**************************** Logs ****************************/
 
-   /** Adds a new string to the default Log */
+   /** Default log level offset */
+   static final int LOG_OFFSET=2;
+
+   /** Adds a new string to the default Log. */
    protected void printLog(String str, int level)
-   {  if (log!=null) log.println("Transaction#"+transaction_sqn+": "+str,level+SipStack.LOG_LEVEL_TRANSACTION);  
+   {  if (log!=null) log.println("Transaction#"+transaction_sqn+": "+str,Transaction.LOG_OFFSET+level);  
    }
 
-   /** Adds a WARNING to the default Log */
+   /** Adds a WARNING to the default Log. */
    protected void printWarning(String str, int level)
    {  printLog("WARNING: "+str,level); 
    }
 
-   /** Adds the Exception to the log file */
+   /** Adds the Exception to the log file. */
    protected void printException(Exception e, int level)
-   {  if (log!=null) log.printException(e,level+SipStack.LOG_LEVEL_TRANSACTION);
+   {  printLog("Exception: "+ExceptionPrinter.getStackTraceOf(e),level);
    }
 
 }

@@ -22,12 +22,9 @@
 package local.server;
 
 
+
 import java.util.Enumeration;
-//import org.zoolu.sip.provider.SipStack;
-//import org.zoolu.tools.Parser;
-//import org.zoolu.tools.Base64;
-//import java.util.Hashtable;
-//import java.io.*;
+
 
 
 /** AuthenticationService is the interface used by a SIP server to access to

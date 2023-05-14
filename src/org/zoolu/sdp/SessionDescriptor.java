@@ -91,6 +91,7 @@ public class SessionDescriptor
      * @param sd the SessionDescriptor clone */
    public SessionDescriptor(SessionDescriptor sd)
    {  init(new OriginField(sd.o),new SessionNameField(sd.s),new ConnectionField(sd.c),new TimeField(sd.t));
+      for (int i=0; i<sd.av.size(); i++) av.addElement(new AttributeField((AttributeField)sd.av.elementAt(i)));
       for (int i=0; i<sd.media.size(); i++) media.addElement(new MediaDescriptor((MediaDescriptor)sd.media.elementAt(i)));
    }
 
@@ -124,8 +125,10 @@ public class SessionDescriptor
      * @param address the IPv4 address */
    public SessionDescriptor(String owner, String address)
    {  if (address==null) address="127.0.0.1";
-      if (owner==null) owner="user@"+address;
-      init(new OriginField(owner,"0","0",address),new SessionNameField("Session SIP/SDP"),new ConnectionField("IP4",address),new TimeField());
+      if (owner==null) owner="-";
+      //String session="Session SIP/SDP";
+      String session="-";
+      init(new OriginField(owner,"0","0",address),new SessionNameField(session),new ConnectionField("IP4",address),new TimeField());
    }
    
    /** Creates a default SessionDescriptor.
@@ -136,7 +139,9 @@ public class SessionDescriptor
    public SessionDescriptor()
    {  String address="127.0.0.1";
       String owner="user@"+address;
-      init(new OriginField(owner,"0","0",address),new SessionNameField("Session SIP/SDP"),new ConnectionField("IP4",address),new TimeField());
+      //String session="Session SIP/SDP";
+      String session="-";
+      init(new OriginField(owner,"0","0",address),new SessionNameField(session),new ConnectionField("IP4",address),new TimeField());
    }
 
    /** Creates a new SessionDescriptor from String <i>sdp</i>
@@ -149,7 +154,7 @@ public class SessionDescriptor
       o=par.parseOriginField();
       if (o==null) o=new OriginField("unknown");
       s=par.parseSessionNameField();
-      if (s==null) s=new SessionNameField();
+      if (s==null) s=new SessionNameField("-");
       c=par.parseConnectionField();
       if (c==null) c=new ConnectionField("IP4","0.0.0.0");
       t=par.parseTimeField();
@@ -296,11 +301,31 @@ public class SessionDescriptor
    }
 
 
+   /** Keeps only selected media types; other media are removed.
+     * @param media_types the media types to be kept
+     * @return the MediaDescriptor */
+   public SessionDescriptor selectMedia(String[] media_types)
+   {  if (media_types!=null)
+      {  Vector md_list=new Vector();
+         for (int i=0; i<media_types.length; i++)
+         {  MediaDescriptor md=getMediaDescriptor(media_types[i]);
+            if (md!=null)
+            {  removeMediaDescriptor(media_types[i]);
+               md_list.addElement(md);
+            }
+         }
+         removeMediaDescriptors();
+         addMediaDescriptors(md_list);
+      }
+      return this;
+   }
+
+
    /** Adds a Vector of session attributes.
-     * @param attribute_fields Vector of AttributeFields
+     * @param attributes Vector of AttributeFields
      * @return this SessionDescriptor */
-   public SessionDescriptor addAttributes(Vector attribute_fields)
-   {  for (int i=0; i<attribute_fields.size(); i++) addAttribute((AttributeField)attribute_fields.elementAt(i));
+   public SessionDescriptor addAttributes(Vector attributes)
+   {  for (int i=0; i<attributes.size(); i++) addAttribute((AttributeField)attributes.elementAt(i));
       return this;
    }
 

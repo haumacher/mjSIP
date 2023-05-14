@@ -29,6 +29,8 @@ package org.zoolu.tools;
   * <p> Implements the RSA Data Security, Inc. MD5 Message-Digest Algorithm.
   * This is almoust straight implementation of the reference implementation
   * given in RFC1321 by RSA.
+  * <p/>
+  * Note: It seems to be faster then the JDK1.4 MD5 implementation (java.security.MessageDigest.getInstance("MD5")). 
   */
 public class MD5 extends MessageDigest
 {
@@ -60,34 +62,33 @@ public class MD5 extends MessageDigest
    }*/
 
    /** Gets the unsigned representatin of a byte (into a short) */
-   //public static short uByte(byte b) {  return (short)(((short)b+256)%256);  } 
+   //private static short uByte(byte b) {  return (short)((int)b&0xFF);  } 
+
+   /** 0x00000000FFFFFFFF */
+   //private static final long OxFFFFFFFF=((long)1<<32)-1;
 
    /** Gets the unsigned representatin of a 32-bit word (into a long) */
-   /*public static long uWord(int n)
-   {  long wmask=0x10000;
-      wmask*=wmask;
-      return (long)(((long)n+wmask)%wmask);
-   }*/ 
+   /*private static long uWord(int n) {  return (long)n&OxFFFFFFFF;  } 
 
    /** Copies all bytes of array <i>src</i> into array <i>dst</i> with offset <i>offset</i> */
-   //public static void copyBytes(byte[] src, byte[] dst, int offset) { for (int k=0; k<src.length; k++) dst[offset+k]=src[k]; }
+   //private static void copyBytes(byte[] src, byte[] dst, int offset) { for (int k=0; k<src.length; k++) dst[offset+k]=src[k]; }
 
    /** Copies the first <i>len</i> bytes of array <i>src</i> into array <i>dst</i> with offset <i>offset</i> */
-   //public static void copyBytes(byte[] src, byte[] dst, int offset, int len) { for (int k=0; k<len; k++) dst[offset+k]=src[k]; }
+   //private static void copyBytes(byte[] src, byte[] dst, int offset, int len) { for (int k=0; k<len; k++) dst[offset+k]=src[k]; }
 
    /** Transforms a 4-bytes array into a 32-bit word (with the more significative byte at left) */
-   //public static long bytesToWord(byte[] b, int offset) {  return ((((((long)uByte(b[offset+3])<<8)+uByte(b[offset+2]))<<8)+uByte(b[offset+1]))<<8)+uByte(b[offset+0]);  }
+   //private static long bytesToWord(byte[] b, int offset) {  return ((((((long)uByte(b[offset+3])<<8)+uByte(b[offset+2]))<<8)+uByte(b[offset+1]))<<8)+uByte(b[offset+0]);  }
 
    /** Transforms a 4-bytes array into a 32-bit word (with the more significative byte at left) */
-   //public static long bytesToWord(byte[] b) {  return ((((((long)uByte(b[3])<<8)+uByte(b[2]))<<8)+uByte(b[1]))<<8)+uByte(b[0]);  }
+   //private static long bytesToWord(byte[] b) {  return ((((((long)uByte(b[3])<<8)+uByte(b[2]))<<8)+uByte(b[1]))<<8)+uByte(b[0]);  }
    
    /** Transforms a 32-bit word (with the more significative byte at left) into a 4-bytes array */
-   /*public static byte[] wordToBytes(long n)
+   /*private static byte[] wordToBytes(long n)
    {  byte[] b=new byte[4];
       b[3]=(byte)(n>>24);
-      b[2]=(byte)((n>>16)%256);
-      b[1]=(byte)((n>>8)%256);
-      b[0]=(byte)(n%256);
+      b[2]=(byte)((n>>16)&0xFF);
+      b[1]=(byte)((n>>8)&0xFF);
+      b[0]=(byte)(n&0xFF);
       return b;
    }*/
 

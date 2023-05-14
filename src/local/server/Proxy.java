@@ -34,7 +34,7 @@ import org.zoolu.sip.header.RecordRouteHeader;
 import org.zoolu.sip.message.Message;
 import org.zoolu.sip.message.MessageFactory;
 import org.zoolu.sip.message.SipResponses;
-import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Log;
 
 
 //import java.util.Enumeration;
@@ -52,8 +52,10 @@ public class Proxy extends Registrar
    /** Log of processed calls */
    CallLogger call_logger;
 
+
    /** Costructs a void Proxy */
    protected Proxy() {}
+
 
    /** Costructs a new Proxy that acts also as location server for registered users. */
    public Proxy(SipProvider provider, ServerProfile server_profile)
@@ -64,7 +66,7 @@ public class Proxy extends Registrar
 
    /** When a new request is received for the local server. */
    public void processRequestToLocalServer(Message msg)
-   {  printLog("inside processRequestToLocalServer(msg)",LogLevel.MEDIUM);
+   {  printLog("inside processRequestToLocalServer(msg)",Log.LEVEL_MEDIUM);
       if (msg.isRegister())
       {  super.processRequestToLocalServer(msg);
       }
@@ -74,7 +76,7 @@ public class Proxy extends Registrar
          //int result=501; // response code 501 ("Not Implemented")
          //int result=485; // response code 485 ("Ambiguous");
          int result=484; // response code 484 ("Address Incomplete");
-         Message resp=MessageFactory.createResponse(msg,result,SipResponses.reasonOf(result),null);
+         Message resp=MessageFactory.createResponse(msg,result,null,null);
          sip_provider.sendMessage(resp);
       }
    }
@@ -82,42 +84,44 @@ public class Proxy extends Registrar
 
    /** When a new request message is received for a local user */
    public void processRequestToLocalUser(Message msg)
-   {  printLog("inside processRequestToLocalUser(msg)",LogLevel.MEDIUM);
+   {  printLog("inside processRequestToLocalUser(msg)",Log.LEVEL_MEDIUM);
 
       if (server_profile.call_log) call_logger.update(msg);
 
-      if (server_profile.do_proxy_authentication && !msg.isAck() && !msg.isCancel())
-      {  // check message authentication
-         Message err_resp=as.authenticateProxyRequest(msg);  
+      // proxy authentication
+      /*if (server_profile.do_proxy_authentication && !msg.isAck() && !msg.isCancel())
+      {  Message err_resp=as.authenticateProxyRequest(msg);  
          if (err_resp!=null)
          {  sip_provider.sendMessage(err_resp);
             return;
          }
-      }
+      }*/
 
       // message targets
       Vector targets=getTargets(msg);
       
       if (targets.isEmpty())
-      {  // try to treat the request-URI as a local username or phone URL with a prefix-based nexthop rule
+      {  // prefix-based forwarding
          SipURL request_uri=msg.getRequestLine().getAddress();
-         SipURL new_target=getPhoneTarget(request_uri);
+         SipURL new_target=null;
+         if (isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress())) new_target=getAuthPrefixBasedProxyingTarget(request_uri);
+         if (new_target==null) new_target=getPrefixBasedProxyingTarget(request_uri);
          if (new_target!=null) targets.addElement(new_target.toString());
       }
       if (targets.isEmpty())
-      {  printLog("No target found, message discarded",LogLevel.HIGH);
-         if (!msg.isAck()) sip_provider.sendMessage(MessageFactory.createResponse(msg,404,SipResponses.reasonOf(404),null));
+      {  printLog("No target found, message discarded",Log.LEVEL_HIGH);
+         if (!msg.isAck()) sip_provider.sendMessage(MessageFactory.createResponse(msg,404,null,null));
          return;
       }           
       
-      printLog("message will be forwarded to all user's contacts",LogLevel.MEDIUM); 
+      printLog("message will be forwarded to "+targets.size()+" user's contact(s)",Log.LEVEL_MEDIUM); 
       for (int i=0; i<targets.size(); i++) 
-      {  SipURL url=new SipURL((String)(targets.elementAt(i)));
+      {  SipURL target_url=new SipURL((String)(targets.elementAt(i)));
          Message request=new Message(msg);
          request.removeRequestLine();
-         request.setRequestLine(new RequestLine(msg.getRequestLine().getMethod(),url));
+         request.setRequestLine(new RequestLine(msg.getRequestLine().getMethod(),target_url));
          
-         updateProxingRequest(request);
+         updateProxyingRequest(request);
          sip_provider.sendMessage(request);
       }
    }
@@ -125,52 +129,49 @@ public class Proxy extends Registrar
    
    /** When a new request message is received for a remote UA */
    public void processRequestToRemoteUA(Message msg)
-   {  printLog("inside processRequestToRemoteUA(msg)",LogLevel.MEDIUM);
+   {  printLog("inside processRequestToRemoteUA(msg)",Log.LEVEL_MEDIUM);
    
       if (call_logger!=null) call_logger.update(msg);
 
       if (!server_profile.is_open_proxy)
-      {  // check whether the caller is a local user 
-         SipURL from_url=msg.getFromHeader().getNameAddress().getAddress();
-         String from_username=from_url.getUserName();
-         String from_hostaddr=from_url.getHost();
-         String caller=(from_username==null)? from_hostaddr : from_username+"@"+from_hostaddr;
-         if (!location_service.hasUser(caller))
-         {  // but do not filter messages directed to local users
-            SipURL to_url=msg.getToHeader().getNameAddress().getAddress();
-            String to_username=to_url.getUserName();
-            String to_hostaddr=to_url.getHost();
-            String callee=(to_username==null)? to_hostaddr : to_username+"@"+to_hostaddr;
-            if (!location_service.hasUser(callee))
-            {  // both caller and callee are not registered with the local server
-               printLog("both users "+caller+" and "+callee+" are not registered with the local server: proxy denied.",LogLevel.HIGH);
-               sip_provider.sendMessage(MessageFactory.createResponse(msg,503,SipResponses.reasonOf(503),null));
-               return;
-            }
+      {  // check whether the caller or callee is a local user 
+         if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress()))
+         {  printLog("both caller and callee are not registered with the local server: proxy denied.",Log.LEVEL_HIGH);
+            sip_provider.sendMessage(MessageFactory.createResponse(msg,503,null,null));
+            return;
          }
       }
       
-      if (server_profile.do_proxy_authentication && !msg.isAck() && !msg.isCancel())
-      {  // check message authentication
-         Message err_resp=as.authenticateProxyRequest(msg);  
+      // proxy authentication
+      /*if (server_profile.do_proxy_authentication && !msg.isAck() && !msg.isCancel())
+      {  Message err_resp=as.authenticateProxyRequest(msg);  
          if (err_resp!=null)
          {  sip_provider.sendMessage(err_resp);
             return;
          }
-      }
-
-      updateProxingRequest(msg);      
+      }*/
+      
+      // domain-based forwarding
+      RequestLine rl=msg.getRequestLine();
+      SipURL request_uri=rl.getAddress();
+      SipURL nexthop=null;
+      if (isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress())) nexthop=getAuthDomainBasedProxyingTarget(request_uri);
+      if (nexthop==null) nexthop=getDomainBasedProxyingTarget(request_uri);
+      if (nexthop!=null) msg.setRequestLine(new RequestLine(rl.getMethod(),nexthop));
+      
+      updateProxyingRequest(msg); 
+     
       sip_provider.sendMessage(msg);
    }
 
    
    /** Processes the Proxy headers of the request.
      * Such headers are: Via, Record-Route, Route, Max-Forwards, etc. */
-   protected Message updateProxingRequest(Message msg)
-   {  printLog("inside updateProxingRequest(msg)",LogLevel.LOW);
+   protected Message updateProxyingRequest(Message msg)
+   {  printLog("inside updateProxyingRequest(msg)",Log.LEVEL_LOW);
 
       // remove Route if present
-      boolean is_on_route=false;  
+      //boolean is_on_route=false;  
       if (msg.hasRouteHeader())
       {  MultipleHeader mr=msg.getRoutes();
          SipURL route=(new RouteHeader(mr.getTop())).getNameAddress().getAddress();
@@ -178,11 +179,11 @@ public class Proxy extends Registrar
          {  mr.removeTop();
             if (mr.size()>0) msg.setRoutes(mr);
             else msg.removeRoutes();
-            is_on_route=true;
+            //is_on_route=true;
          }
       }
       // add Record-Route?
-      if (server_profile.on_route && msg.isInvite() && !is_on_route)
+      if (server_profile.on_route && msg.isInvite()/* && !is_on_route*/)
       {  SipURL rr_url;
          if (sip_provider.getPort()==SipStack.default_port) rr_url=new SipURL(sip_provider.getViaAddress());
          else rr_url=new SipURL(sip_provider.getViaAddress(),sip_provider.getPort());
@@ -217,26 +218,7 @@ public class Proxy extends Registrar
       MaxForwardsHeader maxfwd=msg.getMaxForwardsHeader();
       if (maxfwd!=null) maxfwd.decrement();
       else maxfwd=new MaxForwardsHeader(SipStack.max_forwards);
-      msg.setMaxForwardsHeader(maxfwd);
-
-      // domain name routing
-      if (server_profile.domain_routing_rules!=null && server_profile.domain_routing_rules.length>0)
-      {  RequestLine rl=msg.getRequestLine();
-         SipURL request_uri=rl.getAddress();
-         for (int i=0; i<server_profile.domain_routing_rules.length; i++)
-         {  RoutingRule rule=(RoutingRule)server_profile.domain_routing_rules[i];
-            SipURL nexthop=rule.getNexthop(request_uri);
-            if (nexthop!=null)
-            {  printLog("domain-based routing: "+rule.toString()+": YES",LogLevel.MEDIUM);
-               printLog("target="+nexthop.toString(),LogLevel.MEDIUM);
-               rl=new RequestLine(rl.getMethod(),nexthop);
-               msg.setRequestLine(rl);
-               break;
-            }
-            else printLog("prefix-based routing: "+rule.toString()+": NO",LogLevel.MEDIUM);
-         }
-      }
-      
+      msg.setMaxForwardsHeader(maxfwd);      
 
       // check whether the next Route is formed according to RFC2543
       msg.rfc2543RouteAdapt();
@@ -247,43 +229,104 @@ public class Proxy extends Registrar
 
    /** When a new response message is received */
    public void processResponse(Message resp)
-   {  printLog("inside processResponse(msg)",LogLevel.MEDIUM);
+   {  printLog("inside processResponse(msg)",Log.LEVEL_MEDIUM);
    
       if(call_logger!=null) call_logger.update(resp);
 
-      updateProxingResponse(resp);
+      updateProxyingResponse(resp);
       
       if (resp.hasViaHeader()) sip_provider.sendMessage(resp);
       else
-         printLog("no VIA header found: message discarded",LogLevel.HIGH);            
+         printLog("no VIA header found: message discarded",Log.LEVEL_HIGH);            
    }
    
    
    /** Processes the Proxy headers of the response.
      * Such headers are: Via, .. */
-   protected Message updateProxingResponse(Message resp)
-   {  printLog("inside updateProxingResponse(resp)",LogLevel.MEDIUM);
-      ViaHeader vh=new ViaHeader((Header)resp.getVias().getHeaders().elementAt(0));
-      if (vh.getHost().equals(sip_provider.getViaAddress())) resp.removeViaHeader();
+   protected Message updateProxyingResponse(Message resp)
+   {  printLog("inside updateProxyingResponse(resp)",Log.LEVEL_MEDIUM);
+      // remove the top most via
+      //ViaHeader vh=new ViaHeader((Header)resp.getVias().getHeaders().elementAt(0));
+      //if (vh.getHost().equals(sip_provider.getViaAddress())) resp.removeViaHeader();
+      // remove the top most via regardless the via has been insterted by this node or not (this prevents loops)
+      resp.removeViaHeader();
       return resp;
    }
    
 
-   /** Tries to find the target for a username or phone URL not registered within the location service. */
-   protected SipURL getPhoneTarget(SipURL request_uri)
-   {  String username=request_uri.getUserName();
-      if (username!=null && isPhoneNumber(username))
-      {  printLog(username+" is a phone number",LogLevel.MEDIUM);
-         for (int i=0; i<server_profile.phone_routing_rules.length; i++)
-         {  RoutingRule rule=(RoutingRule)server_profile.phone_routing_rules[i];
-            SipURL nexthop=rule.getNexthop(request_uri);
-            if (nexthop!=null)
-            {  printLog("prefix-based routing: "+rule.toString()+": YES",LogLevel.MEDIUM);
-               printLog("target="+nexthop.toString(),LogLevel.MEDIUM);
-               return nexthop;
-            }
-            else printLog("prefix-based routing: "+rule.toString()+": NO",LogLevel.MEDIUM);
+   /** Gets a new target according to the domain-based forwarding rules. */
+   protected SipURL getAuthDomainBasedProxyingTarget(SipURL request_uri)
+   {  printLog("inside getAuthDomainBasedProxyingTarget(uri)",Log.LEVEL_LOW);
+      // authenticated rules
+      for (int i=0; i<server_profile.authenticated_domain_proxying_rules.length; i++)
+      {  ProxyingRule rule=(ProxyingRule)server_profile.authenticated_domain_proxying_rules[i];
+         SipURL nexthop=rule.getNexthop(request_uri);
+         if (nexthop!=null)
+         {  printLog("domain-based authenticated forwarding: "+rule.toString()+": YES",Log.LEVEL_MEDIUM);
+            printLog("target="+nexthop.toString(),Log.LEVEL_MEDIUM);
+            return nexthop;
          }
+         else printLog("domain-based authenticated forwarding: "+rule.toString()+": NO",Log.LEVEL_MEDIUM);
+      }
+      return null;
+   }
+
+
+   /** Gets a new target according to the domain-based forwarding rules. */
+   protected SipURL getDomainBasedProxyingTarget(SipURL request_uri)
+   {  printLog("inside getDomainBasedForwardingTarget(uri)",Log.LEVEL_LOW);
+      // non-authenticated rules
+      for (int i=0; i<server_profile.domain_proxying_rules.length; i++)
+      {  ProxyingRule rule=(ProxyingRule)server_profile.domain_proxying_rules[i];
+         SipURL nexthop=rule.getNexthop(request_uri);
+         if (nexthop!=null)
+         {  printLog("domain-based forwarding: "+rule.toString()+": YES",Log.LEVEL_MEDIUM);
+            printLog("target="+nexthop.toString(),Log.LEVEL_MEDIUM);
+            return nexthop;
+         }
+         else printLog("domain-based forwarding: "+rule.toString()+": NO",Log.LEVEL_MEDIUM);
+      }
+      return null;
+   }
+
+
+   /** Gets a new target according to the authenticated prefix-based forwarding rules. */
+   protected SipURL getAuthPrefixBasedProxyingTarget(SipURL request_uri)
+   {  printLog("inside getAuthPrefixBasedProxyingTarget(uri)",Log.LEVEL_LOW);
+      String username=request_uri.getUserName();
+      if (username==null || !isPhoneNumber(username))  return null;
+      // authenticated rules
+      printLog("authenticated prefix-based rules: "+server_profile.authenticated_phone_proxying_rules.length,Log.LEVEL_LOW);
+      for (int i=0; i<server_profile.authenticated_phone_proxying_rules.length; i++)
+      {  ProxyingRule rule=(ProxyingRule)server_profile.authenticated_phone_proxying_rules[i];
+         SipURL nexthop=rule.getNexthop(request_uri);
+         if (nexthop!=null)
+         {  printLog("prefix-based authenticated forwarding: "+rule.toString()+": YES",Log.LEVEL_MEDIUM);
+            printLog("target="+nexthop.toString(),Log.LEVEL_MEDIUM);
+            return nexthop;
+         }
+         else printLog("prefix-based authenticated forwarding: "+rule.toString()+": NO",Log.LEVEL_MEDIUM);
+      }
+      return null;
+   }
+
+
+   /** Gets a new target according to the prefix-based forwarding rules. */
+   protected SipURL getPrefixBasedProxyingTarget(SipURL request_uri)
+   {  printLog("inside getPrefixBasedProxyingTarget(uri)",Log.LEVEL_LOW);
+      String username=request_uri.getUserName();
+      if (username==null || !isPhoneNumber(username))  return null;
+      // non-authenticated rules
+      printLog("prefix-based rules: "+server_profile.phone_proxying_rules.length,Log.LEVEL_LOW);
+      for (int i=0; i<server_profile.phone_proxying_rules.length; i++)
+      {  ProxyingRule rule=(ProxyingRule)server_profile.phone_proxying_rules[i];
+         SipURL nexthop=rule.getNexthop(request_uri);
+         if (nexthop!=null)
+         {  printLog("prefix-based forwarding: "+rule.toString()+": YES",Log.LEVEL_MEDIUM);
+            printLog("target="+nexthop.toString(),Log.LEVEL_MEDIUM);
+            return nexthop;
+         }
+         else printLog("prefix-based forwarding: "+rule.toString()+": NO",Log.LEVEL_MEDIUM);
       }
       return null;
    }
@@ -294,7 +337,7 @@ public class Proxy extends Registrar
    {  if (str==null || str.length()==0) return false;
       for (int i=0; i<str.length(); i++)
       {  char c=str.charAt(i);
-         if (c!='+' && c!='-' && (c<'0' || c>'9')) return false;
+         if (c!='+' && c!='-' && c!='*' && c!='#' && (c<'0' || c>'9')) return false;
       }
       return true;
    }   
@@ -304,7 +347,7 @@ public class Proxy extends Registrar
 
    /** Adds a new string to the default Log */
    private void printLog(String str, int level)
-   {  if (log!=null) log.println("Proxy: "+str,level+SipStack.LOG_LEVEL_UA);  
+   {  if (log!=null) log.println("Proxy: "+str,ServerEngine.LOG_OFFSET+level);  
    }
 
 

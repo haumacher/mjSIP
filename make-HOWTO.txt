@@ -1,0 +1,27 @@
+Make MjSIP HOW-TO
+__________________________________________________________________
+(by Luca Veltri, 29/6/2010)
+
+
+Note: Now JMF (Java Multimedia Framework) has been made optional. In order to build a standard java SIP UA you have just to make the UA (make ua) without any other configuration. If still you encounter JMF-related problems you can simply remove the folder 'local.media.jmf'.
+
+
+
+1) How to compile all packages under Windows OS (see section 3 for building mjUA with JMF support):
+--------------------------------------
+- just run 'make all'
+- otherwise you can separately do 'make' with the selected target (e.g. 'make ua')
+
+
+
+2) How to compile all packages under linux OS (see section 3 for building mjUA with JMF support):
+--------------------------------------
+- in file 'makefile-config' set 'OS=Linux'
+- just run 'make all'
+- otherwise you can separately do 'make' with the selected target (e.g. 'make ua')
+
+
+
+3) How to build mjUA with JMF support:
+--------------------------------------
+- if you have JMF installed you can bulid a JMF-powered UA with video support; you can do this byusing the jmf' target, i.e. run 'make jmf'

@@ -31,16 +31,22 @@ import java.io.IOException;
 
 /** Transport is a generic transport service for SIP.
   */
-interface Transport
+public interface Transport
 {
    /** Gets protocol type */ 
    public String getProtocol();
 
+   /** Gets local port */ 
+   public int getLocalPort();
+
    /** Stops running */
    public void halt();
 
+   /** Sets transport listener */
+   public void setListener(TransportListener listener);
+
    /** Sends a Message to a destination address and port */
-   public void sendMessage(Message msg, IpAddress dest_ipaddr, int dest_port) throws IOException;
+   public TransportConn sendMessage(Message msg, IpAddress dest_ipaddr, int dest_port, int ttl) throws IOException;
 
    /** Gets a String representation of the Object */
    public String toString();

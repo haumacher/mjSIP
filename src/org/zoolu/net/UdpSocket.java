@@ -38,9 +38,10 @@ public class UdpSocket
    /** DatagramSocket */
    DatagramSocket socket;
 
-   /** Creates a new UdpSocket */ 
-   public UdpSocket() throws java.net.SocketException
-   {  socket=new DatagramSocket();
+
+   /** Creates a new void UdpSocket */ 
+   protected UdpSocket()
+   {  socket=null;
    }
 
    /** Creates a new UdpSocket */ 
@@ -49,15 +50,15 @@ public class UdpSocket
    }
 
    /** Creates a new UdpSocket */ 
-   UdpSocket(DatagramSocket sock)
-   {  socket=sock;
-   }
-
-   /** Creates a new UdpSocket */ 
    public UdpSocket(int port, IpAddress ipaddr) throws java.net.SocketException
    {  socket=new DatagramSocket(port,ipaddr.getInetAddress());
    }
    
+   /** Creates a new UdpSocket */ 
+   UdpSocket(DatagramSocket sock)
+   {  socket=sock;
+   }
+
    /** Closes this datagram socket. */
    public void close()
    {  socket.close();
@@ -97,7 +98,8 @@ public class UdpSocket
    
    /** Converts this object to a String. */
    public String toString()
-   {  return socket.toString();
+   {  //return socket.toString();
+      return "UDP:"+getLocalAddress()+":"+getLocalPort();
    }
 
 }

@@ -188,11 +188,9 @@ public class SipParser extends Parser
    public RequestLine getRequestLine()    
    {  String method=getString();
       skipWSP();
-      int begin=getPos();
-      int end=indexOfEOH();
-      String request_uri=getString(end-begin);
+      SipURL url=(new SipParser(getString(indexOfEOH()-getPos()))).getSipURL();
       goToNextLine();
-      return new RequestLine(method,(new SipParser(request_uri)).getSipURL());
+      return new RequestLine(method,url);
    }
 
    /** Returns the status-line or null (if it doesn't start with "SIP/"). */
@@ -201,9 +199,7 @@ public class SipParser extends Parser
       if (!version.equalsIgnoreCase("SIP/")) {  index=str.length(); return null;  } 
       skipString().skipWSP(); // "SIP/2.0 "
       int code=getInt();
-      int begin=getPos();
-      int end=indexOfEOH();
-      String reason=getString(end-begin).trim();
+      String reason=getString(indexOfEOH()-getPos()).trim();
       goToNextLine();
       return new StatusLine(code,reason);
    }
@@ -211,12 +207,14 @@ public class SipParser extends Parser
 
    //*************************** URIs ***************************
 
-   public static char[] uri_separators={' ','>','\n','\r'};   
+   public static char[] uri_separators={' ','>','\n','\r'};
+   
+   public static String[] uri_schemes={"sip:","sips:"};
 
    /** Returns the first URL.
      * If no URL is found, it returns <b>null</b> */
    public SipURL getSipURL()
-   {  goTo("sip:");
+   {  goTo(uri_schemes);
       if (!hasMore()) return null;
       int begin=getPos();
       int end=indexOf(uri_separators);
@@ -330,8 +328,8 @@ public class SipParser extends Parser
    }
       
    /** Gets a String Vector of parameter names.
-     * <BR> Returns null if no parameter is present */
-   public Vector getParameters() 
+     * @return Returns a String Vector of all parameter names or null if no parameter is present. */
+   public Vector getParameterNames() 
    {  String name;
       Vector params=new Vector();
       while (hasMore())

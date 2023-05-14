@@ -29,7 +29,6 @@ import org.zoolu.sip.message.*;
 import org.zoolu.sip.header.*;
 import org.zoolu.sip.provider.*;
 import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
 import org.zoolu.tools.AssertException;
 
 
@@ -49,7 +48,7 @@ import java.util.Vector;
   * <li>route set</li>
   * </ul>
   */
-public class DialogInfo
+public class DialogInfo extends org.zoolu.tools.MonitoredObject
 {  
    
    // ************************ Private attributes ************************
@@ -85,10 +84,13 @@ public class DialogInfo
    /** Route set (Vector of NameAddresses) */
    Vector route; 
 
+   /** Secure flag indicating whether the current dialog should be secured */
+   boolean secure; 
+
 
    // **************************** Costructors *************************** 
 
-   /** Creates a new empty DialogInfo */
+   /** Creates a new empty DialogInfo. */
    public DialogInfo()
    {  this.local_name=null;
       this.remote_name=null;
@@ -100,71 +102,79 @@ public class DialogInfo
       this.local_cseq=-1;
       this.remote_cseq=-1;
       this.route=null; 
+      secure=false;
    }
  
 
    // ************************** Public methods **************************
 
-   /** Sets the local name */
+   /** Sets the local name. */
    public void setLocalName(NameAddress url) { local_name=url; }
-   /** Gets the local name */
+   /** Gets the local name. */
    public NameAddress getLocalName() { return local_name; }
 
 
-   /** Sets the remote name */
+   /** Sets the remote name. */
    public void setRemoteName(NameAddress url) { remote_name=url; }
-   /** Gets the remote name */
+   /** Gets the remote name. */
    public NameAddress getRemoteName() { return remote_name; }
 
 
-   /** Sets the local contact url */
+   /** Sets the local contact url. */
    public void setLocalContact(NameAddress name_address) { local_contact=name_address; }
    /** Gets the local contact url */
    public NameAddress getLocalContact() { return local_contact; }
 
 
-   /** Sets the remote contact url */
+   /** Sets the remote contact url. */
    public void setRemoteContact(NameAddress name_address) { remote_contact=name_address; }
-   /** Gets the remote contact url */
+   /** Gets the remote contact url. */
    public NameAddress getRemoteContact() { return remote_contact; }
 
   
-   /** Sets the call-id */
+   /** Sets the call-id. */
    public void setCallID(String id) { call_id=id; }
-   /** Gets the call-id */
+   /** Gets the call-id. */
    public String getCallID() { return call_id; }
 
    
-   /** Sets the local tag */
+   /** Sets the local tag. */
    public void setLocalTag(String tag) { local_tag=tag; }
-   /** Gets the local tag */
+   /** Gets the local tag. */
    public String getLocalTag() { return local_tag; }
 
 
    public void setRemoteTag(String tag) { remote_tag=tag; }
-   /** Gets the remote tag */
+   /** Gets the remote tag. */
    public String getRemoteTag() { return remote_tag; }
 
    
-   /** Sets the local CSeq number */
+   /** Sets the local CSeq number. */
    public void setLocalCSeq(long cseq) { local_cseq=cseq; }
-   /** Increments the local CSeq number */
+   /** Increments the local CSeq number. */
    public void incLocalCSeq() { local_cseq++; }
-   /** Gets the local CSeq number */
+   /** Gets the local CSeq number. */
    public long getLocalCSeq() { return local_cseq; }
 
 
-   /** Sets the remote CSeq number */
+   /** Sets the remote CSeq number. */
    public void setRemoteCSeq(long cseq) { remote_cseq=cseq; }
-   /** Increments the remote CSeq number */
+   /** Increments the remote CSeq number. */
    public void incRemoteCSeq() { remote_cseq++; }
-   /** Gets the remote CSeq number */
+   /** Gets the remote CSeq number. */
    public long getRemoteCSeq() { return remote_cseq; }
 
    
-   /** Sets the route set */
+   /** Sets the route set. */
    public void setRoute(Vector r) { route=r; }
-   /** Gets the route set */
+   /** Gets the route set. */
    public Vector getRoute() { return route; }
+
+   /** Sets the secure flag.
+     * It indicates whether the current dialog should be secured. */
+   public void setSecure(boolean sec) { secure=sec; }
+   /** Whether secure flag is set.
+     * That is whether the current dialog should be secured. */
+   public boolean isSecure() { return secure; }
 
 }

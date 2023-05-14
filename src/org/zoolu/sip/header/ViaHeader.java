@@ -58,37 +58,50 @@ public class ViaHeader extends ParametricHeader
    //{  super(SipHeaders.Via);
    //}
 
+   /** Creates a new ViaHeader. */
    public ViaHeader(String hvalue)
    {  super(SipHeaders.Via,hvalue);
    }
 
+   /** Creates a new ViaHeader. */
    public ViaHeader(Header hd)
    {  super(hd);
    }
 
+   /** Creates a new ViaHeader. */
    public ViaHeader(String host, int port)
    {  super(SipHeaders.Via,"SIP/2.0/UDP "+host+":"+port);
    }
 
+   /** Creates a new ViaHeader. */
    /*public ViaHeader(String host, int port, String branch)
    {  super(SipHeaders.Via,"SIP/2.0/UDP "+host+":"+port+";branch="+branch);
    }*/
 
+   /** Creates a new ViaHeader. */
    public ViaHeader(String proto, String host, int port)
    {  super(SipHeaders.Via,"SIP/2.0/"+proto.toUpperCase()+" "+host+":"+port);
    }
 
+   /** Creates a new ViaHeader. */
    /*public ViaHeader(String proto, String host, int port, String branch)
    {  super(SipHeaders.Via,"SIP/2.0/"+proto.toUpperCase()+" "+host+":"+port+";branch="+branch);
    }*/
 
-   /** Gets the transport protocol */
+   /** Gets the transport protocol. */
    public String getProtocol()
    {  SipParser par=new SipParser(value);
-      return par.goTo('/').skipChar().goTo('/').skipChar().skipWSP().getString();
+      return par.skipN(3).goTo('/').skipN(4).goTo('/').skipChar().skipWSP().getString();
    }
 
-   /** Gets "sent-by" parameter */
+   /** Sets the transport protocol. */
+   public void setProtocol(String proto)
+   {  SipParser par=new SipParser(value);
+      String trailer=par.skipN(3).goTo('/').skipN(4).goTo('/').skipChar().skipString().getRemainingString();
+      value="SIP/2.0/"+proto.toUpperCase()+" "+trailer;
+   }
+
+   /** Gets "sent-by" parameter. */
    public String getSentBy()
    {  SipParser par=new SipParser(value);
       par.goTo('/').skipChar().goTo('/').skipString().skipWSP();
@@ -97,7 +110,7 @@ public class ViaHeader extends ParametricHeader
       return sentby;
    }
 
-   /** Gets host of ViaHeader */
+   /** Gets host of ViaHeader. */
    public String getHost()
    {  String sentby=getSentBy();
       SipParser par=new SipParser(sentby);
@@ -106,14 +119,14 @@ public class ViaHeader extends ParametricHeader
       else return sentby;
    }
 
-   /** Returns boolean value indicating if ViaHeader has port */
+   /** Returns boolean value indicating if ViaHeader has port. */
    public boolean hasPort()
    {  String sentby=getSentBy();
       if (sentby.indexOf(":")>0) return true;
       return false;
    }
    
-   /** Gets port of ViaHeader */
+   /** Gets port of ViaHeader. */
    public int getPort()
    {  SipParser par=new SipParser(getSentBy());
       par.goTo(':');
@@ -121,62 +134,62 @@ public class ViaHeader extends ParametricHeader
       return -1;
    }
    
-   /** Makes a SipURL from ViaHeader */
+   /** Makes a SipURL from ViaHeader. */
    public SipURL getSipURL()
    {  return new SipURL(getHost(),getPort());
    }   
    
-   /** Checks if "branch" parameter is present */
+   /** Checks if "branch" parameter is present. */
    public boolean hasBranch()
    {  return hasParameter(branch_param);
    }
-   /** Gets "branch" parameter */
+   /** Gets "branch" parameter. */
    public String getBranch()
    {  return getParameter(branch_param);
    }   
-   /** Sets "branch" parameter */
+   /** Sets "branch" parameter. */
    public void setBranch(String value)
    {  setParameter(branch_param,value);
    }   
           
-   /** Checks if "received" parameter is present */
+   /** Checks if "received" parameter is present. */
    public boolean hasReceived()
    {  return hasParameter(received_param);
    }
-   /** Gets "received" parameter */
+   /** Gets "received" parameter. */
    public String getReceived()
    {  return getParameter(received_param);
    }     
-   /** Sets "received" parameter */
+   /** Sets "received" parameter. */
    public void setReceived(String value)
    {  setParameter(received_param,value);
    }   
 
-   /** Checks if "rport" parameter is present */
+   /** Checks if "rport" parameter is present. */
    public boolean hasRport()
    {  return hasParameter(rport_param);
    }
-   /** Gets "rport" parameter */
+   /** Gets "rport" parameter. */
    public int getRport()
    {  String value=getParameter(rport_param);
       if (value!=null) return Integer.parseInt(value);
       else return -1;
    }     
-   /** Sets "rport" parameter */
+   /** Sets "rport" parameter. */
    public void setRport()
    {  setParameter(rport_param,null);
    }   
-   /** Sets "rport" parameter */
+   /** Sets "rport" parameter. */
    public void setRport(int port)
    {  if (port<0) setParameter(rport_param,null);
       else setParameter(rport_param,Integer.toString(port));
    }
 
-   /** Checks if "maddr" parameter is present */
+   /** Checks if "maddr" parameter is present. */
    public boolean hasMaddr()
    {  return hasParameter(maddr_param);
    }
-   /** Gets "maddr" parameter */
+   /** Gets "maddr" parameter. */
    public String getMaddr()
    {  return getParameter(maddr_param);
    }     
@@ -189,13 +202,13 @@ public class ViaHeader extends ParametricHeader
    public boolean hasTtl()
    {  return hasParameter(ttl_param);
    }
-   /** Gets "ttl" parameter */
+   /** Gets "ttl" parameter. */
    public int getTtl()
    {  String value=getParameter(ttl_param);
       if (value!=null) return Integer.parseInt(value);
       else return -1;
    }     
-   /** Sets "ttl" parameter */
+   /** Sets "ttl" parameter. */
    public void setTtl(int ttl)
    {  setParameter(ttl_param,Integer.toString(ttl));
    } 

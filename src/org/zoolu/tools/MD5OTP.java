@@ -25,29 +25,29 @@ package org.zoolu.tools;
 
 
 import java.io.*;
-import java.util.Random;
+import org.zoolu.tools.Random;
 
 
 /** OTP (One Time Pad) encryption algorithm based on MD5 hash function.
   * It uses a PRG (Pseudo-Random-Generator) function in OFB (Output Feadback) 
-  * to genarate a byte-stream (the OTP) that is XORed with the plaintext. 
-  *<br> The PRG is based on MD5.
-  *
-  * <p> The OTP is calculated starting from a key and an IV, as follows:
-  *<br> h_0=hash(skey|iv)
-  *<br> h_i=hash(skey|h_i-1)  
-  *
-  * <p> where:
-  *<br> hash(.)==MD5(.)
-  *<br> skey==key
-  *
-  * <p> while the ciphertext is calculated as follows:
-  *<br> c_0=iv
-  *<br> c_i=m_i XOR h_i   with i=1,2,..
-  *
-  * <p> Note that optionally it could modified initializing the skey as follows:
-  *<br> skey==hash(key|iv)
-  *<br> in order to not keep in memory the secret key for long time
+  * to genarate a byte-stream (the OTP) that is XORed with the plaintext. <br/>
+  * The PRG is based on MD5.
+  * <p/>
+  * The OTP is calculated starting from a key and an IV, as follows: <br/>
+  * h_0=hash(skey|iv) <br/>
+  * h_i=hash(skey|h_i-1)  
+  * <p/>
+  * where: <br/>
+  * hash(.)==MD5(.) <br/>
+  * skey==key
+  * <p/>
+  * while the ciphertext is calculated as follows: <br/>
+  * c_0=iv <br/>
+  * c_i=m_i XOR h_i   with i=1,2,..
+  * <p/>
+  * Note that optionally it could be modified initializing the skey as follows: <br/>
+  * skey==hash(key|iv) <br/>
+  * in order to do not keep in memory the secret key for long time.
   */
 public class MD5OTP
 {
@@ -59,22 +59,28 @@ public class MD5OTP
    byte[] h;
    /** index within a single block */
    int index;
+
    
+   // *********************** Public methods ***********************
+
    /** Creates a new MD5OTP */
    /*public MD5OTP(int bsize, byte[] key, byte[] iv)
    {  init(bsize,key,iv);
    }*/
+
 
    /** Creates a new MD5OTP */
    public MD5OTP(byte[] skey, byte[] iv)
    {  init(16,skey,iv);
    }
 
+
    /** Creates a new MD5OTP with IV=0 */
    public MD5OTP(byte[] skey)
    {  init(16,skey,null);
    }
-   
+
+
    /** Inits the MD5OTP algorithm */
    private void init(int size, byte[] skey, byte[] iv)
    {  this.size=size;
@@ -85,13 +91,108 @@ public class MD5OTP
       index=size-1;
    }
 
+
+   /** Encodes a block of bytes */
+   public int update(byte[] in_buff, int in_offset, int in_len, byte[] out_buff, int out_offset)
+   {  int in_end=in_offset+in_len;
+      int j=out_offset;
+      for (int i=in_offset; i<in_end; i++)
+      {  if ((++index)==size)
+         {  // calculate new h_block
+            h=hash(cat(skey,h));
+            index=0;
+         }
+         out_buff[j++]=(byte)(in_buff[i]^h[index]);
+      }
+      return in_len;
+   }
+
+
+   /** Encodes a block of bytes */
+   public byte[] update(byte[] in_buff)
+   {  byte[] out_buff=new byte[in_buff.length];
+      update(in_buff,0,in_buff.length,out_buff,0);
+      return out_buff;
+   }
+
+
+   /** Encodes a byte stream */
+   public void update(InputStream in, OutputStream out)
+   {  byte[] in_buff=new byte[2048];
+      byte[] out_buff=new byte[2048];
+      int len;
+      try
+      {  while ((len=in.read(in_buff))>0)
+         {  update(in_buff,0,len,out_buff,0);
+            out.write(out_buff,0,len);
+         }
+      }
+      catch (IOException e) { e.printStackTrace(); }
+   }
+
+
+   /** Encrypts an array of bytes. An IV is chosen and written at the top. */
+   public static int encrypt(byte[] in_buff, int in_offset, int in_len, byte[] out_buff, int out_offset, byte[] key)
+   {  // choose a random IV
+      byte[] iv=Random.nextBytes(16);
+      copy(iv,0,iv.length,out_buff,out_offset);
+      out_offset+=iv.length;
+      // do encryption
+      (new MD5OTP(key,iv)).update(in_buff,in_offset,in_len,out_buff,out_offset);
+      return iv.length+in_len;
+   }
+
+
+   /** Encrypts an array of bytes. An IV is chosen and written at the top. */
+   public static byte[] encrypt(byte[] m, byte[] key)
+   {  // choose a random IV
+      byte[] iv=Random.nextBytes(16);
+      // do encryption    
+      byte[] c=(new MD5OTP(key,iv)).update(m);
+      return cat(iv,c);
+   }
+
+
+   /** Decrypts an array of bytes with the IV at top. */
+   public static int decrypt(byte[] in_buff, int in_offset, int in_len, byte[] out_buff, int out_offset, byte[] key)
+   {  // read the IV
+      byte[] iv=sub(in_buff,in_offset,16);
+      in_offset+=16;
+      in_len-=16;
+      // do encryption
+      (new MD5OTP(key,iv)).update(in_buff,in_offset,in_len,out_buff,out_offset);
+      return in_len;
+   }
+
+
+   /** Decrypts an array of bytes with the IV at top. */
+   public static byte[] decrypt(byte[] c, byte[] key)
+   {  // read the IV
+      byte[] iv=sub(c,0,16);
+      byte[] buf=sub(c,16,c.length-16); 
+      return (new MD5OTP(key,iv)).update(buf);
+   } 
+
+
+   // *********************** Private methods **********************
+
+   /** Copies a byte array */
+   private static int copy(byte[] in_buff, int in_offset, int in_len, byte[] out_buff, int out_offset)
+   {  int in_end=in_offset+in_len;
+      int j=out_offset;
+      for (int i=in_offset; i<in_end; i++) out_buff[j++]=in_buff[i];
+      return in_len;
+   }
+
+
    /** Makes a clone of a byte array */
    private static byte[] clone(byte[] bb)
    {  byte[] cc=new byte[bb.length];
       for (int i=0; i<bb.length; i++) cc[i]=bb[i];
       return cc;
-   }   
-   
+   }    
+
+
    /** Concatenates two byte arrays */
    private static byte[] cat(byte[] aa, byte[] bb)
    {  byte[] cc=new byte[aa.length+bb.length];
@@ -100,61 +201,21 @@ public class MD5OTP
       return cc;
    }   
 
+
    /** Returns a sub array */
-   private static byte[] sub(byte[] bb, int begin, int end)
-   {  byte[] cc=new byte[end-begin];
-      for (int i=begin; i<end; i++) cc[i-begin]=bb[i];
+   private static byte[] sub(byte[] bb, int offset, int len)
+   {  byte[] cc=new byte[len];
+      int end=offset+len;
+      int j=0;
+      for (int i=offset; i<end; i++) cc[j++]=bb[i];
       return cc;
    }   
+
 
    /** Return an hash of the byte array */
    private static byte[] hash(byte[] bb)
    {  return MD5.digest(bb);
    }
-
-   /** Encrypts a block of bytes */
-   public byte[] update(byte[] m)
-   {  byte[] c=new byte[m.length];
-      for (int i=0; i<m.length; i++)
-      {  index++;
-         if (index==size)
-         {  // calculate new h_block
-            h=hash(cat(skey,h));
-            index=0;
-         }
-         c[i]=(byte)(m[i]^h[index]);
-      }
-      return c;
-   }
-   
-   /** Encrypts a byte stream */
-   public void update(InputStream in, OutputStream out)
-   {  byte[] buff=new byte[2048];
-      int len;
-      try
-      {  while ((len=in.read(buff))>0)
-            out.write(update(sub(buff,0,len)));
-      }
-      catch (IOException e) { e.printStackTrace(); }
-   }
-
-   /** Encrypts an array of bytes. An IV is chosen and saved at top. */
-   public static byte[] encrypt(byte[] m, byte[] key)
-   {  // choose a random IV
-      byte[] iv=MD5.digest(Long.toString((new Random()).nextLong()));
-      // do encryption    
-      byte[] c=(new MD5OTP(key,iv)).update(m);
-      return cat(iv,c);
-   }
-
- 
-   /** Decrypts an array of bytes with the IV at top. */
-   public static byte[] decrypt(byte[] c, byte[] key)
-   {  // read the IV
-      byte[] iv=sub(c,0,16);
-      byte[] buf=sub(c,16,c.length); 
-      return (new MD5OTP(key,iv)).update(buf);
-   } 
 
 
    /** Returns an hex representation of the byte array */
@@ -168,6 +229,10 @@ public class MD5OTP
       return buf.toString();
    }
 
+
+   // **************************** Main ****************************
+
+   /** Main method. */
    public static void main(String[] args)
    {  
       if (args.length<2)
@@ -185,6 +250,21 @@ public class MD5OTP
       System.out.println("c= "+asHex(cip));
       cip=(new MD5OTP(key,iv)).update(cip);
       System.out.println("m= "+asHex(cip)+" ("+new String(cip)+")");
+      
+      System.out.println("");
+      //System.out.println("m= "+asHex(msg)+" ("+new String(msg)+")");
+      cip=MD5OTP.encrypt(msg,key);
+      System.out.println("c= "+asHex(cip));
+      cip=MD5OTP.decrypt(cip,key);
+      System.out.println("m= "+asHex(cip)+" ("+new String(cip)+")");
+
+      System.out.println("");
+      //System.out.println("m= "+asHex(msg)+" ("+new String(msg)+")");
+      cip=new byte[16+msg.length];
+      MD5OTP.encrypt(msg,0,msg.length,cip,0,key);
+      System.out.println("c= "+asHex(cip));
+      MD5OTP.decrypt(cip,0,cip.length,msg,0,key);
+      System.out.println("m= "+asHex(msg)+" ("+new String(msg)+")");
    } 
    
 }

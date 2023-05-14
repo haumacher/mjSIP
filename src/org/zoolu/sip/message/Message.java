@@ -28,6 +28,7 @@ import org.zoolu.sip.header.Header;
 import org.zoolu.sip.header.MultipleHeader;
 import org.zoolu.sip.header.ReferToHeader;
 import org.zoolu.sip.header.ReferredByHeader;
+import org.zoolu.sip.header.ReplacesHeader;
 import org.zoolu.sip.header.EventHeader;
 import org.zoolu.sip.header.AllowEventsHeader;
 import org.zoolu.sip.header.SubscriptionStateHeader;
@@ -48,25 +49,25 @@ import org.zoolu.net.UdpPacket;
   */
 public class Message extends org.zoolu.sip.message.BaseMessage
 {
-   /** Costructs a new empty Message */
+   /** Creates a new empty Message */
    public Message() { super(); }
 
-   /** Costructs a new Message */
+   /** Creates a new Message */
    public Message(String str)
    {  super(str);
    }
 
-   /** Costructs a new Message */
+   /** Creates a new Message */
    public Message(byte[] buff, int offset, int len)
    {  super(buff,offset,len);
    }
 
-   /** Costructs a new Message */
+   /** Creates a new Message */
    public Message(UdpPacket packet)
    {  super(packet);
    }
 
-   /** Costructs a new Message */
+   /** Creates a new Message */
    public Message(Message msg)
    {  super(msg);
    }
@@ -122,6 +123,27 @@ public class Message extends org.zoolu.sip.message.BaseMessage
    /** Removes ReferToHeader from Message (if it exists) */
    public void removeReferToHeader() 
    {  removeHeader(SipHeaders.Refer_To);
+   }
+
+
+
+   /** Whether the message has the Replaces header */   
+   public boolean hasReplacesHeader()
+   {  return hasHeader(SipHeaders.Replaces);
+   }
+   /** Gets ReplacesHeader */
+   public ReplacesHeader getReplacesHeader()
+   {  Header h=getHeader(SipHeaders.Replaces);
+      if (h==null) return null;
+      return new ReplacesHeader(h);
+   }  
+   /** Sets ReplacesHeader */
+   public void setReplacesHeader(ReplacesHeader h) 
+   {  setHeader(h);
+   } 
+   /** Removes ReplacesHeader from Message (if it exists) */
+   public void removeReplacesHeader() 
+   {  removeHeader(SipHeaders.Replaces);
    }
 
 

@@ -61,7 +61,7 @@ public class SipMethods extends BaseSipMethods
 
 
    /** Array of all methods ( standard (RFC3261) + new (RFC3428,..) ) */
-   public static final String[] methods={ INVITE,ACK,CANCEL,BYE,INFO,OPTION,REGISTER,UPDATE,SUBSCRIBE,NOTIFY,MESSAGE,REFER,PUBLISH };
+   public static final String[] methods={ INVITE,ACK,CANCEL,BYE,INFO,OPTIONS,REGISTER,UPDATE,SUBSCRIBE,NOTIFY,MESSAGE,REFER,PUBLISH };
 
    /** Array of all methods that create a dialog */
    public static final String[] dialog_methods={ INVITE,SUBSCRIBE };

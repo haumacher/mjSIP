@@ -20,6 +20,12 @@ public class ServerProfile extends Configure
    private static String config_file="mjsip.cfg";
 
 
+   // ********************* static configurations ********************
+
+   /** Proxy transaction timeout (in milliseconds), that corresponds to Timer "C" of RFC2361; RFC2361 suggests C>3min=180000ms. */
+   public static int proxy_transaction_timeout=180000;
+
+
    // ********************* server configurations ********************
 
    /** The domain names that the server administers.
@@ -74,18 +80,33 @@ public class ServerProfile extends Configure
    /** Whether checking for loops before forwarding a request (Loop Detection). In RFC3261 it is optional. */
    public boolean loop_detection=true;
 
-   /** Array of RoutingRules based on pairs of username or phone prefix and corresponding nexthop address.
-     * It provides static rules for routing number-based SIP-URL the server is responsible for.
+   /** Array of ProxyingRules based on pairs of username or phone prefix and corresponding nexthop address.
+     * It provides static rules for proxying number-based SIP-URL the server is responsible for.
      * Use "default" (or "*") as default prefix.
-     * Example, request URL sip:01234567@zoopera.com received by a server responsible for domain name 'zoopera.com'.
-     * phone_routing_rules={prefix=0123,nexthop=127.0.0.2:7002} {prefix=*,nexthop=127.0.0.3:7003} */
-   public RoutingRule[] phone_routing_rules=null;
+     * Example: <br>
+     * server is responsible for the domain 'example.com' <br>
+     * phone_proxying_rules={prefix=0123,nexthop=127.0.0.2:7002} {prefix=*,nexthop=127.0.0.3:7003} <br>
+     * a message with recipient 'sip:01234567@example.com' is forwarded to 'sip:01234567@127.0.0.2:7002'
+     */
+   public ProxyingRule[] authenticated_phone_proxying_rules=null;
+   public ProxyingRule[] phone_proxying_rules=null;
 
-   /** Array of RoutingRules based on pairs of destination domain and corresponding nexthop address.
-     * It provides static rules for routing domain-based SIP-URL the server is NOT responsible for.
+   /** Array of ProxyingRules based on pairs of destination domain and corresponding nexthop address.
+     * It provides static rules for proxying domain-based SIP-URL the server is NOT responsible for.
      * It make the server acting (also) as 'Interrogating' Proxy, i.e. I-CSCF in the 3G networks.
-     * Example, domain_routing_rules={domain=wonderland.net,nexthop=neverland.net:5060} */
-   public RoutingRule[] domain_routing_rules=null;
+     * Example: <br>
+     * server is responsible for the domain 'example.com' <br>
+     * domain_proxying_rules={domain=domain1.foo,nexthop=proxy.example.net:5060} <br>
+     * a message with recipient 'sip:01234567@domain1.foo' is forwarded to 'sip:01234567@proxy.example.net:5060'
+     */
+   public ProxyingRule[] authenticated_domain_proxying_rules=null;
+   public ProxyingRule[] domain_proxying_rules=null;
+
+
+   // ******************** undocumented parametes ********************
+
+   /** Whether maintaining a memory log. */
+   public boolean memory_log=false;
 
 
    // ************************** costructors *************************
@@ -99,8 +120,10 @@ public class ServerProfile extends Configure
       // post-load manipulation
       if (authentication_realm!=null && authentication_realm.equals(Configure.NONE)) authentication_realm=null;
       if (domain_names==null) domain_names=new String[0];
-      if (phone_routing_rules==null) phone_routing_rules=new RoutingRule[0];
-      if (domain_routing_rules==null) domain_routing_rules=new RoutingRule[0];
+      if (authenticated_phone_proxying_rules==null) authenticated_phone_proxying_rules=new ProxyingRule[0];
+      if (phone_proxying_rules==null) phone_proxying_rules=new ProxyingRule[0];
+      if (authenticated_domain_proxying_rules==null) authenticated_domain_proxying_rules=new ProxyingRule[0];
+      if (domain_proxying_rules==null) domain_proxying_rules=new ProxyingRule[0];
    }
 
 
@@ -112,6 +135,7 @@ public class ServerProfile extends Configure
       if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
       else {  attribute=line; par=new Parser("");  }
 
+      if (attribute.equals("proxy_transaction_timeout")) { proxy_transaction_timeout=par.getInt(); return; }
       if (attribute.equals("is_registrar")) { is_registrar=(par.getString().toLowerCase().startsWith("y")); return; }
       if (attribute.equals("expires"))        { expires=par.getInt(); return; }
       if (attribute.equals("register_new_users")) { register_new_users=(par.getString().toLowerCase().startsWith("y")); return; }
@@ -164,27 +188,42 @@ public class ServerProfile extends Configure
          domain_names=new String[aux.size()];
          for (int i=0; i<aux.size(); i++) domain_names[i]=(String)aux.elementAt(i);
          return;
+      }    
+      if (attribute.equals("authenticated_phone_proxying_rules"))
+      {  char[] delim={' ',',',';','}'};
+         Vector aux=new Vector();
+         par.goTo('{');
+         while (par.hasMore())
+         {  par.goTo("prefix").skipN(6).goTo('=').skipChar();
+            String prefix=par.getWord(delim);
+            if (prefix.equals("*")) prefix=PrefixProxyingRule.DEFAULT_PREFIX;
+            par.goTo("nexthop").skipN(7).goTo('=').skipChar();
+            String nexthop=par.getWord(delim);
+            aux.addElement(new PrefixProxyingRule(prefix,new SocketAddress(nexthop)));
+            par.goTo('{');
+         }
+         authenticated_phone_proxying_rules=new ProxyingRule[aux.size()];
+         for (int i=0; i<aux.size(); i++) authenticated_phone_proxying_rules[i]=(ProxyingRule)aux.elementAt(i);
+         return;
       }
-      
-      if (attribute.equals("phone_routing_rules"))
+      if (attribute.equals("phone_proxying_rules"))
       {  char[] delim={' ',',','}'};
          Vector aux=new Vector();
          par.goTo('{');
          while (par.hasMore())
          {  par.goTo("prefix").skipN(6).goTo('=').skipChar();
             String prefix=par.getWord(delim);
-            if (prefix.equals("*")) prefix=PrefixRoutingRule.DEFAULT_PREFIX;
+            if (prefix.equals("*")) prefix=PrefixProxyingRule.DEFAULT_PREFIX;
             par.goTo("nexthop").skipN(7).goTo('=').skipChar();
             String nexthop=par.getWord(delim);
-            aux.addElement(new PrefixRoutingRule(prefix,new SocketAddress(nexthop)));
+            aux.addElement(new PrefixProxyingRule(prefix,new SocketAddress(nexthop)));
             par.goTo('{');
          }
-         phone_routing_rules=new RoutingRule[aux.size()];
-         for (int i=0; i<aux.size(); i++) phone_routing_rules[i]=(RoutingRule)aux.elementAt(i);
+         phone_proxying_rules=new ProxyingRule[aux.size()];
+         for (int i=0; i<aux.size(); i++) phone_proxying_rules[i]=(ProxyingRule)aux.elementAt(i);
          return;
       }
-
-      if (attribute.equals("domain_routing_rules"))
+      if (attribute.equals("authenticated_domain_proxying_rules"))
       {  char[] delim={' ',',','}'};
          Vector aux=new Vector();
          par.goTo('{');
@@ -193,13 +232,32 @@ public class ServerProfile extends Configure
             String prefix=par.getWord(delim);
             par.goTo("nexthop").skipN(7).goTo('=').skipChar();
             String nexthop=par.getWord(delim);
-            aux.addElement(new DomainRoutingRule(prefix,new SocketAddress(nexthop)));
+            aux.addElement(new DomainProxyingRule(prefix,new SocketAddress(nexthop)));
             par.goTo('{');
          }
-         domain_routing_rules=new RoutingRule[aux.size()];
-         for (int i=0; i<aux.size(); i++) domain_routing_rules[i]=(RoutingRule)aux.elementAt(i);
+         authenticated_domain_proxying_rules=new ProxyingRule[aux.size()];
+         for (int i=0; i<aux.size(); i++) authenticated_domain_proxying_rules[i]=(ProxyingRule)aux.elementAt(i);
          return;
       }
+      if (attribute.equals("domain_proxying_rules"))
+      {  char[] delim={' ',',','}'};
+         Vector aux=new Vector();
+         par.goTo('{');
+         while (par.hasMore())
+         {  par.goTo("domain").skipN(6).goTo('=').skipChar();
+            String prefix=par.getWord(delim);
+            par.goTo("nexthop").skipN(7).goTo('=').skipChar();
+            String nexthop=par.getWord(delim);
+            aux.addElement(new DomainProxyingRule(prefix,new SocketAddress(nexthop)));
+            par.goTo('{');
+         }
+         domain_proxying_rules=new ProxyingRule[aux.size()];
+         for (int i=0; i<aux.size(); i++) domain_proxying_rules[i]=(ProxyingRule)aux.elementAt(i);
+         return;
+      }
+
+      if (attribute.equals("memory_log")) { memory_log=(par.getString().toLowerCase().startsWith("y")); return; }
+
    }
 
 

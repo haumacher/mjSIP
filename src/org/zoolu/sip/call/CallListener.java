@@ -36,10 +36,13 @@ import java.util.Vector;
 public interface CallListener
 {  
    /** Callback function called when arriving a new INVITE method (incoming call) */
-   public void onCallIncoming(Call call, NameAddress callee, NameAddress caller, String sdp, Message invite);
+   public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, Message invite);
 
    /** Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
-   public void onCallModifying(Call call, String sdp, Message invite);
+   public void onCallModify(Call call, String sdp, Message invite);
+
+   /** Callback function called when arriving a 183 Session Progress */
+   public void onCallProgress(Call call, Message resp);
 
    /** Callback function called when arriving a 180 Ringing */
    public void onCallRinging(Call call, Message resp);
@@ -51,7 +54,7 @@ public interface CallListener
    public void onCallRefused(Call call, String reason, Message resp);
 
    /** Callback function called when arriving a 3xx (call redirection) */
-   public void onCallRedirection(Call call, String reason, Vector contact_list, Message resp);
+   public void onCallRedirected(Call call, String reason, Vector contact_list, Message resp);
 
    /** Callback function called when arriving an ACK method (call confirmed) */
    public void onCallConfirmed(Call call, String sdp, Message ack);
@@ -72,10 +75,10 @@ public interface CallListener
    //public void onCallReInviteRedirection(Call call, String reason, Vector contact_list, Message resp);
 
    /** Callback function called when arriving a CANCEL request */
-   public void onCallCanceling(Call call, Message cancel);
+   public void onCallCancel(Call call, Message cancel);
 
    /** Callback function called when arriving a BYE request */
-   public void onCallClosing(Call call, Message bye);
+   public void onCallBye(Call call, Message bye);
 
    /** Callback function called when arriving a response for the BYE request (call closed) */
    public void onCallClosed(Call call, Message resp);

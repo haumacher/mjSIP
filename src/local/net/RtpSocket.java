@@ -22,11 +22,12 @@
 package local.net;
 
 
-import java.net.InetAddress;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.io.IOException;
+
+//import java.net.*;
+import org.zoolu.net.*;
 import org.zoolu.tools.Random;
+import java.io.IOException;
+
 
 
 /** RtpSocket implements a RTP socket for receiving and sending RTP packets. 
@@ -36,51 +37,73 @@ import org.zoolu.tools.Random;
 public class RtpSocket
 {
    /** UDP socket */
-   DatagramSocket socket;
+   //DatagramSocket udp_socket;
+   UdpSocket udp_socket;
         
    /** Remote address */
-   InetAddress r_addr;
+   //InetAddress remote_addr;
+   IpAddress remote_addr;
 
    /** Remote port */
-   int r_port;
+   int remote_port;
 
    /** Creates a new RTP socket (only receiver) */ 
-   public RtpSocket(DatagramSocket datagram_socket)
-   {  socket=datagram_socket;
-      r_addr=null;
-      r_port=0;
+   //public RtpSocket(DatagramSocket udp_socket)
+   public RtpSocket(UdpSocket udp_socket)
+   {  this.udp_socket=udp_socket;
+      this.remote_addr=null;
+      this.remote_port=0;
    }
 
    /** Creates a new RTP socket (sender and receiver) */ 
-   public RtpSocket(DatagramSocket datagram_socket, InetAddress remote_address, int remote_port)
-   {  socket=datagram_socket;
-      r_addr=remote_address;
-      r_port=remote_port;
+   //public RtpSocket(DatagramSocket udp_socket, InetAddress remote_address, int remote_port)
+   public RtpSocket(UdpSocket udp_socket, IpAddress remote_address, int remote_port)
+   {  this.udp_socket=udp_socket;
+      this.remote_addr=remote_address;
+      this.remote_port=remote_port;
    }
 
-   /** Returns the RTP DatagramSocket */ 
-   public DatagramSocket getDatagramSocket()
-   {  return socket;
+   /** Gets the UDP socket */ 
+   //public DatagramSocket getDatagramSocket()
+   public UdpSocket getUdpSocket()
+   {  return udp_socket;
+   }
+
+   /** Gets the remote IP address */ 
+   //public InetAddress getRemoteAddress()
+   public IpAddress getRemoteAddress()
+   {  return remote_addr;
+   }
+
+   /** Gets the remote port */ 
+   public int getRemotePort()
+   {  return remote_port;
    }
 
    /** Receives a RTP packet from this socket */
    public void receive(RtpPacket rtpp) throws IOException
-   {  DatagramPacket datagram=new DatagramPacket(rtpp.packet,rtpp.packet.length);
-      socket.receive(datagram);
-      rtpp.packet_len=datagram.getLength();     
+   {  //DatagramPacket udp_packet=new DatagramPacket(rtpp.packet,rtpp.packet.length);
+      UdpPacket udp_packet=new UdpPacket(rtpp.packet,rtpp.packet.length);
+      udp_socket.receive(udp_packet);
+      rtpp.packet_len=udp_packet.getLength();
+      //remote_addr=udp_packet.getAddress();
+      remote_addr=udp_packet.getIpAddress();
+      remote_port=udp_packet.getPort();
    }
    
    /** Sends a RTP packet from this socket */      
    public void send(RtpPacket rtpp) throws IOException
-   {  DatagramPacket datagram=new DatagramPacket(rtpp.packet,rtpp.packet_len);
-      datagram.setAddress(r_addr);
-      datagram.setPort(r_port);
-      socket.send(datagram);
+   {  //DatagramPacket udp_packet=new DatagramPacket(rtpp.packet,rtpp.packet_len);
+      UdpPacket udp_packet=new UdpPacket(rtpp.packet,rtpp.packet_len);
+      //udp_packet.setAddress(remote_addr);
+      udp_packet.setIpAddress(remote_addr);
+      udp_packet.setPort(remote_port);
+      udp_socket.send(udp_packet);
    }
 
    /** Closes this socket */      
    public void close()
-   {  //socket.close();
+   {  //udp_socket.close();
    }
 
 }
