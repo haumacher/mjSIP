@@ -47,8 +47,10 @@ public class TransactionClient extends Transaction {
 
 	/** Retransmission timeout ("Timer E" in RFC 3261) */
 	Timer retransmission_to;
+
 	/** Transaction timeout ("Timer F" in RFC 3261) */
 	Timer transaction_to;
+
 	/** Clearing timeout ("Timer K" in RFC 3261) */
 	Timer clearing_to;
 
@@ -72,10 +74,6 @@ public class TransactionClient extends Transaction {
 	void init(TransactionClientListener listener, TransactionClientId transaction_id) {
 		this.transaction_listener=listener;
 		this.transaction_id=transaction_id;
-		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(SipStack.retransmission_timeout,null);
-		transaction_to=new Timer(SipStack.transaction_timeout,null);
-		clearing_to=new Timer(SipStack.clearing_timeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}
 
@@ -86,12 +84,13 @@ public class TransactionClient extends Transaction {
 	public void request() {
 		LOG.trace("start");
 		changeStatus(STATE_TRYING);
-		transaction_to=new Timer(transaction_to.getTime(),this);
-		transaction_to.start(); 
+
+		startTransactionTimeout();
+
 		sip_provider.addSelectiveListener(transaction_id,this);
 		connection_id=sip_provider.sendMessage(request);
-		retransmission_to=new Timer(retransmission_to.getTime(),this);
-		retransmission_to.start();
+
+		startRetransmissionTimer(SipStack.retransmission_timeout);
 	}
 		
 	/** Terminates the transaction. */
@@ -115,68 +114,128 @@ public class TransactionClient extends Transaction {
 				return;
 			}
 			if (code>=200 && code<700 && (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING))) {
-				retransmission_to.halt();
-				transaction_to.halt();
+				stopRetransmissionTimeout();
+				stopTransactionTimeout();
 				changeStatus(STATE_COMPLETED);
 				if (transaction_listener!=null) {
 					if (code<300) transaction_listener.onTransSuccessResponse(this,msg);
 					else transaction_listener.onTransFailureResponse(this,msg);
 				}
 				if (connection_id==null) {
-					clearing_to=new Timer(clearing_to.getTime(),this);
-					clearing_to.start();
+					startClearingTimeout();
 				}
 				else {
-					LOG.trace("clearing_to=0 for reliable transport");
-					onTimeout(clearing_to);
+					// There is no clearing timeout for reliable transport.
+					doTerminate();
 				}
 				return;
 			}
 		}
 	}
 
-	/** From TimerListener. It's fired from an active Timer. */
-	@Override
-	public void onTimeout(Timer to) {
-		try {
-			if (to.equals(retransmission_to) && (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING))) {
-				LOG.info("Retransmission timeout expired");
-				// retransmission only for unreliable transport 
-				if (connection_id==null) {
-					sip_provider.sendMessage(request);
-					long timeout=2*retransmission_to.getTime();
-					if (timeout>SipStack.max_retransmission_timeout || statusIs(STATE_PROCEEDING)) timeout=SipStack.max_retransmission_timeout;
-					retransmission_to=new Timer(timeout,this);
-					retransmission_to.start();
-				}
-				else LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
-			} 
-			if (to.equals(transaction_to)) {
-				LOG.info("Transaction timeout expired");
-				doTerminate();
-				if (transaction_listener!=null) transaction_listener.onTransTimeout(this);
-				transaction_listener=null;
-			}  
-			if (to.equals(clearing_to)) {
-				LOG.info("Clearing timeout expired");
-				doTerminate();
-			}
+	private void startRetransmissionTimer(long timeout) {
+		// Retransmission only for unreliable transport
+		if (connection_id == null) {
+			LOG.debug("Starting retransmission timeout: " + timeout + "ms");
+
+			retransmission_to = new Timer(timeout, this::onRetransmissionTimeout);
+			retransmission_to.start();
 		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
+	}
+
+	/**
+	 * Event handler for the retransmission timeout.
+	 * 
+	 * @param timer
+	 *        The timer that sent the event.
+	 */
+	private void onRetransmissionTimeout(Timer timer) {
+		if (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING)) {
+			LOG.info("Retransmission timeout expired");
+
+			sip_provider.sendMessage(request);
+
+			long timeout = 2 * timer.getTime();
+			if (timeout > SipStack.max_retransmission_timeout || statusIs(STATE_PROCEEDING))
+				timeout = SipStack.max_retransmission_timeout;
+
+			startRetransmissionTimer(timeout);
 		}
 	}
 	
+	private void startTransactionTimeout() {
+		long timeout = SipStack.transaction_timeout;
+		LOG.debug("Starting transaction timeout: " + timeout + "ms");
+
+		transaction_to = new Timer(timeout, this::onTransactionTimeout);
+		transaction_to.start();
+	}
+
+	/**
+	 * Event handler for the transaction timeout.
+	 *
+	 * @param timer
+	 *        The timer that sent the event.
+	 */
+	private void onTransactionTimeout(Timer timer) {
+		LOG.info("Transaction timeout expired.");
+		doTerminate();
+
+		if (transaction_listener != null) {
+			transaction_listener.onTransTimeout(this);
+			transaction_listener = null;
+		}
+	}
+
+	private void startClearingTimeout() {
+		long timeout = SipStack.clearing_timeout;
+		LOG.debug("Starting clearing timeout: " + timeout + "ms");
+		clearing_to = new Timer(timeout, this::onClearingTimeout);
+		clearing_to.start();
+	}
+
+	/**
+	 * Event handler for the clearing timeout.
+	 *
+	 * @param timer
+	 *        The timer that sent the event.
+	 */
+	private void onClearingTimeout(Timer timer) {
+		LOG.info("Clearing timeout expired.");
+		doTerminate();
+	}
+
 	// *********************** Protected methods ***********************
 
 	/** Moves to terminate state. */
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
-			retransmission_to.halt();
-			transaction_to.halt();     
-			clearing_to.halt();
+			stopRetransmissionTimeout();
+			stopTransactionTimeout();     
+			stopClearingTimeout();
 			sip_provider.removeSelectiveListener(transaction_id);
 			changeStatus(STATE_TERMINATED);
+		}
+	}
+
+	private void stopTransactionTimeout() {
+		if (transaction_to != null) {
+			transaction_to.halt();
+			transaction_to = null;
+		}
+	}
+
+	private void stopRetransmissionTimeout() {
+		if (retransmission_to != null) {
+			retransmission_to.halt();
+			retransmission_to = null;
+		}
+	}
+
+	private void stopClearingTimeout() {
+		if (clearing_to != null) {
+			clearing_to.halt();
+			clearing_to = null;
 		}
 	}
 
