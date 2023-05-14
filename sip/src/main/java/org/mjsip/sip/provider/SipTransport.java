@@ -58,5 +58,6 @@ public interface SipTransport {
 	public ConnectionId sendMessage(SipMessage msg, IpAddress dest_ipaddr, int dest_port, int ttl) throws IOException;
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString();
 }

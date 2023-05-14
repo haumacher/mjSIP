@@ -91,9 +91,11 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 		if (udp_provider!=null) udp_provider.halt();
 		// start udp
 		UdpProviderListener this_udp_provider_listener=new UdpProviderListener() {
+			@Override
 			public void onReceivedPacket(UdpProvider udp, UdpPacket packet) {
 				processReceivedPacket(udp,packet);
 			}
+			@Override
 			public void onServiceTerminated(UdpProvider udp, Exception error) {
 				processServiceTerminated(udp,error);
 			}
@@ -103,12 +105,14 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 
 
 	/** Gets protocol type */ 
+	@Override
 	public String getProtocol() {
 		return PROTO_UDP;
 	}
 
 
 	/** Gets port */ 
+	@Override
 	public int getLocalPort() {
 		try {  return udp_provider.getUdpSocket().getLocalPort();  } catch (Exception e) {  return 0;  }
 		
@@ -116,6 +120,7 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 
 
 	/** Sets transport listener */
+	@Override
 	public void setListener(SipTransportListener listener) {
 		this.listener=listener;
 	}
@@ -128,6 +133,7 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 	  * <p>
 	  * If the transport protocol is Connection Less (CL) the message is simply sent to the remote point.
 	  * @return Returns the id of the used connection for CO transport, or null for CL transport. */      
+	@Override
 	public ConnectionId sendMessage(SipMessage msg, IpAddress dest_ipaddr, int dest_port, int ttl) throws IOException {
 		if (udp_provider!=null) {
 			byte[] data=msg.getBytes();
@@ -142,12 +148,14 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 
 
 	/** Stops running */
+	@Override
 	public void halt() {
 		if (udp_provider!=null) udp_provider.halt();
 	}
 
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		if (udp_provider!=null) return udp_provider.toString();
 		else return null;

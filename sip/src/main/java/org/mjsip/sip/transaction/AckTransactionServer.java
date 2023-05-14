@@ -114,6 +114,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 
 
 	/** From SipProviderListener. When a new SipMessage is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		if (statusIs(STATE_PROCEEDING) && msg.isRequest()) {
 			if (msg.isInvite()) {
@@ -133,6 +134,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 
 	/** From TimerListener. When an active timer expires.
 	  */
+	@Override
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && statusIs(STATE_PROCEEDING)) {
@@ -157,6 +159,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 	}   
 
 	/** Method used to drop an active transaction. */
+	@Override
 	public void terminate() {
 		doTerminate();
 		transaction_listener=null;

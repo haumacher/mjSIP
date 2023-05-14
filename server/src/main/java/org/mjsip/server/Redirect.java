@@ -48,6 +48,7 @@ public class Redirect extends Registrar {
 	}
 		
 	/** When a new request message is received for a local user */
+	@Override
 	public void processRequestToLocalUser(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 		
@@ -70,6 +71,7 @@ public class Redirect extends Registrar {
 	}
 	
 	/** When a new request message is received for a remote UA */
+	@Override
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 		LOG.info("request not for local server");
@@ -78,6 +80,7 @@ public class Redirect extends Registrar {
 	}   
 
 	/** When a new response message is received */
+	@Override
 	public void processResponse(SipMessage resp) {
 		LOG.debug("inside processResponse(msg)");
 		LOG.info("request not for local server: message discarded");

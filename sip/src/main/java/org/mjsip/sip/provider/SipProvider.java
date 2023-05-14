@@ -471,6 +471,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 
 	/** From Configurable. Parses a single line (loaded from the config file). */
+	@Override
 	public void parseLine(String line) {
 		String attribute;
 		Parser par;
@@ -1153,6 +1154,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	//************************* Callback methods *************************
 	
 	/** From SipTransportListener. When a new SIP message is received. */
+	@Override
 	public void onReceivedMessage(SipTransport transport, SipMessage msg) {
 		try {
 			// logs
@@ -1162,14 +1164,14 @@ public class SipProvider implements Configurable, SipTransportListener {
 			// discard too short messages (e.g. CRLFCRLF "PING", or CRLF "PONG")
 			if (msg.getLength()<=4) {
 				if (log_all_packets)
-					LOG.trace("message too short: discarded\r\n");
+					LOG.debug("message too short: discarded\r\n");
 				return;
 			}
 			// discard non-SIP messages
 			String first_line=msg.getFirstLine();
 			if (first_line==null || first_line.toUpperCase().indexOf("SIP/2.0")<0) {
 				if (log_all_packets)
-					LOG.trace("NOT a SIP message: discarded\r\n");
+					LOG.debug("NOT a SIP message: discarded\r\n");
 				return;
 			}
 			LOG.info("received new SIP message");
@@ -1311,6 +1313,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	
 
 	/** From SipTransportListener. When SipTransport terminates. */
+	@Override
 	public void onTransportTerminated(SipTransport transport, Exception error) {
 		LOG.debug("transport " + transport + " terminated");
 		// TRY TO RESTART UDP WHEN ERRORS OCCUR
@@ -1330,6 +1333,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 
 	/** When a new incoming transport connection is established. It is called only for CO transport portocols. */ 
+	@Override
 	public void onIncomingTransportConnection(SipTransport transport, SocketAddress remote_soaddr) {
 		LOG.debug("incoming connection established with " + transport + ":"
 				+ remote_soaddr);
@@ -1337,6 +1341,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 
 	/** When a transport connection terminates. */
+	@Override
 	public void onTransportConnectionTerminated(SipTransport transport, SocketAddress remote_soaddr, Exception error) {
 		LOG.debug("connection to " + transport + ":" + remote_soaddr
 				+ " terminated");
@@ -1473,6 +1478,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 
 	/** Gets a String value for this object. */ 
+	@Override
 	public String toString() {
 		if (binding_ipaddr==null) return host_port+"/"+transportProtocolsToString();
 		else return binding_ipaddr.toString()+":"+host_port+"/"+transportProtocolsToString();
@@ -1484,12 +1490,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Adds the SIP message to the message log. */
 	private final void logMessage(String message, String proto, String addr, int port, int len, SipMessage msg) {
 		if (log_all_packets || len>=MIN_MESSAGE_LENGTH) {
-			String first_line = msg.getFirstLine();
-			if (first_line != null)
-				first_line = first_line.trim();
-			else
-				first_line = "NOT a SIP message";
-			LOG.info(message + addr + ":" + port + "/" + proto + " (" + len + " bytes): " + first_line);
+			LOG.info(message + addr + ":" + port + "/" + proto + " (" + len + " bytes): " + msg.toString().replace("\n", "\n\t"));
 		}
 	}
 

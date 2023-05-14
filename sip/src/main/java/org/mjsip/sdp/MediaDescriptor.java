@@ -191,6 +191,7 @@ public class MediaDescriptor {
 	
 	/** Gets a String rapresentation of the MediaDescriptor.
 	  * @return the string representation */
+	@Override
 	public String toString() {
 		String str=""; str+=m; if (c!=null) str+=c;
 		for (int i=0; i<av.size(); i++) str+=(AttributeField)av.elementAt(i);

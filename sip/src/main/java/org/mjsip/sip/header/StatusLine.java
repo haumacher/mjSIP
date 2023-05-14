@@ -43,11 +43,13 @@ public class StatusLine {
 	}
 
 	/** Creates a new copy of the request-line. */
+	@Override
 	public Object clone() {
 		return new StatusLine(getCode(),getReason());
 	}
 
 	/** Whether Object <i>obj</i> is "equal to" this StatusLine. */
+	@Override
 	public boolean equals(Object obj) {
 		//if (o.getClass().getSuperclass()!=this.getClass().getSuperclass()) return false;
 		try {
@@ -59,6 +61,7 @@ public class StatusLine {
 	}
 
 	/** Gets String value of this Object. */
+	@Override
 	public String toString() {
 		return "SIP/2.0 "+code+" "+reason+"\r\n";
 	}

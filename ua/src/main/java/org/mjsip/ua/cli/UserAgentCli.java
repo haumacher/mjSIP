@@ -238,6 +238,7 @@ public class UserAgentCli implements UserAgentListener {
 	// ******************* UserAgent callback functions ******************
 
 	/** When a new call is incoming */
+	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 		if (ua_profile.redirect_to!=null) {
 			// redirect the call
@@ -258,16 +259,19 @@ public class UserAgentCli implements UserAgentListener {
 	}
 	
 	/** When an ougoing call is stated to be in progress */
+	@Override
 	public void onUaCallProgress(UserAgent ua) {
 		
 	}
 
 	/** When an ougoing call is remotly ringing */
+	@Override
 	public void onUaCallRinging(UserAgent ua) {
 		
 	}
 
 	/** When an ougoing call has been accepted */
+	@Override
 	public void onUaCallAccepted(UserAgent ua) {
 		changeStatus(UA_ONCALL);
 		LOG.info("call accepted");
@@ -277,44 +281,52 @@ public class UserAgentCli implements UserAgentListener {
 	}
 	
 	/** When a call has been transferred */
+	@Override
 	public void onUaCallTransferred(UserAgent ua) {
 		
 	}
 
 	/** When an incoming call has been cancelled */
+	@Override
 	public void onUaCallCancelled(UserAgent ua) {
 		readyToReceive();
 	}
 
 	/** When an ougoing call has been refused or timeout */
+	@Override
 	public void onUaCallFailed(UserAgent ua, String reason) {
 		if (ua_profile.call_to!=null) exit();
 		else readyToReceive();
 	}
 
 	/** When a call has been locally or remotely closed */
+	@Override
 	public void onUaCallClosed(UserAgent ua) {
 		if (ua_profile.call_to!=null) exit();
 		else readyToReceive();     
 	}
 
 	/** When a new media session is started. */
+	@Override
 	public void onUaMediaSessionStarted(UserAgent ua, String type, String codec) {
 		//printLog(type+" started "+codec);
 	}
 
 	/** When a media session is stopped. */
+	@Override
 	public void onUaMediaSessionStopped(UserAgent ua, String type) {
 		//log(type+" stopped");
 	}
 
 
 	/** When registration succeeded. */
+	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
 		LOG.info("Registration succeeded: "+result); 
 	}
 
 	/** When registration failed. */
+	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
 		LOG.error("Registration failed: "+result); 
 	}
@@ -335,7 +347,8 @@ public class UserAgentCli implements UserAgentListener {
 	void reInvite(final int delay_time) {
 		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
 		if (delay_time==0) ua.modify(null);
-		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  ua.modify(null);  }  };
+		else new ScheduledWork(delay_time*1000L) {  @Override
+		public void doWork() {  ua.modify(null);  }  };
 	}
 
 
@@ -352,7 +365,8 @@ public class UserAgentCli implements UserAgentListener {
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
 		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
 		if (delay_time==0) ua.transfer(transfer_to);
-		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  ua.transfer(transfer_to);  }  };
+		else new ScheduledWork(delay_time*1000L) {  @Override
+		public void doWork() {  ua.transfer(transfer_to);  }  };
 	}
 
 	/** Schedules an automatic answer after <i>delay_time</i> secs. */
@@ -368,7 +382,8 @@ public class UserAgentCli implements UserAgentListener {
 	void automaticAccept(final int delay_time) {
 		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
 		if (delay_time==0) accept();
-		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  accept();  }  };
+		else new ScheduledWork(delay_time*1000L) {  @Override
+		public void doWork() {  accept();  }  };
 	}
 
 	/** Schedules an automatic hangup after <i>delay_time</i> secs. */
@@ -384,14 +399,16 @@ public class UserAgentCli implements UserAgentListener {
 	void automaticHangup(final int delay_time) {
 		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
 		if (delay_time==0) hangup();
-		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  hangup();  }  };
+		else new ScheduledWork(delay_time*1000L) {  @Override
+		public void doWork() {  hangup();  }  };
 	}
 	
 	/** Schedules an automatic re-call after <i>delay_time</i> secs. */
 	void automaticCall(final int delay_time, final String remote_uri) {
 		LOG.info("AUTOMATIC RE-CALL: "+delay_time+" secs");
 		if (delay_time==0) call(remote_uri);
-		else new ScheduledWork(delay_time*1000L) {  public void doWork() {  call(remote_uri);  }  };
+		else new ScheduledWork(delay_time*1000L) {  @Override
+		public void doWork() {  call(remote_uri);  }  };
 	}
 
 

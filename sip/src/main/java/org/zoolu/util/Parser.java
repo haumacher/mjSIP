@@ -519,6 +519,7 @@ public class Parser {
 	//************************* toString *************************
 
 	/** convert the rest of the unparsed chars into a string */
+	@Override
 	public String toString() {
 		return getRemainingString();
 	}

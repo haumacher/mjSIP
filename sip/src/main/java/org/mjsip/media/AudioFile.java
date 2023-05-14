@@ -161,7 +161,8 @@ public class AudioFile {
 		    AudioSystem.write(audioInputStream,AudioFileFormat.Type.WAVE,file);
 		    return new FileOutputStream(file,true) {
 		    	//J5:@Override
-		    	public void close() throws IOException {
+		    	@Override
+				public void close() throws IOException {
 		    		super.close();  		
 		    		// finalize the WAV file
 		    		RandomAccessFile raf=new RandomAccessFile(file,"rw");

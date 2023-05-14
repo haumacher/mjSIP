@@ -151,6 +151,7 @@ public class BitString {
 	/** Compares this BitString to the specified object.
 	  * @param obj the object to compare this BitString against
 	  * @return true if the given object represents a BitString equivalent to this BitString, false otherwise */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			BitString bit_string=(BitString)obj;
@@ -376,6 +377,7 @@ public class BitString {
 
 
 	/** Gets a string representation of this object. */
+	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
 		for (int i=0; i<length(); i++) sb.append((bitAt(i))?'1':'0');

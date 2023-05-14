@@ -80,18 +80,21 @@ public class LocationServiceImpl implements LocationService {
 
 	/** Syncronizes the database.
 	  * <p> Can be used, for example, to save the current memory image of the DB. */
+	@Override
 	public void sync() {
 		if (changed) save();
 	}
 
 	/** Returns the numbers of users in the database.
 	  * @return the numbers of user entries */
+	@Override
 	public int size() {
 		return users.size();
 	}
 	
 	/** Returns an enumeration of the users in this database.
 	  * @return the list of user names as an Enumeration of String */
+	@Override
 	public Enumeration getUsers() {
 		return users.keys();
 	}
@@ -99,6 +102,7 @@ public class LocationServiceImpl implements LocationService {
 	/** Whether a user is present in the database and can be used as key.
 	  * @param user the user name
 	  * @return true if the user name is present as key */
+	@Override
 	public boolean hasUser(String user) {
 		return (users.containsKey(user));
 	}
@@ -106,6 +110,7 @@ public class LocationServiceImpl implements LocationService {
 	/** Adds a new user at the database.
 	  * @param user the user name
 	  * @return this object */
+	@Override
 	public Repository addUser(String user) {
 		if (hasUser(user)) return this;
 		UserBindingInfo ur=new UserBindingInfo(user);
@@ -117,6 +122,7 @@ public class LocationServiceImpl implements LocationService {
 	/** Removes the user from the database.
 	  * @param user the user name
 	  * @return this object */
+	@Override
 	public Repository removeUser(String user) {
 		if (!hasUser(user)) return this;
 		//else
@@ -127,6 +133,7 @@ public class LocationServiceImpl implements LocationService {
   
 	/** Removes all users from the database.
 	  * @return this object */
+	@Override
 	public Repository removeAllUsers() {
 		users.clear();
 		changed=true;
@@ -135,6 +142,7 @@ public class LocationServiceImpl implements LocationService {
 
 	/** Gets the String value of this Object.
 	  * @return the String value */
+	@Override
 	public String toString() {
 		String str="";
 		for (Enumeration i=getUserBindings(); i.hasMoreElements(); ) {
@@ -151,6 +159,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param uri the contact URI
 	  * @return true if is the contact present */
+	@Override
 	public boolean hasUserContact(String user, String uri) {
 		if (!hasUser(user)) return false;
 		//else
@@ -162,6 +171,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param name_addresss the contact NameAddress
 	  * @param expire the contact expire Date
 	  * @return this object */
+	@Override
 	public LocationService addUserContact(String user, NameAddress name_addresss, Date expire) {
 		if (!hasUser(user)) addUser(user);
 		UserBindingInfo ur=getUserBindingInfo(user);
@@ -174,6 +184,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param uri the contact URI
 	  * @return this object */
+	@Override
 	public LocationService removeUserContact(String user, String uri) {
 		if (!hasUser(user)) return this;
 		//else
@@ -186,6 +197,7 @@ public class LocationServiceImpl implements LocationService {
 	/** Gets the user contacts that are not expired.
 	  * @param user the user name
 	  * @return the list of contact URIs as Enumeration of String */
+	@Override
 	public Enumeration getUserContactURIs(String user) {
 		if (!hasUser(user)) return null;
 		//else
@@ -197,6 +209,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param uri the contact URI
 	  * @return the contact NameAddress */
+	@Override
 	public NameAddress getUserContactNameAddress(String user, String uri) {
 		if (!hasUser(user)) return null;
 		//else
@@ -207,6 +220,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param uri the contact URI
 	  * @return the contact expire Date */
+	@Override
 	public Date getUserContactExpirationDate(String user, String uri) {
 		if (!hasUser(user)) return null;
 		//else
@@ -217,6 +231,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param uri the contact URI
 	  * @return true if it has expired */
+	@Override
 	public boolean isUserContactExpired(String user, String uri) {
 		if (!hasUser(user)) return true;
 		//else
@@ -238,6 +253,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param name_addresss the contact NameAddress
 	  * @return this object */
+	@Override
 	public LocationService addUserStaticContact(String user, NameAddress name_addresss) {
 		return addUserContact(user,name_addresss,new Date(NEVER));
 	}
@@ -247,6 +263,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @param uri the contact URI
 	  * @return true if it static */
+	@Override
 	public boolean isUserContactStatic(String user, String uri) {
 		return getUserContactExpirationDate(user,uri).getTime()>=NEVER;
 	}
@@ -435,6 +452,7 @@ class UserBindingInfo {
 
 	/** Gets the String value of this Object.
 	  * @return the String value */
+	@Override
 	public String toString() {
 		String str="To: "+name+"\r\n";
 		for (Enumeration i=getContacts(); i.hasMoreElements(); ) {

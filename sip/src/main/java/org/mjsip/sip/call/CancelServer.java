@@ -62,6 +62,7 @@ public class CancelServer implements SipProviderListener {
 
 
 	/** When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond to CANCEL request
 		if (msg.isRequest() && msg.isCancel()) {

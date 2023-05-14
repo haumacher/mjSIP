@@ -67,6 +67,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 
 	
 	/** Adds or updates a new SocketAddress mapping */
+	@Override
 	public void updateBinding(SocketAddress refer_soaddr, SocketAddress actual_soaddr) {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
@@ -88,6 +89,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 
 
 	/** Removes a SocketAddress mapping */
+	@Override
 	public void removeBinding(SocketAddress refer_soaddr) {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
@@ -103,6 +105,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 
 
 	/** When the refresh timeout fires */
+	@Override
 	public void onTimeout(Timer t) {
 		// enumerate expired binding
 		long now=(new Date()).getTime();

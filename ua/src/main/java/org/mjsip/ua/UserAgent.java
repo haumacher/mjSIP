@@ -622,12 +622,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ************************* RA callbacks ************************
 
 	/** From RegistrationClientListener. When it has been successfully (un)registered. */
+	@Override
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
 		LOG.info("Registration success: expires="+expires+": "+result);
 		if (listener!=null) listener.onUaRegistrationSucceeded(this,result);   
 	}
 
 	/** From RegistrationClientListener. When it failed on (un)registering. */
+	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
 		LOG.info("Registration failure: "+result);
 		if (listener!=null) listener.onUaRegistrationFailed(this,result);
@@ -637,12 +639,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ************************ Call callbacks ***********************
 	
 	/** From SipProviderListener. When a new SipMessage is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage message) {
 		new ExtendedCall(sip_provider,message,this);
 	}
 
 
 	/** From CallListener. Callback function called when arriving a new INVITE method (incoming call) */
+	@Override
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
@@ -671,6 +675,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
+	@Override
 	public void onCallModify(Call call, String sdp, SipMessage invite) {
 		LOG.debug("onCallModify()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -682,6 +687,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a 183 Session Progress */
+	@Override
 	public void onCallProgress(Call call, SipMessage resp) {
 		LOG.debug("onCallProgress()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
@@ -697,6 +703,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function that may be overloaded (extended). Called when arriving a 180 Ringing */
+	@Override
 	public void onCallRinging(Call call, SipMessage resp) {
 		LOG.debug("onCallRinging()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
@@ -712,16 +719,19 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** Callback function called when arriving a 1xx response (e.g. 183 Session Progress) that has to be confirmed */
+	@Override
 	public void onCallConfirmableProgress(Call call, SipMessage resp) {
 		// TODO
 	}
 
 	/** Callback function called when arriving a PRACK for a reliable 1xx response, that had to be confirmed */
+	@Override
 	public void onCallProgressConfirmed(Call call, SipMessage resp, SipMessage prack) {
 		// TODO
 	}
 
 	/** From CallListener. Callback function called when arriving a 2xx (call accepted) */
+	@Override
 	public void onCallAccepted(Call call, String sdp, SipMessage resp) {
 		LOG.debug("onCallAccepted()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
@@ -751,6 +761,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving an ACK method (call confirmed) */
+	@Override
 	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
 		LOG.debug("onCallConfirmed()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -763,6 +774,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a 2xx (re-invite/modify accepted) */
+	@Override
 	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp) {
 		LOG.debug("onCallModifyAccepted()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -771,6 +783,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a 4xx (re-invite/modify failure) */
+	@Override
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
 		LOG.debug("onCallReInviteRefused()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -780,6 +793,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a 4xx (call failure) */
+	@Override
 	public void onCallRefused(Call call, String reason, SipMessage resp) {
 		LOG.debug("onCallRefused()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
@@ -798,6 +812,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a 3xx (call redirection) */
+	@Override
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
 		LOG.debug("onCallRedirected()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -808,6 +823,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a CANCEL request */
+	@Override
 	public void onCallCancel(Call call, SipMessage cancel) {
 		LOG.debug("onCallCancel()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -824,6 +840,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a BYE request */
+	@Override
 	public void onCallBye(Call call, SipMessage bye) {
 		LOG.debug("onCallBye()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
@@ -845,6 +862,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From CallListener. Callback function called when arriving a response after a BYE request (call closed) */
+	@Override
 	public void onCallClosed(Call call, SipMessage resp) {
 		LOG.info("LogLevel.DEBUG,onCallClosed()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -853,6 +871,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** Callback function called when the invite expires */
+	@Override
 	public void onCallTimeout(Call call) {
 		LOG.debug("onCallTimeout()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -885,6 +904,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From ExtendedCallListener. Callback function called when arriving a new REFER method (transfer request) */
+	@Override
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
 		LOG.debug("onCallTransfer()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -895,6 +915,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is accepted. */
+	@Override
 	public void onCallTransferAccepted(ExtendedCall call, SipMessage resp) {
 		LOG.debug("onCallTransferAccepted()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -902,6 +923,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is refused. */
+	@Override
 	public void onCallTransferRefused(ExtendedCall call, String reason, SipMessage resp) {
 		LOG.debug("onCallTransferRefused()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -909,6 +931,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is successfully completed */
+	@Override
 	public void onCallTransferSuccess(ExtendedCall call, SipMessage notify) {
 		LOG.debug("onCallTransferSuccess()");
 		if (call!=this.call) {  LOG.trace("NOT the current call");  return;  }
@@ -918,6 +941,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is NOT sucessfully completed */
+	@Override
 	public void onCallTransferFailure(ExtendedCall call, String reason, SipMessage notify) {
 		LOG.debug("onCallTransferFailure()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
@@ -928,6 +952,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// *********************** Timer callbacks ***********************
 
 	/** When the Timer exceeds. */
+	@Override
 	public void onTimeout(Timer t) {
 		if (response_to==t) {
 			LOG.info("response time expired: incoming call declined");

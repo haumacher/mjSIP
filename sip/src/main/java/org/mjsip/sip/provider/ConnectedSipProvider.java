@@ -165,6 +165,7 @@ public class ConnectedSipProvider extends SipProvider {
 	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
 	  * @param user local user's name
 	  * @return a SIP or SIPS contact URI for this SIP provider */
+	@Override
 	public NameAddress getContactAddress(String user, boolean secure) {
 		for (Enumeration i=connections.elements(); i.hasMoreElements(); ) {
 			SipTransportConnection conn=(SipTransportConnection)i.nextElement();

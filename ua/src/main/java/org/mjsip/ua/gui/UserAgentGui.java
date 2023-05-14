@@ -209,6 +209,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	
 			this.setTitle(sip_provider.getContactAddress(ua_profile.user).toString());
 			this.addWindowListener(new java.awt.event.WindowAdapter() {
+				@Override
 				public void windowClosing(WindowEvent e) { exit(); }
 			});
 			jPanel1.setLayout(borderLayout3);
@@ -225,23 +226,29 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			if (icon_call!=null && icon_call.getIconWidth()>0) jButton1.setIcon(icon_call);
 			else jButton1.setText("Call");
 			jButton1.addActionListener(new java.awt.event.ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) { jButton1_actionPerformed(); }
 			});
 			jButton1.addKeyListener(new java.awt.event.KeyAdapter() {
+				@Override
 				public void keyTyped(KeyEvent e) { jButton1_actionPerformed(); }
 			});
 			if (icon_hangup!=null && icon_hangup.getIconWidth()>0) jButton2.setIcon(icon_hangup);
 			else jButton2.setText("Hungup");
 			jButton2.addActionListener(new java.awt.event.ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) { jButton2_actionPerformed(); }
 			});
 			jButton2.addKeyListener(new java.awt.event.KeyAdapter() {
+				@Override
 				public void keyTyped(KeyEvent e) { jButton2_actionPerformed(); }
 			});
 			jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) { jComboBox1_actionPerformed(e); }
 			});
 			comboBoxEditor1.addActionListener(new java.awt.event.ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) { comboBoxEditor1_actionPerformed(e); }
 			});
 			jButton2.setFont(new java.awt.Font("Dialog", 0, 10));
@@ -428,6 +435,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	// ********************** UA callback functions **********************
 
 	/** When a new call is incoming */
+	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 		changeStatus(UA_INCOMING_CALL);
 		if (ua_profile.redirect_to!=null) {
@@ -453,18 +461,21 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	/** When an ougoing call is stated to be in progress */
+	@Override
 	public void onUaCallProgress(UserAgent ua) {
 		display.setText("PROGRESS");
 	}
 
 
 	/** When an ougoing call is remotly ringing */
+	@Override
 	public void onUaCallRinging(UserAgent ua) {
 		display.setText("RINGING");
 	}
 
 
 	/** When an ougoing call has been accepted */
+	@Override
 	public void onUaCallAccepted(UserAgent ua) {
 		display.setText("ON CALL");
 		changeStatus(UA_ONCALL);
@@ -473,6 +484,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	/** When an incoming call has been cancelled */
+	@Override
 	public void onUaCallCancelled(UserAgent ua) {
 		display.setText("CANCELLED");
 		//ua.listen();
@@ -481,6 +493,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	/** When a call has been transferred */
+	@Override
 	public void onUaCallTransferred(UserAgent ua) {
 		display.setText("TRASFERRED");
 		//ua.listen();
@@ -489,6 +502,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	/** When an ougoing call has been refused or timeout */
+	@Override
 	public void onUaCallFailed(UserAgent ua, String reason) {
 		display.setText("FAILED"+((reason!=null)? " ("+reason+")" : ""));
 		//ua.listen();
@@ -497,6 +511,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	/** When a call has been locally or remotely closed */
+	@Override
 	public void onUaCallClosed(UserAgent ua) {
 		display.setText("BYE");
 		//ua.listen();
@@ -504,23 +519,27 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	}
 
 	/** When a new media session is started. */
+	@Override
 	public void onUaMediaSessionStarted(UserAgent ua, String type, String codec) {
 		//log(type+" started "+codec);
 	}
 
 	/** When a media session is stopped. */
+	@Override
 	public void onUaMediaSessionStopped(UserAgent ua, String type) {
 		//log(type+" stopped");
 	}
 
 
 	/** When registration succeeded. */
+	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
 		this.setTitle(ua_profile.getUserURI().toString());
 		LOG.info("Registration succeeded: "+result); 
 	}
 
 	/** When registration failed. */
+	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
 		this.setTitle(sip_provider.getContactAddress(ua_profile.user).toString());
 		LOG.error("Registration failed: "+result); 
@@ -542,7 +561,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void reInvite(final int delay_time) {
 		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
 		if (delay_time==0) ua.modify(null);
-		else new ScheduledWork(delay_time*1000) {  public void doWork() {  ua.modify(null);  }  };
+		else new ScheduledWork(delay_time*1000) {  @Override
+		public void doWork() {  ua.modify(null);  }  };
 	}
 
 
@@ -559,7 +579,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
 		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
 		if (delay_time==0) ua.transfer(transfer_to);
-		else new ScheduledWork(delay_time*1000) {  public void doWork() {  ua.transfer(transfer_to);  }  };
+		else new ScheduledWork(delay_time*1000) {  @Override
+		public void doWork() {  ua.transfer(transfer_to);  }  };
 	}
 
 
@@ -576,7 +597,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void automaticAccept(final int delay_time) {
 		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
 		if (delay_time==0) jButton1_actionPerformed();
-		else new ScheduledWork(delay_time*1000) {  public void doWork() {  jButton1_actionPerformed();  }  };
+		else new ScheduledWork(delay_time*1000) {  @Override
+		public void doWork() {  jButton1_actionPerformed();  }  };
 	}
 	
 
@@ -593,7 +615,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void automaticHangup(final int delay_time) {
 		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
 		if (delay_time==0) jButton2_actionPerformed();
-		else new ScheduledWork(delay_time*1000) {  public void doWork() {  jButton2_actionPerformed();  }  };
+		else new ScheduledWork(delay_time*1000) {  @Override
+		public void doWork() {  jButton2_actionPerformed();  }  };
 	}
 
 

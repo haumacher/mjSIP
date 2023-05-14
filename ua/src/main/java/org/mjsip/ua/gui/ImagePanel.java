@@ -29,6 +29,7 @@ class ImagePanel extends Panel {
 		this.setBackground(Color.black);
 	}
 
+	@Override
 	public void paint(Graphics g) {
 		if (image!=null) {
 			int width=this.getSize().width;

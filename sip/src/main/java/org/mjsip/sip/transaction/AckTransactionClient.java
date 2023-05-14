@@ -63,6 +63,7 @@ public class AckTransactionClient extends Transaction {
 	}     
 			
 	/** Method used to drop an active transaction. */
+	@Override
 	public void terminate() {
 		changeStatus(STATE_TERMINATED);  
 		// (CHANGE-040421) free the link to transaction_listener

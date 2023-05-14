@@ -99,6 +99,7 @@ public class OptionsServer implements SipProviderListener {
 	// ************************* Callback functions ************************
 
 	/** When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond to OPTIONS request
 		if (msg.isRequest() && msg.isOptions()) {

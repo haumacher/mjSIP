@@ -113,6 +113,7 @@ public class UdpSocket {
 	}
 	
 	/** Converts this object to a String. */
+	@Override
 	public String toString() {
 		//return socket.toString();
 		return "UDP:"+getLocalAddress()+":"+getLocalPort();

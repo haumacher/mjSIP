@@ -65,6 +65,7 @@ abstract public class State {
 
 	/** Whether the state is equal to the given object.
 	  * @param obj the compared object */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof State) return equals(((State)obj).state);
 		else return false;
@@ -77,6 +78,7 @@ abstract public class State {
 	}
 
 	/** Gets a string representation of this object. */
+	@Override
 	public String toString() {
 		return "S_"+state;
 	}

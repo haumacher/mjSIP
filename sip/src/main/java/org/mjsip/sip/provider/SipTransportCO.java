@@ -69,9 +69,11 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 		this.nmax_connections=nmax_connections;
 		connections=new Hashtable();
 		this_conn_listener=new SipTransportConnectionListener() {
+			@Override
 			public void onReceivedMessage(SipTransportConnection conn, SipMessage msg) {
 				processReceivedMessage(conn,msg);
 			}
+			@Override
 			public void onConnectionTerminated(SipTransportConnection conn, Exception error) {
 				processConnectionTerminated(conn,error);
 			}
@@ -102,6 +104,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 
 
 	/** Gets protocol type */ 
+	@Override
 	abstract public String getProtocol();
 
 
@@ -118,6 +121,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 
 
 	/** Sets transport listener */
+	@Override
 	public void setListener(SipTransportListener listener) {
 		this.listener=listener;
 	}
@@ -130,6 +134,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	  * <p>
 	  * If the transport protocol is Connection Less (CL) the message is simply sent to the remote point.
 	  * @return Returns the id of the used connection for CO transport, or null for CL transport. */      
+	@Override
 	public ConnectionId sendMessage(SipMessage msg, IpAddress dest_ipaddr, int dest_port, int ttl) throws IOException {
 		ConnectionId connection_id=new ConnectionId(getProtocol(),dest_ipaddr,dest_port);
 		// BEGIN SYNCHRONIZATION
@@ -218,6 +223,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 
 
 	/** Stops running */
+	@Override
 	public void halt() {
 		// close all connections
 		if (connections!=null) {

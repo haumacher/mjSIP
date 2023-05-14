@@ -286,12 +286,14 @@ public abstract class BasicSipMessage {
 
 
 	/** Creates and returns a clone of this object. */
+	@Override
 	abstract public Object clone();
 	//{  return new Message(message);
 	//}
 
 
 	/** Gets string representation of Message. */
+	@Override
 	public String toString() {
 		StringBuffer str=getMessageHeader();
 		if (body!=null) str.append(new String(body));

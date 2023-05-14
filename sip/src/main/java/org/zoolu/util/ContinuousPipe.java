@@ -46,6 +46,7 @@ public class ContinuousPipe extends Pipe {
 	}
 
 	/** Writes the specified byte to this pipe. */
+	@Override
 	public synchronized void write(byte b) {
 		if (freespace()==0) read();
 		super.write(b);
@@ -53,6 +54,7 @@ public class ContinuousPipe extends Pipe {
 
 	/** Writes <i>length</i> bytes into this pipe
 	  * from the <i>buff</i> array starting from position <i>offset</i>. */
+	@Override
 	public synchronized void write(byte[] buff, int offset, int length) {
 		int freespace=freespace();
 		if (freespace<length) read(aux,0,length-freespace);
@@ -60,6 +62,7 @@ public class ContinuousPipe extends Pipe {
 	}
 
 	/** Reads the next byte of data from the pipe. */
+	@Override
 	public synchronized byte read() {
 		if (available()>0) return super.read();
 		//else
@@ -68,6 +71,7 @@ public class ContinuousPipe extends Pipe {
 
 	/** Reads <i>length</i> bytes from the pipe and puts them
 	  * into the <i>buff</i> array starting from position <i>offset</i>. */
+	@Override
 	public synchronized int read(byte[] buff, int offset, int length) {
 		int available=available();
 		if (available>=length) return super.read(buff,offset,length);

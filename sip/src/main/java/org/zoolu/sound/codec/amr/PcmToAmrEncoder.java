@@ -74,6 +74,7 @@ public class PcmToAmrEncoder implements Encoder {
 
 	/** Encodes the input chunk in_buff and returns the encoded chuck into out_buff.
 	  * @return the actual size of the output data */
+	@Override
 	public int encode(byte[] in_buff, int in_offset, int in_len, byte[] out_buff, int out_offset) {
 		if (in_len!=320) return 0;
 		//try {

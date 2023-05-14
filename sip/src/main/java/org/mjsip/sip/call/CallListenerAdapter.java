@@ -76,6 +76,7 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 
 	/** Accepts an incoming call.
 	  * Callback function called when arriving a new INVITE method (incoming call) */
+	@Override
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite) {
 		//log("INCOMING");
 		call.ring();
@@ -95,6 +96,7 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 
 	/** Changes the call when remotly requested.
 	  * Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
+	@Override
 	public void onCallModify(Call call, String sdp, SipMessage invite) {
 		//log("RE-INVITE/MODIFY");
 		String local_session;
@@ -113,30 +115,35 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 
 	/** Does nothing.
 	  * Callback function called when arriving a 183 Session Progress */
+	@Override
 	public void onCallProgress(Call call, SipMessage resp) {
 		//log("PROGRESS");
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 180 Ringing */
+	@Override
 	public void onCallRinging(Call call, SipMessage resp) {
 		//log("RINGING");
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 2xx (call accepted) */
+	@Override
 	public void onCallAccepted(Call call, String sdp, SipMessage resp) {
 		//log("ACCEPTED/CALL");
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 4xx (call failure) */
+	@Override
 	public void onCallRefused(Call call, String reason, SipMessage resp) {
 		//log("REFUSED ("+reason+")");
 	}
 
 	/** Redirects the call when remotly requested.
 	  * Callback function called when arriving a 3xx (call redirection) */
+	@Override
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
 		//log("REDIRECTION ("+reason+")");
 		NameAddress first_contact=new NameAddress((String)contact_list.elementAt(0));
@@ -145,60 +152,70 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 
 	/** Does nothing.
 	  * Callback function called when arriving an ACK method (call confirmed) */
+	@Override
 	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
 		//log("CONFIRMED/CALL");
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving an  INFO method. */ 
+	@Override
 	public void onCallInfo(Call call, String info_package, String content_type, byte[] body, SipMessage msg) {
 		//log("INFO");
 	}
 
 	/** Does nothing.
 	  * Callback function called when the invite expires */
+	@Override
 	public void onCallTimeout(Call call) {
 		//log("TIMEOUT/CLOSE");
 	}   
 
 	/** Does nothing.
 	  * Callback function called when arriving a 2xx (re-invite/modify accepted) */
+	@Override
 	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp) {
 		//log("RE-INVITE-ACCEPTED/CALL");
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 4xx (re-invite/modify failure) */
+	@Override
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
 		//log("RE-INVITE-REFUSED ("+reason+")/CALL");
 	}
 
 	/** Does nothing.
 	  * Callback function called when a re-invite expires */
+	@Override
 	public void onCallModifyTimeout(Call call) {
 		//log("RE-INVITE-TIMEOUT/CALL");
 	}   
 
 	/** Does nothing.
 	  * Callback function called when arriving a CANCEL request */
+	@Override
 	public void onCallCancel(Call call, SipMessage cancel) {
 		//log("CANCELING");
 	}
 
 	/** Does nothing.
 	  * Callback function that may be overloaded (extended). Called when arriving a BYE request */
+	@Override
 	public void onCallBye(Call call, SipMessage bye) {
 		//log("CLOSING");
 	}
 
 	/** Does nothing.
 	  * Callback function that may be overloaded (extended). Called when arriving a response for a BYE request (call closed) */
+	@Override
 	public void onCallClosed(Call call, SipMessage resp) {
 		//log("CLOSED");
 	}
 
 
 	/** From ExtendedCallListener. Callback function called when arriving a new UPDATE method (update request). */
+	@Override
 	public void onCallUpdate(Call call, String sdp, SipMessage update) {
 		String local_session;
 		if (sdp!=null && sdp.length()>0) {
@@ -215,46 +232,54 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 	}
 
 	/** Callback function called when arriving a 2xx for an UPDATE request */
+	@Override
 	public void onCallUpdateAccepted(Call call, String sdp, SipMessage resp) {
 		
 	}
 
 	/** Callback function called when arriving a non 2xx for an UPDATE request */
+	@Override
 	public void onCallUpdateRefused(Call call, String sdp, SipMessage resp) {
 		
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a new REFER method (transfer request) */
+	@Override
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
 		//log("REFER-TO/TRANSFER");
 	}
 
 	/** Callback function called when arriving a new REFER method (transfer request) with Replaces header, replacing an existing call. */
+	@Override
 	public void onCallAttendedTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, String replcall_id, SipMessage refer) {
 		//log("REFER-TO/TRANSFER");
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is accepted. */
+	@Override
 	public void onCallTransferAccepted(ExtendedCall call, SipMessage resp) {
 		
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is refused. */
+	@Override
 	public void onCallTransferRefused(ExtendedCall call, String reason, SipMessage resp) {
 		
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is successfully completed */
+	@Override
 	public void onCallTransferSuccess(ExtendedCall call, SipMessage notify) {
 		//log("TRANSFER SUCCESS");
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is NOT sucessfully completed */
+	@Override
 	public void onCallTransferFailure(ExtendedCall call, String reason, SipMessage notify) {
 		//log("TRANSFER FAILURE");
 	}

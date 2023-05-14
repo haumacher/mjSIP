@@ -113,6 +113,7 @@ public class CodecType {
 	}
 
 	/** Gets a String representation of this object. */
+	@Override
 	public String toString() {
 		return getName();
 	}
@@ -159,6 +160,7 @@ public class CodecType {
 	}
 
 	/** Whether it is equals to the given object. */
+	@Override
 	public boolean equals(Object obj) {
 		try {  return ((CodecType)obj).name.equals(name);  }  catch (Exception e)  {  return false;  }
 	}

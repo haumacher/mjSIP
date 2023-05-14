@@ -375,11 +375,13 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	// **************** Transaction callback functions *****************
 
 	/** Callback function called when client sends back a provisional response. */
+	@Override
 	public void onTransProvisionalResponse(TransactionClient transaction, SipMessage resp) {
 		// do nothing..
 	}
 
 	/** Callback function called when client sends back a success response. */
+	@Override
 	public void onTransSuccessResponse(TransactionClient transaction, SipMessage resp) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			if (resp.hasAuthenticationInfoHeader()) {
@@ -414,6 +416,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	}
 
 	/** Callback function called when client sends back a failure response. */
+	@Override
 	public void onTransFailureResponse(TransactionClient transaction, SipMessage resp) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			StatusLine status=resp.getStatusLine();
@@ -467,6 +470,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	}
 
 	/** Callback function called when client expires timeout. */
+	@Override
 	public void onTransTimeout(TransactionClient transaction) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			LOG.info("Registration failure: No response from server");
@@ -485,6 +489,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	// ******************* Timer callback functions ********************
 
 	/** When the Timer exceeds. */
+	@Override
 	public void onTimeout(Timer t) {
 		if ((t==attempt_to || t==registration_to) && loop) {
 			register();

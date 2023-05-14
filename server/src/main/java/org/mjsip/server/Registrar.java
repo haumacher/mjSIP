@@ -63,6 +63,7 @@ public class Registrar extends ServerEngine {
 
 
 	/** When a new request is received for the local server. */
+	@Override
 	public void processRequestToLocalServer(SipMessage msg) {
 		
 		LOG.debug("inside processRequestToLocalServer(msg)");
@@ -99,6 +100,7 @@ public class Registrar extends ServerEngine {
 
 
 	/** When a new request message is received for a local user. */
+	@Override
 	public void processRequestToLocalUser(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 		// stateless-response (in order to avoid DoS attacks)
@@ -108,6 +110,7 @@ public class Registrar extends ServerEngine {
  
 	
 	/** When a new request message is received for a remote UA. */
+	@Override
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 		// stateless-response (in order to avoid DoS attacks)
@@ -117,6 +120,7 @@ public class Registrar extends ServerEngine {
 
 
 	/** When a new response message is received. */
+	@Override
 	public void processResponse(SipMessage resp) {
 		LOG.debug("inside processResponse(msg)");
 		// no actions..

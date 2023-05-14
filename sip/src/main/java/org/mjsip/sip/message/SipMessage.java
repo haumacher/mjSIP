@@ -126,6 +126,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	
 	/** Creates and returns a clone of the Message */
+	@Override
 	public Object clone() {
 		return new SipMessage(this);
 	}

@@ -203,6 +203,7 @@ public class MD5 extends MessageDigest {
 	/** MessageDigest block update operation.
 	  * Continues a message-digest operation,
 	  * processing another message block, and updating the context. */
+	@Override
 	public MessageDigest update(byte[] buffer, int offset, int len) {
 		
 		if (message_digest!=null) return this;
@@ -242,6 +243,7 @@ public class MD5 extends MessageDigest {
 
 	/** MessageDigest finalization. Ends a message-digest operation, writing the
 	  * the message digest and zeroizing the context. */
+	@Override
 	public byte[] doFinal() {
 		
 		if (message_digest!=null) return message_digest;

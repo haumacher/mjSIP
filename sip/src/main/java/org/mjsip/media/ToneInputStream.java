@@ -92,6 +92,7 @@ public class ToneInputStream extends java.io.InputStream {
 	  
 	
 	/** Returns the number of bytes that can be read (or skipped over) from this input stream without blocking by the next caller of a method for this input stream. */
+	@Override
 	public int available()  {
 		return MAX_AVAILABLE_BYTES;
 	}
@@ -103,6 +104,7 @@ public class ToneInputStream extends java.io.InputStream {
 	}
 
 	/** Reads the next byte of data from the input stream. */
+	@Override
 	public int read()  {
 		if (s_index==0) {
 			// get next sample
@@ -120,11 +122,13 @@ public class ToneInputStream extends java.io.InputStream {
 
 
 	/** Reads some number of bytes from the input stream and stores them into the buffer array b. */
+	@Override
 	public int read(byte[] b)  {
 		return read(b,0,b.length);
 	}
 
 	/** Reads up to len bytes of data from the input stream into an array of bytes. */
+	@Override
 	public int read(byte[] b, int off, int len)  {
 		for (int i=off; i<off+len; i++) {
 			b[i]=(byte)read();
@@ -133,27 +137,32 @@ public class ToneInputStream extends java.io.InputStream {
 	}
 
 	/** Skips over and discards n bytes of data from this input stream. */
+	@Override
 	public long skip(long n)  {
 		// to do..
 		return 0;
 	}
 
 	/** Closes this input stream and releases any system resources associated with the stream. */
+	@Override
 	public void close()  {
 		// do nothing
 	}
 
 	/** Tests if this input stream supports the mark and reset methods. */
+	@Override
 	public boolean markSupported()  {
 		return false;
 	}
 
 	/** Marks the current position in this input stream. */
+	@Override
 	public void mark(int readlimit)  {
 		
 	}
 
 	/** Repositions this stream to the position at the time the mark method was last called on this input stream. */
+	@Override
 	public void reset()  {
 		
 	}

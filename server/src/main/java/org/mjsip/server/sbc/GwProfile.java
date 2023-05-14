@@ -86,6 +86,7 @@ public class GwProfile extends Configure {
 	// **************************** methods ***************************
 
 	/** Parses a single line (loaded from the config file) */
+	@Override
 	protected void parseLine(String line) {
 		String attribute;
 		Parser par;
@@ -115,6 +116,7 @@ public class GwProfile extends Configure {
  
 		
 	/** Converts the entire object into lines (to be saved into the config file) */
+	@Override
 	protected String toLines() {
 		// currently not implemented..
 		return toString();

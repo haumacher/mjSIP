@@ -125,6 +125,7 @@ public class ServerProfile extends Configure {
 
 
 	/** Parses a single line of the file */
+	@Override
 	protected void parseLine(String line) {
 		String attribute;
 		Parser par;
@@ -247,6 +248,7 @@ public class ServerProfile extends Configure {
 
 
 	/** Converts the entire object into lines (to be saved into the config file) */
+	@Override
 	protected String toLines() {
 		// currently not implemented..
 		return toString();
@@ -254,6 +256,7 @@ public class ServerProfile extends Configure {
 
 
 	/** Gets a String value for this object */
+	@Override
 	public String toString() {
 		return domain_names.toString();
 	}

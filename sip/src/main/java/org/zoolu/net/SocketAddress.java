@@ -115,11 +115,13 @@ public class SocketAddress {
 	}
 
 	/** Makes a copy. */
+	@Override
 	public Object clone() {
 		return new SocketAddress(this);
 	}
 
 	/** Whether it is equal to Object <i>obj</i>. */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			SocketAddress saddr=(SocketAddress)obj;
@@ -131,11 +133,13 @@ public class SocketAddress {
 	}
 
 	/** Returns a hash code value for the object. */
+	@Override
 	public int hashCode() {
 		return toString().hashCode();
 	}
 
 	/** Returns a String representation of this object. */
+	@Override
 	public String toString() {
 		String addr=ipaddr!=null? ipaddr.toString() : null;
 		if (addr!=null && addr.indexOf(':')>=0) addr="["+addr+"]";

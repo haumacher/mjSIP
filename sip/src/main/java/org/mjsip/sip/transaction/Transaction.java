@@ -183,6 +183,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 	/** Method derived from interface SipListener.
 	  * It's fired from the SipProvider when a new message is catch for to the present ServerTransaction.
 	  */
+	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		//do nothing
 	}
@@ -190,6 +191,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject*/ imp
 	/** Method derived from interface TimerListener.
 	  * It's fired from an active Timer.
 	  */
+	@Override
 	public void onTimeout(Timer to) {
 		//do nothing
 	}

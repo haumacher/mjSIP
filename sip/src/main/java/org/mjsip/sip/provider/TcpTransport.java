@@ -71,9 +71,11 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 		if (tcp_server!=null) tcp_server.halt();
 		// start tcp
 		TcpServerListener this_tcp_server_listener=new TcpServerListener() {
+			@Override
 			public void onIncomingConnection(TcpServer tcp_server, TcpSocket socket) {
 				processIncomingConnection(tcp_server,socket);
 			}
+			@Override
 			public void onServerTerminated(TcpServer tcp_server, Exception error) {
 				processServerTerminated(tcp_server,error);
 			}
@@ -84,12 +86,14 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Gets protocol type */ 
+	@Override
 	public String getProtocol() {
 		return PROTO_TCP;
 	}
 
 
 	/** Gets local port */ 
+	@Override
 	public int getLocalPort() {
 		if (tcp_server!=null) return tcp_server.getPort();
 		else return 0;
@@ -97,6 +101,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Stops running */
+	@Override
 	public void halt() {
 		super.halt();
 		if (tcp_server!=null) tcp_server.halt();
@@ -122,6 +127,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Creates a transport connection to the remote end-point. */
+	@Override
 	protected SipTransportConnection createTransportConnection(SocketAddress remote_soaddr) throws IOException {
 		TcpSocket tcp_socket=new TcpSocket(remote_soaddr.getAddress(),remote_soaddr.getPort());
 		return new TcpTransportConnection(tcp_socket,this_conn_listener);
@@ -143,6 +149,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		if (tcp_server!=null) return tcp_server.toString();
 		else return null;

@@ -161,6 +161,7 @@ public class MediaDesc {
 
 	/** Gets a string representation of this object.
 	  * @return a string representing this object */
+	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
 		sb.append(media).append(" ").append(port).append(" ").append(transport);

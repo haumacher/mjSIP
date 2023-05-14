@@ -65,6 +65,7 @@ public interface Repository {
 
 	/** Gets the String value of this Object.
 	  * @return the String value */
+	@Override
 	public String toString();
 
 }

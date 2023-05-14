@@ -85,6 +85,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 
 
 	/** From SipProviderListener. When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		if (msg.isRequest() && msg.isMessage()) {
 			// get caller, callee, sdp
@@ -112,6 +113,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	
 
 	/** From UserAgentListener. When a new call is incoming. */
+	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 		if (media_descs!=null) {
 			for (int i=0; i<media_descs.length; i++) {

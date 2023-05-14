@@ -42,16 +42,19 @@ public class PipeInputStream extends InputStream {
 	}
 
 	/** Returns the number of bytes that can be read (or skipped over) from this input stream without blocking by the next caller of a method for this input stream. */
+	@Override
 	public int available() throws IOException {
 		return pipe.available();
 	}
 
 	/** Reads the next byte of data from the input stream. */
+	@Override
 	public int read() throws IOException {
 		return pipe.read();
 	}
 
 	/** Reads some number of bytes from the input stream and stores them into the buffer array b. */
+	@Override
 	public int read(byte[] buff) throws IOException {
 		//int length=(b.length<pipe.length())? b.length : pipe.length();
 		//for (int i=0; i<length; i++) b[i]=pipe.read();
@@ -60,6 +63,7 @@ public class PipeInputStream extends InputStream {
 	}
 
 	/** Reads up to len bytes of data from the input stream into an array of bytes. */
+	@Override
 	public int read(byte[] buff, int off, int len) throws IOException  {
 		//int length=(len<pipe.length())? len : pipe.length();
 		//int end=off+length;
@@ -69,6 +73,7 @@ public class PipeInputStream extends InputStream {
 	}
 
 	/** Skips over and discards n bytes of data from this input stream. */
+	@Override
 	public long skip(long n) throws IOException {
 		//int length=(n<pipe.length())? (int)n : pipe.length();
 		//for (int i=0; i<length; i++) pipe.read();
@@ -77,21 +82,25 @@ public class PipeInputStream extends InputStream {
 	}
 
 	/** Tests if this input stream supports the mark and reset methods. */
+	@Override
 	public boolean markSupported()  {
 		return false;
 	}
 
 	/** Marks the current position in this input stream. */
+	@Override
 	public void mark(int readlimit)  {
 		
 	}
 
 	/** Repositions this stream to the position at the time the mark method was last called on this input stream. */
+	@Override
 	public void reset() throws IOException {
 		
 	}
 
 	/** Closes this pipe stream. */
+	@Override
 	public void close() throws IOException {
 		pipe=null;
 	}

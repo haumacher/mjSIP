@@ -106,6 +106,7 @@ class SourceLineAudioOutputStream extends AudioOutputStream {
 
 
 	/** Closes this output stream and releases any system resources associated with this stream. */
+	@Override
 	public void close() {
 		//source_line.close();
 		try  {
@@ -117,18 +118,21 @@ class SourceLineAudioOutputStream extends AudioOutputStream {
 
   
 	/** Flushes this output stream and forces any buffered output bytes to be written out. */
+	@Override
 	public void flush() {
 		source_line.flush();
 	}
 
 	
 	/** Writes b.length bytes from the specified byte array to this output stream. */
+	@Override
 	public void write(byte[] b) throws IOException {
 		write(b,0,b.length);
 	}
 
 	
 	/** Writes len bytes from the specified byte array starting at offset off to this output stream. */
+	@Override
 	public void write(byte[] buf, int off, int len) throws IOException {
 		//printDebug("DEBUG: SourceLineAudioOutputStream: write(): buf,off="+off+", len="+len);
 		if (ingress_output_stream!=null) {
@@ -153,6 +157,7 @@ class SourceLineAudioOutputStream extends AudioOutputStream {
 
   
 	/** Writes the specified byte to this output stream. */
+	@Override
 	public void write(int b) throws IOException {
 		if (ingress_output_stream!=null) {
 			ingress_output_stream.write(b);

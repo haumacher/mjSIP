@@ -30,6 +30,7 @@ public class LoopbackMediaStreamer implements MediaStreamer {
 
 
 	/** Starts media streams. */
+	@Override
 	public boolean start() {
 		// do nothing, already started..  
 		return true;      
@@ -37,6 +38,7 @@ public class LoopbackMediaStreamer implements MediaStreamer {
 
 
 	/** Stops media streams. */
+	@Override
 	public boolean halt() {
 		if (udp_relay!=null) {
 			udp_relay.halt();

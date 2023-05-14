@@ -91,6 +91,7 @@ public class MediaSpec {
 
 
 	/** Gets a string representation of this object. */
+	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
 		sb.append(type).append(" ").append(avp);

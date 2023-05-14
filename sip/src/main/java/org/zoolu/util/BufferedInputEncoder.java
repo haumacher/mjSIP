@@ -61,11 +61,13 @@ public class BufferedInputEncoder extends InputStream {
 	}
 
 	/** Returns the number of bytes that can be read (or skipped over) from this input stream without blocking by the next caller of a method for this input stream. */
+	@Override
 	public int available() throws IOException {
 		return is.available()+buffer_size-buffer_index;
 	}
 
 	/** Reads the next byte of data from the input stream. */
+	@Override
 	public int read() throws IOException {
 		if (buffer_index==buffer_size) {
 			int len=is.read(reading_buffer,0,reading_buffer.length);
@@ -77,11 +79,13 @@ public class BufferedInputEncoder extends InputStream {
 	}
 
 	/** Reads some number of bytes from the input stream and stores them into the buffer array b. */
+	@Override
 	public int read(byte[] buff) throws IOException {
 		return read(buff,0,buff.length);
 	}
 
 	/** Reads up to len bytes of data from the input stream into an array of bytes. */
+	@Override
 	public int read(byte[] buff, int off, int len) throws IOException  {
 		int i=off;
 		int end=off+len;
@@ -91,27 +95,32 @@ public class BufferedInputEncoder extends InputStream {
 	}
 
 	/** Skips over and discards n bytes of data from this input stream. */
+	@Override
 	public long skip(long n) throws IOException {
 		// to do
 		return 0;
 	}
 
 	/** Tests if this input stream supports the mark and reset methods. */
+	@Override
 	public boolean markSupported()  {
 		return false;
 	}
 
 	/** Marks the current position in this input stream. */
+	@Override
 	public void mark(int readlimit)  {
 		
 	}
 
 	/** Repositions this stream to the position at the time the mark method was last called on this input stream. */
+	@Override
 	public void reset() throws IOException {
 		
 	}
 
 	/** Closes this pipe stream. */
+	@Override
 	public void close() throws IOException {
 		is.close();
 	}

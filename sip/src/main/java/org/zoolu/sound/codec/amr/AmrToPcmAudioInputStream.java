@@ -54,6 +54,7 @@ class AmrToPcmAudioInputStream extends BufferedAudioInputStream {
 	/** Reads a block of bytes from the inner input stream.
 	  * @param buffer the buffer where the the bytes are read to
 	  * @return the number of bytes that have been read */
+	@Override
 	protected int innerRead(byte[] buffer) {
 		try {
 			if (amr_format_frame_size>0) {
@@ -96,6 +97,7 @@ class AmrToPcmAudioInputStream extends BufferedAudioInputStream {
 
 	/** Gets the number of bytes that are currently available in the inner input stream for reading.
 	  * @return the number of bytes that can be still read from the inner input stream */
+	@Override
 	protected int innerAvailable() throws java.io.IOException {
 		int amr_frame_size=(amr_format_frame_size>0)? amr_format_frame_size : MAX_AMR_FRAME_SIZE; 
 		return (input_stream.available()/amr_frame_size)*320;

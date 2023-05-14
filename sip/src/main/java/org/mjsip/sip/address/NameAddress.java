@@ -71,11 +71,13 @@ public class NameAddress {
 	}
 	
 	/** Creates a copy of this object. */
+	@Override
 	public Object clone() {
 		return new NameAddress(this);
 	}
 
 	/** Whether object <i>obj</i> is "equal to" this. */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			NameAddress naddr=(NameAddress)obj;
@@ -117,6 +119,7 @@ public class NameAddress {
 	}
 
 	/** Gets string representation of this object. */
+	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
 		if (hasDisplayName()) sb.append('\"').append(name).append("\" <").append(uri).append('>');

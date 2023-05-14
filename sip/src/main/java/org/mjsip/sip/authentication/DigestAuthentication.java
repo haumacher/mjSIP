@@ -86,6 +86,7 @@ public class DigestAuthentication {
 
 
 	/** Gets a String representation of the object. */
+	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
 		sb.append("method=").append(method).append("\n");

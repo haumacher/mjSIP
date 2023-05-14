@@ -69,8 +69,11 @@ public class TlsSocketFactory {
 		// get trust managers
 		if (tls_context.isTrustAll()) {
 			X509TrustManager trust_all=new X509TrustManager() {
+				@Override
 				public X509Certificate[] getAcceptedIssuers() {  return new X509Certificate[0];  }
+				@Override
 				public void checkClientTrusted(X509Certificate[] certs, String auth_type) {}
+				@Override
 				public void checkServerTrusted(X509Certificate[] certs, String auth_type) {}
 			};
 			trust_managers=new TrustManager[] { trust_all };  

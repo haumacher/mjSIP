@@ -147,6 +147,7 @@ public class AddressResolver implements TimerListener {
 
 
 	/** When the refresh timeout fires */
+	@Override
 	public void onTimeout(Timer t) {
 		// enumerate expired binding
 		LOG.debug("refresh all address bindings:");         

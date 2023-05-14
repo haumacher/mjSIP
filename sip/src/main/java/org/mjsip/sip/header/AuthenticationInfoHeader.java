@@ -55,6 +55,7 @@ public class AuthenticationInfoHeader extends AuthenticationHeader {
 	}
 	
 	/** Whether has parameter <i>param_name</i> */
+	@Override
 	public boolean hasParameter(String param_name) {
 		char[] name_separators={'=',  ' ', '\t', '\r', '\n'};
 		SipParser par=new SipParser(value);
@@ -69,6 +70,7 @@ public class AuthenticationInfoHeader extends AuthenticationHeader {
 	}
  
 	/** Returns the parameter <i>param_name</i>, in case removing quotes. */
+	@Override
 	public String getParameter(String param_name) {
 		char[] name_separators={'=', ' ', '\t'};
 		SipParser par=new SipParser(value);
@@ -90,6 +92,7 @@ public class AuthenticationInfoHeader extends AuthenticationHeader {
 	
 	/** Gets a String Vector of parameter names.
 	  * @return Returns a String Vector of all parameter names or null if no parameter is present. */
+	@Override
 	public Vector getParameterNames() {
 		char[] name_separators={'=', ' ', '\t'};
 		SipParser par=new SipParser(value);
@@ -105,6 +108,7 @@ public class AuthenticationInfoHeader extends AuthenticationHeader {
 	}
 
 	/** Gets the athentication scheme. Note that for AuthenticationInfoHeader it always return null. */
+	@Override
 	public String getAuthScheme() {
 		return null;
 	}

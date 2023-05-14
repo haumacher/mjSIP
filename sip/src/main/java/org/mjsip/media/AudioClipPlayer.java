@@ -262,6 +262,7 @@ public class AudioClipPlayer implements LineListener  {
 
 
 	/** From LineListener. Called when an event occurs. */
+	@Override
 	public void update(LineEvent event) {
 		if (event.getType().equals(LineEvent.Type.STOP)) {
 			//clip.close();

@@ -133,6 +133,7 @@ public class TcpSocket {
 	}
 	
 	/** Converts this object to a String. */
+	@Override
 	public String toString() {
 		return socket.toString();
 	}

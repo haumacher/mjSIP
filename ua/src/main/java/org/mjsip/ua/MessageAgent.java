@@ -95,6 +95,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 	// ******************* Callback functions implementation ********************
 
 	/** When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		//printLog("Message received: "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')));
 		if (msg.isRequest()) {
@@ -112,21 +113,25 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
  
 
 	/** When the TransactionClient goes into the "Completed" state receiving a 2xx response */
+	@Override
 	public void onTransSuccessResponse(TransactionClient tc, SipMessage resp)  {
 		onDeliverySuccess(tc,resp.getStatusLine().getReason());
 	}
 
 	/** When the TransactionClient goes into the "Completed" state receiving a 300-699 response */
+	@Override
 	public void onTransFailureResponse(TransactionClient tc, SipMessage resp)  {
 		onDeliveryFailure(tc,resp.getStatusLine().getReason());
 	}
 	 
 	/** When the TransactionClient is (or goes) in "Proceeding" state and receives a new 1xx provisional response */
+	@Override
 	public void onTransProvisionalResponse(TransactionClient tc, SipMessage resp) {
 		// do nothing.
 	}
 		
 	/** When the TransactionClient goes into the "Terminated" state, caused by transaction timeout */
+	@Override
 	public void onTransTimeout(TransactionClient tc) {
 		onDeliveryFailure(tc,"Timeout");
 	}

@@ -81,6 +81,7 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	// ******************* SipProviderListener methods  ******************
 
 	/** From SipProviderListener. When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		LOG.debug("onReceivedMessage()");
 		if (msg.isRequest() && msg.isInvite()) {
@@ -95,7 +96,8 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 			//printOut("Incoming call from "+caller.toString());
 			new ExtendedCall(sip_provider,msg,ua);
 			// automatic hangup after a maximum time
-			if (ua_profile.hangup_time>0) new ScheduledWork(ua_profile.hangup_time*1000) {  public void doWork() {  ua.hangup();  }  };
+			if (ua_profile.hangup_time>0) new ScheduledWork(ua_profile.hangup_time*1000) {  @Override
+			public void doWork() {  ua.hangup();  }  };
 		}
 	}
 
@@ -103,56 +105,67 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	// ******************** UserAgentListener methods ********************
 
 	/** From UserAgentListener. When registration succeeded. */
+	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
 		
 	}
 
 	/** From UserAgentListener. When registration failed. */
+	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
 		
 	}
 	
 	/** From UserAgentListener. When an ougoing call is stated to be in progress. */
+	@Override
 	public void onUaCallProgress(UserAgent ua) {
 		
 	}
 
 	/** From UserAgentListener. When an ougoing call is remotly ringing. */
+	@Override
 	public void onUaCallRinging(UserAgent ua) {
 		
 	}
 
 	/** From UserAgentListener. When an ougoing call has been accepted. */
+	@Override
 	public void onUaCallAccepted(UserAgent ua) {
 		
 	}
 	
 	/** From UserAgentListener. When a call has been transferred. */
+	@Override
 	public void onUaCallTransferred(UserAgent ua) {
 		
 	}
 
 	/** From UserAgentListener. When an incoming call has been cancelled. */
+	@Override
 	public void onUaCallCancelled(UserAgent ua) {
 		
 	}
 
 	/** From UserAgentListener. When an ougoing call has been refused or timeout. */
+	@Override
 	public void onUaCallFailed(UserAgent ua, String reason) {
 		
 	}
 
 	/** From UserAgentListener. When a call has been locally or remotely closed. */
+	@Override
 	public void onUaCallClosed(UserAgent ua) {
 		
 	}
 
 	/** From UserAgentListener. When a new media session is started. */
+	@Override
 	public void onUaMediaSessionStarted(UserAgent ua, String type, String codec) {
 		
 	}
 
 	/** From UserAgentListener. When a media session is stopped. */
+	@Override
 	public void onUaMediaSessionStopped(UserAgent ua, String type) {
 		
 	}
@@ -161,11 +174,13 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	// *************** RegistrationClientListener methods ****************
 
 	/** From RegistrationClientListener. When a UA has been successfully (un)registered. */
+	@Override
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
 		LOG.info("Registration success: expires="+expires+": "+result);
 	}
 
 	/** From RegistrationClientListener. When a UA failed on (un)registering. */
+	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
 		LOG.info("Registration failure: "+result);
 	}

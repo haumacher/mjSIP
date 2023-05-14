@@ -32,6 +32,7 @@ public class AmrToPcmEncoder implements Encoder {
 
 	/** Encodes the input chunk in_buff and returns the encoded chuck into out_buff.
 	  * @return the actual size of the output data */
+	@Override
 	public int encode(byte[] in_buff, int in_offset, int in_len, byte[] out_buff, int out_offset) {
 		//int mode=(in_buff[in_offset]>>3)&0xf;
 		//int frame_size=AMR.frameSize(mode);

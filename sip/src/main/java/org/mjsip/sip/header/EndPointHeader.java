@@ -97,6 +97,7 @@ public abstract class EndPointHeader extends NameAddressHeader {
 	  * eventual EndPointHeader field parameters (e.g. 'tag' param) from the returnerd NameAddress.
 	  * @return the end point NameAddress or null if NameAddress does not exist
 	  * (that leads to the wildcard in case of ContactHeader) */
+	@Override
 	public NameAddress getNameAddress() {
 		NameAddress naddr=(new SipParser(value)).getNameAddress();
 		// patch for removing eventual 'tag' or other EndPointHeader parameters from NameAddress

@@ -96,6 +96,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 
 	/** When a new request is received for the local server */
+	@Override
 	public void processRequestToLocalServer(SipMessage req) {
 		LOG.debug("inside processRequestToLocalServer(msg)");
 		super.processRequestToLocalServer(req);
@@ -103,6 +104,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 
 	/** When a new request message is received for a local user */
+	@Override
 	public void processRequestToLocalUser(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 
@@ -165,6 +167,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 	
 	/** When a new request message is received for a remote UA */
+	@Override
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 		if (msg.isAck()) {
@@ -214,6 +217,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 
 	/** When a new response message is received */
+	@Override
 	public void processResponse(SipMessage resp) {
 		LOG.debug("inside processResponse(msg)");
 		//printLog("Response received out of an active ClientTransaction, message discarded",LogWriter.LEVEL_HIGH);
@@ -324,21 +328,25 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	// ******************* TransactionClient callback methods *******************
 
 	/** When the TransactionClient is in "Proceeding" state and receives a new 1xx response */
+	@Override
 	public void onTransProvisionalResponse(TransactionClient transaction, SipMessage resp) {
 		processProvisionalResponse(transaction,resp);
 	}
 	
 	/** When the TransactionClient goes into the "Completed" state, receiving a failure response */
+	@Override
 	public void onTransFailureResponse(TransactionClient transaction, SipMessage resp) {
 		processFailureResponse(transaction,resp);
 	}
 			  
 	/** When an TransactionClient goes into the "Terminated" state, receiving a 2xx response */
+	@Override
 	public void onTransSuccessResponse(TransactionClient transaction, SipMessage resp)  {
 		processSuccessResponse(transaction,resp);
 	}
 
 	/** When the TransactionClient goes into the "Terminated" state, caused by transaction timeout */
+	@Override
 	public void onTransTimeout(TransactionClient transaction) {
 		processTimeout(transaction);
 	}

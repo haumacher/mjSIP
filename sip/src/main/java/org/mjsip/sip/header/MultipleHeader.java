@@ -138,12 +138,14 @@ public class MultipleHeader {
 
 	/** Creates and returns a copy of Header.
 	  * @return the new Header. */
+	@Override
 	public Object clone() {
 		return new MultipleHeader(getName(),getValues());
 	}
 
 	/** Indicates whether an other Object is "equal to" this Header.
 	  * @return true if it is "equal to", false otherwise */
+	@Override
 	public boolean equals(Object obj) {
 		MultipleHeader hd=(MultipleHeader)obj;
 		if (hd.getName().equals(this.getName()) && hd.getValues().equals(this.getValues())) return true;
@@ -262,6 +264,7 @@ public class MultipleHeader {
 	  *  - empty String (i.e. ""), for multi-headers(extended) rapresentation,
 	  *  - empty-value Header (i.e. "HeaderName: \r\n"), for comma-separated(compact) rapresentation.
 	  * @return the string representation of this multi-header */
+	@Override
 	public String toString() {
 		if (compact) {
 			String str=name+": ";

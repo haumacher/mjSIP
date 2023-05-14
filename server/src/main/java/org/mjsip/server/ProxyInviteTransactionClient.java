@@ -56,6 +56,7 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient {
 	
 
 	/** From interface TimerListener. When the Timer expires. */
+	@Override
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(proxy_transaction_to)) {
@@ -73,6 +74,7 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient {
 
 
 	/** Moves to terminate state. */
+	@Override
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
 			proxy_transaction_to.halt();

@@ -90,6 +90,7 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 
 
 	/** Closes this output stream and releases any system resources associated with this stream. */
+	@Override
 	public void close() {
 		try  {
 			final_output_stream.close();
@@ -101,6 +102,7 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 
   
 	/** Flushes this output stream and forces any buffered output bytes to be written out. */
+	@Override
 	public void flush() {
 		try  {
 			final_output_stream.flush();
@@ -110,12 +112,14 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 
 	
 	/** Writes b.length bytes from the specified byte array to this output stream. */
+	@Override
 	public void write(byte[] b) throws IOException {
 		write(b,0,b.length);
 	}
 
 	
 	/** Writes len bytes from the specified byte array starting at offset off to this output stream. */
+	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 		if (ingress_output_stream!=null) {
 			ingress_output_stream.write(b,off,len);
@@ -131,6 +135,7 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 
   
 	/** Writes the specified byte to this output stream. */
+	@Override
 	public void write(int b) throws IOException {
 		if (ingress_output_stream!=null) {
 			ingress_output_stream.write(b);

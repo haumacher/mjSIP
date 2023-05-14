@@ -113,12 +113,14 @@ final class StringList extends Configure {
 	
 		 
 	/** Parses a single line (loaded from the config file) */
+	@Override
 	protected void parseLine(String line) {
 		list.addElement(line);
 	}
 
 
 	/** Converts the entire object into lines (to be saved into the config file) */
+	@Override
 	protected String toLines() {
 		String str="";
 		for (int i=0; i<list.size(); i++)      {

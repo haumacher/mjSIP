@@ -48,18 +48,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	/** Syncronizes the database.
 	  * <p> Can be used, for example, to save the current memory image of the DB. */
+	@Override
 	public void sync() {
 		if (changed) save();
 	}
 
 	/** Returns the numbers of users in the database.
 	  * @return the numbers of user entries */
+	@Override
 	public int size() {
 		return users.size();
 	}
 	
 	/** Returns an enumeration of the users in this database.
 	  * @return the list of user names as an Enumeration of String */
+	@Override
 	public Enumeration getUsers() {
 		return users.keys();
 	}
@@ -67,6 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/** Whether a user is present in the database and can be used as key.
 	  * @param user the user name
 	  * @return true if the user name is present as key */
+	@Override
 	public boolean hasUser(String user) {
 		return (users.containsKey(user));
 	}
@@ -74,6 +78,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/** Adds a new user at the database.
 	  * @param user the user name
 	  * @return this object */
+	@Override
 	public Repository addUser(String user) {
 		addUser(user,NULL_ARRAY);
 		return this;
@@ -82,6 +87,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/** Removes the user from the database.
 	  * @param user the user name
 	  * @return this object */
+	@Override
 	public Repository removeUser(String user) {
 		users.remove(user);
 		changed=true;
@@ -90,6 +96,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	/** Removes all users from the database.
 	  * @return this object */
+	@Override
 	public Repository removeAllUsers() {
 		users.clear();
 		changed=true;
@@ -103,6 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	  * @param user the user name
 	  * @param key the user key
 	  * @return this object */
+	@Override
 	public AuthenticationService addUser(String user, byte[] key) {
 		if (hasUser(user)) return this;
 		UserAuthInfo ur=new UserAuthInfo(user,key);
@@ -112,6 +120,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 	/** Sets the user key */
+	@Override
 	public AuthenticationService setUserKey(String user, byte[] key) {
 		UserAuthInfo ur=getUserAuthInfo(user);
 		if (ur!=null) {
@@ -121,6 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return this;
 	}   
 	/** Gets the user key */
+	@Override
 	public byte[] getUserKey(String user) {
 		if (hasUser(user)) return getUserAuthInfo(user).getKey();
 		else return null;
@@ -213,6 +223,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	/** Gets the String value of this Object.
 	  * @return the String value */
+	@Override
 	public String toString() {
 		String str="";
 		for (Enumeration e=getUserAuthInfos(); e.hasMoreElements(); ) {
@@ -244,6 +255,7 @@ class UserAuthInfo {
 
 	/** Gets the String value of this Object.
 	  * @return the String value */
+	@Override
 	public String toString() {
 		String str="";
 		str+="user= "+name+"\r\n";

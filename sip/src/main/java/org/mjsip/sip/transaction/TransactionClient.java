@@ -95,6 +95,7 @@ public class TransactionClient extends Transaction {
 	}
 		
 	/** Terminates the transaction. */
+	@Override
 	public void terminate() {
 		doTerminate();
 		transaction_listener=null;
@@ -104,6 +105,7 @@ public class TransactionClient extends Transaction {
 	// *********************** Callback methods ************************
 
 	/** From SipListener. It's fired from the SipProvider when a new message is received for to the present TransactionClient. */
+	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		if (msg.isResponse()) {
 			int code=msg.getStatusLine().getCode();
@@ -134,6 +136,7 @@ public class TransactionClient extends Transaction {
 	}
 
 	/** From TimerListener. It's fired from an active Timer. */
+	@Override
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING))) {

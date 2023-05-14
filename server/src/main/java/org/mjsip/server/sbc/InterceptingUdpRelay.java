@@ -78,6 +78,7 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 
 
 	/** Stops the SymmetricUdpRelay */
+	@Override
 	public void halt() {
 		super.halt();
 		if (left_intercept_udp!=null) left_intercept_udp.halt();
@@ -86,6 +87,7 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 
 
 	/** When receiving a new packet. */
+	@Override
 	public void onReceivedPacket(UdpProvider udp_service, UdpPacket packet) {
 		
 		if (udp_service==left_udp) {
@@ -131,6 +133,7 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 
 
 	/** When UdpProvider stops receiving UDP datagrams. */
+	@Override
 	public void onServiceTerminated(UdpProvider udp_service, Exception error) {
 		if (udp_service==left_intercept_udp || udp_service==right_intercept_udp) {
 			LOG.info("udp interface: "+udp_service.toString()+" terminated");
@@ -143,6 +146,7 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		return left_soaddr+"<-->"+left_udp.getUdpSocket().getLocalPort()+"<-->"+left_intercept_soaddr+"] ["+right_intercept_soaddr+"<-->"+right_udp.getUdpSocket().getLocalPort()+"<-->"+right_soaddr;
 	}

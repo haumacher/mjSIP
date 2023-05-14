@@ -70,6 +70,7 @@ public class InviteTransactionClient extends TransactionClient {
 	}  
 
 	/** Initializes it. */
+	@Override
 	void init(TransactionClientListener listener, TransactionClientId transaction_id) {
 		this.invite_tc_listener=listener;
 		this.transaction_id=transaction_id;
@@ -85,6 +86,7 @@ public class InviteTransactionClient extends TransactionClient {
 	// ************************ Public methods *************************
 
 	/** Starts the InviteTransactionClient and sends the invite request. */
+	@Override
 	public void request() {
 		LOG.trace("start");
 		changeStatus(STATE_TRYING); 
@@ -99,6 +101,7 @@ public class InviteTransactionClient extends TransactionClient {
 	/** Method derived from interface SipListener.
 	  * It's fired from the SipProvider when a new message is catch for to the present ServerTransaction.
 	  */
+	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		if (msg.isResponse()) {
 			int code=msg.getStatusLine().getCode();
@@ -146,6 +149,7 @@ public class InviteTransactionClient extends TransactionClient {
 
 	/** Method derived from interface TimerListener.
 	  * It's fired from an active Timer. */
+	@Override
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && statusIs(STATE_TRYING)) {
@@ -177,6 +181,7 @@ public class InviteTransactionClient extends TransactionClient {
 	}
 
 	/** Terminates the transaction. */
+	@Override
 	public void terminate() {
 		doTerminate();
 		invite_tc_listener=null;
@@ -186,6 +191,7 @@ public class InviteTransactionClient extends TransactionClient {
 	// *********************** Protected methods ***********************
 
 	/** Moves to terminate state. */
+	@Override
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
 			retransmission_to.halt();

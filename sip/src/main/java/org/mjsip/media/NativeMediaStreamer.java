@@ -58,6 +58,7 @@ public class NativeMediaStreamer implements MediaStreamer {
 	}
 
 	/** Starts this media streams. */
+	@Override
 	public boolean start() {
 		// udp flow adaptation for media streamer
 		if (local_port!=remote_port)  {
@@ -89,6 +90,7 @@ public class NativeMediaStreamer implements MediaStreamer {
 	}
 
 	/** Stops this media streams. */
+	@Override
 	public boolean halt() {
 		log("stopping native media application ("+command+")");
 		if (media_process!=null) media_process.destroy();

@@ -70,6 +70,7 @@ public class UdpConnectedSocket extends UdpSocket {
 
 
 	/** Sends a packet to the remote address (regardless of the address already set within the packet). */
+	@Override
 	public void send(UdpPacket packet) throws java.io.IOException {
 		if (remote_soaddr!=null) {
 			packet.setIpAddress(remote_soaddr.getAddress());

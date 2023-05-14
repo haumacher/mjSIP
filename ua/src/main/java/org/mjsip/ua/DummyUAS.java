@@ -55,6 +55,7 @@ public class DummyUAS implements SipProviderListener {
 	// *********************** SipProvider callback ***********************
 
 	/** When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		if (msg.isRequest() && !msg.isAck()) {
 			SipMessage resp=SipMessageFactory.createResponse(msg,code,reason,null);

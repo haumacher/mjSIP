@@ -62,6 +62,7 @@ public class Proxy extends Registrar {
 
 
 	/** When a new request is received for the local server. */
+	@Override
 	public void processRequestToLocalServer(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalServer(msg)");
 		if (msg.isRegister()) {
@@ -80,6 +81,7 @@ public class Proxy extends Registrar {
 
 
 	/** When a new request message is received for a local user */
+	@Override
 	public void processRequestToLocalUser(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 
@@ -123,6 +125,7 @@ public class Proxy extends Registrar {
 
 	
 	/** When a new request message is received for a remote UA */
+	@Override
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 	
@@ -238,6 +241,7 @@ public class Proxy extends Registrar {
 	
 
 	/** When a new response message is received */
+	@Override
 	public void processResponse(SipMessage resp) {
 		LOG.debug("inside processResponse(msg)");
 	

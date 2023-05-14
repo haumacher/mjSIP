@@ -277,6 +277,7 @@ public class Flags {
 		return args.size();
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
 		final Option nopt=new Option(" !",null,"inverts the next option");
@@ -307,6 +308,7 @@ public class Flags {
 			sb.append("\r\n").append(TAB1).append("Options:");
 			Option[] sorted_options=(Option[])options.toArray(new Option[]{});
 			Arrays.sort(sorted_options,new Comparator(){
+				@Override
 				public int compare(Object o1, Object o2) {
 					return ((Option)o1).getTag().compareTo(((Option)o2).getTag());
 				}
@@ -400,6 +402,7 @@ public class Flags {
 			return sb.toString();
 		}
 		
+		@Override
 		public String toString() {
 			return toString(0," : ");
 		}

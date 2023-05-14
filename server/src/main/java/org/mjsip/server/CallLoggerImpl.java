@@ -56,6 +56,7 @@ public class CallLoggerImpl implements CallLogger {
 	
 	/** Updates log with the present message.
 	  */
+	@Override
 	public void update(SipMessage msg) {
 		
 		String method=msg.getCSeqHeader().getMethod();

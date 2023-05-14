@@ -96,6 +96,7 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	// *********************** callback functions *********************
  
 	/** When a new Message is received. */
+	@Override
 	public void onMaReceivedMessage(MessageAgent ma, NameAddress sender, NameAddress recipient, String subject, String content_type, String content) {
 		remote_user=sender;
 		LOG.info("NEW MESSAGE:");
@@ -106,21 +107,25 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	}
 
 	/** When a message delivery successes. */
+	@Override
 	public void onMaDeliverySuccess(MessageAgent ma, NameAddress recipient, String subject, String result) {
 		//LOG.info("Delivery success: "+result);
 	}
 
 	/** When a message delivery fails. */
+	@Override
 	public void onMaDeliveryFailure(MessageAgent ma, NameAddress recipient, String subject, String result) {
 		//LOG.info("Delivery failure: "+result);
 	}
 
 	/** When a UA has been successfully (un)registered. */
+	@Override
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
 		LOG.info("Registration success: expires="+expires+": "+result);
 	}
 
 	/** When a UA failed on (un)registering. */
+	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
 		LOG.info("Registration failure: "+result);
 	}

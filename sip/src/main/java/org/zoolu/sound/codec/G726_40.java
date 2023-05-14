@@ -263,6 +263,7 @@ public class G726_40 extends G726 {
 	/** Encodes a 16-bit linear PCM, A-law or u-law input sample and retuens
 	  * the resulting 5-bit CCITT G.726 40kbps code.
 	  * Returns -1 if the input coding value is invalid. */
+	@Override
 	public int encode(int sl, int in_coding) {
 		return encode(sl,in_coding,state);
 	}
@@ -272,6 +273,7 @@ public class G726_40 extends G726 {
 	  * the G726_40 encoded chuck into out_buff. <br>
 	  * It returns the actual size of the output data, or -1 in case of unknown
 	  * in_coding value. */
+	@Override
 	public int encode(byte[] in_buff, int in_offset, int in_len, int in_coding, byte[] out_buff, int out_offset) {
 		return encode(in_buff,in_offset,in_len,in_coding,out_buff,out_offset,state);
 	}
@@ -280,6 +282,7 @@ public class G726_40 extends G726 {
 	/** Decodes a 5-bit CCITT G.726 40kbps code and returns
 	  * the resulting 16-bit linear PCM, A-law or u-law sample value.
 	  * -1 is returned if the output coding is unknown. */
+	@Override
 	public int decode(int i, int out_coding) {
 		return decode(i,out_coding,state);
 	}
@@ -289,6 +292,7 @@ public class G726_40 extends G726 {
 	  * the linear PCM, A-law or u-law chunk into out_buff. <br>
 	  * It returns the actual size of the output data, or -1 in case of unknown
 	  * out_coding value. */
+	@Override
 	public int decode(byte[] in_buff, int in_offset, int in_len, int out_coding, byte[] out_buff, int out_offset) {
 		return decode(in_buff,in_offset,in_len,out_coding,out_buff,out_offset,state);
 	}

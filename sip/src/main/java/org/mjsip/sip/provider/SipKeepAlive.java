@@ -45,8 +45,10 @@ public class SipKeepAlive extends UdpKeepAlive {
 		/** Creates a new SipToken. */
 		public SipToken(SipMessage msg) {  super();  token=msg.toString();  }   
 		/** Gets string value of SipMessage. */
+		@Override
 		public String toString() {  return token;  }     
 		/** Gets message length */
+		@Override
 		public int getLength() {  return token.length();  }   
 	}
 
@@ -87,6 +89,7 @@ public class SipKeepAlive extends UdpKeepAlive {
 
 
 	/** Sends the kepp-alive packet now. */
+	@Override
 	public void sendToken() throws java.io.IOException {
 		// do send?
 		if (!stop && target!=null && sip_provider!=null) {
@@ -96,6 +99,7 @@ public class SipKeepAlive extends UdpKeepAlive {
 
 
 	/** Main thread. */
+	@Override
 	public void run() {
 		super.run();
 		sip_provider=null;
@@ -103,6 +107,7 @@ public class SipKeepAlive extends UdpKeepAlive {
 	
 		 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		String str=null;
 		if (sip_provider!=null) {

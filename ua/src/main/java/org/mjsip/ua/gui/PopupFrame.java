@@ -73,10 +73,12 @@ class PopupFrame extends Frame {
 		this.setTitle(title);
 		this.setResizable(false);
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) { closeWindow(); }
 		});
 		button1.setLabel("OK");
 		button1.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) { closeWindow(); }
 		});
 		this.add(button1, BorderLayout.SOUTH);

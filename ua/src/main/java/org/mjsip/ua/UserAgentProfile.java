@@ -382,6 +382,7 @@ public class UserAgentProfile extends Configure {
 
 	/** Parses a single line (loaded from the config file)
 	  * @param line a string containing the pair attribute name and attribute value, separated by a "=" */
+	@Override
 	protected void parseLine(String line) {
 		String attribute;
 		Parser par;
@@ -477,6 +478,7 @@ public class UserAgentProfile extends Configure {
 	/** Converts the entire object into lines (to be saved into the config file)
 	  * @return just the user's URI */
 	//  * @return a string representation of this object containing a sequence of lines, each of them formed by pairs of attribute name and attribute value separated by a "=" */
+	@Override
 	protected String toLines() {
 		// currently not implemented..
 		return getUserURI().toString();

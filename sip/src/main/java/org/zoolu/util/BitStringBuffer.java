@@ -178,6 +178,7 @@ public class BitStringBuffer {
 
 
 	/** Gets a string representation of this object. */
+	@Override
 	public synchronized String toString() {
 		StringBuffer sb=new StringBuffer();
 		for (int i=0; i<buffer.size(); i++) sb.append(buffer.elementAt(i).toString());

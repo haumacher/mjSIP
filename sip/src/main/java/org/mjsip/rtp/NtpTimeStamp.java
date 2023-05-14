@@ -118,6 +118,7 @@ public class NtpTimeStamp implements Comparable {
 	/** From interface Comparable. Compares this object with the specified object for order.
 	  * @param obj the Object to be compared
 	  * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object */
+	@Override
 	public int compareTo(Object obj) throws ClassCastException {
 		NtpTimeStamp ts=(NtpTimeStamp)obj;
 		return (int)(getNtpTime()-ts.getNtpTime());
@@ -127,6 +128,7 @@ public class NtpTimeStamp implements Comparable {
 	/** Whether it is equal to the specified object.
 	  * @param obj the Object to be compared
 	  * @return true it is equal to the specified object */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NtpTimeStamp) {
 			NtpTimeStamp ts=(NtpTimeStamp)obj;
@@ -137,7 +139,8 @@ public class NtpTimeStamp implements Comparable {
 
 
 	/** Gets a string representation of this object. */
-	 public String toString()
+	 @Override
+	public String toString()
 	 {  StringBuffer sb=new StringBuffer();
 		 sb.append(Long.toHexString(seconds));
 		 sb.append('.');

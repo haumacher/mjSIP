@@ -136,6 +136,7 @@ public class TcpServer extends Thread {
 
 
 	/** Runs the server */
+	@Override
 	public void run() {
 		Exception error=null;
 		try {
@@ -174,6 +175,7 @@ public class TcpServer extends Thread {
 
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		//if (server_socket!=null) return "tcp:"+server_socket.getInetAddress()+":"+server_socket.getLocalPort();
 		//else return "tcp:unknown";

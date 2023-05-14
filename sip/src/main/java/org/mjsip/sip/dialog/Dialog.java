@@ -75,6 +75,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	abstract public boolean isTerminated();
 
 	/** When a new Message is received by the SipProvider. */
+	@Override
 	abstract public void onReceivedMessage(SipProvider provider, SipMessage message);
 
 

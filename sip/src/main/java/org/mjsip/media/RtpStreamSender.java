@@ -236,24 +236,28 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 
 
 	/** Gets the synchronization source (SSRC) identifier. */
+	@Override
 	public long getSSRC() {
 		return ssrc;
 	}
 
 
 	/** Gets the current RTP timestamp value. */
+	@Override
 	public long getRtpTimestamp() {
 		return timestamp;
 	}
 
 
 	/** Gets the total number of sent packets. */
+	@Override
 	public long getPacketCounter() {
 		return packet_count;
 	}
 
 
 	/** Gets the total number of sent octects. */
+	@Override
 	public long getOctectCounter() {
 		return octect_count;
 	}
@@ -272,6 +276,7 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 
 
 	/** Runs it in a new Thread. */
+	@Override
 	public void run() {
 		
 		if (rtp_socket==null || input_stream==null) return;

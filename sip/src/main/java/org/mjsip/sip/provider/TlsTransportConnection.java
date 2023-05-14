@@ -54,6 +54,7 @@ public class TlsTransportConnection extends TcpTransportConnection {
 
 
 	/** Gets protocol type */ 
+	@Override
 	public String getProtocol() {
 		return PROTO_TLS;
 	}

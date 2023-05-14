@@ -53,11 +53,13 @@ public class Header/* extends org.zoolu.util.MonitoredObject*/ {
 	}
 
 	/** Creates and returns a copy of the Header */
+	@Override
 	public Object clone() {
 		return new Header(getName(),getValue());
 	}
 
 	/** Whether the Header is equal to Object <i>obj</i> */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			Header hd=(Header)obj;
@@ -83,6 +85,7 @@ public class Header/* extends org.zoolu.util.MonitoredObject*/ {
 	}
 
 	/** Gets string representation of Header */
+	@Override
 	public String toString() {
 		return name+": "+value+"\r\n";
 	}

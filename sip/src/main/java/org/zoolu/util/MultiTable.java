@@ -120,6 +120,7 @@ public class MultiTable {
 	}
 	
 	/** Returns a rather long string representation of this table. */
+	@Override
 	public String toString() {
 		return table.toString();
 	}

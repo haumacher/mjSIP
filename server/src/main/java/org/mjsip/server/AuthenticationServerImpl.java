@@ -106,6 +106,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 	  * @param msg is the SIP request to be authenticated
 	  * @return it returns the error SipMessage in case of authentication failure,
 	  * or null in case of authentication success. */
+	@Override
 	public SipMessage authenticateRequest(SipMessage msg) {
 		return authenticateRequest(msg,SERVER_AUTHENTICATION);
 	}
@@ -115,6 +116,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 	  * @param msg is the SIP request to be authenticated
 	  * @return it returns the error SipMessage in case of authentication failure,
 	  * or null in case of authentication success. */
+	@Override
 	public SipMessage authenticateProxyRequest(SipMessage msg) {
 		return authenticateRequest(msg,PROXY_AUTHENTICATION);
 	}
@@ -199,6 +201,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 
 
 	/** Gets AuthenticationInfoHeader. */
+	@Override
 	public AuthenticationInfoHeader getAuthenticationInfoHeader() {
 		AuthenticationInfoHeader aih=new AuthenticationInfoHeader();
 		aih.addRealmParam(realm);

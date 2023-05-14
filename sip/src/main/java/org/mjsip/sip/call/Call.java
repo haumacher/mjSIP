@@ -558,75 +558,99 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 			this.c=c;
 		}
 
+		@Override
 		public void onDlgInvite(InviteDialog dialog, NameAddress callee, NameAddress caller, String body, SipMessage msg) {
 			c.processDlgInvite(dialog,callee,caller,body,msg);
 		}
+		@Override
 		public void onDlgReInvite(InviteDialog dialog, String body, SipMessage msg) {
 			c.processDlgReInvite(dialog,body,msg);
 		}
+		@Override
 		public void onDlgInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
 			c.processDlgInviteProvisionalResponse(dialog,code,reason,body,msg);
 		}
+		@Override
 		public void onDlgInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
 			c.processDlgInviteSuccessResponse(dialog,code,reason,body,msg);
 		}
+		@Override
 		public void onDlgInviteRedirectResponse(InviteDialog dialog, int code, String reason, MultipleHeader contacts, SipMessage msg) {
 			c.processDlgInviteRedirectResponse(dialog,code,reason,contacts,msg);
 		}
+		@Override
 		public void onDlgInviteFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
 			c.processDlgInviteFailureResponse(dialog,code,reason,msg);
 		}
+		@Override
 		public void onDlgInviteTimeout(InviteDialog dialog) {
 			c.processDlgInviteTimeout(dialog);
 		}
+		@Override
 		public void onDlgReInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
 			c.processDlgReInviteProvisionalResponse(dialog,code,reason,body,msg);
 		}
+		@Override
 		public void onDlgInviteReliableProvisionalResponse(InviteDialog dialog, int code, String reason, String content_type, byte[] body, SipMessage resp) {
 			c.processDlgInviteReliableProvisionalResponse(dialog,code,reason,content_type,body,resp);
 		}
+		@Override
 		public void onDlgInviteReliableProvisionalResponseConfirmed(InviteDialog dialog, int code, SipMessage resp, String content_type, byte[] body, SipMessage prack) {
 			c.processDlgInviteReliableProvisionalResponseConfirmed(dialog,code,resp,content_type,body,prack);
 		}
+		@Override
 		public void onDlgInviteReliableProvisionalResponseTimeout(InviteDialog dialog, int code, SipMessage resp) {
 			c.processDlgInviteReliableProvisionalResponseTimeout(dialog,code,resp);
 		}
+		@Override
 		public void onDlgReInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
 			c.processDlgReInviteSuccessResponse(dialog,code,reason,body,msg);
 		}
+		@Override
 		public void onDlgReInviteFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
 			c.processDlgReInviteFailureResponse(dialog,code,reason,msg);
 		}
+		@Override
 		public void onDlgReInviteTimeout(InviteDialog dialog) {
 			c.processDlgReInviteTimeout(dialog);
 		}
+		@Override
 		public void onDlgAck(InviteDialog dialog, String body, SipMessage msg) {
 			c.processDlgAck(dialog,body,msg);
 		}
+		@Override
 		public void onDlgCall(InviteDialog dialog) {
 			c.processDlgCall(dialog);
 		}
+		@Override
 		public void onDlgInfo(InviteDialog dialog, String info_package, String content_type, byte[] body, SipMessage msg) {
 			c.processDlgInfo(dialog,info_package,content_type,body,msg);
 		}
+		@Override
 		public void onDlgCancel(InviteDialog dialog, SipMessage msg) {
 			c.processDlgCancel(dialog,msg);
 		}
+		@Override
 		public void onDlgUpdate(InviteDialog dialog, String body, SipMessage msg) {
 			c.processDlgUpdate(dialog,body,msg);
 		}
+		@Override
 		public void onDlgUpdateResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
 			c.processDlgUpdateResponse(dialog,code,reason,body,msg);
 		}
+		@Override
 		public void onDlgBye(InviteDialog dialog, SipMessage msg) {
 			c.processDlgBye(dialog,msg);
 		}
+		@Override
 		public void onDlgByeSuccessResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
 			c.processDlgByeSuccessResponse(dialog, code,reason,msg);
 		}
+		@Override
 		public void onDlgByeFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
 			c.processDlgByeFailureResponse(dialog,code,reason,msg);
 		}
+		@Override
 		public void onDlgClosed(InviteDialog dialog) {
 			c.processDlgClosed(dialog);
 		}

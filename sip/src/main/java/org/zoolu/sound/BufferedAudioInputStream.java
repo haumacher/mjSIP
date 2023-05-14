@@ -82,6 +82,7 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 
 	/** Gets the number of bytes that are currently available in the input stream for reading. */
 	/** @return the number of bytes that can be read (or skipped over) from this input stream without blocking by the next invocation of a method for this input stream. */
+	@Override
 	public synchronized int available() throws java.io.IOException {
 		if (is_closed) return 0;
 		// else
@@ -91,6 +92,7 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 
 	/** Reads the next byte of data from the input stream.
 	  * @return the next byte, or -1 if no byte is read */
+	@Override
 	public synchronized int read()  {
 		if (is_closed) return -1;
 		// else
@@ -113,6 +115,7 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 	/** Reads some number of bytes from the input stream and stores them into the buffer array b.
 	  * @param buf the buffer where the the bytes are read to
 	  * @return the number of bytes that have been read */
+	@Override
 	public int read(byte[] buf) throws java.io.IOException {
 		return read(buf,0,buf.length);
 	}
@@ -123,6 +126,7 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 	  * @param off the offset within the buffer
 	  * @param len the availble size within the buffer (from the offset)
 	  * @return the number of bytes that have been read */
+	@Override
 	public synchronized int read(byte[] buf, int off, int len) throws java.io.IOException  {
 		if (is_closed) return 0;
 		// else
@@ -151,6 +155,7 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 
 	/** Skips over and discards <i>n</i> bytes of data from this input stream.
 	  * @param n the number of bytes to be skipped */
+	@Override
 	public long skip(long n)  {
 		// TODO
 		return 0;
@@ -158,6 +163,7 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 
 
 	/** Closes this input stream and releases any system resources associated with the stream. */
+	@Override
 	public void close() throws java.io.IOException {
 		is_closed=true;
 		if (input_stream!=null) input_stream.close();
@@ -166,18 +172,21 @@ abstract public class BufferedAudioInputStream extends AudioInputStream {
 
 	/** Tests if this input stream supports the mark and reset methods.
 	  * @return true if this input stream supports the mark and reset methods (false if not) */
+	@Override
 	public boolean markSupported()  {
 		return false;
 	}
 
 
 	/** Marks the current position in this input stream. */
+	@Override
 	public void mark(int readlimit)  {
 		// TODO
 	}
 
 
 	/** Repositions this stream to the position at the time the mark method was last called on this input stream. */
+	@Override
 	public void reset()  {
 		// TODO
 	}

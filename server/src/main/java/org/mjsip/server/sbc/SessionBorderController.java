@@ -131,6 +131,7 @@ public class SessionBorderController extends Proxy {
 
 
 	/** When a new request message is received for a local user. */
+	@Override
 	public void processRequestToLocalUser(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 		msg=SipMangler.unmangleRequestLine(msg);
@@ -149,6 +150,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Processes the Proxy headers of the request.
 	  * Such headers are: Via, Record-Route, Route, Max-Forwards, etc. */
+	@Override
 	protected SipMessage updateProxyingRequest(SipMessage req) {
 		LOG.debug("inside updateProxyingRequest(req)");
 		
@@ -201,6 +203,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Processes the Proxy headers of the response.
 	  * Such headers are: Via, .. */
+	@Override
 	protected SipMessage updateProxyingResponse(SipMessage resp) {
 		LOG.debug("inside updateProxyingResponse(resp)");
 		resp=super.updateProxyingResponse(resp);
@@ -219,6 +222,7 @@ public class SessionBorderController extends Proxy {
 
 	/** Updates the registration of a local user.
 	  * This method is called only if the SBC works also as Registrar. */
+	@Override
 	protected SipMessage updateRegistration(SipMessage msg) {
 		SipMessage resp=super.updateRegistration(msg);
 		// update the SIP keep alive daemons

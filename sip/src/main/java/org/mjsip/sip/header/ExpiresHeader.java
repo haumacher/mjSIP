@@ -81,6 +81,7 @@ public class ExpiresHeader extends SipDateHeader {
 	}
 
 	/** Gets value of ExpiresHeader as absolute date */
+	@Override
 	public Date getDate() {
 		Date date=null;
 		if (isDate()) {

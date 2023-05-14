@@ -62,6 +62,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * services are provided by this provider.
 	  * @return array of source format encodings.
 	  * The array will always have a length of at least 1. */
+	@Override
 	public AudioFormat.Encoding[] getSourceEncodings() {
 		AudioFormat.Encoding[] encodings=BOTH_ENCODINGS;
 		return encodings;
@@ -72,6 +73,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * services are provided by this provider.
 	  * @return array of target format encodings.
 	  * The array will always have a length of at least 1. */
+	@Override
 	public AudioFormat.Encoding[] getTargetEncodings() {
 		AudioFormat.Encoding[] encodings=BOTH_ENCODINGS;
 		return encodings;
@@ -83,6 +85,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * are supported for this source format, an array of length 0 is returned.
 	  * @param source_format format of the incoming data.
 	  * @return array of supported target format encodings. */
+	@Override
 	public AudioFormat.Encoding[] getTargetEncodings(final AudioFormat source_format) {
 		if (DEBUG)
 			LOG.debug("getTargetEncodings(): source_format="+source_format.toString());
@@ -107,6 +110,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * @param source_format format of the incoming data.
 	  * @return array of supported target formats.
 	  */
+	@Override
 	public AudioFormat[] getTargetFormats(final AudioFormat.Encoding target_encoding, final AudioFormat source_format) {
 		if (DEBUG)
 			LOG.debug("getTargetFormats(): source format="+source_format.toString());
@@ -143,6 +147,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * encoding may be read.
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
+	@Override
 	public AudioInputStream getAudioInputStream(final AudioFormat.Encoding target_encoding, final AudioInputStream source_stream) {
 		if (DEBUG)
 			LOG.debug("getAudioInputStream(Encoding,AudioInputStream): source format="+source_stream.getFormat().toString());
@@ -166,6 +171,7 @@ public class AmrFormatConversionProvider extends FormatConversionProvider {
 	  * read.
 	  * @exception IllegalArgumentException - if the format combination supplied
 	  * is not supported. */
+	@Override
 	public AudioInputStream getAudioInputStream(final AudioFormat target_format, final AudioInputStream source_stream) {
 		if (DEBUG)
 			LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): source format="+source_stream.getFormat().toString());

@@ -133,6 +133,7 @@ public class InviteTransactionServer extends TransactionServer {
 	}
 
 	/** Starts the InviteTransactionServer. */
+	@Override
 	public void listen() {
 		LOG.trace("start");
 		if (statusIs(STATE_IDLE)) {
@@ -143,6 +144,7 @@ public class InviteTransactionServer extends TransactionServer {
 	}  
 
 	/** Sends a response message */
+	@Override
 	public void respondWith(SipMessage resp) {
 		response=resp;
 		response.setConnectionId(connection_id);
@@ -177,6 +179,7 @@ public class InviteTransactionServer extends TransactionServer {
 
 	/** Method derived from interface SipListener.
 	  * It's fired from the SipProvider when a new message is catch for to the present ServerTransaction. */
+	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		if (msg.isRequest()) {
 			String req_method=msg.getRequestLine().getMethod();
@@ -220,6 +223,7 @@ public class InviteTransactionServer extends TransactionServer {
 
 	/** Method derived from interface TimerListener.
 	  * It's fired from an active Timer. */
+	@Override
 	public void onTimeout(Timer to) {
 		try {
 			if (to.equals(retransmission_to) && statusIs(STATE_COMPLETED)) {
@@ -247,6 +251,7 @@ public class InviteTransactionServer extends TransactionServer {
 	}   
 
 	/** Method used to drop an active transaction */
+	@Override
 	public void terminate() {
 		doTerminate();
 		invite_ts_listener=null;
@@ -256,6 +261,7 @@ public class InviteTransactionServer extends TransactionServer {
 	// *********************** Protected methods ***********************
 
 	/** Moves to terminate state. */
+	@Override
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
 			retransmission_to.halt();

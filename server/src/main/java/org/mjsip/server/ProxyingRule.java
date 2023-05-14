@@ -17,5 +17,6 @@ public interface ProxyingRule {
 	public SipURI getNexthop(GenericURI uri);  
 
 	/** Gets the String value. */
+	@Override
 	public String toString();  
 }  

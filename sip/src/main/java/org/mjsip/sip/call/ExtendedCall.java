@@ -130,6 +130,7 @@ public class ExtendedCall extends Call {
 
 
 	/** Waits for an incoming call. */
+	@Override
 	public void listen() {
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
 		else dialog=new ExtendedInviteDialog(sip_provider,this_extended_invite_dialog_listener);
@@ -142,6 +143,7 @@ public class ExtendedCall extends Call {
 	  * @param callee the callee address
 	  * @param caller the caller address
 	  * @param sdp the session descriptor */
+	@Override
 	public void call(NameAddress callee, NameAddress caller, String sdp) {
 		LOG.debug("calling "+callee);
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
@@ -157,6 +159,7 @@ public class ExtendedCall extends Call {
 
 	/** Starts a new call, with the given <i>INVITE</i> request.
 	  * @param invite the INVITE request message */
+	@Override
 	public void call(SipMessage invite) {
 		LOG.debug("calling "+invite.getRequestLine().getAddress());
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
@@ -288,18 +291,23 @@ public class ExtendedCall extends Call {
 			this.c=c;
 		}
 
+		@Override
 		public void onDlgRefer(InviteDialog dialog, NameAddress refer_to, NameAddress referred_by, SipMessage msg) {
 			c.processDlgRefer(dialog,refer_to,referred_by,msg);
 		}
+		@Override
 		public void onDlgReferResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
 			c.processDlgReferResponse(dialog,code,reason,msg);
 		}
+		@Override
 		public void onDlgNotify(InviteDialog dialog, String event, String sipfragment, SipMessage msg) {
 			c.processDlgNotify(dialog,event,sipfragment,msg);
 		}
+		@Override
 		public void onDlgAltRequest(InviteDialog dialog, String method, String body, SipMessage msg) {
 			c.processDlgAltRequest(dialog,method,body,msg);
 		}
+		@Override
 		public void onDlgAltResponse(InviteDialog dialog, String method, int code, String reason, String body, SipMessage msg) {
 			c.processDlgAltResponse(dialog,method,code,reason,body,msg);
 		}

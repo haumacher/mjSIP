@@ -80,9 +80,11 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 	private void init(TcpSocket socket, SipTransportConnectionListener listener) {
 		this.listener=listener;
 		TcpConnectionListener this_tcp_conn_listener=new TcpConnectionListener() {
+			@Override
 			public void onReceivedData(TcpConnection tcp_conn, byte[] data, int len) {
 				processReceivedData(tcp_conn,data,len);
 			}   
+			@Override
 			public void onConnectionTerminated(TcpConnection tcp_conn, Exception error)   {
 				processConnectionTerminated(tcp_conn,error);
 			}
@@ -94,18 +96,21 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 
 	/** Sets the SipTransportConnection listener. */      
+	@Override
 	public void setListener(SipTransportConnectionListener listener) {
 		this.listener=listener;
 	}
 
 
 	/** Gets protocol type. */ 
+	@Override
 	public String getProtocol() {
 		return PROTO_TCP;
 	}
 
 
 	/** Gets the remote IpAddress. */
+	@Override
 	public IpAddress getRemoteAddress() {
 		if (tcp_conn!=null) return tcp_conn.getRemoteAddress();
 		else return null;
@@ -113,6 +118,7 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 	
 	
 	/** Gets the remote port. */
+	@Override
 	public int getRemotePort() {
 		if (tcp_conn!=null) return tcp_conn.getRemotePort();
 		else return 0;
@@ -120,12 +126,14 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 
 	/** Gets the local IpAddress. */
+	@Override
 	public IpAddress getLocalAddress() {
 		if (tcp_conn!=null) return tcp_conn.getLocalAddress();
 		else return null;
 	}
 
 	/** Gets the local port. */
+	@Override
 	public int getLocalPort() {
 		if (tcp_conn!=null) return tcp_conn.getLocalPort();
 		else return 0;
@@ -133,12 +141,14 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 
 	/** Gets the last time the Connection has been used (in millisconds). */
+	@Override
 	public long getLastTimeMillis() {
 		return last_time;
 	}
 
 
 	/** Sends a SipMessage. */      
+	@Override
 	public void sendMessage(SipMessage msg) throws IOException {
 		if (tcp_conn!=null) {
 			last_time=System.currentTimeMillis();
@@ -154,12 +164,14 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 
 	/** Stops running. */
+	@Override
 	public void halt() {
 		if (tcp_conn!=null) tcp_conn.halt();
 	}
 
 
 	/** Gets a String representation of the Object. */
+	@Override
 	public String toString() {
 		if (tcp_conn!=null) return tcp_conn.toString();
 		else return null;

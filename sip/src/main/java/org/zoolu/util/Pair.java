@@ -73,6 +73,7 @@ public class Pair {
 	}
 
 	/** Whether it equals to a given object. */
+	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof Pair)) return false;
 		// else
@@ -81,6 +82,7 @@ public class Pair {
 	}
 
 	/** gets a String representation of this object. */
+	@Override
 	public String toString() {
 		return "{"+o1+","+o2+"}";
 	}

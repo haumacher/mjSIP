@@ -57,6 +57,7 @@ public class Identifier {
 	/** Whether this object equals to an other object.
 	  * @param obj the other object that is compared to
 	  * @return true if the two objects are equal */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			Identifier i=(Identifier)obj;
@@ -67,12 +68,14 @@ public class Identifier {
 
 	/** Gets an int hash-code for this object.
 	  * @return the hash-code */
+	@Override
 	public int hashCode() {
 		return id.hashCode();
 	}
 
 	/** Gets a string value for this object.
 	  * @return the string */
+	@Override
 	public String toString() {
 		return id;
 	}

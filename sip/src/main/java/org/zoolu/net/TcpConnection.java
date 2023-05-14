@@ -166,6 +166,7 @@ public class TcpConnection extends Thread {
 
 
 	/** Runs the tcp receiver. */
+	@Override
 	public void run() {
 		
 		byte[] buff=new byte[BUFFER_SIZE];
@@ -210,6 +211,7 @@ public class TcpConnection extends Thread {
 
  
 	/** Gets a String representation of the Object. */
+	@Override
 	public String toString() {
 		return "tcp:"+socket.getLocalAddress()+":"+socket.getLocalPort()+"<->"+socket.getAddress()+":"+socket.getPort();
 	}

@@ -76,6 +76,7 @@ public class NotImplementedServer implements SipProviderListener {
 	// ************************* Callback functions ************************
 
 	/** When a new Message is received by the SipProvider. */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond
 		if (msg.isRequest() && !msg.isAck() && !msg.isCancel()) {

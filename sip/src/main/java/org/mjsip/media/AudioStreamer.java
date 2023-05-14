@@ -393,6 +393,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 
 	/** Starts media streams. */
+	@Override
 	public boolean start() {
 		LOG.info("starting java audio");
 		if (rtp_sender!=null) {
@@ -410,6 +411,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 
 	/** Stops media streams. */
+	@Override
 	public boolean halt() {
 		LOG.info("stopping java audio");    
 		if (rtp_sender!=null) {
@@ -447,6 +449,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 
 	/** From RtpStreamReceiverListener. When the remote socket address (source) is changed. */
+	@Override
 	public void onRemoteSoAddressChanged(RtpStreamReceiver rr, SocketAddress remote_soaddr) {
 		try {
 			if (symmetric_rtp && rtp_sender!=null) rtp_sender.setRemoteSoAddress(remote_soaddr);
@@ -458,6 +461,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 
 	/** From RtpStreamReceiverListener. When the stream receiver terminated. */
+	@Override
 	public void onRtpStreamReceiverTerminated(RtpStreamReceiver rr, Exception error) {
 		if (error != null)
 			LOG.info("Exception.", error);
@@ -465,6 +469,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 
 	/** From RtpStreamSenderListener. When the stream sender terminated. */
+	@Override
 	public void onRtpStreamSenderTerminated(RtpStreamSender rs, Exception error) {
 		if (error != null)
 			LOG.info("Exception.", error);

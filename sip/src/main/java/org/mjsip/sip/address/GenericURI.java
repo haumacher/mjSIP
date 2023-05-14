@@ -66,11 +66,13 @@ public class GenericURI {
 	}
 
 	/** Creates and returns a copy of this object. */
+	@Override
 	public Object clone() {
 		return new GenericURI(this);
 	}
 
 	/** Whether object <i>obj</i> is "equal to" this. */
+	@Override
 	public boolean equals(Object obj) {
 		return uri.equals(obj.toString());
 	}
@@ -98,6 +100,7 @@ public class GenericURI {
 	}
 
 	/** Gets string representation of this object. */
+	@Override
 	public String toString() {
 		return uri;
 	}

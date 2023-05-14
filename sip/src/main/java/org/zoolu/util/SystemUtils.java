@@ -19,6 +19,7 @@ public class SystemUtils {
 	 * @param millisecs the length of time before exiting, in milliseconds */
 	public static void exitAfter(final long millisecs)  {
 		new Thread() {
+			@Override
 			public void run() {
 				SystemUtils.sleep(millisecs);
 				System.exit(0);

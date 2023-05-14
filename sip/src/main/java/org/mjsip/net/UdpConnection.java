@@ -84,6 +84,7 @@ public class UdpConnection implements UdpProviderListener {
 
  
 	/** Gets a String representation of this object. */
+	@Override
 	public String toString() {
 		return udp_provider.toString()+"<->"+remote_soaddr.toString();
 	}
@@ -93,12 +94,14 @@ public class UdpConnection implements UdpProviderListener {
 	// *************************** callbacks ***************************
 	
 	/** From UdpProviderListener. When a new UDP datagram is received. */
+	@Override
 	public void onReceivedPacket(UdpProvider udp, UdpPacket packet) {
 		if (listener!=null) listener.onReceivedPacket(this,packet);
 	}
 
 
 	/** From UdpProviderListener. When UdpProvider terminates. */
+	@Override
 	public void onServiceTerminated(UdpProvider udp, Exception error) {
 		if (listener!=null) listener.onConnectionTerminated(this,error);
 	} 

@@ -85,6 +85,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 	//********************** extended methods **********************
 
 	/** From TransportListener. When a new SIP message is received. */
+	@Override
 	public synchronized void onReceivedMessage(SipTransport transport, SipMessage msg) {
 		
 		SocketAddress src_soaddr=new SocketAddress(msg.getRemoteAddress(),msg.getRemotePort());
@@ -115,6 +116,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 	
 
 	/** Sends a SipMessage, specifing the transport portocol, nexthop address and port. */
+	@Override
 	public ConnectionId sendMessage(SipMessage msg, String proto, String dest_addr, int dest_port, int ttl) {
 		// logs
 		String foot_print=msg.getFirstLine();

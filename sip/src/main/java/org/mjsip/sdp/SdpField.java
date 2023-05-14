@@ -67,6 +67,7 @@ public class SdpField {
   
 	/** Creates and returns a copy of the SDP field.
 	  * @return a SDP field clone */
+	@Override
 	public Object clone() {
 		return new SdpField(this);
 	}
@@ -74,6 +75,7 @@ public class SdpField {
 	/** Whether the SDP field is equal to another SDP filed.
 	  * @param obj the other SDP field
 	  * @return true if equal */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			SdpField sf=(SdpField)obj;
@@ -98,6 +100,7 @@ public class SdpField {
 	
 	/** Gets string representation of the SDP field.
 	  * @return the string representation */
+	@Override
 	public String toString() {
 		return type+"="+value+"\r\n";
 	}

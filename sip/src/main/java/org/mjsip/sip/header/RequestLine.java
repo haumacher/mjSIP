@@ -54,11 +54,13 @@ public class RequestLine {
 	}
 
 	/** Creates a new copy of the RequestLine. */
+	@Override
 	public Object clone() {
 		return new RequestLine(getMethod(),getAddress());
 	}
 
 	/** Whether Object <i>obj</i> is "equal to" this RequestLine. */
+	@Override
 	public boolean equals(Object obj) {
 		//if (o.getClass().getSuperclass()!=this.getClass().getSuperclass()) return false;
 		try {
@@ -70,6 +72,7 @@ public class RequestLine {
 	}
 
 	/** Gets String value of this Object. */
+	@Override
 	public String toString() {
 		return method+" "+uri+" SIP/2.0\r\n";
 	}

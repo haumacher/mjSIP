@@ -269,6 +269,7 @@ public class G726_32 extends G726 {
 
 	/** Encodes the input vale of linear PCM, A-law or u-law data sl and returns
 	  * the resulting code. -1 is returned for unknown input coding value. */
+	@Override
 	public int encode(int sl, int in_coding) {
 		return encode(sl,in_coding,state);
 	}
@@ -277,6 +278,7 @@ public class G726_32 extends G726 {
 	  * the G726_32 encoded chuck into out_buff. <br>
 	  * It returns the actual size of the output data, or -1 in case of unknown
 	  * in_coding value. */
+	@Override
 	public int encode(byte[] in_buff, int in_offset, int in_len, int in_coding, byte[] out_buff, int out_offset) {
 		return encode(in_buff,in_offset,in_len,in_coding,out_buff,out_offset,state);
 	}
@@ -285,6 +287,7 @@ public class G726_32 extends G726 {
 	/** Decodes a 4-bit code of G726_32 encoded data of i and
 	  * returns the resulting linear PCM, A-law or u-law value.
 	  * return -1 for unknown out_coding value. */
+	@Override
 	public int decode(int i, int out_coding) {
 		return decode(i,out_coding,state);
 	}
@@ -294,6 +297,7 @@ public class G726_32 extends G726 {
 	  * the linear PCM, A-law or u-law chunk into out_buff. <br>
 	  * It returns the actual size of the output data, or -1 in case of unknown
 	  * out_coding value. */
+	@Override
 	public int decode(byte[] in_buff, int in_offset, int in_len, int out_coding, byte[] out_buff, int out_offset) {
 		return decode(in_buff,in_offset,in_len,out_coding,out_buff,out_offset,state);
 	}

@@ -206,6 +206,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 
 	/** Responds with <i>resp</i> */
+	@Override
 	public void respond(SipMessage resp) {
 		LOG.debug("inside x-respond(resp)");
 		String method=resp.getCSeqHeader().getMethod();
@@ -244,6 +245,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 
 	/** Inherited from class SipProviderListener. */
+	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		LOG.trace("onReceivedMessage(): "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')));
 		if (msg.isResponse()) {
@@ -283,6 +285,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Inherited from TransactionClientListener.
 	  * When the TransactionClientListener goes into the "Completed" state, receiving a failure response */
+	@Override
 	public void onTransFailureResponse(TransactionClient tc, SipMessage msg) {
 		LOG.trace("inside onTransFailureResponse("+tc.getTransactionId()+",msg)");
 		String method=tc.getTransactionMethod();
@@ -338,6 +341,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Inherited from TransactionClientListener.
 	  * When an TransactionClientListener goes into the "Terminated" state, receiving a 2xx response  */
+	@Override
 	public void onTransSuccessResponse(TransactionClient t, SipMessage msg) {
 		LOG.trace("inside onTransSuccessResponse("+t.getTransactionId()+",msg)");
 		attempts=0;
@@ -364,6 +368,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Inherited from TransactionClientListener.
 	  * When the TransactionClient goes into the "Terminated" state, caused by transaction timeout */
+	@Override
 	public void onTransTimeout(TransactionClient t) {
 		LOG.trace("inside onTransTimeout("+t.getTransactionId()+",msg)");
 		String method=t.getTransactionMethod();

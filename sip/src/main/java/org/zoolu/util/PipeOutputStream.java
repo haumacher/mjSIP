@@ -42,17 +42,20 @@ public class PipeOutputStream extends OutputStream {
 	}
 
 	/** Flushes this output stream. */
+	@Override
 	public void flush() throws IOException {
 		
 	}
 	
 	/** Writes b.length bytes from the specified byte array to this output stream. */
+	@Override
 	public void write(byte[] b) throws IOException {
 		//for (int i=0; i< b.length; i++) pipe.write(b[i]);
 		pipe.write(b);
 	}
 	
 	/** Writes len bytes from the specified byte array starting at offset off to this output stream. */
+	@Override
 	public void write(byte[] buff, int off, int len) throws IOException {
 		//int end=off+len;
 		//for (int i=off; i<end; i++) pipe.write(buff[i]);
@@ -60,11 +63,13 @@ public class PipeOutputStream extends OutputStream {
 	}
   
 	/** Writes the specified byte to this output stream. */
+	@Override
 	public void write(int b) throws IOException {
 		pipe.write((byte)b);
 	}
 
 	/** Closes this pipe stream. */
+	@Override
 	public void close() throws IOException {
 		pipe=null;
 	}

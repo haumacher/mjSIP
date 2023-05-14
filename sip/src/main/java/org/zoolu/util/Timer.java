@@ -133,6 +133,7 @@ public class Timer {
 		is_running=true;
 		if (time>0) {
 			TimerTask task=new TimerTask() {
+				@Override
 				public void run() { processInnerTimeout(); }   
 			};
 			scheduleTask(task,time,daemon_mode);

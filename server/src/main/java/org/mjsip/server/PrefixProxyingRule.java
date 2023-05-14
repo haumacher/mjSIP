@@ -54,6 +54,7 @@ class PrefixProxyingRule implements ProxyingRule {
 	  * @param uri the selected destination URI
 	  * @return the proper next-hop SipURI for the selected URI
 	  * if the proxying rule matches the URI, otherwise it returns null. */
+	@Override
 	public SipURI getNexthop(GenericURI uri) {
 		if (!uri.isSipURI()) return null;
 		// else
@@ -66,6 +67,7 @@ class PrefixProxyingRule implements ProxyingRule {
 	}
 
 	/** Gets the String value. */
+	@Override
 	public String toString() {
 		return "{prefix="+prefix+","+"nexthop="+nexthop+"}";
 	}

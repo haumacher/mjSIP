@@ -85,12 +85,14 @@ public class OutputRegulatedUdpSocket extends UdpSocket implements TimerListener
 
 
 	/** Sends an UDP packet from this socket. */ 
+	@Override
 	public void send(UdpPacket pkt) throws java.io.IOException {
 		sendRegulated(pkt);
 	}
 
 
 	/** When the Timer exceeds */
+	@Override
 	public void onTimeout(Timer t) {
 		try { sendTop(); } catch (Exception e) {  e.printStackTrace();  }
 	}

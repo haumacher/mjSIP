@@ -167,6 +167,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	// ************************* Protected methods ************************
 
 	/** Gets the dialog state. */
+	@Override
 	protected String getStatus() {
 		switch (status) {
 			case D_INIT       : return "D_INIT";
@@ -227,18 +228,21 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 
 	/** Whether the dialog is in "early" state. */
+	@Override
 	public boolean isEarly() {
 		return status<D_ACCEPTED;
 	}
 
 
 	/** Whether the dialog is in "confirmed" state. */
+	@Override
 	public boolean isConfirmed() {
 		return status>=D_ACCEPTED && status<D_CLOSE;
 	}
 
 
 	/** Whether the dialog is in "terminated" state. */
+	@Override
 	public boolean isTerminated() {
 		return status==D_CLOSE;
 	}
@@ -843,6 +847,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * If the message is BYE,
 	  * it moves to D_BYED state, removes the listener from SipProvider, fires onDlgBye(this,msg)
 	  * then it responds with 200 OK, moves to D_CLOSE state and fires onDlgClosed(this). */
+	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		LOG.debug("inside onReceivedMessage(sip_provider,message)");
 		// if request
@@ -965,6 +970,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	/** From TransactionClientListener. When the TransactionClientListener is in "Proceeding" state and receives a new 1xx response.
 	  * <p>
 	  * For INVITE transaction it fires <i>onFailureResponse(this,code,reason,body,msg)</i>. */
+	@Override
 	public void onTransProvisionalResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransProvisionalResponse(tc,mdg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
@@ -994,6 +1000,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * <p>
 	  * If called for a BYE transaction, it moves to D_CLOSE state,
 	  * removes the listener from SipProvider, and fires <i>onClose(this,msg)</i>. */
+	@Override
 	public void onTransFailureResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransFailureResponse("+tc.getTransactionId()+",msg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
@@ -1043,6 +1050,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * <p>
 	  * If called for a BYE transaction, it moves to D_CLOSE state,
 	  * removes the listener from SipProvider, and fires <i>onClose(this,msg)</i>. */
+	@Override
 	public void onTransSuccessResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransSuccessResponse(tc,msg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
@@ -1100,6 +1108,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 
 	/** From TransactionClientListener. When the TransactionClient goes into the "Terminated" state, caused by transaction timeout. */
+	@Override
 	public void onTransTimeout(TransactionClient tc) {
 		LOG.debug("inside onTransTimeout(tc,msg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
@@ -1122,6 +1131,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * If called for a INVITE transaction, it initializes the dialog information,
 	  * <br> moves to D_INVITED state, and add a listener to the SipProvider,
 	  * <br> and fires <i>onInvite(caller,body,msg)</i>. */
+	@Override
 	public void onTransRequest(TransactionServer ts, SipMessage req) {
 		LOG.debug("inside onTransRequest(ts,msg)");
 		// INVITE
@@ -1180,6 +1190,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	/** From TransactionServerListener. When an InviteTransactionServer goes into the "Confirmed" state receiving an ACK for NON-2xx response.
 	  * <p>
 	  * It moves to D_CLOSE state and removes the listener from SipProvider. */
+	@Override
 	public void onTransFailureAck(InviteTransactionServer ts, SipMessage msg) {
 		LOG.debug("inside onTransFailureAck(ts,msg)");
 		if (!verifyStatus(statusIs(D_REFUSED)||statusIs(D_ReREFUSED))) return;
@@ -1196,6 +1207,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 
 	/** From AckTransactionServerListener. When the AckTransactionServer goes into the "Terminated" state, caused by transaction timeout. */
+	@Override
 	public void onTransAckTimeout(AckTransactionServer ts) {
 		LOG.debug("inside onAckSrvTimeout(ts)");
 		if (!verifyStatus(statusIs(D_ACCEPTED)||statusIs(D_ReACCEPTED)||statusIs(D_REFUSED)||statusIs(D_ReREFUSED))) return;
@@ -1206,12 +1218,14 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 
 	/** From ReliableProvisionalResponderListener. When a provisional response has been confirmed (PRACK). */
+	@Override
 	public void onReliableProvisionalResponseConfirmation(ReliableProvisionalResponder rr, SipMessage resp, SipMessage prack) {
 		if (listener!=null) listener.onDlgInviteReliableProvisionalResponseConfirmed(this,resp.getStatusLine().getCode(),resp,(prack.hasContentTypeHeader())? prack.getContentTypeHeader().getContentType() : null,prack.getBody(),prack);
 	}
 
 	
 	/** From ReliableProvisionalResponderListener. When the retransmission timeout expired without receiving coinfirmation. */
+	@Override
 	public void onReliableProvisionalResponseTimeout(ReliableProvisionalResponder rr, SipMessage resp) {
 		if (listener!=null) listener.onDlgInviteReliableProvisionalResponseTimeout(this,resp.getStatusLine().getCode(),resp);
 	}

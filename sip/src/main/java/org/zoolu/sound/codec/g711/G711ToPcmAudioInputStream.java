@@ -56,6 +56,7 @@ class G711ToPcmAudioInputStream extends BufferedAudioInputStream {
 	/** Reads a block of bytes from the inner input stream.
 	  * @param buffer the buffer where the the bytes are read to
 	  * @return the number of bytes that have been read */
+	@Override
 	protected int innerRead(byte[] buffer) {
 		try {
 			int aux_len=input_stream.read(aux_buffer);
@@ -78,6 +79,7 @@ class G711ToPcmAudioInputStream extends BufferedAudioInputStream {
 
 	/** Gets the number of bytes that are currently available in the inner input stream for reading.
 	  * @return the number of bytes that can be still read from the inner input stream */
+	@Override
 	protected int innerAvailable() throws java.io.IOException {
 		return input_stream.available()*2;
 	}

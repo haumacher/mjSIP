@@ -124,9 +124,11 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 			// tls server
 			TlsServerFactory tls_server_factory=new TlsServerFactory(tls_context);
 			TcpServerListener this_tls_server_listener=new TcpServerListener() {
+				@Override
 				public void onIncomingConnection(TcpServer tcp_server, TcpSocket socket) {
 					processIncomingConnection(tcp_server,socket);
 				}
+				@Override
 				public void onServerTerminated(TcpServer tcp_server, Exception error) {
 					processServerTerminated(tcp_server,error);
 				}
@@ -149,12 +151,14 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Gets protocol type */ 
+	@Override
 	public String getProtocol() {
 		return PROTO_TLS;
 	}
 
 
 	/** Gets local port */ 
+	@Override
 	public int getLocalPort() {
 		if (tls_server!=null) return tls_server.getPort();
 		else return 0;
@@ -162,6 +166,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Stops running */
+	@Override
 	public void halt() {
 		super.halt();
 		if (tls_server!=null) tls_server.halt();
@@ -187,6 +192,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Creates a transport connection to the remote end-point. */
+	@Override
 	protected SipTransportConnection createTransportConnection(SocketAddress remote_soaddr) throws IOException {
 		TcpSocket tls_socket=tls_socket_factory.createTlsSocket(remote_soaddr.getAddress(),remote_soaddr.getPort());
 		return new TlsTransportConnection(tls_socket,this_conn_listener);
@@ -208,6 +214,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		if (tls_server!=null) return tls_server.toString();
 		else return null;

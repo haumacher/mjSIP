@@ -80,11 +80,13 @@ public class IpAddress {
 	}
 
 	/** Makes a copy */
+	@Override
 	public Object clone() {
 		return new IpAddress(this);
 	}
 
 	/** Wthether it is equal to Object <i>obj</i> */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			IpAddress ipaddr=(IpAddress)obj;
@@ -95,11 +97,13 @@ public class IpAddress {
 	}
 
 	/** Returns a hash code value for the object. */
+	@Override
 	public int hashCode() {
 		return toString().hashCode();
 	}
 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		if (address==null && inet_address!=null) address=inet_address.getHostAddress();
 		return address;

@@ -63,6 +63,7 @@ public class AmrRtpPayloadFormat implements RtpPayloadFormat {
 	  * @param buf buffer that will be filled with the padding data for the given interval
 	  * @param off offset within the buffer
 	  * @return the length of the padding data */
+	@Override
 	public int getSilencePad(int sqn_interval, long timestamp_interval, byte[] buf, int off) {
 		//int len=sqn_interval-1;
 		int len=(int)(timestamp_interval/160)-1;
@@ -78,6 +79,7 @@ public class AmrRtpPayloadFormat implements RtpPayloadFormat {
 	  * @param off the offset within the RTP payload buffer
 	  * @param len the number of bytes of the received (formatted) RTP payload.
 	  * @return the number of bytes after removing the RTP payload format */
+	@Override
 	public int removeRtpPayloadFormat(byte[] buf, int off, int len) throws Exception {
 		if (bandwidth_efficient_mode) return removeRtpPayloadFormatBandwidthEfficient(buf,off,len);
 		else return removeRtpPayloadFormatOctetAligned(buf,off,len);
@@ -89,6 +91,7 @@ public class AmrRtpPayloadFormat implements RtpPayloadFormat {
 	  * @param off the offset within the RTP payload buffer
 	  * @param len the number of bytes of the original (unformatted) RTP payload.
 	  * @return the number of bytes after additional RTP payload format has been applied */
+	@Override
 	public int setRtpPayloadFormat(byte[] buf, int off, int len) {
 		if (bandwidth_efficient_mode) return setRtpPayloadFormatBandwidthEfficient(buf,off,len);
 		else return setRtpPayloadFormatOctetAligned(buf,off,len);
@@ -98,6 +101,7 @@ public class AmrRtpPayloadFormat implements RtpPayloadFormat {
 	/** Gets the actual payload length after the additional format is applied. 
 	  * @param len the number of payload bytes before applying the additional RTP payload format
 	  * @return the number of paylaod bytes after applying the additional RTP payload format. */
+	@Override
 	public int getRtpPayloadFormatLength(int len) {
 		if (bandwidth_efficient_mode) return getRtpPayloadFormatLengthBandwidthEfficient(len);
 		else return getRtpPayloadFormatLengthOctetAligned(len);

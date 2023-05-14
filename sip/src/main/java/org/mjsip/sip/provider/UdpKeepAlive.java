@@ -155,6 +155,7 @@ public class UdpKeepAlive extends Thread {
 
 
 	/** Main thread. */
+	@Override
 	public void run() {
 		try    {
 			while(!stop) {
@@ -169,6 +170,7 @@ public class UdpKeepAlive extends Thread {
 	
 		 
 	/** Gets a String representation of the Object */
+	@Override
 	public String toString() {
 		String str=null;
 		if (udp_socket!=null) {
