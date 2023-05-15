@@ -96,7 +96,7 @@ public abstract class BasicSipMessage {
 	protected StatusLine status_line=null;
 
 	/** Vector of all header fields */
-	protected Vector headers=new Vector();
+	protected Vector<Header> headers = new Vector<>();
 
 	/** Message body */
 	protected byte[] body=null;
@@ -113,7 +113,7 @@ public abstract class BasicSipMessage {
 	  * @param request_line the request-line
 	  * @param headers vector of SIP header fields
 	  * @param body the message body */
-	public BasicSipMessage(RequestLine request_line, Vector headers, byte[] body) {
+	public BasicSipMessage(RequestLine request_line, Vector<Header> headers, byte[] body) {
 		this.request_line=request_line;
 		this.headers=headers;
 		this.body=body;
@@ -123,7 +123,7 @@ public abstract class BasicSipMessage {
 	  * @param status_line the response status-line
 	  * @param headers vector of SIP header fields
 	  * @param body the message body */
-	public BasicSipMessage(StatusLine status_line, Vector headers, byte[] body) {
+	public BasicSipMessage(StatusLine status_line, Vector<Header> headers, byte[] body) {
 		this.status_line=status_line;
 		this.headers=headers;
 		this.body=body;
@@ -320,7 +320,8 @@ public abstract class BasicSipMessage {
 		StringBuffer sb=new StringBuffer();
 		if (request_line!=null) sb.append(request_line.toString());
 		else if (status_line!=null) sb.append(status_line.toString());
-		for (int i=0; i<headers.size(); i++) sb.append(((Header)headers.elementAt(i)).toString());
+		for (int i = 0; i < headers.size(); i++)
+			sb.append(headers.elementAt(i).toString());
 		sb.append("\r\n");
 		return sb;
 	}
@@ -474,7 +475,7 @@ public abstract class BasicSipMessage {
 	/** Gets the position of header <i>hname</i>.. */
 	protected int indexOfHeader(String hname)  {
 		for (int i=0; i<headers.size(); i++) {
-			Header hi=(Header)headers.elementAt(i);
+			Header hi = headers.elementAt(i);
 			if (hname.equalsIgnoreCase(hi.getName())) return i;
 		}
 		return -1;
@@ -491,22 +492,23 @@ public abstract class BasicSipMessage {
 	public Header getHeader(String hname) {
 		int i=indexOfHeader(hname);
 		if (i<0) return null;
-		else return (Header)headers.elementAt(i);
+		else
+			return headers.elementAt(i);
 	}
 
 	/** Gets a Vector of all Headers of specified name (Returns empty Vector if no Header is found). */
-	public Vector getHeaders(String hname) {
-		Vector v=new Vector();
+	public Vector<Header> getHeaders(String hname) {
+		Vector<Header> v = new Vector<>();
 		for (int i=0; i<headers.size(); i++) {
-			Header hi=(Header)headers.elementAt(i);
+			Header hi = headers.elementAt(i);
 			if (hname.equalsIgnoreCase(hi.getName())) v.addElement(hi);
 		}
 		return v; 
 	}
 
 	/** Gets a Vector with all Headers. */
-	public Vector getHeaders() {
-		Vector v=new Vector();
+	public Vector<Header> getHeaders() {
+		Vector<Header> v = new Vector<>();
 		for (int i=0; i<headers.size(); i++) v.addElement(headers.elementAt(i));
 		return v;
 	}
@@ -528,7 +530,7 @@ public abstract class BasicSipMessage {
 	}
 	
 	/** Adds a Vector of Headers at the top/bottom. */
-	public void addHeaders(Vector headers, boolean top)  {
+	public void addHeaders(Vector<Header> headers, boolean top) {
 		int pos=0;
 		if (!top) {
 			pos=headers.size();
@@ -563,7 +565,7 @@ public abstract class BasicSipMessage {
 		else {
 			int index=indexOfHeader(refer_hname);
 			if (index<0) index=0;
-			Vector hs=mheader.getHeaders();
+			Vector<Header> hs = mheader.getHeaders();
 			for (int k=0; k<hs.size(); k++) headers.insertElementAt(hs.elementAt(k),index+k);
 		}
 	}
@@ -583,7 +585,7 @@ public abstract class BasicSipMessage {
 		else {
 			int index=indexOfHeader(refer_hname);
 			if (index>=0) index++; else index=headers.size();
-			Vector hs=mheader.getHeaders();
+			Vector<Header> hs = mheader.getHeaders();
 			for (int k=0; k<hs.size(); k++) headers.insertElementAt(hs.elementAt(k),index+k);
 		}
 	}
@@ -597,7 +599,7 @@ public abstract class BasicSipMessage {
 	public void removeHeader(String hname, boolean first) {
 		int index=-1;
 		for (int i=0 ; i<headers.size(); i++) {
-			Header hi=(Header)headers.elementAt(i);
+			Header hi = headers.elementAt(i);
 			if (hname.equalsIgnoreCase(hi.getName())) {
 				index=i;
 				if (first) i=headers.size();
@@ -609,7 +611,7 @@ public abstract class BasicSipMessage {
 	/** Removes all Headers of specified name. */
 	public void removeAllHeaders(String hname)  {
 		for (int i=0 ; i<headers.size(); i++) {
-			Header hi=(Header)headers.elementAt(i);
+			Header hi = headers.elementAt(i);
 			if (hname.equalsIgnoreCase(hi.getName())) {
 				headers.removeElementAt(i);
 				i--;
@@ -622,7 +624,7 @@ public abstract class BasicSipMessage {
 		boolean not_found=true;
 		String hname=hd.getName();
 		for (int i=0 ; i<headers.size(); i++) {
-			Header hi=(Header)headers.elementAt(i);
+			Header hi = headers.elementAt(i);
 			if (hname.equalsIgnoreCase(hi.getName())) {
 				if (not_found) {
 					// replace it
@@ -646,11 +648,11 @@ public abstract class BasicSipMessage {
 			boolean not_found=true;
 			String hname=mheader.getName();
 			for (int i=0 ; i<headers.size(); i++) {
-				Header hi=(Header)headers.elementAt(i);
+				Header hi = headers.elementAt(i);
 				if (hname.equalsIgnoreCase(hi.getName())) {
 					if (not_found) {
 						// replace it
-						Vector hs=mheader.getHeaders();
+						Vector<Header> hs = mheader.getHeaders();
 						for (int k=0; k<hs.size(); k++) headers.insertElementAt(hs.elementAt(k),i+k);
 						not_found=false;
 						i+=hs.size()-1;

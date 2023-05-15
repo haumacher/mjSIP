@@ -39,7 +39,7 @@ public class MultipleHeader {
 	/** The header type */
 	protected String name;
 	/** Vector of header values (Vector of <code>String</code>) */
-	protected Vector values;
+	protected Vector<String> values;
 	/** whether to be rapresented with a comma-separated(compact) header line or multiple header lines */
 	protected boolean compact;
 
@@ -48,7 +48,7 @@ public class MultipleHeader {
 	/** Creates a void new MultipleHeader. */
 	protected MultipleHeader() {
 		name=null;
-		values=new Vector();
+		values = new Vector<>();
 		compact=true;
 	}
 
@@ -56,14 +56,14 @@ public class MultipleHeader {
 	  * @param hname the header name */
 	public MultipleHeader(String hname) {
 		name=hname;
-		values=new Vector();
+		values = new Vector<>();
 		compact=true;
 	}
 
 	/** Creates a new MultipleHeader.
 	  * @param hname the header name
 	  * @param hvalues vector of header values (Vector of <code>String</code>) */
-	public MultipleHeader(String hname, Vector hvalues) {
+	public MultipleHeader(String hname, Vector<String> hvalues) {
 		name=hname;
 		values=hvalues;
 		compact=true;
@@ -71,11 +71,11 @@ public class MultipleHeader {
 	
 	/** Creates a new MultipleHeader.
 	  * @param headers vector of headers (Vector of <code>Header</code>). Each header can be a single header or a multiple-comma-separated header */
-	public MultipleHeader(Vector headers) {
-		name=((Header)headers.elementAt(0)).getName();
-		values=new Vector(headers.size());
+	public MultipleHeader(Vector<Header> headers) {
+		name = headers.elementAt(0).getName();
+		values = new Vector<>(headers.size());
 		for (int i=0; i<headers.size(); i++) {
-			addBottom((Header)headers.elementAt(i));
+			addBottom(headers.elementAt(i));
 		}
 		compact=false;
 	}   
@@ -84,7 +84,7 @@ public class MultipleHeader {
 	  * @param hd comma-separated header */
 	public MultipleHeader(Header hd) {
 		name=hd.getName();
-		values=new Vector();
+		values = new Vector<>();
 		SipParser par=new SipParser(hd.getValue());
 		int comma=par.indexOfCommaHeaderSeparator();
 		while (comma>=0) {
@@ -160,22 +160,22 @@ public class MultipleHeader {
 
 	/** Gets a vector of header values.
 	  * @return the header values (Vector of <code>String</code>) */
-	public Vector getValues() {
+	public Vector<String> getValues() {
 		return values;
 	}
 
 	/** Sets header values.
 	  * @param v the header values (Vector of <code>String</code>) */
-	public void setValues(Vector v) {
+	public void setValues(Vector<String> v) {
 		values=v; 
 	}
 	
 	/** Gets a vector of headers.
 	  * @return vector of headers (Vector of <code>Header</code>) */
-	public Vector getHeaders() {
-		Vector v=new Vector(values.size());
+	public Vector<Header> getHeaders() {
+		Vector<Header> v = new Vector<>(values.size());
 		for (int i=0; i<values.size(); i++) {
-			Header h=new Header(name,(String)values.elementAt(i));
+			Header h = new Header(name, values.elementAt(i));
 			v.addElement(h);
 		}
 		return v; 
@@ -183,17 +183,17 @@ public class MultipleHeader {
 
 	/** Sets headers.
 	  * @param hdv the headers (Vector of <code>Header</code>) */
-	public void setHeaders(Vector hdv) {
-		values=new Vector(hdv.size());
+	public void setHeaders(Vector<Header> hdv) {
+		values = new Vector<>(hdv.size());
 		for (int i=0; i<hdv.size(); i++) {
-			values.addElement(((Header)hdv.elementAt(i)).getValue());
+			values.addElement(hdv.elementAt(i).getValue());
 		}
 	}
 	
 	/** Gets the i-value.
 	  * @return i-header value */
 	public String getValue(int i) {
-		return (String)values.elementAt(i);
+		return values.elementAt(i);
 	}
 
 	/** Adds top.
@@ -211,7 +211,7 @@ public class MultipleHeader {
 	/** Gets top Header
 	  * @return the top header */
 	public Header getTop() {
-		return new Header(name,(String)values.firstElement());
+		return new Header(name, values.firstElement());
 	}
 	
 	/** Removes the top Header. */
@@ -242,7 +242,7 @@ public class MultipleHeader {
 	/** Gets bottom Header.
 	  * @return the bottom header */
 	public Header getBottom() {
-		return new Header(name,(String)values.lastElement());
+		return new Header(name, values.lastElement());
 	}
 	
 	/** Removes bottom Header. */
