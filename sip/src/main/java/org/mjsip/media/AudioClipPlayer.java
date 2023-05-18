@@ -25,6 +25,7 @@ package org.mjsip.media;
 
 import java.io.File;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -274,19 +275,24 @@ public class AudioClipPlayer implements LineListener  {
 	// ***************************** MAIN *****************************
 	
 	/** The main method. */
-	 public static void main(String[] args)
-	 {
-		  if (args.length<1)
-		  {
-				System.out.println("AudioClipPlayer: usage:\n  java AudioClipPlayer <filename>");
-				System.exit(0);
-		  }
+	public static void main(String[] args) {
+		if (args.length < 1) {
+			System.out.println("AudioClipPlayer: usage:\n  java AudioClipPlayer <filename>");
+			System.exit(0);
+		}
 
-		  AudioClipPlayer p=new AudioClipPlayer(args[0],null);
-		  p.play();
-		  //try { Thread.sleep(3000); } catch (Exception e) { e.printStackTrace(); }
-		  //p.stop(); 
-	 }
+		AtomicBoolean stopped = new AtomicBoolean(false);
+
+		AudioClipPlayer p = new AudioClipPlayer(args[0], player -> stopped.set(true));
+		p.play();
+		try {
+			while (!stopped.get()) {
+				Thread.sleep(1000);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
 
 
