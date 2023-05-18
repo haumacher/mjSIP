@@ -47,10 +47,10 @@ public class NameAddress {
 	}
 
 	/** Display name. */
-	String name;
+	private final String name;
 
 	/** URI. */
-	GenericURI uri;
+	private final GenericURI uri;
 
 
 	/** Creates a new NameAddress. */
@@ -102,21 +102,6 @@ public class NameAddress {
 	/** Whether there is a display name. */
 	public boolean hasDisplayName() {
 		return name!=null;
-	}
-
-	/** Removes display name (if present). */
-	public void removeDisplayName() {
-		name=null;
-	}
-
-	/** Sets URI. */
-	public void setAddress(GenericURI uri) {
-		this.uri=uri;
-	}
-
-	/** Sets display name. */
-	public void setDisplayName(String display_name) {
-		this.name=display_name;
 	}
 
 	/** Gets string representation of this object. */
