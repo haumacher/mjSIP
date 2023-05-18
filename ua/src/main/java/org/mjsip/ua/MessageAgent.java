@@ -72,7 +72,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 
 	/** Sends a new message. */
 	public void send(String recipient, String subject, String content_type, byte[] content) {
-		NameAddress to_uri=new NameAddress(recipient);
+		NameAddress to_uri=NameAddress.parse(recipient);
 		NameAddress from_uri=user_profile.getUserURI();
 		SipMessage req=SipMessageFactory.createMessageRequest(to_uri,from_uri,sip_provider.pickCallId(),subject,content_type,content);
 		TransactionClient t=new TransactionClient(sip_provider,req,this);

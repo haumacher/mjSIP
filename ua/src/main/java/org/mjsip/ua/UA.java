@@ -153,9 +153,9 @@ public class UA {
 			if (regist_time>=0) {  ua_profile.do_register=true;  ua_profile.expires=regist_time;  }
 			if (keepalive_time>=0) ua_profile.keepalive_time=keepalive_time;
 			if (no_offer!=null) ua_profile.no_offer=no_offer.booleanValue();
-			if (call_to!=null) ua_profile.call_to=new NameAddress(call_to);
-			if (redirect_to!=null) ua_profile.redirect_to=new NameAddress(redirect_to);
-			if (transfer_to!=null) ua_profile.transfer_to=new NameAddress(transfer_to);
+			if (call_to!=null) ua_profile.call_to=NameAddress.parse(call_to);
+			if (redirect_to!=null) ua_profile.redirect_to=NameAddress.parse(redirect_to);
+			if (transfer_to!=null) ua_profile.transfer_to=NameAddress.parse(transfer_to);
 			if (transfer_time>0) ua_profile.transfer_time=transfer_time;
 			if (accept_time>=0) ua_profile.accept_time=accept_time;
 			if (hangup_time>0) ua_profile.hangup_time=hangup_time;
@@ -185,7 +185,7 @@ public class UA {
 			if (recv_video_file!=null) ua_profile.recv_video_file=recv_video_file;
 			
 			// for backward compatibility
-			if (from_uri!=null) ua_profile.setUserURI(new NameAddress(from_uri));
+			if (from_uri!=null) ua_profile.setUserURI(NameAddress.parse(from_uri));
 
 			// use audio as default media in case of..
 			if ((recv_only!=null || send_only!=null || send_tone!=null || send_file!=null || recv_file!=null) && video==null) ua_profile.audio=true;

@@ -411,19 +411,19 @@ public class UserAgentProfile extends Configure {
 		if (attribute.equals("call_to")) {
 			String naddr=par.getRemainingString().trim();
 			if (naddr==null || naddr.length()==0 || naddr.equalsIgnoreCase(Configure.NONE)) call_to=null;
-			else call_to=new NameAddress(naddr);
+			else call_to=NameAddress.parse(naddr);
 			return;
 		}
 		if (attribute.equals("redirect_to")) {
 			String naddr=par.getRemainingString().trim();
 			if (naddr==null || naddr.length()==0 || naddr.equalsIgnoreCase(Configure.NONE)) redirect_to=null;
-			else redirect_to=new NameAddress(naddr);
+			else redirect_to=NameAddress.parse(naddr);
 			return;
 		}
 		if (attribute.equals("transfer_to")) {
 			String naddr=par.getRemainingString().trim();
 			if (naddr==null || naddr.length()==0 || naddr.equalsIgnoreCase(Configure.NONE)) transfer_to=null;
-			else transfer_to=new NameAddress(naddr);
+			else transfer_to=NameAddress.parse(naddr);
 			return;
 		}
 		if (attribute.equals("refuse_time"))    {  refuse_time=par.getInt();  return;  }

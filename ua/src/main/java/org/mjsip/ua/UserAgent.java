@@ -270,7 +270,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	  * In the former case, a SIP URI is costructed using the proxy address
 	  * if available. */
 	private NameAddress completeNameAddress(String str) {
-		if (new SipParser(str).indexOf(SipParser.naddr_uri_schemes)>=0) return new NameAddress(str);
+		if (new SipParser(str).indexOf(SipParser.naddr_uri_schemes)>=0) return NameAddress.parse(str);
 		else {
 			SipURI uri=completeSipURI(str);
 			return new NameAddress(uri);
@@ -815,7 +815,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallRedirected()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("REDIRECTION ("+reason+")");
-		NameAddress first_contact=new NameAddress((String)contact_list.elementAt(0));
+		NameAddress first_contact=NameAddress.parse((String)contact_list.elementAt(0));
 		call.call(first_contact); 
 	}
 

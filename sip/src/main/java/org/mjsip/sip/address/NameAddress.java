@@ -37,6 +37,15 @@ import org.mjsip.sip.provider.SipParser;
 */
 public class NameAddress {
 	
+	/**
+	 * Parses a {@link NameAddress} from a string.
+	 */
+	public static NameAddress parse(String str) {
+		SipParser par = new SipParser(str);
+		NameAddress naddr = par.getNameAddress();
+		return naddr;
+	}
+
 	/** Display name. */
 	String name;
 
@@ -62,14 +71,6 @@ public class NameAddress {
 		uri=naddr.getAddress();
 	}
 
-	/** Creates a new NameAddress. */
-	public NameAddress(String str) {
-		SipParser par=new SipParser(str);
-		NameAddress naddr=par.getNameAddress();
-		name=naddr.name;
-		uri=naddr.uri;
-	}
-	
 	/** Creates a copy of this object. */
 	@Override
 	public Object clone() {

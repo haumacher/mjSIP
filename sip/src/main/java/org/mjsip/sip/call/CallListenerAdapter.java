@@ -146,7 +146,7 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 	@Override
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
 		//log("REDIRECTION ("+reason+")");
-		NameAddress first_contact=new NameAddress((String)contact_list.elementAt(0));
+		NameAddress first_contact=NameAddress.parse((String)contact_list.elementAt(0));
 		call.call(first_contact); 
 	}
 
