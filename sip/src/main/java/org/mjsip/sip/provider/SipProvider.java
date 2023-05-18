@@ -415,7 +415,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 				}
 			}
 			catch (Exception e) {
-				LOG.info("Exception. " + e);
+				LOG.warn("Exception. " + e);
 			}
 		}
 		// LOG.debug("transport is up");
@@ -546,8 +546,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 				binding_ipaddr=IpAddress.getByName(str);
 			}
 			catch (IOException e) {
-				LOG.info("Unable to set the following binding address: " + str,
-						e);
+				LOG.warn("Unable to set the following binding address: " + str, e);
 			}
 		}
 	}
@@ -1095,7 +1094,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 			return sendRawMessage(msg,proto,dest_ipaddr,dest_port,ttl); 
 		}
 		catch (Exception e) {
-			LOG.info("Exception.", e);
+			LOG.warn("Exception.", e);
 			return null;
 		}     
 	}
@@ -1128,7 +1127,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 			return connection_id;
 		}
 		catch (IOException e) {
-			LOG.info("Exception", e);
+			LOG.warn("Exception", e);
 			return null;
 		}
 	}
@@ -1174,9 +1173,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 					LOG.debug("NOT a SIP message: discarded\r\n");
 				return;
 			}
-			LOG.info("received new SIP message");
-			LOG.trace("received message:\r\n" + MESSAGE_BEGIN_DELIMITER
-					+ msg.toString() + MESSAGE_END_DELIMITER);
 			
 			// if a request, handle "received" and "rport" parameters
 			if (msg.isRequest()) {
@@ -1490,7 +1486,8 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Adds the SIP message to the message log. */
 	private final void logMessage(String message, String proto, String addr, int port, int len, SipMessage msg) {
 		if (log_all_packets || len>=MIN_MESSAGE_LENGTH) {
-			LOG.info(message + addr + ":" + port + "/" + proto + " (" + len + " bytes): " + msg.toString().replace("\n", "\n\t"));
+			LOG.debug(message + "From: " + addr + ":" + port + "/" + proto + " (" + len + " bytes):\n\t"
+					+ msg.toString().replace("\n", "\n\t"));
 		}
 	}
 

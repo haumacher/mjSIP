@@ -297,19 +297,19 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 		if (ua_profile.do_unregister_all) {
 			// ########## unregisters ALL contact URIs
-			LOG.info("UNREGISTER ALL contact URIs");
+			LOG.info("Unregister all contact URIs");
 			ua.unregisterall();
 		} 
 
 		if (ua_profile.do_unregister) {
 			// unregisters the contact URI
-			LOG.info("UNREGISTER the contact URI");
+			LOG.info("Unregister the contact URI");
 			ua.unregister();
 		} 
 
 		if (ua_profile.do_register) {
 			// ########## registers the contact URI with the registrar server
-			LOG.info("REGISTRATION");
+			LOG.info("Starting registration");
 			ua.loopRegister(ua_profile.expires,ua_profile.expires/2,ua_profile.keepalive_time);
 		} 
 
@@ -535,14 +535,12 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
 		this.setTitle(ua_profile.getUserURI().toString());
-		LOG.info("Registration succeeded: "+result); 
 	}
 
 	/** When registration failed. */
 	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
 		this.setTitle(sip_provider.getContactAddress(ua_profile.user).toString());
-		LOG.error("Registration failed: "+result); 
 	}
 
 

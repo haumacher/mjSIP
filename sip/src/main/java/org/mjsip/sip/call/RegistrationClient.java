@@ -290,7 +290,6 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 
 	/** Registers with the registrar server for <i>expire_time</i> seconds, with a given message body. */
 	protected void register(int expire_time, String content_type, byte[] body) {
-		LOG.info("register with "+registrar_uri+" for "+expire_time+" secs");
 		attempts=0;
 		if (expire_time>0) this.expire_time=expire_time;
 		String call_id=sip_provider.pickCallId();
@@ -309,11 +308,14 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			req.setAuthorizationHeader(ah);
 		}
 		if (body!=null) {
-			LOG.info("register body type: "+content_type+"; length: "+body.length+" bytes");
+			LOG.debug("Register body type: " + content_type + "; length: " + body.length + " bytes");
 			req.setBody(content_type,body);
 		}
-		if (expire_time>0) LOG.info("registering contact "+contact_naddr+" (it expires in "+expire_time+" secs)");
-		else LOG.info("unregistering contact "+contact_naddr);
+		if (expire_time > 0) {
+			LOG.info("Registering contact: " + contact_naddr + " (expiry " + expire_time + " secs)");
+		} else {
+			LOG.info("Unregistering contact: " + contact_naddr);
+		}
 		TransactionClient t=new TransactionClient(sip_provider,req,this);
 		t.request(); 
 	}
@@ -394,22 +396,20 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			int expires=0;
 			if (resp.hasExpiresHeader()) {
 				expires=resp.getExpiresHeader().getDeltaSeconds();
-			}
-			else
-			if (resp.hasContactHeader()) {
-				Vector contacts=resp.getContacts().getHeaders();
+			} else if (resp.hasContactHeader()) {
+				Vector<Header> contacts = resp.getContacts().getHeaders();
 				for (int i=0; i<contacts.size(); i++) {
-					int exp_i=(new ContactHeader((Header)contacts.elementAt(i))).getExpires();
+					int exp_i = (new ContactHeader(contacts.elementAt(i))).getExpires();
 					if (exp_i>0 && (expires==0 || exp_i<expires)) expires=exp_i;
 				}    
 			}
 			if (expires>0 && expires<renew_time) renew_time=expires;
 			
-			LOG.info("Registration success: expires: "+expires+"s: "+result);
+			LOG.info("Registration success, expires in " + expires + "s: " + result);
 			if (loop) {
 				attempt_to=null;
 				(registration_to=new Timer((long)renew_time*1000,this)).start();
-				LOG.trace("next registration after "+renew_time+" secs");
+				LOG.trace("Scheduling next registration in " + renew_time + "s");
 			}
 			if (listener!=null) listener.onRegistrationSuccess(this,to_naddr,contact_naddr,expires,result);
 		}

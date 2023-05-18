@@ -150,7 +150,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 				return connection_id;
 			}
 			catch (Exception e) {
-				LOG.info("error using previous connection with connection-id " + connection_id, e);
+				LOG.warn("error using previous connection with connection-id " + connection_id, e);
 				removeConnection(connection_id);
 			}
 			// no active connection
@@ -249,7 +249,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 		//System.out.println("DEBUG: SipTransportCO: connection terminated");
 		ConnectionId connection_id=new ConnectionId(conn);
 		removeConnection(connection_id);
-		LOG.info("connection " + conn + " terminated", error);
+		LOG.debug("connection " + conn + " terminated", error);
 		if (listener!=null) listener.onTransportConnectionTerminated(this,new SocketAddress(conn.getRemoteAddress(),conn.getRemotePort()),error);
 	}
 
@@ -258,10 +258,11 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	public SipTransportConnection addConnection(IpAddress remote_ipaddr, int remote_port) throws IOException {
 		SipTransportConnection conn=createTransportConnection(new SocketAddress(remote_ipaddr,remote_port));
 		if (conn!=null)  {
-			LOG.info("connection "+conn+" opened");
+			LOG.debug("connection " + conn + " opened");
 			addConnection(conn);
 		}
-		else LOG.info("no connection has been opened");
+		else
+			LOG.debug("no connection has been opened");
 		return conn;
 	}
 
@@ -274,8 +275,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			
 			if (connections.containsKey(connection_id)) {
 				// remove the previous connection
-				LOG.info("trying to add the already established connection "+connection_id);
-				LOG.info("connection "+connection_id+" will be replaced");
+				LOG.info("Adding already established connection, replacing ID: " + connection_id);
 				SipTransportConnection old_conn=(SipTransportConnection)connections.get(connection_id);
 				old_conn.halt();
 				connections.remove(connection_id);
@@ -283,7 +283,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			else
 			if (connections.size()>=nmax_connections) {
 				// remove the older unused connection
-				LOG.info("reached the maximum number of connection: removing the older unused connection");
+				LOG.info("Reached maximum number of connections, removing unused connections.");
 				long older_time=System.currentTimeMillis();
 				ConnectionId older_id=null;
 				for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {

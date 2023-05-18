@@ -74,7 +74,7 @@ public class TransactionClient extends Transaction {
 	void init(TransactionClientListener listener, TransactionClientId transaction_id) {
 		this.transaction_listener=listener;
 		this.transaction_id=transaction_id;
-		LOG.info("new transaction-id: "+transaction_id.toString());
+		LOG.debug("new transaction-id: " + transaction_id.toString());
 	}
 
 
@@ -151,7 +151,7 @@ public class TransactionClient extends Transaction {
 	 */
 	private void onRetransmissionTimeout(Timer timer) {
 		if (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING)) {
-			LOG.info("Retransmission timeout expired");
+			LOG.debug("Retransmission timeout expired");
 
 			sip_provider.sendMessage(request);
 
@@ -178,7 +178,7 @@ public class TransactionClient extends Transaction {
 	 *        The timer that sent the event.
 	 */
 	private void onTransactionTimeout(Timer timer) {
-		LOG.info("Transaction timeout expired.");
+		LOG.debug("Transaction timeout expired.");
 		doTerminate();
 
 		if (transaction_listener != null) {
@@ -201,7 +201,7 @@ public class TransactionClient extends Transaction {
 	 *        The timer that sent the event.
 	 */
 	private void onClearingTimeout(Timer timer) {
-		LOG.info("Clearing timeout expired.");
+		LOG.debug("Clearing timeout expired.");
 		doTerminate();
 	}
 

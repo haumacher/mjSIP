@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageBuffer;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.TcpConnection;
 import org.zoolu.net.TcpConnectionListener;
@@ -40,6 +41,8 @@ import org.zoolu.net.TcpSocket;
   */
 public class TcpTransportConnection implements SipTransportConnection/*, TcpConnectionListener*/ {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TcpTransportConnection.class);
+
 	/** TCP protocol type */
 	static final String PROTO_TCP="tcp";
 
@@ -154,6 +157,7 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 			last_time=System.currentTimeMillis();
 			byte[] data=msg.getBytes();
 			tcp_conn.send(data);
+			
 			// DEBUG:
 			//int offset=data.length/2;
 			//tcp_conn.send(data,0,offset);
@@ -166,7 +170,9 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 	/** Stops running. */
 	@Override
 	public void halt() {
-		if (tcp_conn!=null) tcp_conn.halt();
+		if (tcp_conn != null) {
+			tcp_conn.halt();
+		}
 	}
 
 
@@ -182,7 +188,7 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 	/** When new data is received through the TcpConnection. */
 	private void processReceivedData(TcpConnection tcp_conn, byte[] data, int len) {
-		//System.out.println("DEBUG: TcpTransportConnection: onReceivedData(): len: "+len);
+		LOG.debug("Received " + len + " bytes of data.");
 		last_time=System.currentTimeMillis();
 
 		buffer.append(data,0,len);

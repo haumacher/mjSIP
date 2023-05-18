@@ -32,11 +32,15 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
+import org.slf4j.LoggerFactory;
+
 
 /** TcpConnection provides a TCP connection oriented transport service.
   */
 public class TcpConnection extends Thread {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TcpConnection.class);
+
 	/** The reading buffer size */
 	static final int BUFFER_SIZE=65535;
 
@@ -103,6 +107,7 @@ public class TcpConnection extends Thread {
 			ostream=new BufferedOutputStream(socket.getOutputStream());
 		}
 		catch (Exception e) {
+			LOG.error("Initializing connection failed.", e);
 			error=e;
 		}
 	}
@@ -146,7 +151,10 @@ public class TcpConnection extends Thread {
 
 	/** Stops running. */
 	public void halt() {
-		stop=true;
+		if (!stop) {
+			LOG.debug("Stopping TCP connection to: " + socket);
+			stop = true;
+		}
 	}
 
 
@@ -155,6 +163,8 @@ public class TcpConnection extends Thread {
 		if (!stop && ostream!=null) {
 			ostream.write(buff,offset,len);
 			ostream.flush();
+
+			LOG.debug("Sent " + len + " bytes to: " + socket);
 		}
 	}
 
@@ -168,6 +178,7 @@ public class TcpConnection extends Thread {
 	/** Runs the tcp receiver. */
 	@Override
 	public void run() {
+		LOG.debug("Starting connection handler for: " + socket);
 		
 		byte[] buff=new byte[BUFFER_SIZE];
 		long expire=0;
@@ -188,17 +199,16 @@ public class TcpConnection extends Thread {
 					}
 				}
 				if (len<0) {
-					//error=new Exception("TCP connection closed");
+					LOG.debug("Connection closed: " + socket);
 					stop=true;
-				}
-				else
-				if (len>0) {
+				} else if (len > 0) {
 					if (listener!=null) listener.onReceivedData(this,buff,len);
 					if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
 				}
 			}
 		}
 		catch (Exception e) {
+			LOG.warn("TCP connection crashed.", e);
 			error=e;
 			stop=true;
 		}
@@ -207,6 +217,8 @@ public class TcpConnection extends Thread {
 		if (ostream!=null) try {  ostream.close();  } catch (Exception e) {}
 		if (listener!=null) listener.onConnectionTerminated(this,error);
 		listener=null;
+
+		LOG.debug("Connection handler terminated for: " + socket);
 	} 
 
  

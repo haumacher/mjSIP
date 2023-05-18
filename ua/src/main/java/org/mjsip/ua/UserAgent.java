@@ -624,14 +624,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** From RegistrationClientListener. When it has been successfully (un)registered. */
 	@Override
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		LOG.info("Registration success: expires="+expires+": "+result);
 		if (listener!=null) listener.onUaRegistrationSucceeded(this,result);   
 	}
 
 	/** From RegistrationClientListener. When it failed on (un)registering. */
 	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		LOG.info("Registration failure: "+result);
 		if (listener!=null) listener.onUaRegistrationFailed(this,result);
 	}
 
