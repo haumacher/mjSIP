@@ -117,39 +117,6 @@
 # Default value: on_dialog_route=no
 #on_dialog_route=yes
 
-# ________________________________________________________________
-#
-# Section 2: Logs
-# ________________________________________________________________
-#
-# Change these parameters in order to customize how log-files are handled.
-# By default log files are placed into the ./log folder, they are not rotated,
-# and the maximum size is 2M.
-#
-
-# Log level. Only logs with a level less or equal to this are written.
-# Default value: debug_level=3
-#debug_level=0
-
-# Path for the log folder where log files are written.
-# By default, it is used the "./log" folder
-# Use ".", to store logs in the current root folder
-# Default value: log_path=./log
-#log_path= .
-
-#The size limit of the log file [kB].
-# Default value: max_logsize=2048
-#max_logsize=4096
-
-# The number of rotations of log files. Use '0' for NO rotation, '1' for rotating a single file.
-# Default value: log_rotations=0
-#log_rotations=4
-
-# The rotation period in MONTHs, DAYs, HOURs, or MINUTEs.
-# example: "log_rotation_time=3 MONTHS", that is equivalent to "log_rotations=90 DAYS"
-# Default value: log_rotation_time=2 MONTHS
-#log_rotation_time=7 DAYS
-
 
 
 # ________________________________________________________________
@@ -292,10 +259,6 @@
 # The name of the authentication DB.
 # Default value: authentication_db=aaa.db
 #authentication_db=config/aaa.db
-
-# Whether maintaining a complete call log.   
-# Default value: call_log=no
-#call_log=yes
 
 # Whether the server should stay in the signaling path (uses Record-Route/Route).
 # Default value: on_route=no
