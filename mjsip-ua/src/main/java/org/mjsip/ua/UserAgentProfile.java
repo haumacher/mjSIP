@@ -20,10 +20,6 @@ import org.zoolu.util.VectorUtils;
 /** UserAgentProfile maintains the user configuration.
   */
 public class UserAgentProfile extends Configure {
-	
-	/** The default configuration file */
-	private static String config_file="mjsip.cfg";
-
 		 
 	// ********************** user configurations *********************
 

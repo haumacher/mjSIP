@@ -14,15 +14,10 @@ import org.zoolu.util.Parser;
   */
 public class ServerProfile extends Configure {
 	
-	/** The default configuration file */
-	private static String config_file="mjsip.cfg";
-
-
 	// ********************* static configurations ********************
 
 	/** Proxy transaction timeout (in milliseconds), that corresponds to Timer "C" of RFC2361; RFC2361 suggests C &gt; 3min = 180000ms. */
 	public static int proxy_transaction_timeout=180000;
-
 
 	// ********************* server configurations ********************
 
