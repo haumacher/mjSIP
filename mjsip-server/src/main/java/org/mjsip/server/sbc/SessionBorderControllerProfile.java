@@ -111,12 +111,4 @@ public class SessionBorderControllerProfile extends Configure {
 		}
 	}  
  
-		
-	/** Converts the entire object into lines (to be saved into the config file) */
-	@Override
-	protected String toLines() {
-		// currently not implemented..
-		return toString();
-	}
-	
 }

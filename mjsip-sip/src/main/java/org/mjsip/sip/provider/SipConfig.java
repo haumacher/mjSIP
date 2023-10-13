@@ -326,13 +326,6 @@ public class SipConfig extends Configure {
 		}
 	}
 
-	/** Converts the entire object into lines (to be saved into the config file) */
-	@Override
-	protected String toLines() {
-		// currently not implemented..
-		return "SipStack/"+SipStack.release;
-	}
- 
 	private SipConfig() {
 		super();
 	}

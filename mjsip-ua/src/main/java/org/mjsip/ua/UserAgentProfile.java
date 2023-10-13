@@ -467,14 +467,4 @@ public class UserAgentProfile extends Configure {
 		if (attribute.equals("video_mcast_soaddr")) {  video_mcast_soaddr=new SocketAddress(par.getString());  return;  }
 	}
 
-
-	/** Converts the entire object into lines (to be saved into the config file)
-	  * @return just the user's URI */
-	//  * @return a string representation of this object containing a sequence of lines, each of them formed by pairs of attribute name and attribute value separated by a "=" */
-	@Override
-	protected String toLines() {
-		// currently not implemented..
-		return getUserURI().toString();
-	}
-  
 }

@@ -236,15 +236,6 @@ public class ServerProfile extends Configure {
 		if (attribute.equals("memory_log")) { memory_log=(par.getString().toLowerCase().startsWith("y")); return; }
 	}
 
-
-	/** Converts the entire object into lines (to be saved into the config file) */
-	@Override
-	protected String toLines() {
-		// currently not implemented..
-		return toString();
-	}
-
-
 	/** Gets a String value for this object */
 	@Override
 	public String toString() {

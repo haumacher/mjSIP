@@ -1,9 +1,14 @@
 package org.mjsip.ua.gui;
 
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.net.URL;
 import java.util.Vector;
 
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Parser;
 
@@ -13,6 +18,7 @@ import org.zoolu.util.Parser;
   */
 final class StringList extends Configure {
 	
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StringList.class);
 
 	/** The list */
 	Vector list;
@@ -53,6 +59,24 @@ final class StringList extends Configure {
 		if (file_name!=null) saveFile(file_name);
 	}
 
+	/** Saves Configure attributes on the specified <i>file</i> */
+	protected void saveFile(String file) {
+		if (file==null) return;
+		//else
+		try {
+			writeTo(new FileWriter(file));
+		}
+		catch (IOException e) {
+			LOG.error("Failed writing file \""+file+"\"", e);
+		}         
+	}
+
+	/** Writes Configure attributes to the specified Writer <i>wr</i> */
+	protected void writeTo(Writer wr) throws java.io.IOException {
+		BufferedWriter out=new BufferedWriter(wr);
+		out.write(toLines());
+		out.close();
+	}
 
 	/** Gets elements */
 	public Vector getElements() {
@@ -125,7 +149,6 @@ final class StringList extends Configure {
 	}
 
 	/** Converts the entire object into lines (to be saved into the config file) */
-	@Override
 	protected String toLines() {
 		String str="";
 		for (int i=0; i<list.size(); i++)      {

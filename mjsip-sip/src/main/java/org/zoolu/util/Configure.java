@@ -25,13 +25,9 @@ package org.zoolu.util;
 
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Writer;
 import java.net.URL;
 
 import org.slf4j.LoggerFactory;
@@ -45,29 +41,7 @@ public abstract class Configure {
 	/** String 'NONE' used as undefined value (i.e. null). */
 	public static String NONE="NONE";
 
-	/** Parses a single text line (read from the config file) */
-	protected void parseLine(String line) {
-		String attribute;
-		Parser par;
-		int index=line.indexOf("=");
-		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
-		else {  attribute=line; par=new Parser("");  }
-
-		parseLine(attribute, par);
-	}
-
-	/** Parses a single text line (read from the config file) */
-	protected abstract void parseLine(String attribute, Parser par);
-
-
-	/** Converts the entire object into lines (to be saved into the config file) */
-	protected String toLines() {
-		// convert the object into to one or more text line..
-		return "";
-	}
-
-
-	/** Costructs a Configure container */
+	/** Constructs a Configure container */
 	protected Configure() {
 		super();
 	}
@@ -87,7 +61,6 @@ public abstract class Configure {
 		}
 	}
 
-
 	/** Loads Configure attributes from the specified URL <i>url</i> */
 	protected void loadFile(URL url) {
 		if (url==null) {
@@ -103,20 +76,6 @@ public abstract class Configure {
 		}
 	}
 
-
-	/** Saves Configure attributes on the specified <i>file</i> */
-	protected void saveFile(String file) {
-		if (file==null) return;
-		//else
-		try {
-			writeTo(new FileWriter(file));
-		}
-		catch (IOException e) {
-			LOG.error("Failed writing file \""+file+"\"", e);
-		}         
-	}
-
-	
 	/** Reads Configure attributes from the specified Reader <i>rd</i> */
 	protected void readFrom(Reader rd) throws java.io.IOException {
 		BufferedReader in=new BufferedReader(rd);           
@@ -132,12 +91,18 @@ public abstract class Configure {
 		in.close();
 	}
 
-
-	/** Writes Configure attributes to the specified Writer <i>wr</i> */
-	protected void writeTo(Writer wr) throws java.io.IOException {
-		BufferedWriter out=new BufferedWriter(wr);
-		out.write(toLines());
-		out.close();
+	/** Parses a single text line (read from the config file) */
+	protected void parseLine(String line) {
+		String attribute;
+		Parser par;
+		int index=line.indexOf("=");
+		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
+		else {  attribute=line; par=new Parser("");  }
+	
+		parseLine(attribute, par);
 	}
+
+	/** Parses a single text line (read from the config file) */
+	protected abstract void parseLine(String attribute, Parser par);
 
 }
