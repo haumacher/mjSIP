@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /** Configure helps the loading and saving of configuration data.
   */
-public class Configure {
+public abstract class Configure {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Configure.class);
 	
@@ -46,9 +46,7 @@ public class Configure {
 	public static String NONE="NONE";
 
 	/** Parses a single text line (read from the config file) */
-	protected void parseLine(String line) {
-		// parse the text line..
-	}
+	protected abstract void parseLine(String line);
 
 
 	/** Converts the entire object into lines (to be saved into the config file) */
