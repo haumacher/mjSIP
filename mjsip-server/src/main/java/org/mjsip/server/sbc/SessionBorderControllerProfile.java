@@ -72,23 +72,12 @@ public class SessionBorderControllerProfile extends Configure {
 
 	// ************************** costructors *************************
 	
-	/** Costructs a new SessionBorderControllerProfile */
-	public SessionBorderControllerProfile() {
-		init(null);
-	}
-
-	/** Costructs a new SessionBorderControllerProfile */
+	/** Constructs a new SessionBorderControllerProfile */
 	public SessionBorderControllerProfile(String file) {
-		init(file);
-	}
-
-	/** Inits the SessionBorderControllerProfile */
-	private void init(String file) {
 		loadFile(file);
 		media_ports=new Vector();
 		for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i)); 
 	}
-
 
 	// **************************** methods ***************************
 

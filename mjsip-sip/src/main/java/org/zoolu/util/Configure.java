@@ -45,10 +45,6 @@ public class Configure {
 	/** String 'NONE' used as undefined value (i.e. null). */
 	public static String NONE="NONE";
 
-	/** The object that should be configured */
-	Configurable configurable;
-
-	
 	/** Parses a single text line (read from the config file) */
 	protected void parseLine(String line) {
 		// parse the text line..
@@ -64,17 +60,9 @@ public class Configure {
 
 	/** Costructs a Configure container */
 	protected Configure() {
-		this.configurable=null;
+		super();
 	}
 
-
-	/** Costructs a Configure container */
-	public Configure(Configurable configurable, String file) {
-		this.configurable=configurable;
-		loadFile(file);
-	}
-
-		 
 	/** Loads Configure attributes from the specified <i>file</i> */
 	protected void loadFile(String file) {
 		if (file==null) {
@@ -129,7 +117,7 @@ public class Configure {
 			if (line==null) break;
 		
 			if (!line.startsWith("#")) {
-				if (configurable==null) parseLine(line); else configurable.parseLine(line);
+				parseLine(line);
 			}
 		} 
 		in.close();

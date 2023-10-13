@@ -66,22 +66,11 @@ public class GwProfile extends Configure {
 	// ************************** costructors *************************
 	
 	/** Costructs a new GwProfile */
-	public GwProfile() {
-		init(null);
-	}
-
-	/** Costructs a new GwProfile */
 	public GwProfile(String file) {
-		init(file);
-	}
-
-	/** Inits the GwProfile */
-	private void init(String file) {
 		loadFile(file);
 		media_ports=new Vector();
 		for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i)); 
 	}
-
 
 	// **************************** methods ***************************
 
