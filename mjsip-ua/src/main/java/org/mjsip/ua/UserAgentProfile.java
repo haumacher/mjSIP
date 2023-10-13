@@ -382,13 +382,7 @@ public class UserAgentProfile extends Configure {
 	/** Parses a single line (loaded from the config file)
 	  * @param line a string containing the pair attribute name and attribute value, separated by a "=" */
 	@Override
-	protected void parseLine(String line) {
-		String attribute;
-		Parser par;
-		int index=line.indexOf("=");
-		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
-		else {  attribute=line; par=new Parser("");  }
-				  
+	protected void parseLine(String attribute, Parser par) {
 		if (attribute.equals("display_name"))   {  display_name=par.getRemainingString().trim();  return;  }
 		if (attribute.equals("user"))           {  user=par.getString();  return;  }
 		if (attribute.equals("proxy"))          {  proxy=par.getString();  return;  }
@@ -470,7 +464,7 @@ public class UserAgentProfile extends Configure {
 		if (attribute.equals("javax_sound_sync")) {  javax_sound_sync=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("random_early_drop_rate")) {  random_early_drop_rate=par.getInt();  return;  }
 		if (attribute.equals("audio_mcast_soaddr")) {  audio_mcast_soaddr=new SocketAddress(par.getString());  return;  } 
-		if (attribute.equals("video_mcast_soaddr")) {  video_mcast_soaddr=new SocketAddress(par.getString());  return;  } 
+		if (attribute.equals("video_mcast_soaddr")) {  video_mcast_soaddr=new SocketAddress(par.getString());  return;  }
 	}
 
 

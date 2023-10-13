@@ -46,7 +46,18 @@ public abstract class Configure {
 	public static String NONE="NONE";
 
 	/** Parses a single text line (read from the config file) */
-	protected abstract void parseLine(String line);
+	protected void parseLine(String line) {
+		String attribute;
+		Parser par;
+		int index=line.indexOf("=");
+		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
+		else {  attribute=line; par=new Parser("");  }
+
+		parseLine(attribute, par);
+	}
+
+	/** Parses a single text line (read from the config file) */
+	protected abstract void parseLine(String attribute, Parser par);
 
 
 	/** Converts the entire object into lines (to be saved into the config file) */

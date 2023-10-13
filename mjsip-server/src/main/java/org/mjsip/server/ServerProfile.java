@@ -123,13 +123,7 @@ public class ServerProfile extends Configure {
 
 	/** Parses a single line of the file */
 	@Override
-	protected void parseLine(String line) {
-		String attribute;
-		Parser par;
-		int index=line.indexOf("=");
-		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
-		else {  attribute=line; par=new Parser("");  }
-
+	protected void parseLine(String attribute, Parser par) {
 		if (attribute.equals("proxy_transaction_timeout")) { proxy_transaction_timeout=par.getInt(); return; }
 		if (attribute.equals("is_registrar")) { is_registrar=(par.getString().toLowerCase().startsWith("y")); return; }
 		if (attribute.equals("expires"))        { expires=par.getInt(); return; }
@@ -240,7 +234,6 @@ public class ServerProfile extends Configure {
 		}
 
 		if (attribute.equals("memory_log")) { memory_log=(par.getString().toLowerCase().startsWith("y")); return; }
-
 	}
 
 

@@ -210,12 +210,7 @@ public class SipConfig extends Configure {
 
 	/** Parses a single text line (read from the config file) */
 	@Override
-	protected void parseLine(String line) {
-		String attribute;
-		Parser par;
-		int index=line.indexOf("=");
-		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
-		else {  attribute=line; par=new Parser("");  }
+	protected void parseLine(String attribute, Parser par) {
 		char[] delim={' ',','};
 
 		// default sip provider configurations

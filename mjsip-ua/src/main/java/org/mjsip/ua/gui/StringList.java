@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Vector;
 
 import org.zoolu.util.Configure;
+import org.zoolu.util.Parser;
 
 
 /** Classs StringList handles a vector of Strings.
@@ -118,6 +119,10 @@ final class StringList extends Configure {
 		list.addElement(line);
 	}
 
+	@Override
+	protected void parseLine(String attribute, Parser par) {
+		throw new UnsupportedOperationException();
+	}
 
 	/** Converts the entire object into lines (to be saved into the config file) */
 	@Override
