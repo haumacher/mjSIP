@@ -123,7 +123,7 @@ public class ServerProfile extends Configure {
 
 	/** Parses a single line of the file */
 	@Override
-	protected void parseLine(String attribute, Parser par) {
+	public void setOption(String attribute, Parser par) {
 		if (attribute.equals("proxy_transaction_timeout")) { proxy_transaction_timeout=par.getInt(); return; }
 		if (attribute.equals("is_registrar")) { is_registrar=(par.getString().toLowerCase().startsWith("y")); return; }
 		if (attribute.equals("expires"))        { expires=par.getInt(); return; }

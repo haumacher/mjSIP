@@ -99,10 +99,10 @@ public abstract class Configure {
 		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
 		else {  attribute=line; par=new Parser("");  }
 	
-		parseLine(attribute, par);
+		setOption(attribute, par);
 	}
 
 	/** Parses a single text line (read from the config file) */
-	protected abstract void parseLine(String attribute, Parser par);
+	public abstract void setOption(String attribute, Parser par);
 
 }

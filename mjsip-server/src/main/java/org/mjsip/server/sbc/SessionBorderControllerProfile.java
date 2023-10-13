@@ -4,6 +4,7 @@ package org.mjsip.server.sbc;
 import java.util.Vector;
 
 import org.zoolu.net.SocketAddress;
+import org.zoolu.util.Config;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Parser;
 
@@ -13,8 +14,10 @@ import org.zoolu.util.Parser;
  */
 public class SessionBorderControllerProfile extends Configure {
 	
+	public static final String MEDIA_PORTS = "media_ports";
 		 
 	// *********************** SBC configurations *********************
+
 
 	/** Maximum time that the UDP relay remains active without receiving UDP datagrams (in milliseconds). */
 	public long relay_timeout=60000; // 1min
@@ -73,8 +76,8 @@ public class SessionBorderControllerProfile extends Configure {
 	// ************************** costructors *************************
 	
 	/** Constructs a new SessionBorderControllerProfile */
-	public SessionBorderControllerProfile(String file) {
-		loadFile(file);
+	public SessionBorderControllerProfile(Config config) {
+		config.configure(this);
 		media_ports=new Vector();
 		for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i)); 
 	}
@@ -83,7 +86,7 @@ public class SessionBorderControllerProfile extends Configure {
 
 	/** Parses a single line (loaded from the config file) */
 	@Override
-	protected void parseLine(String attribute, Parser par) {
+	public void setOption(String attribute, Parser par) {
 		if (attribute.equals("relay_timeout")) { relay_timeout=par.getInt(); return; }
 		if (attribute.equals("binding_timeout")) { binding_timeout=par.getInt(); return; }
 		if (attribute.equals("handover_time")) { handover_time=par.getInt(); return; }
@@ -97,7 +100,7 @@ public class SessionBorderControllerProfile extends Configure {
 		if (attribute.equals("sink_addr")) { sink_addr=par.getString(); return; }
 		if (attribute.equals("sink_port")) { sink_port=par.getInt(); return; }
 		if (attribute.equals("media_addr")) { media_addr=par.getString(); return; }
-		if (attribute.equals("media_ports")) {
+		if (attribute.equals(MEDIA_PORTS)) {
 			char[] delim={' ','-',':'};
 			first_port=Integer.parseInt(par.getWord(delim));
 			last_port=Integer.parseInt(par.getWord(delim));

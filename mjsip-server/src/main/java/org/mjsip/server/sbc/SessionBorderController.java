@@ -43,6 +43,7 @@ import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipKeepAlive;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
+import org.zoolu.util.Config;
 import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
 
@@ -362,24 +363,22 @@ public class SessionBorderController extends Proxy {
 		boolean help=flags.getBoolean("--prompt","prompt for exit");
 		boolean memory_debugging=flags.getBoolean("-d",null);
 		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		String[] ports=flags.getStringTuple("-m",2,"<fist_port> <last_port>",null,"interval of media ports");
-		int first_port=ports!=null? Integer.parseInt(ports[0]) : 0;
-		int last_port=ports!=null? Integer.parseInt(ports[1]) : 0;
+		Config config = new Config(file);
+		
+		String ports=flags.getString("-m","<first_port> <last_port>",null, "interval of media ports");
+		if (ports != null) {
+			config.setOption(SessionBorderControllerProfile.MEDIA_PORTS, ports);
+		}
 		
 		if (help) {
 			System.out.println(flags.toUsageString(SessionBorderController.class.getName()));
 			return;
 		}
-
+		
 		SipConfig sipConfig = SipConfig.init(file);
 		ServerProfile server_profile=new ServerProfile(file);
-		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(file);
+		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(config);
 
-		if (first_port>0 && last_port>=first_port) {
-			Vector media_ports=new Vector();
-			for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i));
-			sbc_profile.media_ports=media_ports;
-		}
 		// create a new ExtendedSipProvider
 		long keepalive_aggressive_time=(sbc_profile.keepalive_aggressive)? sbc_profile.keepalive_time : 0;
 		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig,sbc_profile.binding_timeout,keepalive_aggressive_time);

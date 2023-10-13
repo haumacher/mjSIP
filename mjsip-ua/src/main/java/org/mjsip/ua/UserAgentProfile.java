@@ -382,7 +382,7 @@ public class UserAgentProfile extends Configure {
 	/** Parses a single line (loaded from the config file)
 	  * @param line a string containing the pair attribute name and attribute value, separated by a "=" */
 	@Override
-	protected void parseLine(String attribute, Parser par) {
+	public void setOption(String attribute, Parser par) {
 		if (attribute.equals("display_name"))   {  display_name=par.getRemainingString().trim();  return;  }
 		if (attribute.equals("user"))           {  user=par.getString();  return;  }
 		if (attribute.equals("proxy"))          {  proxy=par.getString();  return;  }

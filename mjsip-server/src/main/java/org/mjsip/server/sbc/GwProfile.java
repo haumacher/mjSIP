@@ -76,7 +76,7 @@ public class GwProfile extends Configure {
 
 	/** Parses a single line (loaded from the config file) */
 	@Override
-	protected void parseLine(String attribute, Parser par) {
+	public void setOption(String attribute, Parser par) {
 		if (attribute.equals("relay_timeout")) { relay_timeout=par.getInt(); return; }
 		if (attribute.equals("binding_timeout")) { binding_timeout=par.getInt(); return; }
 		if (attribute.equals("handover_time")) { handover_time=par.getInt(); return; }

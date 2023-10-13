@@ -144,7 +144,7 @@ final class StringList extends Configure {
 	}
 
 	@Override
-	protected void parseLine(String attribute, Parser par) {
+	public void setOption(String attribute, Parser par) {
 		throw new UnsupportedOperationException();
 	}
 

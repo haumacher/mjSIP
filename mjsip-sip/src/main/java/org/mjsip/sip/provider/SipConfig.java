@@ -210,7 +210,7 @@ public class SipConfig extends Configure {
 
 	/** Parses a single text line (read from the config file) */
 	@Override
-	protected void parseLine(String attribute, Parser par) {
+	public void setOption(String attribute, Parser par) {
 		char[] delim={' ',','};
 
 		// default sip provider configurations
@@ -330,13 +330,10 @@ public class SipConfig extends Configure {
 		super();
 	}
 
-	/** Creates a {@link SipConfig}. */
-	public static SipConfig init() {
-		return init(null);
-	}
-
-	/** Inits SipStack from the specified <i>file</i> */
+	/** Creates {@link SipConfig} from the specified <i>file</i> */
 	public static SipConfig init(String file) {
+		LOG.info("Loading SIP configuration from: " + file);
+		
 		SipConfig result = new SipConfig();
 		result.loadFile(file);
 		result.normalize();
