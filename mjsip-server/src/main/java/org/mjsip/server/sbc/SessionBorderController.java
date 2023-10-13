@@ -40,7 +40,7 @@ import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipKeepAlive;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Flags;
@@ -157,7 +157,7 @@ public class SessionBorderController extends Proxy {
 		// before doing anything, force the use of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {
 			ViaHeader via=req.getViaHeader();
-			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():SipStack.default_port);
+			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():SipConfig.default_port);
 			// pass to the backend_proxy only requests that are not coming from it
 			if (!via_soaddr.equals(sbc_profile.backend_proxy)) {
 				Vector route_list;
@@ -178,7 +178,7 @@ public class SessionBorderController extends Proxy {
 					GenericURI route=(new RouteHeader((Header)route_list.elementAt(index))).getNameAddress().getAddress();
 					if (route.isSipURI()) {
 						SipURI sip_route=new SipURI(route);
-						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():SipStack.default_port);
+						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():SipConfig.default_port);
 						already_on_route=route_soaddr.equals(sbc_profile.backend_proxy);
 					}
 				}
@@ -243,7 +243,7 @@ public class SessionBorderController extends Proxy {
 				SipURI sip_uri=new SipURI(uri);
 				String host=sip_uri.getHost();
 				int port=sip_uri.getPort();
-				if (port<=0) port=SipStack.default_port;
+				if (port<=0) port=SipConfig.default_port;
 				SocketAddress soaddr=new SocketAddress(host,port);
 				int time=ch.getExpires();
 				if (time>0) {
@@ -371,7 +371,7 @@ public class SessionBorderController extends Proxy {
 			return;
 		}
 
-		SipStack.init(file);
+		SipConfig.init(file);
 		ServerProfile server_profile=new ServerProfile(file);
 		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(file);
 

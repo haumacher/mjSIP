@@ -35,7 +35,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.transaction.InviteTransactionServer;
 import org.mjsip.sip.transaction.Transaction;
 import org.mjsip.sip.transaction.TransactionClient;
@@ -366,7 +366,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			return;
 		}
 						
-		SipStack.init(file);
+		SipConfig.init(file);
 		SipProvider sip_provider=new SipProvider(file);
 		ServerProfile server_profile=new ServerProfile(file);
 		

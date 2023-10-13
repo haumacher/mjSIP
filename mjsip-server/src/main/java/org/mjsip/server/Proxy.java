@@ -38,7 +38,7 @@ import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -187,7 +187,7 @@ public class Proxy extends Registrar {
 		// add Record-Route?
 		if (server_profile.on_route && msg.isInvite()/* && !is_on_route*/) {
 			SipURI rr_uri;
-			if (sip_provider.getPort()==SipStack.default_port) rr_uri=new SipURI(sip_provider.getViaAddress());
+			if (sip_provider.getPort()==SipConfig.default_port) rr_uri=new SipURI(sip_provider.getViaAddress());
 			else rr_uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
 			if (server_profile.loose_route) rr_uri.addLr();
 			RecordRouteHeader rrh=new RecordRouteHeader(new NameAddress(rr_uri));
@@ -230,7 +230,7 @@ public class Proxy extends Registrar {
 		// decrement Max-Forwards
 		MaxForwardsHeader maxfwd=msg.getMaxForwardsHeader();
 		if (maxfwd!=null) maxfwd.decrement();
-		else maxfwd=new MaxForwardsHeader(SipStack.max_forwards);
+		else maxfwd=new MaxForwardsHeader(SipConfig.max_forwards);
 		msg.setMaxForwardsHeader(maxfwd);      
 
 		// check whether the next Route is formed according to RFC2543
@@ -380,7 +380,7 @@ public class Proxy extends Registrar {
 			return;
 		}
 					
-		SipStack.init(file);
+		SipConfig.init(file);
 		SipProvider sip_provider=new SipProvider(file);
 		ServerProfile server_profile=new ServerProfile(file);
 

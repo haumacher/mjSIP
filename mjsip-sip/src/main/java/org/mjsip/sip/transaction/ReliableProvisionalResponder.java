@@ -32,6 +32,7 @@ import org.mjsip.sip.header.RAckHeader;
 import org.mjsip.sip.header.RSeqHeader;
 import org.mjsip.sip.header.RequireHeader;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipStack;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Random;
@@ -155,9 +156,9 @@ public class ReliableProvisionalResponder {
 
 	/** Sends the head-of-line response. */
 	private synchronized void sendNextResponse() {
-		transaction_to=new Timer(SipStack.transaction_timeout,this_timer_listener);
+		transaction_to=new Timer(SipConfig.transaction_timeout,this_timer_listener);
 		transaction_to.start();
-		retransmission_to=new Timer(SipStack.retransmission_timeout,this_timer_listener);
+		retransmission_to=new Timer(SipConfig.retransmission_timeout,this_timer_listener);
 		retransmission_to.start();
 		SipMessage resp=(SipMessage)responses.elementAt(0);
 		invite_ts.respondWith(resp); 
@@ -170,7 +171,7 @@ public class ReliableProvisionalResponder {
 			if (to.equals(retransmission_to)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>SipStack.max_retransmission_timeout) timeout=SipStack.max_retransmission_timeout;
+				if (timeout>SipConfig.max_retransmission_timeout) timeout=SipConfig.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this_timer_listener);
 				retransmission_to.start();
 				SipMessage resp=(SipMessage)responses.elementAt(0);

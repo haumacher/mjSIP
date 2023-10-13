@@ -26,7 +26,7 @@ package org.mjsip.ua;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.zoolu.util.Flags;
 
 
@@ -84,7 +84,7 @@ public class UserAgentConfig {
 		int transfer_time=transfer!=null? Integer.parseInt(transfer[1]) : -1;
 		int re_invite_time=flags.getInteger("-i","<secs>",-1,"re-invites after given seconds");
 		
-		int host_port=flags.getInteger("-p","<port>",SipStack.default_port,"local SIP port, used ONLY without -f option");
+		int host_port=flags.getInteger("-p","<port>",SipConfig.default_port,"local SIP port, used ONLY without -f option");
 		int media_port=flags.getInteger("-m","<port>",0,"(first) local media port");
 		String via_addr=flags.getString("--via-addr","<addr>",SipProvider.AUTO_CONFIGURATION,"host via address, used ONLY without -f option");
 		String outbound_proxy=flags.getString("-o","<addr>[:<port>]",null,"uses the given outbound proxy");
@@ -131,7 +131,7 @@ public class UserAgentConfig {
 		}
 		{
 			// init SipStack
-			SipStack.init(config_file);
+			SipConfig.init(config_file);
 
 			// init sip_provider
 			if (config_file!=null) sip_provider=new SipProvider(config_file);

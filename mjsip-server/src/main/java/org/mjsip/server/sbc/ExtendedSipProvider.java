@@ -26,7 +26,7 @@ package org.mjsip.server.sbc;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipTransport;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
@@ -95,7 +95,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 		try {
 			// maintain socket address bindiding for symmetring NAT
 			ViaHeader via=msg.getViaHeader();
-			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():SipStack.default_port);
+			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():SipConfig.default_port);
 			if (via_soaddr.equals(src_soaddr)) {
 				if (address_resolver.contains(via_soaddr)) {
 					// remove binding

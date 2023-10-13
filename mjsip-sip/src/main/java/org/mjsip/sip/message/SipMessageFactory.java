@@ -49,7 +49,7 @@ import org.mjsip.sip.header.SubjectHeader;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 
 
 
@@ -291,7 +291,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		if (contact==null) {
 			ContactHeader star=new ContactHeader(); // contact is *
 			req.setContactHeader(star);
-			req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipStack.default_expires)));
+			req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipConfig.default_expires)));
 		}
 		return req;
 	}

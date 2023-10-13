@@ -28,7 +28,7 @@ package org.mjsip.sip.transaction;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
@@ -77,9 +77,9 @@ public class InviteTransactionClient extends TransactionClient implements TimerL
 		this.transaction_id=transaction_id;
 		this.ack=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(SipStack.retransmission_timeout,null);
-		transaction_to=new Timer(SipStack.transaction_timeout,null);
-		end_to=new Timer(SipStack.transaction_timeout,null);
+		retransmission_to=new Timer(SipConfig.retransmission_timeout,null);
+		transaction_to=new Timer(SipConfig.transaction_timeout,null);
+		end_to=new Timer(SipConfig.transaction_timeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 

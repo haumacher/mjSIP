@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.ua.cli.MessageAgentCli;
 import org.zoolu.util.Flags;
 
@@ -30,7 +30,7 @@ public class MA {
 			return;
 		}
 				
-		SipStack.init(file);
+		SipConfig.init(file);
 		UserAgentProfile user_profile=new UserAgentProfile(file);         
 		
 		if (regist_time>0) {

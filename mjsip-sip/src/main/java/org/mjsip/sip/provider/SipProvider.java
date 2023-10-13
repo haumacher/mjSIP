@@ -164,27 +164,27 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** For TLS. Whether all client and server certificates should be considered trusted.
 	  * By default, trust_all={@link #default_tls_trust_all}. */
-	boolean trust_all=SipStack.default_tls_trust_all;
+	boolean trust_all=SipConfig.default_tls_trust_all;
 
 	/** For TLS. names of the files containing trusted certificates.
 	  * The file names include the full path starting from the current working folder.
-	  * By default, trust_all={@link SipStack#default_tls_trusted_certs}. */
-	String[] trusted_certs=SipStack.default_tls_trusted_certs;
+	  * By default, trust_all={@link SipConfig#default_tls_trusted_certs}. */
+	String[] trusted_certs=SipConfig.default_tls_trusted_certs;
 
 	/** For TLS. Path of the folder where trusted certificates are placed.
 	  * All certificates (with file extension ".crt") found in this folder are considered trusted.
-	  * By default, trust_folder={@link SipStack#default_tls_trust_folder}. */
-	String trust_folder=SipStack.default_tls_trust_folder;
+	  * By default, trust_folder={@link SipConfig#default_tls_trust_folder}. */
+	String trust_folder=SipConfig.default_tls_trust_folder;
 
 	/** For TLS. Absolute file name of the certificate (containing the public key) of the local node.
 	  * The file name includes the full path starting from the current working folder.
-	  * By default, trust_folder={@link SipStack#default_tls_cert_file}. */
-	String cert_file=SipStack.default_tls_cert_file;
+	  * By default, trust_folder={@link SipConfig#default_tls_cert_file}. */
+	String cert_file=SipConfig.default_tls_cert_file;
 
 	/** For TLS. Absolute file name of the private key of the local node.
 	  * The file name includes the full path starting from the current working folder.
-	  * By default, trust_folder={@link SipStack#default_tls_key_file}. */
-	String key_file=SipStack.default_tls_key_file;
+	  * By default, trust_folder={@link SipConfig#default_tls_key_file}. */
+	String key_file=SipConfig.default_tls_key_file;
 
 
 	// for backward compatibility:
@@ -317,7 +317,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Creates a new SipProvider. 
 	  * @param file file where all configuration parameters are read from. */ 
 	public SipProvider(String file) {
-		if (!SipStack.isInit()) SipStack.init(file);
+		if (!SipConfig.isInit()) SipConfig.init(file);
 		new Configure(this,file);
 		init(via_addr,host_port);
 		initLog();
@@ -327,16 +327,16 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Inits the SipProvider, initializing the SipProviderListeners, the transport protocols, the outbound proxy, and other attributes. */ 
 	private void init(String via_addr, int host_port) {
-		if (!SipStack.isInit()) SipStack.init();
+		if (!SipConfig.isInit()) SipConfig.init();
 		if (via_addr==null || via_addr.equalsIgnoreCase(AUTO_CONFIGURATION)) via_addr=IpAddress.getLocalHostAddress().toString();
 		this.via_addr=via_addr;
-		if (host_port<=0) host_port=SipStack.default_port;
+		if (host_port<=0) host_port=SipConfig.default_port;
 		this.host_port=host_port;
-		rport=SipStack.use_rport; 
-		force_rport=SipStack.force_rport; 
+		rport=SipConfig.use_rport; 
+		force_rport=SipConfig.force_rport; 
 		
 		// just for backward compatibility..
-		if (outbound_port<0) outbound_port=SipStack.default_port;
+		if (outbound_port<0) outbound_port=SipConfig.default_port;
 		if (outbound_addr!=null) {
 			if (outbound_addr.equalsIgnoreCase(Configure.NONE) || outbound_addr.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
 			else outbound_proxy=new SipURI(outbound_addr,outbound_port);
@@ -360,10 +360,10 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Inits and starts the transport services. */ 
 	private void initSipTrasport(String[] transport_protocols, int[] transport_ports) {
 		
-		if (transport_protocols==null) transport_protocols=SipStack.default_transport_protocols;
+		if (transport_protocols==null) transport_protocols=SipConfig.default_transport_protocols;
 		this.transport_protocols=transport_protocols;
 		if (transport_protocols.length>0) default_transport=transport_protocols[0];
-		if (nmax_connections<=0) nmax_connections=SipStack.default_nmax_connections;
+		if (nmax_connections<=0) nmax_connections=SipConfig.default_nmax_connections;
 
 		sip_transports=new Hashtable();
 		for (int i=0; i<transport_protocols.length; i++) {
@@ -382,7 +382,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 				}
 				else
 				if (proto.equals(PROTO_TLS)) {
-					if (port==0) port=(host_port==SipStack.default_port)? SipStack.default_tls_port : host_port+1;
+					if (port==0) port=(host_port==SipConfig.default_port)? SipConfig.default_tls_port : host_port+1;
 					if (trust_all) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file);
 					else {
 						if (trusted_certs!=null) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trusted_certs);
@@ -628,7 +628,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
 	  * @return a SIP or SIPS contact URI for this SIP provider */
 	public NameAddress getContactAddress(String user, boolean secure) {
-		SipURI uri=(getPort()!=SipStack.default_port)? new SipURI(user,getViaAddress(),getPort()) : new SipURI(user,getViaAddress());
+		SipURI uri=(getPort()!=SipConfig.default_port)? new SipURI(user,getViaAddress(),getPort()) : new SipURI(user,getViaAddress());
 		if (secure) {
 			if (!hasSecureTransport()) return null;
 			// else
@@ -997,7 +997,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 		}
 
 		// if port <= use default port
-		if (dest_port<=0) dest_port=(isSecureTransport(proto))? SipStack.default_port+1 : SipStack.default_port;
+		if (dest_port<=0) dest_port=(isSecureTransport(proto))? SipConfig.default_port+1 : SipConfig.default_port;
 
 		return sendMessage(msg,proto,dest_addr,dest_port,ttl); 
 	}
@@ -1182,7 +1182,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 				int src_port=msg.getRemotePort();
 				String via_addr=vh.getHost();
 				int via_port=vh.getPort();
-				if (via_port<=0) via_port=SipStack.default_port;
+				if (via_port<=0) via_port=SipConfig.default_port;
 				 
 				if (!via_addr.equals(src_addr)) {
 					vh.setReceived(src_addr);

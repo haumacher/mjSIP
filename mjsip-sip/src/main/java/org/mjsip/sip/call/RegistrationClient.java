@@ -44,7 +44,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.slf4j.LoggerFactory;
@@ -250,8 +250,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		this.from_naddr=from_naddr;
 		this.contact_naddr=contact_naddr;
 
-		this.expire_time=SipStack.default_expires;
-		this.renew_time=SipStack.default_expires;
+		this.expire_time=SipConfig.default_expires;
+		this.renew_time=SipConfig.default_expires;
 	}
 
 
@@ -421,7 +421,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			StatusLine status=resp.getStatusLine();
 			int code=status.getCode();
-			if (code==401 && attempts<SipStack.regc_auth_attempts && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
+			if (code==401 && attempts<SipConfig.regc_auth_attempts && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
 				// UAS authentication
 				attempts++;
 				SipMessage req=transaction.getRequestMessage();
@@ -441,7 +441,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				t.request();
 			}
 			else
-			if (code==407 && attempts<SipStack.regc_auth_attempts && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
+			if (code==407 && attempts<SipConfig.regc_auth_attempts && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
 				// Proxy authentication
 				attempts++;
 				SipMessage req=transaction.getRequestMessage();
@@ -461,8 +461,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				LOG.info("Registration failure: "+result);
 				if (loop) {
 					registration_to=null;
-					(attempt_to=new Timer(SipStack.regc_max_attempt_timeout,this)).start();
-					LOG.trace("next attempt after "+(SipStack.regc_max_attempt_timeout/1000)+" secs");
+					(attempt_to=new Timer(SipConfig.regc_max_attempt_timeout,this)).start();
+					LOG.trace("next attempt after "+(SipConfig.regc_max_attempt_timeout/1000)+" secs");
 				}
 				if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,result);
 			}
@@ -476,8 +476,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			LOG.info("Registration failure: No response from server");
 			if (loop) {
 				registration_to=null;
-				long inter_time_msecs=(attempt_to==null)? SipStack.regc_min_attempt_timeout : attempt_to.getTime()*2;
-				if (inter_time_msecs>SipStack.regc_max_attempt_timeout) inter_time_msecs=SipStack.regc_max_attempt_timeout;
+				long inter_time_msecs=(attempt_to==null)? SipConfig.regc_min_attempt_timeout : attempt_to.getTime()*2;
+				if (inter_time_msecs>SipConfig.regc_max_attempt_timeout) inter_time_msecs=SipConfig.regc_max_attempt_timeout;
 				(attempt_to=new Timer(inter_time_msecs,this)).start();
 				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}

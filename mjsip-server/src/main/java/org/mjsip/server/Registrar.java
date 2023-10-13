@@ -37,7 +37,7 @@ import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.DateFormat;
@@ -334,7 +334,7 @@ public class Registrar extends ServerEngine {
 			return;
 		}
 			
-		SipStack.init(file);
+		SipConfig.init(file);
 		SipProvider sip_provider=new SipProvider(file);
 		ServerProfile server_profile=new ServerProfile(file);
 		

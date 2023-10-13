@@ -45,7 +45,7 @@ import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.header.UserAgentHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 
 
 
@@ -86,7 +86,7 @@ public abstract class BasicSipMessageFactory {
 		SipMessage req=new SipMessage();
 		//mandatory headers first (To, From, Via, Max-Forwards, Call-ID, CSeq):
 		req.setRequestLine(new RequestLine(method,request_uri));
-		ViaHeader via=new ViaHeader(SipStack.default_transport_protocols[0],DEFAULT_VIA_ADDRESS,0);
+		ViaHeader via=new ViaHeader(SipConfig.default_transport_protocols[0],DEFAULT_VIA_ADDRESS,0);
 		//if (rport) via.setRport();
 		//if (branch==null) branch=SipProvider.pickBranch();
 		String branch=SipProvider.pickBranch();
@@ -100,9 +100,9 @@ public abstract class BasicSipMessageFactory {
 		req.setCSeqHeader(new CSeqHeader(cseq,method));
 		//optional headers:
 		if (contact!=null) req.addContactHeader(new ContactHeader(contact));
-		req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipStack.default_expires)));
+		req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipConfig.default_expires)));
 		// add User-Agent header field
-		if (SipStack.ua_info!=null) req.setUserAgentHeader(new UserAgentHeader(SipStack.ua_info));
+		if (SipConfig.ua_info!=null) req.setUserAgentHeader(new UserAgentHeader(SipConfig.ua_info));
 		//if (body!=null) req.setBody(body); else req.setBody("");
 		req.setBody(content_type,body);
 		return req;
@@ -225,7 +225,7 @@ public abstract class BasicSipMessageFactory {
 		resp.setCSeqHeader(req.getCSeqHeader());
 		if (contact!=null) resp.setContactHeader(new ContactHeader(contact));
 		// add Server header field
-		if (SipStack.server_info!=null) resp.setServerHeader(new ServerHeader(SipStack.server_info));
+		if (SipConfig.server_info!=null) resp.setServerHeader(new ServerHeader(SipConfig.server_info));
 		//if (body!=null) resp.setBody(body); else resp.setBody("");
 		resp.setBody(content_type,body);
 		return resp;
@@ -243,7 +243,7 @@ public abstract class BasicSipMessageFactory {
 		//String reason=SipResponses.reasonOf(code);
 		String localtag=null;
 		if (req.createsDialog() && !req.getToHeader().hasTag()) {
-			if ((SipStack.early_dialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
+			if ((SipConfig.early_dialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
 		}
 		return createResponse(req,code,reason,localtag,contact,null,null);
 	}

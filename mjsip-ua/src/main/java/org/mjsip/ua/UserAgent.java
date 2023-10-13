@@ -52,7 +52,7 @@ import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Timer;
@@ -381,7 +381,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : new SipURI(rc.getTargetAOR().getAddress());
 			String target_host=target_uri.getHost();
 			int target_port=target_uri.getPort();
-			if (target_port<0) target_port=SipStack.default_port;
+			if (target_port<0) target_port=SipConfig.default_port;
 			SocketAddress target_soaddr=new SocketAddress(target_host,target_port);
 			if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
 			keep_alive=new SipKeepAlive(sip_provider,target_soaddr,null,keepalive_time);

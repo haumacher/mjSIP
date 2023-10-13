@@ -30,7 +30,7 @@ import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
@@ -117,11 +117,11 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 		this.invite_ts_listener=listener;
 		this.transaction_id=transaction_id;
 		this.connection_id=connection_id;
-		auto_trying=SipStack.auto_trying;
+		auto_trying=SipConfig.auto_trying;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(SipStack.retransmission_timeout,null);
-		end_to=new Timer(SipStack.transaction_timeout,null);
-		clearing_to=new Timer(SipStack.clearing_timeout,null);
+		retransmission_to=new Timer(SipConfig.retransmission_timeout,null);
+		end_to=new Timer(SipConfig.transaction_timeout,null);
+		clearing_to=new Timer(SipConfig.clearing_timeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
@@ -230,7 +230,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 			if (to.equals(retransmission_to) && statusIs(STATE_COMPLETED)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>SipStack.max_retransmission_timeout) timeout=SipStack.max_retransmission_timeout;
+				if (timeout>SipConfig.max_retransmission_timeout) timeout=SipConfig.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this);
 				retransmission_to.start();
 				sip_provider.sendMessage(response);

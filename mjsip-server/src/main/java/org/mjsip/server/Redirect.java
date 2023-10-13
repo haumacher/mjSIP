@@ -29,7 +29,7 @@ import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sip.provider.SipConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -100,7 +100,7 @@ public class Redirect extends Registrar {
 			return;
 		}
 						
-		SipStack.init(file);
+		SipConfig.init(file);
 		SipProvider sip_provider=new SipProvider(file);
 		ServerProfile server_profile=new ServerProfile(file);
 
