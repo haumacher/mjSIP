@@ -3,7 +3,7 @@ package org.mjsip.server;
 
 import java.util.Vector;
 
-import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.sip.provider.SipConfig;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
@@ -157,7 +157,7 @@ public class ServerProfile extends Configure {
 			Vector aux=new Vector();
 			do {
 				String domain=par.getWord(delim);
-				if (domain.equals(SipProvider.AUTO_CONFIGURATION)) {
+				if (domain.equals(SipConfig.AUTO_CONFIGURATION)) {
 					// auto configuration
 					IpAddress host_addr=IpAddress.getLocalHostAddress();
 					aux.addElement(host_addr.toString());

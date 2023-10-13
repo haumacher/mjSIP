@@ -49,7 +49,9 @@ public class DummyUAS implements SipProviderListener {
 	public DummyUAS(int port, int code, String reason) {
 		this.code=code;
 		this.reason=reason;
-		sip_provider = new SipProvider(SipConfig.init(),null, port);
+		SipConfig sipConfig = SipConfig.init();
+		sipConfig.update(null, port);
+		sip_provider = new SipProvider(sipConfig);
 		sip_provider.addSelectiveListener(MethodId.ANY,this);
 	}
 

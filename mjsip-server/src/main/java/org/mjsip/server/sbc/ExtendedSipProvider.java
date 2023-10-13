@@ -60,16 +60,16 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 	/** Constructs a new ExtendedSipProvider. 
 	 * Creates the ExtendedSipProvider, initializing the SipProviderListeners, the transport protocols, and other attributes. 
 	 */ 
-	public ExtendedSipProvider(SipConfig sipConfig, String via_addr, int port, String[] protocols, long refresh_time, long keepalive_time) {
-		super(sipConfig,via_addr,port, protocols);
+	public ExtendedSipProvider(SipConfig sipConfig, String[] protocols, long refresh_time, long keepalive_time) {
+		super(sipConfig,protocols);
 		init(refresh_time,keepalive_time);
 	}    
 
 	/** Costructs a new ExtendedSipProvider. 
-	  * The SipProvider attributres are read from file. 
-	 * @param sipConfig TODO*/ 
-	public ExtendedSipProvider(SipConfig sipConfig, String file, long refresh_time, long keepalive_time) {
-		super(sipConfig, file);
+	 * The SipProvider attributres are read from file. 
+	 */ 
+	public ExtendedSipProvider(SipConfig sipConfig, long refresh_time, long keepalive_time) {
+		super(sipConfig);
 		init(refresh_time,keepalive_time);
 	}
 

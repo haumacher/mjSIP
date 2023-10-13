@@ -55,8 +55,8 @@ public class ConnectedSipProvider extends SipProvider {
 	 * @param via_addr SIP local via address
 	 * @param host_port SIP local port
 	 * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(SipConfig sipConfig, String via_addr, int host_port, SipURI outbound_proxy) throws IOException {
-		super(sipConfig,via_addr, host_port);
+	public ConnectedSipProvider(SipConfig sipConfig, SipURI outbound_proxy) throws IOException {
+		super(sipConfig);
 		setOutboundProxy(outbound_proxy);
 		setForceRport(true);
 		connect();
@@ -68,33 +68,21 @@ public class ConnectedSipProvider extends SipProvider {
 	 * @param host_port SIP local port
 	 * @param transport_protocols array of active transport protocols
 	 * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(SipConfig sipConfig, String via_addr, int host_port, String[] transport_protocols, SipURI outbound_proxy) throws IOException {
-		super(sipConfig,via_addr,host_port, transport_protocols);
+	public ConnectedSipProvider(SipConfig sipConfig, String[] transport_protocols, SipURI outbound_proxy) throws IOException {
+		super(sipConfig,transport_protocols);
 		setOutboundProxy(outbound_proxy);
 		setForceRport(true);
 		connect();
 	}
-
-	/** Creates a new ConnectedSipProvider. 
-	 * @param sipConfig The SIP stack configuration.
-	 * @param file file where all configuration parameters are read from
-	 * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(SipConfig sipConfig, String file, SipURI outbound_proxy) throws IOException {
-		super(sipConfig, file);
-		setOutboundProxy(outbound_proxy);
-		setForceRport(true);
-		connect();
-	}
-
 
 	/** Connects to the Oubound Proxy. */ 
 	private void connect() throws IOException {
-		if (sip_transports==null || outbound_proxy==null) return;
+		if (sip_transports==null || sipConfig.outbound_proxy==null) return;
 		// else
-		IpAddress proxy_addr=IpAddress.getByName(outbound_proxy.getHost());
-		int proxy_port=outbound_proxy.getPort();
+		IpAddress proxy_addr=IpAddress.getByName(sipConfig.outbound_proxy.getHost());
+		int proxy_port=sipConfig.outbound_proxy.getPort();
 		if (proxy_port<=0) proxy_port=5060;
-		String proxy_proto=(outbound_proxy.hasTransport())? outbound_proxy.getTransport() : null;
+		String proxy_proto=(sipConfig.outbound_proxy.hasTransport())? sipConfig.outbound_proxy.getTransport() : null;
 		
 		for (Enumeration i=sip_transports.elements(); i.hasMoreElements(); ) {
 			try {

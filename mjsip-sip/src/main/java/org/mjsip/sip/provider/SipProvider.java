@@ -40,9 +40,6 @@ import org.mjsip.sip.message.SipMessageFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Configurable;
-import org.zoolu.util.Configure;
-import org.zoolu.util.Parser;
 import org.zoolu.util.Random;
 import org.zoolu.util.SimpleDigest;
 import org.zoolu.util.VectorUtils;
@@ -92,7 +89,7 @@ import org.zoolu.util.VectorUtils;
   * Note: no 482 (Loop Detected) nor 501 (Not Implemented) responses are generated for requests
   * that does not properly match any active transactions, dialogs, nor method types.
   */
-public class SipProvider implements Configurable, SipTransportListener {
+public class SipProvider implements SipTransportListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipProvider.class);
 
@@ -109,12 +106,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** SCTP protocol type */
 	public static final String PROTO_SCTP="sctp";
 	
-	/** String value "auto-configuration" used for auto configuration of the host address */
-	public static final String AUTO_CONFIGURATION="AUTO-CONFIGURATION";
-
-	/** String value "auto-configuration" used for auto configuration of the host address */
-	public static final String ALL_INTERFACES="ALL-INTERFACES";
-
 	/** String value "NO-OUTBOUND" used for setting no outbound proxy */
 	//public static final String NO_OUTBOUND="NO-OUTBOUND";
 
@@ -127,75 +118,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Message end delimiter */
 	private static final String MESSAGE_END_DELIMITER="-----End-of-message-----\r\n";
 
-
-	// ********************* Configurable attributes *********************
-
-	/** Via IP address or fully-qualified domanin name (FQDN).
-	  * Use 'auto-configuration' for auto detection, or let it undefined. */
-	String via_addr=null;
-
-	/** Local SIP port */
-	int host_port=0;
-
-	/** Network interface (IP address) used by SIP for selective binding.
-	  * Use 'ALL-INTERFACES' or let it undefined for binding SIP to all interfaces. */
-	IpAddress binding_ipaddr=null;
-
-	/** List of enabled transport protocols (the first protocol is used as default). */
-	String[] transport_protocols=null;
-	
-	/** List of transport ports, ordered as the corresponding transport_protocols. */
-	int[] transport_ports=null;
-
-	/** Max number of (contemporary) open connections */
-	int nmax_connections=0;
-
-	/** Outbound proxy URI ([sip:]host_addr[:host_port][;transport=proto]).
-	  * Use 'NONE' for not using an outbound proxy (or let it undefined). */
-	SipURI outbound_proxy=null;
-
-	/** Tel Gatway URI ([sip:]host_addr[:host_port][;transport=proto]).
-	  * URI of a default SIP proxy/gateway that is used for sending request messages with a "tel" URI as request-uri.
-	  * Use 'NONE' for not using a tel gateway (or let it undefined). */
-	SipURI tel_gateway=null;
-
-	/** Whether logging all packets (including non-SIP keepalive tokens). */
-	boolean log_all_packets=false;
-
-
-	/** For TLS. Whether all client and server certificates should be considered trusted.
-	  * By default, trust_all={@link #default_tls_trust_all}. */
-	boolean trust_all;
-
-	/** For TLS. names of the files containing trusted certificates.
-	  * The file names include the full path starting from the current working folder.
-	  * By default, trust_all={@link SipConfig#default_tls_trusted_certs}. */
-	String[] trusted_certs;
-
-	/** For TLS. Path of the folder where trusted certificates are placed.
-	  * All certificates (with file extension ".crt") found in this folder are considered trusted.
-	  * By default, trust_folder={@link SipConfig#default_tls_trust_folder}. */
-	String trust_folder;
-
-	/** For TLS. Absolute file name of the certificate (containing the public key) of the local node.
-	  * The file name includes the full path starting from the current working folder.
-	  * By default, trust_folder={@link SipConfig#default_tls_cert_file}. */
-	String cert_file;
-
-	/** For TLS. Absolute file name of the private key of the local node.
-	  * The file name includes the full path starting from the current working folder.
-	  * By default, trust_folder={@link SipConfig#default_tls_key_file}. */
-	String key_file;
-
-
-	// for backward compatibility:
-
-	/** Outbound proxy addr (for backward compatibility). */
-	private String outbound_addr=null;
-	/** Outbound proxy port (for backward compatibility). */
-	private int outbound_port=-1;
-
-
 	// ************************ Other attributes *************************
 
 	/** Table of supported transport layers for SIP (Hashtable of protocol (<code>String</code>), transport (<code>SipTransport</code>)) */
@@ -203,9 +125,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Default transport */
 	String default_transport=null;
-
-	/** Whether adding 'rport' parameter on outgoing requests. */
-	boolean rport=true;
 	
 	/** Whether forcing 'rport' parameter on incoming requests ('force-rport' mode). */
 	boolean force_rport=false;
@@ -223,66 +142,25 @@ public class SipProvider implements Configurable, SipTransportListener {
 	
 	public final SipMessageFactory sipMessageFactory;
 
-	/** Creates a new SipProvider.
-	 * @param via_addr SIP local via address
-	 * @param host_port SIP local port */ 
-	public SipProvider(SipConfig sipConfig, String via_addr, int host_port) {
-		this.sipConfig = sipConfig;
-		sipMessageFactory = new SipMessageFactory(sipConfig);
-		init(via_addr,host_port);
-		initLog();
-		initSipTrasport(transport_protocols,null);
-	}
-
-
 	/** Creates a new SipProvider. 
 	 * @param via_addr SIP local via address
 	 * @param host_port SIP local port
 	 * @param transport_protocols array of active transport protocols */
-	public SipProvider(SipConfig sipConfig, String via_addr, int host_port, String[] transport_protocols) {
+	public SipProvider(SipConfig sipConfig, String[] transport_protocols) {
 		this.sipConfig = sipConfig;
 		sipMessageFactory = new SipMessageFactory(sipConfig);
-		init(via_addr,host_port);
 		initLog();
 		initSipTrasport(transport_protocols,null);
 	}
 
-	/** Creates a new SipProvider. 
-	  * @param file file where all configuration parameters are read from. */ 
-	public SipProvider(SipConfig sipConfig, String file) {
+	/** Creates a new SipProvider. */ 
+	public SipProvider(SipConfig sipConfig) {
 		this.sipConfig = sipConfig;
 		sipMessageFactory = new SipMessageFactory(sipConfig);
-		new Configure(this,file);
-		init(via_addr,host_port);
 		initLog();
-		initSipTrasport(transport_protocols,transport_ports);
+		initSipTrasport(sipConfig.transport_protocols,sipConfig.transport_ports);
 	}
 
-
-	/** Inits the SipProvider, initializing the SipProviderListeners, the transport protocols, the outbound proxy, and other attributes. */ 
-	private void init(String via_addr, int host_port) {
-		trust_all=sipConfig.default_tls_trust_all;
-		trusted_certs=sipConfig.default_tls_trusted_certs;
-		trust_folder=sipConfig.default_tls_trust_folder;
-		cert_file=sipConfig.default_tls_cert_file;
-		key_file=sipConfig.default_tls_key_file;
-		
-		if (via_addr==null || via_addr.equalsIgnoreCase(AUTO_CONFIGURATION)) via_addr=IpAddress.getLocalHostAddress().toString();
-		this.via_addr=via_addr;
-		if (host_port<=0) host_port=sipConfig.default_port;
-		this.host_port=host_port;
-		rport=sipConfig.use_rport; 
-		force_rport=sipConfig.force_rport; 
-		
-		// just for backward compatibility..
-		if (outbound_port<0) outbound_port=sipConfig.default_port;
-		if (outbound_addr!=null) {
-			if (outbound_addr.equalsIgnoreCase(Configure.NONE) || outbound_addr.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
-			else outbound_proxy=new SipURI(outbound_addr,outbound_port);
-		}
-	}
-
-	
 	/** Inits logs. */ 
 	private void initLog() {
 		LOG.info("SipStack: " + SipStack.release);
@@ -300,9 +178,9 @@ public class SipProvider implements Configurable, SipTransportListener {
 	private void initSipTrasport(String[] transport_protocols, int[] transport_ports) {
 		
 		if (transport_protocols==null) transport_protocols=sipConfig.default_transport_protocols;
-		this.transport_protocols=transport_protocols;
+		sipConfig.transport_protocols=transport_protocols;
 		if (transport_protocols.length>0) default_transport=transport_protocols[0];
-		if (nmax_connections<=0) nmax_connections=sipConfig.default_nmax_connections;
+		if (sipConfig.nmax_connections<=0) sipConfig.nmax_connections=sipConfig.default_nmax_connections;
 
 		sip_transports=new Hashtable();
 		for (int i=0; i<transport_protocols.length; i++) {
@@ -311,21 +189,21 @@ public class SipProvider implements Configurable, SipTransportListener {
 				int port=(transport_ports!=null && transport_ports.length>i)? port=transport_ports[i] : 0;
 				SipTransport transp=null;
 				if (proto.equals(PROTO_UDP)) {
-					if (port==0) port=host_port;
-					transp=new UdpTransport(port,binding_ipaddr);
+					if (port==0) port=sipConfig.host_port;
+					transp=new UdpTransport(port,sipConfig.binding_ipaddr);
 				}
 				else
 				if (proto.equals(PROTO_TCP)) {
-					if (port==0) port=host_port;
-					transp=new TcpTransport(port,binding_ipaddr,nmax_connections);
+					if (port==0) port=sipConfig.host_port;
+					transp=new TcpTransport(port,sipConfig.binding_ipaddr,sipConfig.nmax_connections);
 				}
 				else
 				if (proto.equals(PROTO_TLS)) {
-					if (port==0) port=(host_port==sipConfig.default_port)? sipConfig.default_tls_port : host_port+1;
-					if (trust_all) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file);
+					if (port==0) port=(sipConfig.host_port==sipConfig.default_port)? sipConfig.default_tls_port : sipConfig.host_port+1;
+					if (sipConfig.trust_all) transp=new TlsTransport(port,sipConfig.binding_ipaddr,sipConfig.nmax_connections,sipConfig.key_file,sipConfig.cert_file);
 					else {
-						if (trusted_certs!=null) transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trusted_certs);
-						else transp=new TlsTransport(port,binding_ipaddr,nmax_connections,key_file,cert_file,trust_folder);
+						if (sipConfig.trusted_certs!=null) transp=new TlsTransport(port,sipConfig.binding_ipaddr,sipConfig.nmax_connections,sipConfig.key_file,sipConfig.cert_file,sipConfig.trusted_certs);
+						else transp=new TlsTransport(port,sipConfig.binding_ipaddr,sipConfig.nmax_connections,sipConfig.key_file,sipConfig.cert_file,sipConfig.trust_folder);
 					}
 				}
 				else
@@ -335,11 +213,11 @@ public class SipProvider implements Configurable, SipTransportListener {
 				}
 				else
 				if (proto.equals(PROTO_SCTP)) {
-					if (port==0) port=host_port;
+					if (port==0) port=sipConfig.host_port;
 					//transp=new SctpTransport(new SocketAddress(binding_ipaddr,port),nmax_connections,log_writer);
 					Class sctp_transport=Class.forName("org.zoolu.ext.sip.provider.SctpTransport");
 					Class[] param_classes={ Class.forName("org.zoolu.net.SocketAddress"), int.class, Class.forName("org.zoolu.util.LogWriter") };
-					Object[] param_objects={ new SocketAddress(binding_ipaddr,port), new Integer(nmax_connections)};
+					Object[] param_objects={ new SocketAddress(sipConfig.binding_ipaddr,port), new Integer(sipConfig.nmax_connections)};
 					try  {
 						java.lang.reflect.Constructor constructor=sctp_transport.getConstructor(param_classes);
 						transp=(SipTransport)constructor.newInstance(param_objects);
@@ -408,89 +286,6 @@ public class SipProvider implements Configurable, SipTransportListener {
 		exception_listeners=new Vector();
 	}
 
-
-	/** From Configurable. Parses a single line (loaded from the config file). */
-	@Override
-	public void parseLine(String line) {
-		String attribute;
-		Parser par;
-		int index=line.indexOf("=");
-		if (index>0) {  attribute=line.substring(0,index).trim(); par=new Parser(line,index+1);  }
-		else {  attribute=line; par=new Parser("");  }
-		char[] delim={' ',','};
-		
-		if (attribute.equals("via_addr")) {  via_addr=par.getString(); return;  }
-		if (attribute.equals("host_port")) {  host_port=par.getInt(); return;  }
-		if (attribute.equals("binding_ipaddr")) {  setBindingIpAddress(par.getString()); return;  }
-		if (attribute.equals("transport_protocols")) {  transport_protocols=par.getWordArray(delim); return;  }
-		if (attribute.equals("transport_ports")) {  transport_ports=par.getIntArray(); return;  }
-		if (attribute.equals("nmax_connections")) {  nmax_connections=par.getInt(); return;  }
-		if (attribute.equals("outbound_proxy")) {
-			String str_uri=par.getString();
-			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE) || str_uri.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
-			else outbound_proxy=new SipURI(str_uri);
-			return;
-		}
-		if (attribute.equals("tel_gateway")) {
-			String str_uri=par.getString();
-			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE)) tel_gateway=null;
-			else tel_gateway=new SipURI(str_uri);
-			return;
-		}
-		if (attribute.equals("log_all_packets")) { log_all_packets=(par.getString().toLowerCase().startsWith("y")); return; }
-
-		// certificates
-		if (attribute.equals("trust_all")){ trust_all=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("trusted_certs")){ trusted_certs=par.getStringArray(); return; }
-		if (attribute.equals("trust_folder")){ trust_folder=par.getRemainingString().trim(); return; }
-		if (attribute.equals("cert_file")){ cert_file=par.getRemainingString().trim(); return; }
-		if (attribute.equals("key_file")){ key_file=par.getRemainingString().trim(); return; }
-
-		// old parameters
-		if (attribute.equals("host_addr"))
-			LOG.warn("parameter 'host_addr' is no more supported; use 'via_addr' instead.");
-		if (attribute.equals("tls_port"))
-			LOG.warn("parameter 'tls_port' is no more supported; use 'transport_ports' instead.");
-		if (attribute.equals("all_interfaces"))
-			LOG.warn(
-					"parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
-		if (attribute.equals("use_outbound"))
-			LOG.warn(
-					"parameter 'use_outbound' is no more supported; use 'outbound_proxy' for setting an outbound proxy or let it undefined.");
-		if (attribute.equals("outbound_addr")) {
-			LOG.warn(
-					"parameter 'outbound_addr' has been deprecated; use 'outbound_proxy=[sip:]<host_addr>[:<host_port>][;transport=proto]' instead.");
-			outbound_addr=par.getString();
-			return;
-		}
-		if (attribute.equals("outbound_port")) {
-			LOG.warn(
-					"parameter 'outbound_port' has been deprecated; use 'outbound_proxy=<host_addr>[:<host_port>]' instead.");
-			outbound_port=par.getInt();
-			return;
-		}
-		if (attribute.equals("host_ifaddr")) {
-			LOG.warn("parameter 'host_ifaddr' has been deprecated; use 'binding_ipaddr' instead.");
-			setBindingIpAddress(par.getString());
-			return;
-		}
-	}  
-
-
-	/** Sets the binding IP address . */
-	private void setBindingIpAddress(String str) {
-		if (str==null || str.equalsIgnoreCase(ALL_INTERFACES)) binding_ipaddr=null;
-		else {
-			try {
-				binding_ipaddr=IpAddress.getByName(str);
-			}
-			catch (IOException e) {
-				LOG.warn("Unable to set the following binding address: " + str, e);
-			}
-		}
-	}
-
-
 	/** Converts the entire object into lines (to be saved into the config file) */
 	protected String toLines() {
 		// currently not implemented..
@@ -525,7 +320,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Gets via address. */ 
 	public String getViaAddress() {
-		return via_addr;
+		return sipConfig.via_addr;
 	}    
 	
 	/** Sets via address. */ 
@@ -535,7 +330,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Gets host port. */ 
 	public int getPort() {
-		return host_port;
+		return sipConfig.host_port;
 	}       
 
 	/** Gets tls port. */ 
@@ -580,12 +375,12 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Whether binding the sip provider to all interfaces or only on the specified host address. */
 	public boolean isAllInterfaces() {
-		return binding_ipaddr==null;
+		return sipConfig.binding_ipaddr==null;
 	}       
 
 	/** Gets the binding IP address. */ 
 	public IpAddress getBindingIpAddress() {
-		return binding_ipaddr;
+		return sipConfig.binding_ipaddr;
 	}    
 	
 	/** Gets array of transport protocols. */ 
@@ -623,14 +418,9 @@ public class SipProvider implements Configurable, SipTransportListener {
 		default_transport=proto;
 	}    
 
-	/** Sets rport support. */ 
-	public synchronized void setRport(boolean flag) {
-		rport=flag;
-	}   
-
 	/** Whether using rport. */ 
 	public boolean isRportSet() {
-		return rport;
+		return sipConfig.use_rport;
 	}   
 
 	/** Sets 'force-rport' mode. */ 
@@ -669,17 +459,17 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Whether has outbound proxy. */ 
 	public boolean hasOutboundProxy() {
-		return outbound_proxy!=null;
+		return sipConfig.outbound_proxy!=null;
 	}    
 
 	/** Gets the outbound proxy. */ 
 	public SipURI getOutboundProxy() {
-		return outbound_proxy;
+		return sipConfig.outbound_proxy;
 	}    
 
 	/** Sets the outbound proxy. Use 'null' for not using any outbound proxy. */ 
 	public synchronized void setOutboundProxy(SipURI uri) {
-		outbound_proxy=uri;
+		sipConfig.outbound_proxy=uri;
 	}
 
 	/** Removes the outbound proxy. */ 
@@ -689,27 +479,27 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Whether has tel gateway. */ 
 	public boolean hasTelGateway() {
-		return tel_gateway!=null;
+		return sipConfig.tel_gateway!=null;
 	}    
 
 	/** Gets the tel gateway. */ 
 	public SipURI getTelGateway() {
-		return tel_gateway;
+		return sipConfig.tel_gateway;
 	}    
 
 	/** Sets the tel gateway. Use 'null' for not using any tel gateway. */ 
 	public synchronized void setTelGateway(SipURI uri) {
-		tel_gateway=uri;
+		sipConfig.tel_gateway=uri;
 	}
 
 	/** Gets the max number of (contemporary) open connections. */ 
 	public int getNMaxConnections() {
-		return nmax_connections;
+		return sipConfig.nmax_connections;
 	}    
 
 	/** Sets the max number of (contemporary) open connections. */ 
 	public synchronized void setNMaxConnections(int n) {
-		nmax_connections=n;
+		sipConfig.nmax_connections=n;
 	}    
 		
 	/** Returns the table of active listeners as Hastable:(SipId)IDs--&gt;(SipListener)listener. */ 
@@ -837,7 +627,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * @return Returns a ConnectionId in case of connection-oriented delivery
 	  * (e.g. TCP) or null in case of connection-less delivery (e.g. UDP) */
 	public ConnectionId sendMessage(SipMessage msg) {
-		if (log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
+		if (sipConfig.log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
 			LOG.trace("sendMessage()");
 		LOG.trace("message to send:\r\n" + MESSAGE_BEGIN_DELIMITER
 				+ msg.toString() + MESSAGE_END_DELIMITER);
@@ -873,7 +663,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 		
 		if (msg.isRequest()) {
 			// REQUESTS
-			GenericURI nexthop_uri=outbound_proxy;
+			GenericURI nexthop_uri=sipConfig.outbound_proxy;
 			// else
 			if (nexthop_uri==null) {
 				if (msg.hasRouteHeader()) {
@@ -914,13 +704,13 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via=new ViaHeader(proto,via_addr,host_port);
-				if (rport) via.setRport();
+				ViaHeader via=new ViaHeader(proto,sipConfig.via_addr,sipConfig.host_port);
+				if (sipConfig.use_rport) via.setRport();
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}
 			// update the via according to transport information
-			updateViaHeader(msg,proto,via_addr,host_port,maddr,ttl);
+			updateViaHeader(msg,proto,sipConfig.via_addr,sipConfig.host_port,maddr,ttl);
 			
 			LOG.debug("using transport " + proto);
 		}
@@ -1007,8 +797,8 @@ public class SipProvider implements Configurable, SipTransportListener {
 		if (msg.isRequest()) {
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via=new ViaHeader(proto,via_addr,host_port);
-				if (rport) via.setRport();
+				ViaHeader via=new ViaHeader(proto,sipConfig.via_addr,sipConfig.host_port);
+				if (sipConfig.use_rport) via.setRport();
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}
@@ -1027,7 +817,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	  * It does the same as method {@link #sendMessage(SipMessage,String,String,int,int)}, but no via address is added (if not already present) in request messages.  */
 	public ConnectionId sendRawMessage(SipMessage msg, String proto, String dest_addr, int dest_port, int ttl) {
 		try {
-			if (log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
+			if (sipConfig.log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
 				LOG.debug("Resolving host address '" + dest_addr + "'");
 			IpAddress dest_ipaddr=IpAddress.getByName(dest_addr);  
 			return sendRawMessage(msg,proto,dest_ipaddr,dest_port,ttl); 
@@ -1042,7 +832,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Sends the <i>msg</i> message, specifing the transport protocol, nexthop address and port.
 	  * For request messages, no via address is added. */
 	private ConnectionId sendRawMessage(SipMessage msg, String proto, IpAddress dest_ipaddr, int dest_port, int ttl) {
-		if (log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
+		if (sipConfig.log_all_packets || msg.getLength() > MIN_MESSAGE_LENGTH)
 			LOG.debug("Sending message to "
 					+ (new ConnectionId(proto, dest_ipaddr, dest_port))
 							.toString());
@@ -1101,14 +891,14 @@ public class SipProvider implements Configurable, SipTransportListener {
 			
 			// discard too short messages (e.g. CRLFCRLF "PING", or CRLF "PONG")
 			if (msg.getLength()<=4) {
-				if (log_all_packets)
+				if (sipConfig.log_all_packets)
 					LOG.debug("message too short: discarded\r\n");
 				return;
 			}
 			// discard non-SIP messages
 			String first_line=msg.getFirstLine();
 			if (first_line==null || first_line.toUpperCase().indexOf("SIP/2.0")<0) {
-				if (log_all_packets)
+				if (sipConfig.log_all_packets)
 					LOG.debug("NOT a SIP message: discarded\r\n");
 				return;
 			}
@@ -1257,7 +1047,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 					"transport UDP terminated with error: trying to restart it (after 1000ms)..");
 			try {  Thread.sleep(1000);  } catch (Exception e) {}
 			try {
-				SipTransport udp=new UdpTransport(host_port,binding_ipaddr);
+				SipTransport udp=new UdpTransport(sipConfig.host_port,sipConfig.binding_ipaddr);
 				setTransport(udp);
 			}
 			catch (Exception e) {
@@ -1415,8 +1205,8 @@ public class SipProvider implements Configurable, SipTransportListener {
 	/** Gets a String value for this object. */ 
 	@Override
 	public String toString() {
-		if (binding_ipaddr==null) return host_port+"/"+transportProtocolsToString();
-		else return binding_ipaddr.toString()+":"+host_port+"/"+transportProtocolsToString();
+		if (sipConfig.binding_ipaddr==null) return sipConfig.host_port+"/"+transportProtocolsToString();
+		else return sipConfig.binding_ipaddr.toString()+":"+sipConfig.host_port+"/"+transportProtocolsToString();
 	}   
 
 
@@ -1424,7 +1214,7 @@ public class SipProvider implements Configurable, SipTransportListener {
 
 	/** Adds the SIP message to the message log. */
 	private final void logMessage(String message, String proto, String addr, int port, int len, SipMessage msg) {
-		if (log_all_packets || len>=MIN_MESSAGE_LENGTH) {
+		if (sipConfig.log_all_packets || len>=MIN_MESSAGE_LENGTH) {
 			LOG.debug(message + "From: " + addr + ":" + port + "/" + proto + " (" + len + " bytes):\n\t"
 					+ msg.toString().replace("\n", "\n\t"));
 		}

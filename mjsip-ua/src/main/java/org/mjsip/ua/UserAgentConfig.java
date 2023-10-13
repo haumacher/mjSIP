@@ -92,7 +92,7 @@ public class UserAgentConfig {
 		
 		int host_port=flags.getInteger("-p","<port>",sipConfig.default_port,"local SIP port, used ONLY without -f option");
 		int media_port=flags.getInteger("-m","<port>",0,"(first) local media port");
-		String via_addr=flags.getString("--via-addr","<addr>",SipProvider.AUTO_CONFIGURATION,"host via address, used ONLY without -f option");
+		String via_addr=flags.getString("--via-addr","<addr>",SipConfig.AUTO_CONFIGURATION,"host via address, used ONLY without -f option");
 		String outbound_proxy=flags.getString("-o","<addr>[:<port>]",null,"uses the given outbound proxy");
 		long keepalive_time=flags.getLong("--keep-alive","<msecs>",-1,"send keep-alive packets each given milliseconds");
 
@@ -137,10 +137,11 @@ public class UserAgentConfig {
 		}
 		{
 			// init sip_provider
-			if (config_file!=null) sip_provider=new SipProvider(sipConfig, config_file);
+			if (config_file!=null) sip_provider=new SipProvider(sipConfig);
 			else  {
-				if (transport==null) sip_provider=new SipProvider(sipConfig,via_addr, host_port);
-				else sip_provider=new SipProvider(sipConfig,via_addr,host_port, new String[]{transport});
+				sipConfig.update(via_addr, host_port);
+				if (transport==null) sip_provider=new SipProvider(sipConfig);
+				else sip_provider=new SipProvider(sipConfig,new String[]{transport});
 			}
 			if (outbound_proxy!=null) sip_provider.setOutboundProxy(new SipURI(outbound_proxy));
 

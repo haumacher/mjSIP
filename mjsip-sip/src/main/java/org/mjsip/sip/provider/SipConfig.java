@@ -25,8 +25,12 @@ package org.mjsip.sip.provider;
 
 
 
+import java.io.IOException;
+
+import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.message.SipMethods;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.IpAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Parser;
 import org.zoolu.util.Timer;
@@ -42,6 +46,12 @@ import org.zoolu.util.Timer;
 public class SipConfig extends Configure {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipConfig.class);
+
+	/** String value "auto-configuration" used for auto configuration of the host address */
+	public static final String ALL_INTERFACES="ALL-INTERFACES";
+
+	/** String value "auto-configuration" used for auto configuration of the host address */
+	public static final String AUTO_CONFIGURATION="AUTO-CONFIGURATION";
 
 	/** Default SIP port.
 	 * Note that this is not the port used by the running stack, but simply the standard default SIP port.
@@ -61,22 +71,6 @@ public class SipConfig extends Configure {
 	public boolean use_rport=true;
 	/** Whether adding (forcing) 'rport' parameter on via header fields of incoming requests. */
 	public boolean force_rport=false;
-
-	/** For TLS. Whether all client and server certificates should be considered trusted. */
-	public boolean default_tls_trust_all=false;
-	/** For TLS. names of the files containing trusted certificates.
-	  * The file names include the full path starting from the current working folder. */
-	public String[] default_tls_trusted_certs=null;
-	/** For TLS. Path of the folder where trusted certificates are placed.
-	  * All certificates (with file extension ".crt") found in this folder are considered trusted. */
-	public String default_tls_trust_folder="cert";
-	/** For TLS. Absolute file name of the certificate (containing the public key) of the local node.
-	  * The file name includes the full path starting from the current working folder. */
-	public String default_tls_cert_file="cert/ssl.crt";
-	/** For TLS. Absolute file name of the private key of the local node.
-	  * The file name includes the full path starting from the current working folder. */
-	public String default_tls_key_file="cert/ssl.key";
-
 
 	// ********************* transaction timeouts *********************
 
@@ -147,6 +141,70 @@ public class SipConfig extends Configure {
 	/** Whether using an alternative transaction id that does not include the 'sent-by' value. */
 	//public boolean alternative_transaction_id=false;
 
+	/** Via IP address or fully-qualified domanin name (FQDN).
+	  * Use 'auto-configuration' for auto detection, or let it undefined. */
+	String via_addr=null;
+
+	/** Local SIP port */
+	int host_port=0;
+
+	/** Network interface (IP address) used by SIP for selective binding.
+	  * Use 'ALL-INTERFACES' or let it undefined for binding SIP to all interfaces. */
+	IpAddress binding_ipaddr=null;
+
+	/** List of enabled transport protocols (the first protocol is used as default). */
+	String[] transport_protocols=null;
+	
+	/** List of transport ports, ordered as the corresponding transport_protocols. */
+	int[] transport_ports=null;
+
+	/** Max number of (contemporary) open connections */
+	int nmax_connections=0;
+
+	/** Outbound proxy URI ([sip:]host_addr[:host_port][;transport=proto]).
+	  * Use 'NONE' for not using an outbound proxy (or let it undefined). */
+	SipURI outbound_proxy=null;
+
+	/** Tel Gatway URI ([sip:]host_addr[:host_port][;transport=proto]).
+	  * URI of a default SIP proxy/gateway that is used for sending request messages with a "tel" URI as request-uri.
+	  * Use 'NONE' for not using a tel gateway (or let it undefined). */
+	SipURI tel_gateway=null;
+
+	/** Whether logging all packets (including non-SIP keepalive tokens). */
+	boolean log_all_packets=false;
+
+
+	/** For TLS. Whether all client and server certificates should be considered trusted.
+	  * By default, trust_all={@link #default_tls_trust_all}. */
+	boolean trust_all;
+
+	/** For TLS. names of the files containing trusted certificates.
+	  * The file names include the full path starting from the current working folder.
+	  * By default, trust_all={@link SipConfig#default_tls_trusted_certs}. */
+	String[] trusted_certs;
+
+	/** For TLS. Path of the folder where trusted certificates are placed.
+	  * All certificates (with file extension ".crt") found in this folder are considered trusted.
+	  * By default, trust_folder={@link SipConfig#default_tls_trust_folder}. */
+	String trust_folder;
+
+	/** For TLS. Absolute file name of the certificate (containing the public key) of the local node.
+	  * The file name includes the full path starting from the current working folder.
+	  * By default, trust_folder={@link SipConfig#default_tls_cert_file}. */
+	String cert_file;
+
+	/** For TLS. Absolute file name of the private key of the local node.
+	  * The file name includes the full path starting from the current working folder.
+	  * By default, trust_folder={@link SipConfig#default_tls_key_file}. */
+	String key_file;
+
+	// for backward compatibility:
+
+	/** Outbound proxy addr (for backward compatibility). */
+	private String outbound_addr=null;
+
+	/** Outbound proxy port (for backward compatibility). */
+	private int outbound_port=-1;
 
 	// ************************** constructor **************************
 
@@ -167,13 +225,6 @@ public class SipConfig extends Configure {
 		if (attribute.equals("default_nmax_connections")) { default_nmax_connections=par.getInt(); return; }
 		if (attribute.equals("use_rport")) { use_rport=(par.getString().toLowerCase().startsWith("y")); return; }
 		if (attribute.equals("force_rport")) { force_rport=(par.getString().toLowerCase().startsWith("y")); return; }
-
-		if (attribute.equals("default_tls_trust_all")){ default_tls_trust_all=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("default_tls_trusted_certs")){ default_tls_trusted_certs=par.getStringArray(); return; }
-		if (attribute.equals("default_tls_trust_folder")){ default_tls_trust_folder=par.getRemainingString().trim(); return; }
-		if (attribute.equals("default_tls_cert_file")){ default_tls_cert_file=par.getRemainingString().trim(); return; }
-		if (attribute.equals("default_tls_key_file")){ default_tls_key_file=par.getRemainingString().trim(); return; }
-
 
 		// transaction timeouts
 		if (attribute.equals("retransmission_timeout")) { retransmission_timeout=par.getInt(); return; }
@@ -209,8 +260,77 @@ public class SipConfig extends Configure {
 		if (attribute.equals("all_interfaces")) LOG.warn("parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
 		if (attribute.equals("use_outbound")) LOG.warn("parameter 'use_outbound' is no more supported; use 'outbound_addr' for setting an outbound proxy or let it undefined.");
 		if (attribute.equals("log_file")) LOG.warn("parameter 'log_file' is no more supported.");
+
+		if (attribute.equals("via_addr")) {  via_addr=par.getString(); return;  }
+		if (attribute.equals("host_port")) {  host_port=par.getInt(); return;  }
+		if (attribute.equals("binding_ipaddr")) {  setBindingIpAddress(par.getString()); return;  }
+		if (attribute.equals("transport_protocols")) {  transport_protocols=par.getWordArray(delim); return;  }
+		if (attribute.equals("transport_ports")) {  transport_ports=par.getIntArray(); return;  }
+		if (attribute.equals("nmax_connections")) {  nmax_connections=par.getInt(); return;  }
+		if (attribute.equals("outbound_proxy")) {
+			String str_uri=par.getString();
+			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE) || str_uri.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
+			else outbound_proxy=new SipURI(str_uri);
+			return;
+		}
+		if (attribute.equals("tel_gateway")) {
+			String str_uri=par.getString();
+			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE)) tel_gateway=null;
+			else tel_gateway=new SipURI(str_uri);
+			return;
+		}
+		if (attribute.equals("log_all_packets")) { log_all_packets=(par.getString().toLowerCase().startsWith("y")); return; }
+
+		// certificates
+		if (attribute.equals("trust_all")){ trust_all=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("trusted_certs")){ trusted_certs=par.getStringArray(); return; }
+		if (attribute.equals("trust_folder")){ trust_folder=par.getRemainingString().trim(); return; }
+		if (attribute.equals("cert_file")){ cert_file=par.getRemainingString().trim(); return; }
+		if (attribute.equals("key_file")){ key_file=par.getRemainingString().trim(); return; }
+
+		// old parameters
+		if (attribute.equals("host_addr"))
+			LOG.warn("parameter 'host_addr' is no more supported; use 'via_addr' instead.");
+		if (attribute.equals("tls_port"))
+			LOG.warn("parameter 'tls_port' is no more supported; use 'transport_ports' instead.");
+		if (attribute.equals("all_interfaces"))
+			LOG.warn(
+					"parameter 'all_interfaces' is no more supported; use 'host_iaddr' for setting a specific interface or let it undefined.");
+		if (attribute.equals("use_outbound"))
+			LOG.warn(
+					"parameter 'use_outbound' is no more supported; use 'outbound_proxy' for setting an outbound proxy or let it undefined.");
+		if (attribute.equals("outbound_addr")) {
+			LOG.warn(
+					"parameter 'outbound_addr' has been deprecated; use 'outbound_proxy=[sip:]<host_addr>[:<host_port>][;transport=proto]' instead.");
+			outbound_addr=par.getString();
+			return;
+		}
+		if (attribute.equals("outbound_port")) {
+			LOG.warn(
+					"parameter 'outbound_port' has been deprecated; use 'outbound_proxy=<host_addr>[:<host_port>]' instead.");
+			outbound_port=par.getInt();
+			return;
+		}
+		if (attribute.equals("host_ifaddr")) {
+			LOG.warn("parameter 'host_ifaddr' has been deprecated; use 'binding_ipaddr' instead.");
+			setBindingIpAddress(par.getString());
+			return;
+		}
 	}  
-		
+
+	/** Sets the binding IP address . */
+	private void setBindingIpAddress(String str) {
+		if (str==null || str.equalsIgnoreCase(ALL_INTERFACES)) binding_ipaddr=null;
+		else {
+			try {
+				binding_ipaddr=IpAddress.getByName(str);
+			}
+			catch (IOException e) {
+				LOG.warn("Unable to set the following binding address: " + str, e);
+			}
+		}
+	}
+
 	/** Converts the entire object into lines (to be saved into the config file) */
 	@Override
 	protected String toLines() {
@@ -235,9 +355,18 @@ public class SipConfig extends Configure {
 		
 		// timers
 		Timer.DEFAULT_DAEMON_MODE=result.timer_daemon_mode;
+		
 		return result;
 	}
 
+	/** Inits the SipProvider, initializing the SipProviderListeners, the transport protocols, the outbound proxy, and other attributes. */ 
+	public void update(String via_addr, int host_port) {
+		if (via_addr==null || via_addr.equalsIgnoreCase(AUTO_CONFIGURATION)) via_addr=IpAddress.getLocalHostAddress().toString();
+		this.via_addr=via_addr;
+
+		if (host_port<=0) host_port=default_port;
+		this.host_port=host_port;
+	}
 
 	private void normalize() {
 		// user-agent info
@@ -246,5 +375,12 @@ public class SipConfig extends Configure {
 		// server info
 		if (server_info!=null && (server_info.length()==0 || server_info.equalsIgnoreCase(Configure.NONE) || server_info.equalsIgnoreCase("NO-SERVER-INFO"))) server_info=null;      
 
+		// just for backward compatibility..
+		if (outbound_port<0) outbound_port=default_port;
+		
+		if (outbound_addr!=null) {
+			if (outbound_addr.equalsIgnoreCase(Configure.NONE) || outbound_addr.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
+			else outbound_proxy=new SipURI(outbound_addr,outbound_port);
+		}
 	}
 }

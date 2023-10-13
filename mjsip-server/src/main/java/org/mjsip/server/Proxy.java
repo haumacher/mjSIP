@@ -379,7 +379,7 @@ public class Proxy extends Registrar {
 			return;
 		}
 					
-		SipProvider sip_provider=new SipProvider(SipConfig.init(file), file);
+		SipProvider sip_provider=new SipProvider(SipConfig.init(file));
 		ServerProfile server_profile=new ServerProfile(file);
 
 		new Proxy(sip_provider,server_profile);
