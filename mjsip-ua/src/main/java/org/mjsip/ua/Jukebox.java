@@ -122,18 +122,12 @@ public class Jukebox extends MultipleUAS {
 				args[i]="--skip";
 			}
 		}
-		if (!UserAgentConfig.init("Jukebox",args)) {
-			UserAgentConfig.println("   --mports            number of available media ports");
-			UserAgentConfig.println("   --mpath <path>      path of media folder");
-			UserAgentConfig.println("   --prompt            prompt for exit");
-			return;
-		}
-		// else
-		UserAgentConfig.ua_profile.audio=true;
-		UserAgentConfig.ua_profile.video=false;
-		UserAgentConfig.ua_profile.send_only=true;
-		if (UserAgentConfig.ua_profile.hangup_time<=0) UserAgentConfig.ua_profile.hangup_time=MAX_LIFE_TIME;
-		new Jukebox(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile,media_ports);
+		UserAgentConfig config = UserAgentConfig.init("Jukebox",args);
+		config.ua_profile.audio=true;
+		config.ua_profile.video=false;
+		config.ua_profile.send_only=true;
+		if (config.ua_profile.hangup_time<=0) config.ua_profile.hangup_time=MAX_LIFE_TIME;
+		new Jukebox(config.sip_provider,config.ua_profile,media_ports);
 		
 		// promt before exit
 		if (prompt_exit) 

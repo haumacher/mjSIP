@@ -155,19 +155,14 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 				args[i]="--skip";
 			}
 		}
-		if (!UserAgentConfig.init("Echo",args)) {
-			UserAgentConfig.println("   --mports <num>      number of available media ports");
-			UserAgentConfig.println("   --rroute            force reverse route for reply requests");
-			UserAgentConfig.println("   --prompt            prompt for exit");
-			return;
-		}
-		// else
-		UserAgentConfig.ua_profile.audio=true;
-		UserAgentConfig.ua_profile.video=true;
-		UserAgentConfig.ua_profile.loopback=true;
-		UserAgentConfig.ua_profile.send_only=false;
-		if (UserAgentConfig.ua_profile.hangup_time<=0) UserAgentConfig.ua_profile.hangup_time=MAX_LIFE_TIME;
-		new Echo(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile,media_ports,force_reverse_route);
+		
+		UserAgentConfig config = UserAgentConfig.init("Echo",args);
+		config.ua_profile.audio=true;
+		config.ua_profile.video=true;
+		config.ua_profile.loopback=true;
+		config.ua_profile.send_only=false;
+		if (config.ua_profile.hangup_time<=0) config.ua_profile.hangup_time=MAX_LIFE_TIME;
+		new Echo(config.sip_provider,config.ua_profile,media_ports,force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

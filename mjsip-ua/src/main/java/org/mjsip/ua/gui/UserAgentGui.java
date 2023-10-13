@@ -631,10 +631,10 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	public static void main(String[] args) {
 		println("MJSIP UserAgent "+SipStack.version);
 
-		if (!UserAgentConfig.init("local.ua.UA",args)) System.exit(0);
+		UserAgentConfig config = UserAgentConfig.init("local.ua.UA",args);
 		// else
-		if (UserAgentConfig.no_gui.booleanValue()) new UserAgentCli(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile);
-		else new UserAgentGui(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile);
+		if (config.no_gui.booleanValue()) new UserAgentCli(config.sip_provider,config.ua_profile);
+		else new UserAgentGui(config.sip_provider,config.ua_profile);
 	}
 	
 	/** Prints a message to standard output. */

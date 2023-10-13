@@ -124,15 +124,13 @@ public class AnsweringMachine extends MultipleUAS {
 		}
 		
 		
-		if (!UserAgentConfig.init(program, args)) {
-			return;
-		}
-		UserAgentConfig.ua_profile.audio = true;
-		UserAgentConfig.ua_profile.video = false;
-		UserAgentConfig.ua_profile.send_only = true;
-		if (UserAgentConfig.ua_profile.hangup_time <= 0)
-			UserAgentConfig.ua_profile.hangup_time = MAX_LIFE_TIME;
-		new AnsweringMachine(UserAgentConfig.sip_provider, UserAgentConfig.ua_profile, media_ports);
+		UserAgentConfig config = UserAgentConfig.init(program, args);
+		config.ua_profile.audio = true;
+		config.ua_profile.video = false;
+		config.ua_profile.send_only = true;
+		if (config.ua_profile.hangup_time <= 0)
+			config.ua_profile.hangup_time = MAX_LIFE_TIME;
+		new AnsweringMachine(config.sip_provider, config.ua_profile, media_ports);
 		
 		// promt before exit
 		if (prompt_exit) 

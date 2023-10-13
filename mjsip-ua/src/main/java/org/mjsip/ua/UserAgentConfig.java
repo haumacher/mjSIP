@@ -40,22 +40,28 @@ import org.zoolu.util.Flags;
 public class UserAgentConfig {
 	
 
+	/**
+	 * Creates a {@link UserAgentConfig} from program arguments.
+	 */
+	public static UserAgentConfig init(String program, String[] args) {
+		return new UserAgentConfig(program, args);
+	}
+
 	/** No GUI */ 
-	public static Boolean no_gui=new Boolean(false);
+	public Boolean no_gui=new Boolean(false);
 
 	/** Configuration file */ 
 	//public static String file=null;
 
 	/** SipProvider */ 
-	public static SipProvider sip_provider=null;
+	public SipProvider sip_provider=null;
 
 	/** UserAgentProfile */ 
-	public static UserAgentProfile ua_profile=null;
+	public UserAgentProfile ua_profile=null;
 
 
 	/** Parses command-line options and inits the SIP stack, a SIP provider and an UA profile. */
-	public static boolean init(String program, String[] args) {
-		
+	private UserAgentConfig(String program, String[] args) {
 		Flags flags=new Flags(args);
 		
 		while (flags.getBoolean("--skip",null)); // skip
@@ -121,9 +127,9 @@ public class UserAgentConfig {
 		}
 		if (remaining_params.length>0 || help) {
 			println(flags.toUsageString(program));
-			return false;
+			throw new IllegalArgumentException();
 		}
-		try {
+		{
 			// init SipStack
 			SipStack.init(config_file);
 
@@ -181,12 +187,6 @@ public class UserAgentConfig {
 
 			// use audio as default media in case of..
 			if ((recv_only!=null || send_only!=null || send_tone!=null || send_file!=null || recv_file!=null) && video==null) ua_profile.audio=true;
-
-			return true;
-		}
-		catch (Exception e) {			
-			e.printStackTrace();
-			return false;
 		}
 	}
 
