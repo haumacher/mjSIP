@@ -129,7 +129,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	/** The main method. */
 	public static void main(String[] args) {
 		
-		UA.println("Echo "+SipStack.version);
+		UserAgentConfig.println("Echo "+SipStack.version);
 
 		int media_ports=MEDIA_PORTS;
 		boolean force_reverse_route=false;
@@ -155,19 +155,19 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 				args[i]="--skip";
 			}
 		}
-		if (!UA.init("Echo",args)) {
-			UA.println("   --mports <num>      number of available media ports");
-			UA.println("   --rroute            force reverse route for reply requests");
-			UA.println("   --prompt            prompt for exit");
+		if (!UserAgentConfig.init("Echo",args)) {
+			UserAgentConfig.println("   --mports <num>      number of available media ports");
+			UserAgentConfig.println("   --rroute            force reverse route for reply requests");
+			UserAgentConfig.println("   --prompt            prompt for exit");
 			return;
 		}
 		// else
-		UA.ua_profile.audio=true;
-		UA.ua_profile.video=true;
-		UA.ua_profile.loopback=true;
-		UA.ua_profile.send_only=false;
-		if (UA.ua_profile.hangup_time<=0) UA.ua_profile.hangup_time=MAX_LIFE_TIME;
-		new Echo(UA.sip_provider,UA.ua_profile,media_ports,force_reverse_route);
+		UserAgentConfig.ua_profile.audio=true;
+		UserAgentConfig.ua_profile.video=true;
+		UserAgentConfig.ua_profile.loopback=true;
+		UserAgentConfig.ua_profile.send_only=false;
+		if (UserAgentConfig.ua_profile.hangup_time<=0) UserAgentConfig.ua_profile.hangup_time=MAX_LIFE_TIME;
+		new Echo(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile,media_ports,force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

@@ -76,13 +76,13 @@ public class MiniJukebox extends UserAgentCli {
 		
 		System.out.println("MiniJukebox"+SipStack.version);
 
-		if (!UA.init("MiniJukebox",args)) return;
+		if (!UserAgentConfig.init("MiniJukebox",args)) return;
 		// else
-		UA.ua_profile.audio=true;
-		UA.ua_profile.video=false;
-		UA.ua_profile.send_only=true;
-		if (UA.ua_profile.hangup_time<=0) UA.ua_profile.hangup_time=MAX_LIFE_TIME;
-		new MiniJukebox(UA.sip_provider,UA.ua_profile);
+		UserAgentConfig.ua_profile.audio=true;
+		UserAgentConfig.ua_profile.video=false;
+		UserAgentConfig.ua_profile.send_only=true;
+		if (UserAgentConfig.ua_profile.hangup_time<=0) UserAgentConfig.ua_profile.hangup_time=MAX_LIFE_TIME;
+		new MiniJukebox(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile);
 	}    
 	
 }

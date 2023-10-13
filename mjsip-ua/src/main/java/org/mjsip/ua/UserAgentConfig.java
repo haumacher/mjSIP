@@ -23,14 +23,10 @@ package org.mjsip.ua;
 
 
 
-import java.io.PrintStream;
-
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
-import org.mjsip.ua.cli.UserAgentCli;
-import org.mjsip.ua.gui.UserAgentGui;
 import org.zoolu.util.Flags;
 
 
@@ -41,15 +37,11 @@ import org.zoolu.util.Flags;
   * Class UA allows the user to set several configuration parameters
   * directly from comman-line before starting the proper UA (GraphicalUA or CommandLineUA).
   */
-public class UA {
+public class UserAgentConfig {
 	
 
 	/** No GUI */ 
-	protected static Boolean no_gui=new Boolean(false);
-
-	/** Print stream */ 
-	public static PrintStream stdout=System.out;
-
+	public static Boolean no_gui=new Boolean(false);
 
 	/** Configuration file */ 
 	//public static String file=null;
@@ -198,22 +190,9 @@ public class UA {
 		}
 	}
 
-
 	/** Prints a message to standard output. */
 	protected static void println(String str) {
-		if (stdout!=null) stdout.println(str);
-	}
-
-
-	/** The main method. */
-	public static void main(String[] args) {
-		
-		println("MJSIP UA "+SipStack.version);
-
-		if (!init("local.ua.UA",args)) System.exit(0);
-		// else
-		if (no_gui.booleanValue()) new UserAgentCli(sip_provider,ua_profile);
-		else new UserAgentGui(sip_provider,ua_profile);
+		System.out.println(str);
 	}
 
 }

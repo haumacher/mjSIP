@@ -49,9 +49,12 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.sip.provider.SipStack;
 import org.mjsip.ua.UserAgent;
+import org.mjsip.ua.UserAgentConfig;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentProfile;
+import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Archive;
 import org.zoolu.util.ScheduledWork;
@@ -624,4 +627,19 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		return Archive.getImageIcon(UserAgent.class.getResource("/" + image_file));
 	}
 
+	/** The main method. */
+	public static void main(String[] args) {
+		println("MJSIP UserAgent "+SipStack.version);
+
+		if (!UserAgentConfig.init("local.ua.UA",args)) System.exit(0);
+		// else
+		if (UserAgentConfig.no_gui.booleanValue()) new UserAgentCli(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile);
+		else new UserAgentGui(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile);
+	}
+	
+	/** Prints a message to standard output. */
+	protected static void println(String str) {
+		System.out.println(str);
+	}
+	
 }

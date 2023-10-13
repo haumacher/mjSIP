@@ -96,7 +96,7 @@ public class Jukebox extends MultipleUAS {
 	/** The main method. */
 	public static void main(String[] args) {
 		
-		UA.println("Jukebox "+SipStack.version);
+		UserAgentConfig.println("Jukebox "+SipStack.version);
 
 		int media_ports=MEDIA_PORTS;
 		boolean prompt_exit=false;
@@ -122,18 +122,18 @@ public class Jukebox extends MultipleUAS {
 				args[i]="--skip";
 			}
 		}
-		if (!UA.init("Jukebox",args)) {
-			UA.println("   --mports            number of available media ports");
-			UA.println("   --mpath <path>      path of media folder");
-			UA.println("   --prompt            prompt for exit");
+		if (!UserAgentConfig.init("Jukebox",args)) {
+			UserAgentConfig.println("   --mports            number of available media ports");
+			UserAgentConfig.println("   --mpath <path>      path of media folder");
+			UserAgentConfig.println("   --prompt            prompt for exit");
 			return;
 		}
 		// else
-		UA.ua_profile.audio=true;
-		UA.ua_profile.video=false;
-		UA.ua_profile.send_only=true;
-		if (UA.ua_profile.hangup_time<=0) UA.ua_profile.hangup_time=MAX_LIFE_TIME;
-		new Jukebox(UA.sip_provider,UA.ua_profile,media_ports);
+		UserAgentConfig.ua_profile.audio=true;
+		UserAgentConfig.ua_profile.video=false;
+		UserAgentConfig.ua_profile.send_only=true;
+		if (UserAgentConfig.ua_profile.hangup_time<=0) UserAgentConfig.ua_profile.hangup_time=MAX_LIFE_TIME;
+		new Jukebox(UserAgentConfig.sip_provider,UserAgentConfig.ua_profile,media_ports);
 		
 		// promt before exit
 		if (prompt_exit) 
