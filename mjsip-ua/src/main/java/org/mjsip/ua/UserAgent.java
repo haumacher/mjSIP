@@ -45,6 +45,7 @@ import org.mjsip.sip.call.OptionsServer;
 import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.call.RegistrationClientListener;
 import org.mjsip.sip.call.SipUser;
+import org.mjsip.sip.header.FromHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
@@ -651,8 +652,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			call.refuse();
 			return;
 		}
-		// else   
-		LOG.info("INCOMING");
+   
+		LOG.info("INCOMING: " + extractFrom(invite));
 		this.call=(ExtendedCall)call;
 		call.ring();
 		// sound
@@ -668,6 +669,27 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			for (int i=0; i<md_list.size(); i++) media_descs[i]=new MediaDesc((MediaDescriptor)md_list.elementAt(i));
 		}
 		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,media_descs);
+	}
+
+	private String extractFrom(SipMessage invite) {
+		FromHeader fromHeader = invite.getFromHeader();
+		String from;
+		if (fromHeader == null) {
+			from = "ANONYMOUS";
+		} else {
+			String value = fromHeader.getValue();
+			
+			int start = value.indexOf(':');
+			if (start < 0) {
+				start = 0;
+			}
+			int stop = value.indexOf('@');
+			if (stop < 0) {
+				stop = value.length();
+			}
+			from = value.substring(start + 1, stop);
+		}
+		return from;
 	}  
 
 
