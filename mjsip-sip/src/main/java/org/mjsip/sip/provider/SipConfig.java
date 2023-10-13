@@ -361,10 +361,7 @@ public class SipConfig extends Configure {
 
 	/** Inits the SipProvider, initializing the SipProviderListeners, the transport protocols, the outbound proxy, and other attributes. */ 
 	public void update(String via_addr, int host_port) {
-		if (via_addr==null || via_addr.equalsIgnoreCase(AUTO_CONFIGURATION)) via_addr=IpAddress.getLocalHostAddress().toString();
 		this.via_addr=via_addr;
-
-		if (host_port<=0) host_port=default_port;
 		this.host_port=host_port;
 	}
 
@@ -382,5 +379,8 @@ public class SipConfig extends Configure {
 			if (outbound_addr.equalsIgnoreCase(Configure.NONE) || outbound_addr.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
 			else outbound_proxy=new SipURI(outbound_addr,outbound_port);
 		}
+		
+		if (via_addr==null || via_addr.equalsIgnoreCase(AUTO_CONFIGURATION)) via_addr=IpAddress.getLocalHostAddress().toString();
+		if (host_port<=0) host_port=default_port;
 	}
 }
