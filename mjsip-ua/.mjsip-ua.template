@@ -1,0 +1,199 @@
+#
+# Note: Copy this file to your home directory and name it ".mjsip-up" to have it picked up by default.
+#
+
+# ________________________________________________________________
+#
+# Configuration for the mjsip user agent.
+# ________________________________________________________________
+#
+# Change these parameters in order to customize the UA profile.
+# You need to edit this section only if you are using a MjSip UA or
+# you are managing 3PCC services.
+#
+
+# Display name for the user.
+# It is used in the user's AOR registered to the registrar server and used as From URL.
+#display_name=Alice
+
+# User's name.
+# It is used to build the user's AOR registered to the registrar server and used as From URL.
+#user=alice
+
+# Fully qualified domain name (or address) of the proxy server.
+# It is part of the user's AOR registered to the registrar server and used as From URL.
+# If 'proxy' is not defined, the 'registrar' value is used in its place.
+# If 'registrar' is not defined, the 'proxy' value is used in its place.
+#proxy=proxy.example.net
+
+# Fully qualified domain name (or address) of the registrar server.
+# It is used as recipient for REGISTER requests.
+# If 'registrar' is not defined, the 'proxy' value is used in its place.
+# If 'proxy' is not defined, the 'registrar' value is used in its place.
+#registrar=example.net
+
+# Contact URL.
+# If not defined (default), it is formed as sip:user@via_addr:host_port.
+# Normally you can leave it undefined.
+#contact_url=sip:alice@192.168.0.55:5070
+
+# User's name used for server authentication.
+#auth_user=alice
+
+# User's realm used for server authentication.
+#auth_realm=example.net
+
+# User's passwd used for server authentication.
+#auth_passwd=mypassword
+
+# Absolute path (or complete URL) of the buddy list file where the buddy list is and loaded from (and saved to).
+# Default value: buddy_list_file=buddy.lst
+#buddy_list_file=config/buddy.lst
+
+# Whether registering with the registrar server.
+# Default value: do_register=no
+#do_register=yes
+
+# Whether unregistering the contact address.
+# Default value: do_unregister=no
+#do_unregister=yes
+
+# Whether unregistering all contacts beafore registering the contact address.
+# Default value: do_unregister_all=no
+#do_unregister_all=yes
+
+# Expires time.
+# Default value: expires=3600
+#expires=1800
+
+# Rate of keep-alive tokens (datagrams) sent toward the outbound proxy (if present) or toward the registrar server.
+# Its value specifies the delta-time (in millesconds) between two keep-alive tokens.
+# Set keepalive_time=0 for not sending keep-alive datagrams.
+# Default value: keepalive_time=0
+#keepalive_time=8000
+
+# Automatic call a remote user secified by the 'call_to' value.
+# Use value 'NONE' for manual calls (or let it undefined).
+# Default value: call_to=NONE
+#call_to=sip:alice@example.com   
+   
+# Response time in seconds; it is the maximum time the user can wait before responding to an incoming call;
+# after such time the call is automatically declined (refused).
+# Default value: refuse_time=20
+
+# Automatic answer time in seconds; time<0 corresponds to manual answer mode.
+# Default value: accept_time=-1       
+#accept_time=0
+
+# Automatic hangup time (call duartion) in seconds; time<=0 corresponds to manual hangup mode.
+# Default value: hangup_time=-1
+#hangup_time=10
+
+# Automatic call transfer time in seconds; time<0 corresponds to no auto transfer mode.
+# Default value: transfer_time=-1
+#transfer_time=10
+
+# Automatic re-inviting time in seconds; time<0 corresponds to no auto re-invite mode.
+# Default value: re_invite_time=-1
+#re_invite_time=10
+
+# Redirect incoming call to the secified url.
+# Use value 'NONE' for not redirecting incoming calls (or let it undefined).
+# Default value: redirect_to=NONE
+#redirect_to=sip:alice@home.example.net
+
+# Transfer calls to the secified url.
+# Use value 'NONE' for not transferring calls (or let it undefined).
+# Default value: transfer_to=NONE
+#transfer_to=sip:alice@home.example.net
+
+# No offer in the invite.
+# Default value: no_offer=no
+#no_offer=yes
+
+# Whether using audio.
+# Default value: audio=no
+#audio=yes
+
+# Whether using video.
+# Default value: video=no
+#video=yes
+
+# Whether looping the received media streams back to the sender.
+# Default value: loopback=no
+#loopback=yes
+
+# Whether playing in receive only mode.
+# Default value: recv_only=no
+#recv_only=yes
+
+# Whether playing in send only mode.
+# Default value: send_only=no
+#send_only=yes
+
+# Whether playing a test tone in send only mode.
+# Default value: send_tone=no
+#send_tone=yes
+
+# Audio file to be played.
+# Default value: send_file=NONE
+#send_file=audio1.in
+
+# Audio file to be recored.
+# Default value: recv_file=NONE
+#recv_file=audio1.out
+
+# Media address (use it ONLY if you want to specify a media address different from the via address).
+#media_addr=10.0.0.5
+
+# First media port (use it ONLY if you want to specify media ports different from those specified by the 'media' parameter).
+#media_port=7000
+
+# Whether using symmetric_rtp.
+# Default value: symmetric_rtp=no
+#symmetric_rtp=yes
+
+# Media descriptors:
+# One or more 'media' (or 'media_desc') parameters specify for each supported media: the media type, port, and protocol/codec.
+# Zero or more 'media_spec' parameters can be used to specify media attributes such as: codec name, sample rate, and frame size.
+# Examples:
+#   media=audio 4000 rtp/avp
+#   media_spec=audio 0 PCMU 8000 160
+#   media_spec=audio 8 PCMA 8000 160
+#   media_spec=audio 101 G726-32 8000 80
+#   media_spec=audio 102 G726-24 8000 60
+#   media=video 3002 rtp/avp
+#   media_spec=video 101
+# Alternatively media attributes can be specified also within the 'media' parameter as comma-separated list between brackets.
+# Examples:
+#   media=audio 4000 rtp/avp {audio 0 PCMU 8000 160, audio 8 PCMA 8000 160}
+#   media=video 3002 rtp/avp {video 101}
+# Default values:
+#media=audio 4000 rtp/avp
+#media_spec=audio 0 PCMU 8000 160
+#media=video 4002 rtp/avp
+#media_spec=video 101
+
+# Whether using JMF for audio streaming.
+# Default value: use_jmf_audio=no
+#use_jmf_audio=yes
+
+# Whether using JMF for video streaming.
+# Default value: use_jmf_video=yes
+#use_jmf_video=no
+
+# Whether using RAT (Robust Audio Tool) as audio sender/receiver.
+# Default value: use_rat=no
+#use_rat=yes
+
+# RAT command-line executable.
+# Default value: bin_rat=rat
+#bin_rat=c:\programmi\mbone\rat
+
+# Whether using VIC (Video Conferencing Tool) as video sender/receiver.
+# Default value: use_vic=no
+#use_vic=yes
+
+# VIC command-line executable.
+# Default value: bin_vic=vic
+#bin_vic=c:\programmi\mbone\rat
