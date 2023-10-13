@@ -4,7 +4,6 @@ package org.mjsip.server;
 import java.util.Vector;
 
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
@@ -110,8 +109,6 @@ public class ServerProfile extends Configure {
 
 	/** Costructs a new ServerProfile */
 	public ServerProfile(String file) {
-		// load SipStack first
-		if (!SipConfig.isInit()) SipConfig.init();
 		// load configuration
 		loadFile(file);
 		// post-load manipulation

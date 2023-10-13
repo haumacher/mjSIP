@@ -26,11 +26,9 @@ package org.mjsip.sip.transaction;
 
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
@@ -91,7 +89,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 		sip_provider.addSelectiveListener(transaction_id,this);
 		// automatically send "100 Tryng" response and go to STATE_PROCEEDING
 		if (auto_trying) {
-			SipMessage trying100=SipMessageFactory.createResponse(request,100,null,null);
+			SipMessage trying100=sip_provider.sipMessageFactory.createResponse(request,100,null,null);
 			respondWith(trying100); // this method makes it going automatically to STATE_PROCEEDING
 		}
 	}  
@@ -107,7 +105,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 		sip_provider.addSelectiveListener(transaction_id,this);
 		// automatically send "100 Tryng" response and go to STATE_PROCEEDING
 		if (auto_trying) {
-			SipMessage trying100=SipMessageFactory.createResponse(request,100,null,null);
+			SipMessage trying100=sip_provider.sipMessageFactory.createResponse(request,100,null,null);
 			respondWith(trying100); // this method makes it going automatically to STATE_PROCEEDING
 		}
 	}  
@@ -117,11 +115,11 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 		this.invite_ts_listener=listener;
 		this.transaction_id=transaction_id;
 		this.connection_id=connection_id;
-		auto_trying=SipConfig.auto_trying;
+		auto_trying=sip_provider.sipConfig.auto_trying;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(SipConfig.retransmission_timeout,null);
-		end_to=new Timer(SipConfig.transaction_timeout,null);
-		clearing_to=new Timer(SipConfig.clearing_timeout,null);
+		retransmission_to=new Timer(sip_provider.sipConfig.retransmission_timeout,null);
+		end_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
+		clearing_to=new Timer(sip_provider.sipConfig.clearing_timeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
@@ -197,7 +195,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 					changeStatus(STATE_TRYING);
 					// automatically send "100 Tryng" response and go to STATE_PROCEEDING
 					if (auto_trying) {
-						SipMessage trying100=SipMessageFactory.createResponse(request,100,null,null);
+						SipMessage trying100=sip_provider.sipMessageFactory.createResponse(request,100,null,null);
 						respondWith(trying100); // this method makes it going automatically to STATE_PROCEEDING
 					}
 					if (invite_ts_listener!=null) invite_ts_listener.onTransRequest(this,msg);
@@ -230,7 +228,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 			if (to.equals(retransmission_to) && statusIs(STATE_COMPLETED)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>SipConfig.max_retransmission_timeout) timeout=SipConfig.max_retransmission_timeout;
+				if (timeout>sip_provider.sipConfig.max_retransmission_timeout) timeout=sip_provider.sipConfig.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this);
 				retransmission_to.start();
 				sip_provider.sendMessage(response);

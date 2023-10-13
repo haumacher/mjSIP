@@ -27,7 +27,6 @@ package org.mjsip.sip.transaction;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
@@ -90,7 +89,7 @@ public class TransactionClient extends Transaction {
 		sip_provider.addSelectiveListener(transaction_id,this);
 		connection_id=sip_provider.sendMessage(request);
 
-		startRetransmissionTimer(SipConfig.retransmission_timeout);
+		startRetransmissionTimer(sip_provider.sipConfig.retransmission_timeout);
 	}
 		
 	/** Terminates the transaction. */
@@ -156,15 +155,15 @@ public class TransactionClient extends Transaction {
 			sip_provider.sendMessage(request);
 
 			long timeout = 2 * timer.getTime();
-			if (timeout > SipConfig.max_retransmission_timeout || statusIs(STATE_PROCEEDING))
-				timeout = SipConfig.max_retransmission_timeout;
+			if (timeout > sip_provider.sipConfig.max_retransmission_timeout || statusIs(STATE_PROCEEDING))
+				timeout = sip_provider.sipConfig.max_retransmission_timeout;
 
 			startRetransmissionTimer(timeout);
 		}
 	}
 	
 	private void startTransactionTimeout() {
-		long timeout = SipConfig.transaction_timeout;
+		long timeout = sip_provider.sipConfig.transaction_timeout;
 		LOG.debug("Starting transaction timeout: " + timeout + "ms");
 
 		transaction_to = new Timer(timeout, this::onTransactionTimeout);
@@ -188,7 +187,7 @@ public class TransactionClient extends Transaction {
 	}
 
 	private void startClearingTimeout() {
-		long timeout = SipConfig.clearing_timeout;
+		long timeout = sip_provider.sipConfig.clearing_timeout;
 		LOG.debug("Starting clearing timeout: " + timeout + "ms");
 		clearing_to = new Timer(timeout, this::onClearingTimeout);
 		clearing_to.start();

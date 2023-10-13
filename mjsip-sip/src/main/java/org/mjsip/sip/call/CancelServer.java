@@ -24,7 +24,6 @@ package org.mjsip.sip.call;
 
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
@@ -68,7 +67,7 @@ public class CancelServer implements SipProviderListener {
 		if (msg.isRequest() && msg.isCancel()) {
 			LOG.info(
 					"CancelServer: " + "responding to CANCEL request with 481 \"Call Leg/Transaction Does Not Exist\"");
-			SipMessage resp=SipMessageFactory.createResponse(msg,481,null,null);
+			SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,481,null,null);
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 			ts.respondWith(resp);
 		}

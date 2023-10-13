@@ -44,8 +44,8 @@ import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.header.UserAgentHeader;
 import org.mjsip.sip.header.ViaHeader;
-import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipProvider;
 
 
 
@@ -67,7 +67,15 @@ public abstract class BasicSipMessageFactory {
 	
 	/** Default (unknown) via address */
 	static String DEFAULT_VIA_ADDRESS="0.0.0.0";
+	
+	protected final SipConfig sipConfig;
 
+	/** 
+	 * Creates a {@link BasicSipMessageFactory}.
+	 */
+	public BasicSipMessageFactory(SipConfig sipConfig) {
+		this.sipConfig = sipConfig;
+	}
  
 	/** Creates a SIP request message.
 	  * @param method method name
@@ -82,11 +90,11 @@ public abstract class BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new request message */
-	public static SipMessage createRequest(String method, GenericURI request_uri, NameAddress to, NameAddress from/*, String proto, String via_addr, int host_port, boolean rport*/, String call_id, long cseq, String local_tag, String remote_tag/*, String branch*/, NameAddress contact, String content_type, byte[] body) {
+	public SipMessage createRequest(String method, GenericURI request_uri, NameAddress to, NameAddress from/*, String proto, String via_addr, int host_port, boolean rport*/, String call_id, long cseq, String local_tag, String remote_tag/*, String branch*/, NameAddress contact, String content_type, byte[] body) {
 		SipMessage req=new SipMessage();
 		//mandatory headers first (To, From, Via, Max-Forwards, Call-ID, CSeq):
 		req.setRequestLine(new RequestLine(method,request_uri));
-		ViaHeader via=new ViaHeader(SipConfig.default_transport_protocols[0],DEFAULT_VIA_ADDRESS,0);
+		ViaHeader via=new ViaHeader(sipConfig.default_transport_protocols[0],DEFAULT_VIA_ADDRESS,0);
 		//if (rport) via.setRport();
 		//if (branch==null) branch=SipProvider.pickBranch();
 		String branch=SipProvider.pickBranch();
@@ -100,9 +108,9 @@ public abstract class BasicSipMessageFactory {
 		req.setCSeqHeader(new CSeqHeader(cseq,method));
 		//optional headers:
 		if (contact!=null) req.addContactHeader(new ContactHeader(contact));
-		req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipConfig.default_expires)));
+		req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.default_expires)));
 		// add User-Agent header field
-		if (SipConfig.ua_info!=null) req.setUserAgentHeader(new UserAgentHeader(SipConfig.ua_info));
+		if (sipConfig.ua_info!=null) req.setUserAgentHeader(new UserAgentHeader(sipConfig.ua_info));
 		//if (body!=null) req.setBody(body); else req.setBody("");
 		req.setBody(content_type,body);
 		return req;
@@ -132,7 +140,7 @@ public abstract class BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new request message */
-	public static SipMessage createRequest(/*SipProvider sip_provider, */String method, GenericURI request_uri, NameAddress to, NameAddress from, String call_id, NameAddress contact, String content_type, byte[] body) {
+	public SipMessage createRequest(/*SipProvider sip_provider, */String method, GenericURI request_uri, NameAddress to, NameAddress from, String call_id, NameAddress contact, String content_type, byte[] body) {
 		//SipURI request_uri=to.getAddress();
 		//String call_id=sip_provider.pickCallId();
 		int cseq=SipProvider.pickInitialCSeq();
@@ -157,7 +165,7 @@ public abstract class BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new request message */
-	public static SipMessage createRequest(/*SipProvider sip_provider, */DialogInfo dialog, String method, String content_type, byte[] body) {
+	public SipMessage createRequest(/*SipProvider sip_provider, */DialogInfo dialog, String method, String content_type, byte[] body) {
 		NameAddress to=dialog.getRemoteName();
 		NameAddress from=dialog.getLocalName();
 		NameAddress target=dialog.getRemoteContact();
@@ -211,7 +219,7 @@ public abstract class BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new response message */
-	public static SipMessage createResponse(SipMessage req, int code, String reason, String local_tag, NameAddress contact, String content_type, byte[] body) {
+	public SipMessage createResponse(SipMessage req, int code, String reason, String local_tag, NameAddress contact, String content_type, byte[] body) {
 		SipMessage resp=new SipMessage();
 		if (reason==null) reason=SipResponses.reasonOf(code);
 		resp.setStatusLine(new StatusLine(code,reason));
@@ -225,7 +233,7 @@ public abstract class BasicSipMessageFactory {
 		resp.setCSeqHeader(req.getCSeqHeader());
 		if (contact!=null) resp.setContactHeader(new ContactHeader(contact));
 		// add Server header field
-		if (SipConfig.server_info!=null) resp.setServerHeader(new ServerHeader(SipConfig.server_info));
+		if (sipConfig.server_info!=null) resp.setServerHeader(new ServerHeader(sipConfig.server_info));
 		//if (body!=null) resp.setBody(body); else resp.setBody("");
 		resp.setBody(content_type,body);
 		return resp;
@@ -239,11 +247,11 @@ public abstract class BasicSipMessageFactory {
 	  * @param reason the response reason
 	  * @param contact contact address, that is the name address in the <i>Contact</i> header field, or <i>null</i>
 	  * @return the new response message */
-	public static SipMessage createResponse(SipMessage req, int code, String reason, NameAddress contact) {
+	public SipMessage createResponse(SipMessage req, int code, String reason, NameAddress contact) {
 		//String reason=SipResponses.reasonOf(code);
 		String localtag=null;
 		if (req.createsDialog() && !req.getToHeader().hasTag()) {
-			if ((SipConfig.early_dialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
+			if ((sipConfig.early_dialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
 		}
 		return createResponse(req,code,reason,localtag,contact,null,null);
 	}

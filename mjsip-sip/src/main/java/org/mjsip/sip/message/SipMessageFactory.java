@@ -48,8 +48,8 @@ import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.header.SubjectHeader;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.header.ViaHeader;
-import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipProvider;
 
 
 
@@ -70,9 +70,17 @@ import org.mjsip.sip.provider.SipConfig;
   * which contains the method, Request-URI, and SIP version.
   */
 public class SipMessageFactory extends BasicSipMessageFactory {
+
 	
 
 	//*************************** Basic (RFC 3261) ****************************
+
+	/** 
+	 * Creates a {@link SipMessageFactory}.
+	 */
+	public SipMessageFactory(SipConfig sipConfig) {
+		super(sipConfig);
+	}
 
 	/** Creates a new INVITE request out of any pre-existing dialogs.
 	  * @param request_uri the request URI
@@ -83,7 +91,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new INVITE message */
-	public static SipMessage createInviteRequest(/*SipProvider sip_provider, */GenericURI request_uri, NameAddress to, NameAddress from, NameAddress contact, String call_id, String content_type, byte[] body) {
+	public SipMessage createInviteRequest(/*SipProvider sip_provider, */GenericURI request_uri, NameAddress to, NameAddress from, NameAddress contact, String call_id, String content_type, byte[] body) {
 		//String call_id=sip_provider.pickCallId();
 		int cseq=SipProvider.pickInitialCSeq();
 		String local_tag=SipProvider.pickTag();
@@ -99,7 +107,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new INVITE message */
-	public static SipMessage createInviteRequest(Dialog dialog, String content_type, byte[] body) {
+	public SipMessage createInviteRequest(Dialog dialog, String content_type, byte[] body) {
 		return createRequest(dialog,SipMethods.INVITE,content_type,body);
 	}
 
@@ -117,7 +125,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new ACK message */
-	public static SipMessage create2xxAckRequest(/*SipProvider sip_provider, */DialogInfo dialog, SipMessage resp, String content_type, byte[] body) {
+	public SipMessage create2xxAckRequest(/*SipProvider sip_provider, */DialogInfo dialog, SipMessage resp, String content_type, byte[] body) {
 		SipMessage ack=createRequest(/*sip_provider,*/dialog,SipMethods.ACK,content_type,body);
 		ack.setCSeqHeader(new CSeqHeader(resp.getCSeqHeader().getSequenceNumber(),SipMethods.ACK));
 		return ack;
@@ -130,7 +138,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new ACK message */
-	public static SipMessage create2xxAckRequest(/*SipProvider sip_provider, */SipMessage method, SipMessage resp, String content_type, byte[] body) {
+	public SipMessage create2xxAckRequest(/*SipProvider sip_provider, */SipMessage method, SipMessage resp, String content_type, byte[] body) {
 		GenericURI request_uri=(resp.hasContactHeader())? resp.getContactHeader().getNameAddress().getAddress() : method.getRequestLine().getAddress();
 		FromHeader from=method.getFromHeader();
 		ToHeader to=resp.getToHeader();
@@ -161,7 +169,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param method the initial request message, refused  by the non-2xx response
 	  * @param resp the response message to be confirmed
 	  * @return the new ACK message */
-	public static SipMessage createNon2xxAckRequest(/*SipProvider sip_provider, */SipMessage method, SipMessage resp) {
+	public SipMessage createNon2xxAckRequest(/*SipProvider sip_provider, */SipMessage method, SipMessage resp) {
 		GenericURI request_uri=method.getRequestLine().getAddress();
 		FromHeader from=method.getFromHeader();
 		ToHeader to=resp.getToHeader();
@@ -194,7 +202,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param dialog the current dialog
 	  * @param resp the response message to be confirmed
 	  * @return the new ACK message */
-	public static SipMessage createNon2xxAckRequest(DialogInfo dialog, SipMessage resp) {
+	public SipMessage createNon2xxAckRequest(DialogInfo dialog, SipMessage resp) {
 		FromHeader from=resp.getFromHeader();
 		ToHeader to=resp.getToHeader();
 		GenericURI request_uri=to.getNameAddress().getAddress();
@@ -221,7 +229,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	/** Creates a CANCEL request.
 	  * @param req the request message that is going to be cancelled
 	  * @return the new CANCEL message */
-	public static SipMessage createCancelRequest(SipMessage req) {
+	public SipMessage createCancelRequest(SipMessage req) {
 		ToHeader to=req.getToHeader();
 		FromHeader from=req.getFromHeader();
 		GenericURI request_uri=req.getRequestLine().getAddress();
@@ -251,7 +259,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	/** Creates a BYE request.
 	  * @param dialog dialog to be closed
 	  * @return the new BYE message */
-	public static SipMessage createByeRequest(/*SipProvider sip_provider, */DialogInfo dialog) {
+	public SipMessage createByeRequest(/*SipProvider sip_provider, */DialogInfo dialog) {
 		SipMessage msg=createRequest(/*sip_provider,*/dialog,SipMethods.BYE,null,null);
 		msg.removeExpiresHeader();
 		msg.removeContacts();
@@ -266,7 +274,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param contact contact address, that is the name address in the <i>Contact</i> header field, or <i>null</i>
 	  * @param call_id the <i>Call-ID</i> value
 	  * @return the new REGISTER message */
-	public static SipMessage createRegisterRequest(/*SipProvider sip_provider, */GenericURI registrar, NameAddress to, NameAddress from, NameAddress contact, String call_id) {
+	public SipMessage createRegisterRequest(/*SipProvider sip_provider, */GenericURI registrar, NameAddress to, NameAddress from, NameAddress contact, String call_id) {
 		if (registrar==null) {
 			GenericURI to_uri=to.getAddress();
 			if (to_uri.isSipURI()) {
@@ -291,7 +299,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		if (contact==null) {
 			ContactHeader star=new ContactHeader(); // contact is *
 			req.setContactHeader(star);
-			req.setExpiresHeader(new ExpiresHeader(String.valueOf(SipConfig.default_expires)));
+			req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.default_expires)));
 		}
 		return req;
 	}
@@ -313,8 +321,8 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type the type of the content to be included within the PRACK (or <i>null</i> in case of no message body)
 	  * @param body the message body to be included within the PRACK, or <i>null</i>. In an offer/answer model, this body represents the answer to the offer contained in the 1xx response message
 	  * @return the new PRACK message */
-	public static SipMessage createPrackRequest(Dialog dialog, SipMessage resp_1xx, String content_type, byte[] body) {
-		SipMessage prack=SipMessageFactory.createRequest(dialog,SipMethods.PRACK,content_type,body);
+	public SipMessage createPrackRequest(Dialog dialog, SipMessage resp_1xx, String content_type, byte[] body) {
+		SipMessage prack=createRequest(dialog,SipMethods.PRACK,content_type,body);
 		CSeqHeader csh=resp_1xx.getCSeqHeader();
 		long rseq=resp_1xx.getRSeqHeader().getSequenceNumber();
 		prack.setRAckHeader(new RAckHeader(rseq,csh.getSequenceNumber(),csh.getMethod()));
@@ -329,7 +337,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new MESSAGE message */
-	public static SipMessage createMessageRequest(/*SipProvider sip_provider, */NameAddress recipient, NameAddress from, String call_id, String subject, String content_type, byte[] body) {
+	public SipMessage createMessageRequest(/*SipProvider sip_provider, */NameAddress recipient, NameAddress from, String call_id, String subject, String content_type, byte[] body) {
 		GenericURI request_uri=recipient.getAddress();
 		//String callid=sip_provider.pickCallId();
 		int cseq=SipProvider.pickInitialCSeq();
@@ -347,7 +355,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param call_id the <i>Call-ID</i> value
 	  * @param refer_to the name address in the <i>Refer-To</i> header field
 	  * @return the new REFER message */
-	public static SipMessage createReferRequest(/*SipProvider sip_provider, */NameAddress recipient, NameAddress from, NameAddress contact, String call_id, NameAddress refer_to/*, NameAddress referred_by*/) {
+	public SipMessage createReferRequest(/*SipProvider sip_provider, */NameAddress recipient, NameAddress from, NameAddress contact, String call_id, NameAddress refer_to/*, NameAddress referred_by*/) {
 		GenericURI request_uri=recipient.getAddress();
 		//String callid=sip_provider.pickCallId();
 		int cseq=SipProvider.pickInitialCSeq();
@@ -365,7 +373,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param refer_to the name address in the <i>Refer-To</i> header field
 	  * @param referred_by the name address in the <i>Refer-By</i> header field, or <i>null</i>
 	  * @return the new REFER message */
-	public static SipMessage createReferRequest(Dialog dialog, NameAddress refer_to, NameAddress referred_by) {
+	public SipMessage createReferRequest(Dialog dialog, NameAddress refer_to, NameAddress referred_by) {
 		SipMessage req=createRequest(dialog,SipMethods.REFER,null,null);
 		req.setReferToHeader(new ReferToHeader(refer_to));
 		if (referred_by!=null) req.setReferredByHeader(new ReferredByHeader(referred_by));
@@ -384,7 +392,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new SUBSCRIBE message */
-	public static SipMessage createSubscribeRequest(/*SipProvider sip_provider, */GenericURI recipient, NameAddress to, NameAddress from, NameAddress contact, String call_id, String event, String id, String content_type, byte[] body) {
+	public SipMessage createSubscribeRequest(/*SipProvider sip_provider, */GenericURI recipient, NameAddress to, NameAddress from, NameAddress contact, String call_id, String event, String id, String content_type, byte[] body) {
 		SipMessage req=createRequest(/*sip_provider,*/SipMethods.SUBSCRIBE,recipient,to,from,call_id,contact,content_type,body);
 		req.setEventHeader(new EventHeader(event,id));
 		return req;
@@ -398,7 +406,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new SUBSCRIBE message */
-	public static SipMessage createSubscribeRequest(Dialog dialog, String event, String id, String content_type, byte[] body) {
+	public SipMessage createSubscribeRequest(Dialog dialog, String event, String id, String content_type, byte[] body) {
 		SipMessage req=createRequest(dialog,SipMethods.SUBSCRIBE,content_type,body);
 		req.setEventHeader(new EventHeader(event,id));
 		return req;
@@ -412,7 +420,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param content_type content type, or <i>null</i> in case of no message body
 	  * @param body message content (body), or <i>null</i>
 	  * @return the new NOTIFY message */
-	public static SipMessage createNotifyRequest(Dialog dialog, String event, String id, String content_type, byte[] body) {
+	public SipMessage createNotifyRequest(Dialog dialog, String event, String id, String content_type, byte[] body) {
 		SipMessage req=createRequest(dialog,SipMethods.NOTIFY,content_type,body);
 		req.removeExpiresHeader();
 		req.setEventHeader(new EventHeader(event,id));
@@ -426,7 +434,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	  * @param id the event id
 	  * @param sipfragment a fragment of a SIP message to be included as message body
 	  * @return the new NOTIFY message */
-	public static SipMessage createNotifyRequest(Dialog dialog, String event, String id, String sipfragment) {
+	public SipMessage createNotifyRequest(Dialog dialog, String event, String id, String sipfragment) {
 		SipMessage req=createRequest(dialog,SipMethods.NOTIFY,"message/sipfrag;version=2.0",sipfragment.getBytes());
 		req.removeExpiresHeader();
 		req.setEventHeader(new EventHeader(event,id));

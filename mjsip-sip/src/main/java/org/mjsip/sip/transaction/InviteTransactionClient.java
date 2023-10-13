@@ -26,9 +26,7 @@ package org.mjsip.sip.transaction;
 
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
@@ -77,9 +75,9 @@ public class InviteTransactionClient extends TransactionClient implements TimerL
 		this.transaction_id=transaction_id;
 		this.ack=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(SipConfig.retransmission_timeout,null);
-		transaction_to=new Timer(SipConfig.transaction_timeout,null);
-		end_to=new Timer(SipConfig.transaction_timeout,null);
+		retransmission_to=new Timer(sip_provider.sipConfig.retransmission_timeout,null);
+		transaction_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
+		end_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
@@ -119,7 +117,7 @@ public class InviteTransactionClient extends TransactionClient implements TimerL
 				if (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING)) {
 					retransmission_to.halt();
 					transaction_to.halt();
-					ack=SipMessageFactory.createNon2xxAckRequest(request,msg);
+					ack=sip_provider.sipMessageFactory.createNon2xxAckRequest(request,msg);
 					changeStatus(STATE_COMPLETED);
 					connection_id=sip_provider.sendMessage(ack);
 					if (invite_tc_listener!=null) invite_tc_listener.onTransFailureResponse(this,msg);

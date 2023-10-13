@@ -33,7 +33,6 @@ import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
@@ -229,7 +228,7 @@ public abstract class ServerEngine implements SipProviderListener {
 			}
 			// use default authentication service
 			if (as == null)
-				as = new AuthenticationServerImpl(realm, authentication_service);
+				as = new AuthenticationServerImpl(sip_provider, realm, authentication_service);
 			LOG.debug("AuthenticationServer: scheme: "+profile.authentication_scheme);
 			LOG.debug("AuthenticationServer: realm: "+profile.authentication_realm);
 		}
@@ -495,7 +494,7 @@ public abstract class ServerEngine implements SipProviderListener {
 
 		if (err_code>0) {
 			LOG.info("Message validation failed ("+err_code+" "+SipResponses.reasonOf(err_code)+"), message discarded");
-			return SipMessageFactory.createResponse(msg,err_code,null,null);
+			return sip_provider.sipMessageFactory.createResponse(msg,err_code,null,null);
 		}
 		else return null;
 	}

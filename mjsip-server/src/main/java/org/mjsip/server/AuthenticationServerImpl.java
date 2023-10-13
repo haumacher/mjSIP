@@ -28,7 +28,7 @@ import org.mjsip.sip.header.AuthorizationHeader;
 import org.mjsip.sip.header.ProxyAuthenticateHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
+import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.ByteUtils;
 import org.zoolu.util.MD5;
@@ -63,6 +63,8 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 	/** The current random value. */
 	protected byte[] rand;
 
+	private SipProvider sip_provider;
+
 	/** DIGEST */
 	//public static final String DIGEST="Digest";
 	/** AKA */
@@ -72,7 +74,8 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 
 
 	/** Costructs a new AuthenticationServerImpl. */
-	public AuthenticationServerImpl(String realm, AuthenticationService authentication_service) {
+	public AuthenticationServerImpl(SipProvider sip_provider, String realm, AuthenticationService authentication_service) {
+		this.sip_provider = sip_provider;
 		init(realm, authentication_service);
 	}
  
@@ -160,7 +163,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 					if (!is_authorized) {
 						// authentication/authorization failed
 						int result=403; // response code 403 ("Forbidden")
-						err_resp=SipMessageFactory.createResponse(msg,result,null,null);
+						err_resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);
 						LOG.info("Login error: Authentication of '" + user + "' failed");
 					}
 					else {
@@ -171,14 +174,14 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 				else {
 					// authentication/authorization failed
 					int result=400; // response code 400 ("Bad request")
-					err_resp=SipMessageFactory.createResponse(msg,result,null,null);
+					err_resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);
 					LOG.info("Authentication method '"+scheme+"' not supported.");
 				}
 			}
 			else {
 				// no authentication credential found for this user
 				int result=404; // response code 404 ("Not Found")
-				err_resp=SipMessageFactory.createResponse(msg,result,null,null);  
+				err_resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);  
 			}
 		}
 		else {
@@ -187,7 +190,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 			int result;
 			if (type==SERVER_AUTHENTICATION) result=401; // response code 401 ("Unauthorized")
 			else result=407; // response code 407 ("Proxy Authentication Required")
-			err_resp=SipMessageFactory.createResponse(msg,result,null,null);
+			err_resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);
 			WwwAuthenticateHeader wah;
 			if (type==SERVER_AUTHENTICATION) wah=new WwwAuthenticateHeader("Digest");
 			else wah=new ProxyAuthenticateHeader("Digest");

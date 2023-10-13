@@ -3,8 +3,8 @@ package org.mjsip.ua;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.cli.MessageAgentCli;
 import org.zoolu.util.Flags;
 
@@ -30,7 +30,7 @@ public class MA {
 			return;
 		}
 				
-		SipConfig.init(file);
+		SipConfig sipConfig = SipConfig.init(file);
 		UserAgentProfile user_profile=new UserAgentProfile(file);         
 		
 		if (regist_time>0) {
@@ -40,7 +40,7 @@ public class MA {
 		if (unregist) user_profile.do_unregister=true;
 		if (unregist_all) user_profile.do_unregister_all=true;
 
-		MessageAgentCli cli=new MessageAgentCli(new SipProvider(file),user_profile);
+		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig, file),user_profile);
 		if (user_profile.do_unregister_all) {
 			cli.unregisterall();
 		} 

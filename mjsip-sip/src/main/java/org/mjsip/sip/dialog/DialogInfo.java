@@ -37,7 +37,6 @@ import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 
 
 
@@ -55,7 +54,9 @@ import org.mjsip.sip.provider.SipConfig;
   */
 public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	
-	
+	/** SipProvider */
+	protected final SipProvider sip_provider;
+
 	// ************************ Private attributes ************************
 
 	/** Local name */
@@ -100,7 +101,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	  * The maximum amount of time that can occur between session refresh requests
 	  * in a dialog before the session will be considered timed out. */
 	//int session_interval=0;
-	int session_interval=SipConfig.default_session_interval;
+	int session_interval;
 
 	/** Session expiration.
 	  * The time at which an element will consider the session timed out,
@@ -133,7 +134,10 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 
 
 	/** Creates a new empty DialogInfo. */
-	public DialogInfo() {
+	public DialogInfo(SipProvider provider) {
+		this.sip_provider=provider;
+		session_interval=sip_provider.sipConfig.default_session_interval;
+
 		this.local_name=null;
 		this.remote_name=null;
 		this.local_contact=null;
@@ -348,7 +352,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 			}
 		}
 		// REMOVE THE LOCAL NODE FROM THE ROUTE SET (ELIMINATE FIRST-HOP LOOP)
-		if (SipConfig.on_dialog_route) {
+		if (sip_provider.sipConfig.on_dialog_route) {
 			if (route!=null && route.size()>0) {
 				GenericURI uri=((NameAddress)route.elementAt(0)).getAddress();
 				SipURI sip_uri=(uri.isSipURI())? new SipURI(uri) : null; 

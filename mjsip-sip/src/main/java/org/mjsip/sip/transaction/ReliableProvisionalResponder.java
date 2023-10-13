@@ -75,10 +75,11 @@ public class ReliableProvisionalResponder {
 	/** Timer listener */
 	TimerListener this_timer_listener;
 
+	private final SipConfig sipConfig;
 
-
-	/** Creates a new ReliableProvisionalResponder. */
-	public ReliableProvisionalResponder(InviteTransactionServer invite_ts, ReliableProvisionalResponderListener listener) {
+	/** Creates a new ReliableProvisionalResponder.*/
+	public ReliableProvisionalResponder(SipConfig sipConfig, InviteTransactionServer invite_ts, ReliableProvisionalResponderListener listener) {
+		this.sipConfig = sipConfig;
 		this.invite_ts=invite_ts;
 		this.listener=listener;
 		this.rseq_counter=(DEBUG_RSEQ_INIT1)? 1 : Random.nextLong(2147483648L); // chosen uniformly between 1 and 2^31 - 1
@@ -156,9 +157,9 @@ public class ReliableProvisionalResponder {
 
 	/** Sends the head-of-line response. */
 	private synchronized void sendNextResponse() {
-		transaction_to=new Timer(SipConfig.transaction_timeout,this_timer_listener);
+		transaction_to=new Timer(sipConfig.transaction_timeout,this_timer_listener);
 		transaction_to.start();
-		retransmission_to=new Timer(SipConfig.retransmission_timeout,this_timer_listener);
+		retransmission_to=new Timer(sipConfig.retransmission_timeout,this_timer_listener);
 		retransmission_to.start();
 		SipMessage resp=(SipMessage)responses.elementAt(0);
 		invite_ts.respondWith(resp); 
@@ -171,7 +172,7 @@ public class ReliableProvisionalResponder {
 			if (to.equals(retransmission_to)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>SipConfig.max_retransmission_timeout) timeout=SipConfig.max_retransmission_timeout;
+				if (timeout>sipConfig.max_retransmission_timeout) timeout=sipConfig.max_retransmission_timeout;
 				retransmission_to=new Timer(timeout,this_timer_listener);
 				retransmission_to.start();
 				SipMessage resp=(SipMessage)responses.elementAt(0);

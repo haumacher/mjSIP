@@ -10,7 +10,6 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.MultiTable;
@@ -339,7 +338,7 @@ public class UserAgentProfile extends Configure {
 		if (auth_user==null && user!=null) auth_user=user;
 		if (ua_address==null && sip_provider!=null) {
 			ua_address=sip_provider.getViaAddress();
-			if (sip_provider.getPort()!=SipConfig.default_port) ua_address+=":"+sip_provider.getPort();
+			if (sip_provider.getPort()!=sip_provider.sipConfig.default_port) ua_address+=":"+sip_provider.getPort();
 		}
 	}
 

@@ -52,11 +52,11 @@ public class ConnectedSipProvider extends SipProvider {
 
 
 	/** Creates a new ConnectedSipProvider.
-	  * @param via_addr SIP local via address
-	  * @param host_port SIP local port
-	  * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(String via_addr, int host_port, SipURI outbound_proxy) throws IOException {
-		super(via_addr,host_port);
+	 * @param via_addr SIP local via address
+	 * @param host_port SIP local port
+	 * @param outbound_proxy the URI of the outbound proxy */ 
+	public ConnectedSipProvider(SipConfig sipConfig, String via_addr, int host_port, SipURI outbound_proxy) throws IOException {
+		super(sipConfig,via_addr, host_port);
 		setOutboundProxy(outbound_proxy);
 		setForceRport(true);
 		connect();
@@ -64,36 +64,23 @@ public class ConnectedSipProvider extends SipProvider {
 
 
 	/** Creates a new SipProvider. 
-	  * @param via_addr SIP local via address
-	  * @param host_port SIP local port
-	  * @param transport_protocols array of active transport protocols
-	  * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(String via_addr, int host_port, String[] transport_protocols, SipURI outbound_proxy) throws IOException {
-		super(via_addr,host_port,transport_protocols);
+	 * @param via_addr SIP local via address
+	 * @param host_port SIP local port
+	 * @param transport_protocols array of active transport protocols
+	 * @param outbound_proxy the URI of the outbound proxy */ 
+	public ConnectedSipProvider(SipConfig sipConfig, String via_addr, int host_port, String[] transport_protocols, SipURI outbound_proxy) throws IOException {
+		super(sipConfig,via_addr,host_port, transport_protocols);
 		setOutboundProxy(outbound_proxy);
 		setForceRport(true);
 		connect();
 	}
 
-
 	/** Creates a new ConnectedSipProvider. 
-	  * @param via_addr SIP local via address
-	  * @param transport_protocols array of active transport protocols 
-	  * @param transport_ports array of transport ports used for the corresponding transport protocols
-	  * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(String via_addr, int host_port, String[] transport_protocols, int[] transport_ports, SipURI outbound_proxy) throws IOException {
-		super(via_addr,host_port,transport_protocols,transport_ports);
-		setOutboundProxy(outbound_proxy);
-		setForceRport(true);
-		connect();
-	}
-
-
-	/** Creates a new ConnectedSipProvider. 
-	  * @param file file where all configuration parameters are read from
-	  * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(String file, SipURI outbound_proxy) throws IOException {
-		super(file);
+	 * @param sipConfig The SIP stack configuration.
+	 * @param file file where all configuration parameters are read from
+	 * @param outbound_proxy the URI of the outbound proxy */ 
+	public ConnectedSipProvider(SipConfig sipConfig, String file, SipURI outbound_proxy) throws IOException {
+		super(sipConfig, file);
 		setOutboundProxy(outbound_proxy);
 		setForceRport(true);
 		connect();

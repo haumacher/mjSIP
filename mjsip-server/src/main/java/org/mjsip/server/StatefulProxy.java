@@ -32,10 +32,9 @@ import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.RequestLine;
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
-import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.InviteTransactionServer;
 import org.mjsip.sip.transaction.Transaction;
 import org.mjsip.sip.transaction.TransactionClient;
@@ -75,7 +74,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	private void init() {
 		sip_provider_client=sip_provider;
 		sip_provider_server=sip_provider;
-		state=new StatefulProxyState();
+		state=new StatefulProxyState(sip_provider);
 	}   
 
 		
@@ -142,7 +141,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		if (targets.isEmpty()) {
 			LOG.info("No target found, message discarded");
 			// the msg is not an ACK (already checked)
-			sendStatefulServerResponse(ts,SipMessageFactory.createResponse(msg,404,null,null));
+			sendStatefulServerResponse(ts,sip_provider.sipMessageFactory.createResponse(msg,404,null,null));
 			return;
 		}
 
@@ -184,7 +183,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			// check whether the caller or callee is a local user 
 			if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress())) {
 				LOG.info("both caller and callee are not registered with the local server: proxy denied.");
-				ts.respondWith(SipMessageFactory.createResponse(msg,503,null,null));
+				ts.respondWith(sip_provider.sipMessageFactory.createResponse(msg,503,null,null));
 				return;
 			}
 		}
@@ -289,7 +288,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 					Transaction tc=(Transaction)i.next();
 					// cancel ONLY transaction clients that has (only) received a provisional response
 					if (tc.isProceeding()) {
-						SipMessage cancel=SipMessageFactory.createCancelRequest(tc.getRequestMessage());
+						SipMessage cancel=sip_provider.sipMessageFactory.createCancelRequest(tc.getRequestMessage());
 						TransactionClient tc_cancel=new TransactionClient(sip_provider_server,cancel,null);
 						tc_cancel.request();
 						canc_counter++;
@@ -366,8 +365,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			return;
 		}
 						
-		SipConfig.init(file);
-		SipProvider sip_provider=new SipProvider(file);
+		SipProvider sip_provider=new SipProvider(SipConfig.init(file), file);
 		ServerProfile server_profile=new ServerProfile(file);
 		
 		StatefulProxy sproxy=new StatefulProxy(sip_provider,server_profile);   

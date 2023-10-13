@@ -47,9 +47,6 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 
 	// *********************** Protected attributes ***********************
 
-	/** SipProvider */
-	protected SipProvider sip_provider;
-
 	/** Internal dialog status. */
 	protected int status;
 	
@@ -83,8 +80,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 
 	/** Creates a new empty Dialog */
 	protected Dialog(SipProvider provider) {
-		super(); 
-		this.sip_provider=provider;
+		super(provider); 
 		this.dialog_num=dialog_counter++;  
 		this.status=0;
 		this.dialog_id=null;

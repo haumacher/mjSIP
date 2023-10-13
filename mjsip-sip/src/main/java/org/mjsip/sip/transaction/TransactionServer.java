@@ -26,10 +26,8 @@ package org.mjsip.sip.transaction;
 
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Timer;
@@ -89,7 +87,7 @@ public class TransactionServer extends Transaction implements TimerListener {
 		this.connection_id=connection_id;
 		this.response=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		clearing_to=new Timer(SipConfig.transaction_timeout,null);
+		clearing_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}  
 
@@ -107,7 +105,7 @@ public class TransactionServer extends Transaction implements TimerListener {
 
 	/** Sends a response message */
 	public void respondWith(int code) {
-		SipMessage resp=SipMessageFactory.createResponse(request,code,null,null);
+		SipMessage resp=sip_provider.sipMessageFactory.createResponse(request,code,null,null);
 		respondWith(resp);
 	}  
 

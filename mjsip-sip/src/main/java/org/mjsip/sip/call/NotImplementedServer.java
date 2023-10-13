@@ -24,7 +24,6 @@ package org.mjsip.sip.call;
 
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
@@ -87,7 +86,7 @@ public class NotImplementedServer implements SipProviderListener {
 			}
 			if (!is_implemented)      {
 				LOG.info("NotImplementedServer: " + "responding to a new " + method + " request");
-				SipMessage resp=SipMessageFactory.createResponse(msg,501,null,null);
+				SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,501,null,null);
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 				ts.respondWith(resp);
 			}

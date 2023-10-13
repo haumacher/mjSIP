@@ -25,8 +25,8 @@ package org.mjsip.ua;
 
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
-import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipProvider;
 import org.zoolu.util.Flags;
 
 
@@ -59,6 +59,11 @@ public class UserAgentConfig {
 	/** UserAgentProfile */ 
 	public UserAgentProfile ua_profile=null;
 
+	/**
+	 * SIP configuration options.
+	 */
+	public final SipConfig sipConfig;
+
 
 	/** Parses command-line options and inits the SIP stack, a SIP provider and an UA profile. */
 	private UserAgentConfig(String program, String[] args) {
@@ -67,6 +72,7 @@ public class UserAgentConfig {
 		while (flags.getBoolean("--skip",null)); // skip
 		boolean help=flags.getBoolean("-h","prints this message");
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
+		sipConfig = SipConfig.init(config_file);
 		
 		Boolean unregist=flags.getBoolean("-u",null,"unregisters the contact address with the registrar server (the same as -g 0)");
 		Boolean unregist_all=flags.getBoolean("-z",null,"unregisters ALL contact addresses");
@@ -84,7 +90,7 @@ public class UserAgentConfig {
 		int transfer_time=transfer!=null? Integer.parseInt(transfer[1]) : -1;
 		int re_invite_time=flags.getInteger("-i","<secs>",-1,"re-invites after given seconds");
 		
-		int host_port=flags.getInteger("-p","<port>",SipConfig.default_port,"local SIP port, used ONLY without -f option");
+		int host_port=flags.getInteger("-p","<port>",sipConfig.default_port,"local SIP port, used ONLY without -f option");
 		int media_port=flags.getInteger("-m","<port>",0,"(first) local media port");
 		String via_addr=flags.getString("--via-addr","<addr>",SipProvider.AUTO_CONFIGURATION,"host via address, used ONLY without -f option");
 		String outbound_proxy=flags.getString("-o","<addr>[:<port>]",null,"uses the given outbound proxy");
@@ -130,14 +136,11 @@ public class UserAgentConfig {
 			throw new IllegalArgumentException();
 		}
 		{
-			// init SipStack
-			SipConfig.init(config_file);
-
 			// init sip_provider
-			if (config_file!=null) sip_provider=new SipProvider(config_file);
+			if (config_file!=null) sip_provider=new SipProvider(sipConfig, config_file);
 			else  {
-				if (transport==null) sip_provider=new SipProvider(via_addr,host_port);
-				else sip_provider=new SipProvider(via_addr,host_port,new String[]{transport});
+				if (transport==null) sip_provider=new SipProvider(sipConfig,via_addr, host_port);
+				else sip_provider=new SipProvider(sipConfig,via_addr,host_port, new String[]{transport});
 			}
 			if (outbound_proxy!=null) sip_provider.setOutboundProxy(new SipURI(outbound_proxy));
 

@@ -24,8 +24,8 @@ package org.mjsip.ua;
 
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 
@@ -42,12 +42,14 @@ public class DummyUAS implements SipProviderListener {
 	/** Response reason */
 	String reason;
 
+	private SipProvider sip_provider;
+
 
 	/** Costructs a new DummyUAS. */
 	public DummyUAS(int port, int code, String reason) {
 		this.code=code;
 		this.reason=reason;
-		SipProvider sip_provider=new SipProvider(null,port);
+		sip_provider = new SipProvider(SipConfig.init(),null, port);
 		sip_provider.addSelectiveListener(MethodId.ANY,this);
 	}
 
@@ -58,7 +60,7 @@ public class DummyUAS implements SipProviderListener {
 	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		if (msg.isRequest() && !msg.isAck()) {
-			SipMessage resp=SipMessageFactory.createResponse(msg,code,reason,null);
+			SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,code,reason,null);
 		sip_provider.sendMessage(resp);
 		}
 	}
