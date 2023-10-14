@@ -332,9 +332,19 @@ public class SipConfig extends Configure {
 			else setOutboundProxyX(new SipURI(getOutboundAddr(),getOutboundPort()));
 		}
 		
-		if (getViaAddr() == null || getViaAddr().equalsIgnoreCase(AUTO_CONFIGURATION))
+		if (getViaAddr() == null || getViaAddr().equalsIgnoreCase(AUTO_CONFIGURATION)) {
 			setViaAddr(IpAddress.getLocalHostAddress().toString());
-		if (getHostPort()<=0) setHostPort(getDefaultPort());
+		}
+		if (getHostPort() <= 0) {
+			setHostPort(getDefaultPort());
+		}
+
+		if (getTransportProtocolsX() == null) {
+			setTransportProtocols(getDefaultTransportProtocols());
+		}
+		if (getMaxConnections() <= 0) {
+			setMaxConnections(getDefaultMaxConnections());
+		}
 	}
 
 	/**
@@ -655,8 +665,7 @@ public class SipConfig extends Configure {
 		return _transportProtocols;
 	}
 
-	// TODO: Make private.
-	public void setTransportProtocols(String[] transportProtocols) {
+	private void setTransportProtocols(String[] transportProtocols) {
 		this._transportProtocols = transportProtocols;
 	}
 
@@ -674,8 +683,7 @@ public class SipConfig extends Configure {
 		return _maxConnections;
 	}
 
-	// TODO: Make private.
-	public void setMaxConnections(int maxConnections) {
+	private void setMaxConnections(int maxConnections) {
 		this._maxConnections = maxConnections;
 	}
 

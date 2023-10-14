@@ -121,7 +121,7 @@ public class SipProvider implements SipTransportListener {
 	// ************************ Other attributes *************************
 
 	/** Table of supported transport layers for SIP (Hashtable of protocol (<code>String</code>), transport (<code>SipTransport</code>)) */
-	protected Hashtable sip_transports=null;
+	protected Hashtable<String, SipTransport> sip_transports = null;
 
 	/** Default transport */
 	String default_transport=null;
@@ -173,16 +173,13 @@ public class SipProvider implements SipTransportListener {
 		return proto.equalsIgnoreCase(PROTO_TLS) || proto.equalsIgnoreCase(PROTO_DTLS);
 	}
 
-
 	/** Inits and starts the transport services. */ 
 	private void initSipTrasport(String[] transport_protocols, int[] transport_ports) {
-		
-		if (transport_protocols==null) transport_protocols=sipConfig.getDefaultTransportProtocols();
-		sipConfig.setTransportProtocols(transport_protocols);
-		if (transport_protocols.length>0) default_transport=transport_protocols[0];
-		if (sipConfig.getMaxConnections()<=0) sipConfig.setMaxConnections(sipConfig.getDefaultMaxConnections());
+		if (transport_protocols.length > 0) {
+			default_transport = transport_protocols[0];
+		}
 
-		sip_transports=new Hashtable();
+		sip_transports = new Hashtable<>();
 		for (int i=0; i<transport_protocols.length; i++) {
 			try {
 				String proto=transport_protocols[i].toLowerCase();
@@ -497,11 +494,6 @@ public class SipProvider implements SipTransportListener {
 		return sipConfig.getMaxConnections();
 	}    
 
-	/** Sets the max number of (contemporary) open connections. */ 
-	public synchronized void setNMaxConnections(int n) {
-		sipConfig.setMaxConnections(n);
-	}    
-		
 	/** Returns the table of active listeners as Hastable:(SipId)IDs--&gt;(SipListener)listener. */ 
 	public Hashtable getListeners() {
 		return sip_listeners;
