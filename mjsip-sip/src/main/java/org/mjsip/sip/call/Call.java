@@ -52,16 +52,16 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Call.class);
 
 	/** The SipProvider used for the call */
-	protected SipProvider sip_provider;
+	protected final SipProvider sip_provider;
 	
 	/** The invite dialog (sip.dialog.InviteDialog) */
 	protected InviteDialog dialog;
 	
 	/** The user url (AOR) */
-	protected NameAddress from_naddr=null;
+	protected NameAddress from_naddr;
 
 	/** The user contact url */
-	protected NameAddress contact_naddr=null;
+	protected final NameAddress contact_naddr;
 
 	/** The user secure contact url */
 	//protected NameAddress secure_contact_naddr;
@@ -73,63 +73,34 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	protected String remote_sdp;
 	
 	/** The call listener */
-	CallListener listener;
+	private final CallListener listener;
  
 	/** Call state */
 	protected CallState call_state=new CallState();
 
 	/** Invite dialog listener */
-	private InviteDialogListener this_invite_dialog_listener;
+	private final InviteDialogListener this_invite_dialog_listener;
 	
-
-
-	/** Creates a new Call for a caller.
-	  * @param sip_provider the SIP provider
-	  * @param caller the local calling user
-	  * @param call_listener the call listener */
+	/**
+	 * Creates a new Call for a caller.
+	 * 
+	 * @param sip_provider
+	 *        the SIP provider
+	 * @param caller
+	 *        the local calling user
+	 * @param call_listener
+	 *        the call listener
+	 */
 	public Call(SipProvider sip_provider, SipUser caller, CallListener call_listener) {
-		initCall(sip_provider,caller,call_listener);
-	}
-
-	/** Creates a new Call for a callee, based on an already received INVITE request.
-	  * @param sip_provider the SIP provider
-	  * @param invite the received INVITE message
-	  * @param call_listener the call listener */
-	public Call(SipProvider sip_provider, SipMessage invite, CallListener call_listener) {
-		initCall(sip_provider,null,call_listener);
-		this.from_naddr=invite.getToHeader().getNameAddress();
-		this.dialog=new InviteDialog(sip_provider,invite,this_invite_dialog_listener);
-		//this.remote_sdp=invite.getStringBody();
-		//changeState(CallState.C_INCOMING);
-	}
-
-	/** Creates a new Call for a callee, based on an already received INVITE request.
-	  * @param sip_provider the SIP provider
-	  * @param invite the received INVITE message
-	  * @param callee the local called user
-	  * @param call_listener the call listener */
-	public Call(SipProvider sip_provider, SipMessage invite, SipUser callee, CallListener call_listener) {
-		initCall(sip_provider,callee,call_listener);
-		this.from_naddr=invite.getToHeader().getNameAddress();
-		this.dialog=new InviteDialog(sip_provider,invite,this_invite_dialog_listener);
-		//this.remote_sdp=invite.getStringBody();
-		//changeState(CallState.C_INCOMING);
-	}
-
-	/** Inits the Call.
-	  * @param sip_provider the SIP provider
-	  * @param user the local user
-	  * @param call_listener the call listener */
-	private void initCall(SipProvider sip_provider, SipUser user, CallListener call_listener) {
 		this.sip_provider=sip_provider;
 		this.listener=call_listener;
-		if (user!=null) {
-			this.from_naddr=user.getAddress();
-			this.contact_naddr=user.getContactAddress();
+		if (caller!=null) {
+			this.from_naddr=caller.getAddress();
+			this.contact_naddr=caller.getContactAddress();
+		} else {
+			this.from_naddr = null;
+			this.contact_naddr = null;
 		}
-		this.dialog=null;
-		this.local_sdp=null;
-		this.remote_sdp=null;
 		changeState(CallState.C_IDLE);
 
 		this_invite_dialog_listener=new ThisInviteDialogListener(this);

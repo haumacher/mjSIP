@@ -97,22 +97,6 @@ public class ExtendedCall extends Call {
 		//changeState(C_INCOMING);
 	}
 
-
-	/** Creates a new Call for a callee, based on an already received INVITE request.
-	  * @param sip_provider the SIP provider
-	  * @param invite the received INVITE message
-	  * @param callee the local called user
-	  * @param call_listener the call listener */
-	public ExtendedCall(SipProvider sip_provider, SipMessage invite, SipUser callee, ExtendedCallListener call_listener) {
-		super(sip_provider,callee,call_listener);
-		initExtendedCall(callee,call_listener);
-		this.from_naddr=invite.getToHeader().getNameAddress();
-		this.dialog=new ExtendedInviteDialog(sip_provider,invite,callee.getAuhUserName(),callee.getAuhRealm(),callee.getAuhPasswd(),this_extended_invite_dialog_listener);
-		//this.remote_sdp=invite.getStringBody();
-		//changeState(C_INCOMING);
-	}
-
-
 	/** Inits the ExtendedCall. */
 	private void initExtendedCall(SipUser user, ExtendedCallListener call_listener) {
 		this.xcall_listener=call_listener;
