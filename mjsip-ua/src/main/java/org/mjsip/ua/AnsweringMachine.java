@@ -23,8 +23,6 @@ package org.mjsip.ua;
 
 
 
-import java.io.File;
-
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
@@ -44,14 +42,11 @@ public class AnsweringMachine extends MultipleUAS {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AnsweringMachine.class);
 
-	/** Default available ports */
-	public static int MEDIA_PORTS=20;
-
 	/** Maximum life time (call duration) in seconds */
 	public static int MAX_LIFE_TIME=600;
 
 	/** Media file to play when answering the call. */
-	public static String ANNOUNCEMENT_FILE="./announcement-8000hz-mono-a-law.wav";
+	public static String DEFAULT_ANNOUNCEMENT_FILE="./announcement-8000hz-mono-a-law.wav";
 
 	/** First media port */
 	int _firstMediaPort;
@@ -59,13 +54,12 @@ public class AnsweringMachine extends MultipleUAS {
 	/** Last media port */
 	int _lastMediaPort;
 
-
 	/** Creates an {@link AnsweringMachine}. */
-	public AnsweringMachine(SipProvider sip_provider, UAConfig uaConfig, int numberOfPorts) {
+	public AnsweringMachine(SipProvider sip_provider, UAConfig uaConfig, int portCnt) {
 		super(sip_provider,uaConfig);
-
+		
 		_firstMediaPort = uaConfig.getMediaPort();
-		_lastMediaPort = _firstMediaPort + numberOfPorts - 1;
+		_lastMediaPort = _firstMediaPort + portCnt - 1;
 	} 
 
 
@@ -75,23 +69,13 @@ public class AnsweringMachine extends MultipleUAS {
 		GenericURI address = callee.getAddress();
 		LOG.info("Incomming call from: " + address);
 
-		String audioFile = ANNOUNCEMENT_FILE;
-		if (new File(audioFile).isFile()) {
-			LOG.info("Playing media: " + audioFile);
-
-			uaConfig.sendFile = audioFile;
-
-			int current_media_port = uaConfig.getMediaPort();
-			if ((current_media_port += media_descs.length) > _lastMediaPort) {
-				current_media_port = _firstMediaPort;
-			}
-			uaConfig.setMediaPort(current_media_port, 1);
-
-			ua.accept();
-		} else {
-			LOG.info("Media not found, rejecting call: " + audioFile);
-			ua.hangup();
+		int current_media_port = uaConfig.getMediaPort();
+		if ((current_media_port += media_descs.length) > _lastMediaPort) {
+			current_media_port = _firstMediaPort;
 		}
+		uaConfig.setMediaPort(current_media_port, 1);
+
+		ua.accept();
 	}
 	
 
@@ -100,31 +84,9 @@ public class AnsweringMachine extends MultipleUAS {
 		String program = AnsweringMachine.class.getSimpleName();
 		LOG.info(program + " " + SipStack.version);
 
-		int media_ports=MEDIA_PORTS;
-		boolean prompt_exit=false;
-
-		for (int i=0; i<args.length; i++) {
-			if (args[i].equals("--mports")) {
-				try {
-					media_ports=Integer.parseInt(args[i+1]);
-					args[i]="--skip";
-					args[++i]="--skip";
-				}
-				catch (Exception e) {  e.printStackTrace();  }
-			}
-			else
-			if (args[i].equals("--announcement")) {
-				ANNOUNCEMENT_FILE=args[i+1];
-				args[i]="--skip";
-				args[++i]="--skip";
-			}
-			else
-			if (args[i].equals("--prompt")) {
-				prompt_exit=true;
-				args[i]="--skip";
-			}
-		}
 		Flags flags=new Flags(program, args);
+		int portCnt=flags.getInteger("--ports", "<cnt>", 20, "number of available media ports");
+		Boolean prompt_exit = flags.getBoolean("--prompt", false, "Whether to wait for enter to exit program.");
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
@@ -135,7 +97,7 @@ public class AnsweringMachine extends MultipleUAS {
 		uaConfig.sendOnly = true;
 		if (uaConfig.hangupTime <= 0)
 			uaConfig.hangupTime = MAX_LIFE_TIME;
-		new AnsweringMachine(new SipProvider(sipConfig), uaConfig, media_ports);
+		new AnsweringMachine(new SipProvider(sipConfig), uaConfig, portCnt);
 
 		// promt before exit
 		if (prompt_exit) 
