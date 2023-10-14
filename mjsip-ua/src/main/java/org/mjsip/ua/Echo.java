@@ -73,10 +73,10 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 
 
 	/** Creates a new Echo. */
-	public Echo(SipProvider sip_provider, UAConfig ua_profile, int media_ports, boolean force_reverse_route) {
+	public Echo(SipProvider sip_provider, UAConfig uaConfig, int media_ports, boolean force_reverse_route) {
 		// call UAS
-		super(sip_provider,ua_profile);
-		first_media_port=ua_profile.getMediaPort();
+		super(sip_provider,uaConfig);
+		first_media_port=uaConfig.getMediaPort();
 		last_media_port=first_media_port+media_ports-1;
 		media_port=first_media_port;
 		this.force_reverse_route=force_reverse_route;
@@ -158,15 +158,15 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		Flags flags=new Flags("Echo", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig ua_profile = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		flags.close();
 		
-		ua_profile.audio=true;
-		ua_profile.video=true;
-		ua_profile.loopback=true;
-		ua_profile.sendOnly=false;
-		if (ua_profile.hangupTime<=0) ua_profile.hangupTime=MAX_LIFE_TIME;
-		new Echo(new SipProvider(sipConfig),ua_profile,media_ports,force_reverse_route);
+		uaConfig.audio=true;
+		uaConfig.video=true;
+		uaConfig.loopback=true;
+		uaConfig.sendOnly=false;
+		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
+		new Echo(new SipProvider(sipConfig),uaConfig,media_ports,force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

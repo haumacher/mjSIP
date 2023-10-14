@@ -54,8 +54,8 @@ public class MiniJukebox extends UserAgentCli {
 
 
 	/** Creates a new MiniJukebox. */
-	public MiniJukebox(SipProvider sip_provider, UAConfig user_profile) {
-		super(sip_provider,user_profile);
+	public MiniJukebox(SipProvider sip_provider, UAConfig uaConfig) {
+		super(sip_provider,uaConfig);
 	}
 
 
@@ -65,10 +65,10 @@ public class MiniJukebox extends UserAgentCli {
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {
-				ua_profile.sendFile=audio_file;
+				uaConfig.sendFile=audio_file;
 			}
 		}
-		if (ua_profile.sendFile!=null) ua.accept();      
+		if (uaConfig.sendFile!=null) ua.accept();      
 		else ua.hangup();
 	}
 
@@ -79,14 +79,14 @@ public class MiniJukebox extends UserAgentCli {
 		Flags flags=new Flags("MiniJukebox", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig ua_profile = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		flags.close();
 
-		ua_profile.audio=true;
-		ua_profile.video=false;
-		ua_profile.sendOnly=true;
-		if (ua_profile.hangupTime<=0) ua_profile.hangupTime=MAX_LIFE_TIME;
-		new MiniJukebox(new SipProvider(sipConfig),ua_profile);
+		uaConfig.audio=true;
+		uaConfig.video=false;
+		uaConfig.sendOnly=true;
+		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
+		new MiniJukebox(new SipProvider(sipConfig),uaConfig);
 	}    
 	
 }

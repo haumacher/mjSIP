@@ -76,7 +76,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	protected UserAgent ua;
 
 	/** UserAgentProfile */
-	protected UAConfig ua_profile;
+	protected UAConfig uaConfig;
 
 	/** Title */
 	//String user_name=app_name;
@@ -157,9 +157,9 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentGui(SipProvider sip_provider, UAConfig ua_profile) {
+	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig) {
 		this.sip_provider=sip_provider;
-		this.ua_profile=ua_profile;
+		this.uaConfig=uaConfig;
 
 		initUA();
 		initGraphics();                  
@@ -168,7 +168,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	protected void initUA() {
-		ua=new UserAgent(sip_provider,ua_profile,this);
+		ua=new UserAgent(sip_provider,uaConfig,this);
 		//ua.listen();
 		changeStatus(UA_IDLE);
 	}
@@ -178,8 +178,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		
 		// load icons
 		try {
-			icon_call=getImageIcon(ua_profile.mediaPath+"/"+CALL_GIF);
-			icon_hangup=getImageIcon(ua_profile.mediaPath+"/"+HANGUP_GIF);
+			icon_call=getImageIcon(uaConfig.mediaPath+"/"+CALL_GIF);
+			icon_hangup=getImageIcon(uaConfig.mediaPath+"/"+HANGUP_GIF);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -187,9 +187,9 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		}
 		
 		// load buddy list
-		if (ua_profile.buddyListFile!=null && (ua_profile.buddyListFile.startsWith("http://") || ua_profile.buddyListFile.startsWith("file:/"))) {
+		if (uaConfig.buddyListFile!=null && (uaConfig.buddyListFile.startsWith("http://") || uaConfig.buddyListFile.startsWith("file:/"))) {
 			try {
-				buddy_list=new StringList(new URL(ua_profile.buddyListFile));
+				buddy_list=new StringList(new URL(uaConfig.buddyListFile));
 			}
 			catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -197,7 +197,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 				buddy_list=new StringList((String)null);
 			}
 		}
-		else buddy_list=new StringList(ua_profile.buddyListFile);
+		else buddy_list=new StringList(uaConfig.buddyListFile);
 		jComboBox1=new JComboBox(buddy_list.getElements());
 
 		// init frame
@@ -211,7 +211,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			this.setLocation((screenSize.width - frameSize.width)/2 - 40, (screenSize.height - frameSize.height)/2 - 40);
 			this.setResizable(false);
 	
-			this.setTitle(sip_provider.getContactAddress(ua_profile.user).toString());
+			this.setTitle(sip_provider.getContactAddress(uaConfig.user).toString());
 			this.addWindowListener(new java.awt.event.WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) { exit(); }
@@ -290,44 +290,44 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	protected void run() {
 		
 		// Set the re-invite
-		if (ua_profile.reinviteTime>0) {
-			reInvite(ua_profile.reinviteTime);
+		if (uaConfig.reinviteTime>0) {
+			reInvite(uaConfig.reinviteTime);
 		}
 
 		// Set the transfer (REFER)
-		if (ua_profile.transferTo!=null && ua_profile.transferTime>0) {
-			callTransfer(ua_profile.transferTo,ua_profile.transferTime);
+		if (uaConfig.transferTo!=null && uaConfig.transferTime>0) {
+			callTransfer(uaConfig.transferTo,uaConfig.transferTime);
 		}
 
-		if (ua_profile.doUnregisterAll) {
+		if (uaConfig.doUnregisterAll) {
 			// ########## unregisters ALL contact URIs
 			LOG.info("Unregister all contact URIs");
 			ua.unregisterall();
 		} 
 
-		if (ua_profile.doUnregister) {
+		if (uaConfig.doUnregister) {
 			// unregisters the contact URI
 			LOG.info("Unregister the contact URI");
 			ua.unregister();
 		} 
 
-		if (ua_profile.doRegister) {
+		if (uaConfig.doRegister) {
 			// ########## registers the contact URI with the registrar server
 			LOG.info("Starting registration");
-			ua.loopRegister(ua_profile.expires,ua_profile.expires/2,ua_profile.keepaliveTime);
+			ua.loopRegister(uaConfig.expires,uaConfig.expires/2,uaConfig.keepaliveTime);
 		} 
 
-		if (ua_profile.callTo!=null) {
+		if (uaConfig.callTo!=null) {
 			// ########## make a call with the remote URI
-			LOG.info("UAC: CALLING " + ua_profile.callTo);
+			LOG.info("UAC: CALLING " + uaConfig.callTo);
 			jComboBox1.setSelectedItem(null);
-			comboBoxEditor1.setItem(ua_profile.callTo.toString());
-			display.setText("CALLING "+ua_profile.callTo);
-			ua.call(ua_profile.callTo);
+			comboBoxEditor1.setItem(uaConfig.callTo.toString());
+			display.setText("CALLING "+uaConfig.callTo);
+			ua.call(uaConfig.callTo);
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
-		if (!ua_profile.audio && !ua_profile.video)
+		if (!uaConfig.audio && !uaConfig.video)
 			LOG.info("ONLY SIGNALING, NO MEDIA");
 	}
 
@@ -351,7 +351,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 				display.setText("CALLING "+uri);
 				ua.call(uri);
 				changeStatus(UA_OUTGOING_CALL);
-				if (ua_profile.hangupTime>0) automaticHangup(ua_profile.hangupTime); 
+				if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
 			}
 		}
 		else
@@ -442,19 +442,19 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 		changeStatus(UA_INCOMING_CALL);
-		if (ua_profile.redirectTo!=null) {
+		if (uaConfig.redirectTo!=null) {
 			// redirect the call
-			display.setText("CALL redirected to "+ua_profile.redirectTo);
-			ua.redirect(ua_profile.redirectTo);
+			display.setText("CALL redirected to "+uaConfig.redirectTo);
+			ua.redirect(uaConfig.redirectTo);
 		}         
 		else
-		if (ua_profile.acceptTime>=0) {
+		if (uaConfig.acceptTime>=0) {
 			// automatically accept the call
 			display.setText("ON CALL");
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(caller.toString());
 			//accept();
-			automaticAccept(ua_profile.acceptTime);
+			automaticAccept(uaConfig.acceptTime);
 		}
 		else {
 			display.setText("INCOMING CALL");
@@ -483,7 +483,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	public void onUaCallAccepted(UserAgent ua) {
 		display.setText("ON CALL");
 		changeStatus(UA_ONCALL);
-		if (ua_profile.hangupTime>0) automaticHangup(ua_profile.hangupTime); 
+		if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
 	}
 
 
@@ -538,13 +538,13 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	/** When registration succeeded. */
 	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
-		this.setTitle(ua_profile.getUserURI().toString());
+		this.setTitle(uaConfig.getUserURI().toString());
 	}
 
 	/** When registration failed. */
 	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		this.setTitle(sip_provider.getContactAddress(ua_profile.user).toString());
+		this.setTitle(sip_provider.getContactAddress(uaConfig.user).toString());
 	}
 
 
@@ -634,13 +634,13 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		Flags flags=new Flags("local.ua.UA", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig ua_profile = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		flags.close();
 
 		// else
-		if (no_gui) new UserAgentCli(new SipProvider(sipConfig),ua_profile);
-		else new UserAgentGui(new SipProvider(sipConfig),ua_profile);
+		if (no_gui) new UserAgentCli(new SipProvider(sipConfig),uaConfig);
+		else new UserAgentGui(new SipProvider(sipConfig),uaConfig);
 	}
 	
 	/** Prints a message to standard output. */

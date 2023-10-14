@@ -47,7 +47,7 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
 	/** UserAgentProfile */
-	protected UAConfig ua_profile;
+	protected UAConfig uaConfig;
 			
 	/** SipProvider */
 	protected SipProvider sip_provider;
@@ -56,23 +56,23 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	PrintStream stdout=null;
 
 	/** Creates a new MultipleUAS. */
-	public MultipleUAS(SipProvider sip_provider, UAConfig ua_profile) {
-		this.ua_profile=ua_profile;
+	public MultipleUAS(SipProvider sip_provider, UAConfig uaConfig) {
+		this.uaConfig=uaConfig;
 		this.sip_provider=sip_provider;
 
 		// init UA profile
-		ua_profile.setUnconfiguredAttributes(sip_provider);
-		if (!ua_profile.noPrompt) stdout=System.out;
+		uaConfig.setUnconfiguredAttributes(sip_provider);
+		if (!uaConfig.noPrompt) stdout=System.out;
 		// set strict UA profile only 
-		ua_profile.uaServer=false;
-		ua_profile.optionsServer=false;
-		ua_profile.nullServer=false;
+		uaConfig.uaServer=false;
+		uaConfig.optionsServer=false;
+		uaConfig.nullServer=false;
 		// registration client
-		if (ua_profile.doRegister || ua_profile.doUnregister || ua_profile.doUnregisterAll) {
-			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(ua_profile.registrar),ua_profile.getUserURI(),ua_profile.authUser,ua_profile.authRealm,ua_profile.authPasswd,this);
-			rc.loopRegister(ua_profile.expires,ua_profile.expires/2);
+		if (uaConfig.doRegister || uaConfig.doUnregister || uaConfig.doUnregisterAll) {
+			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.registrar),uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd,this);
+			rc.loopRegister(uaConfig.expires,uaConfig.expires/2);
 		}
-		ua_profile.doRegister=false;
+		uaConfig.doRegister=false;
 		// start UAS     
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
 	} 
@@ -91,12 +91,12 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 			//NameAddress caller=msg.getFromHeader().getNameAddress();
 			String sdp=msg.getStringBody();
 			// create new UA
-			final UserAgent ua=new UserAgent(sip_provider,ua_profile,this);
+			final UserAgent ua=new UserAgent(sip_provider,uaConfig,this);
 			// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 			//printOut("Incoming call from "+caller.toString());
 			new ExtendedCall(sip_provider,msg,ua);
 			// automatic hangup after a maximum time
-			if (ua_profile.hangupTime>0) new ScheduledWork(ua_profile.hangupTime*1000) {  @Override
+			if (uaConfig.hangupTime>0) new ScheduledWork(uaConfig.hangupTime*1000) {  @Override
 			public void doWork() {  ua.hangup();  }  };
 		}
 	}

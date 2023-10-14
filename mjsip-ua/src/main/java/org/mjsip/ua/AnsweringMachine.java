@@ -61,10 +61,10 @@ public class AnsweringMachine extends MultipleUAS {
 
 
 	/** Creates an {@link AnsweringMachine}. */
-	public AnsweringMachine(SipProvider sip_provider, UAConfig ua_profile, int numberOfPorts) {
-		super(sip_provider,ua_profile);
+	public AnsweringMachine(SipProvider sip_provider, UAConfig uaConfig, int numberOfPorts) {
+		super(sip_provider,uaConfig);
 
-		_firstMediaPort = ua_profile.getMediaPort();
+		_firstMediaPort = uaConfig.getMediaPort();
 		_lastMediaPort = _firstMediaPort + numberOfPorts - 1;
 	} 
 
@@ -79,13 +79,13 @@ public class AnsweringMachine extends MultipleUAS {
 		if (new File(audioFile).isFile()) {
 			LOG.info("Playing media: " + audioFile);
 
-			ua_profile.sendFile = audioFile;
+			uaConfig.sendFile = audioFile;
 
-			int current_media_port = ua_profile.getMediaPort();
+			int current_media_port = uaConfig.getMediaPort();
 			if ((current_media_port += media_descs.length) > _lastMediaPort) {
 				current_media_port = _firstMediaPort;
 			}
-			ua_profile.setMediaPort(current_media_port, 1);
+			uaConfig.setMediaPort(current_media_port, 1);
 
 			ua.accept();
 		} else {
@@ -127,15 +127,15 @@ public class AnsweringMachine extends MultipleUAS {
 		Flags flags=new Flags(program, args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig ua_profile = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		flags.close();
 		
-		ua_profile.audio = true;
-		ua_profile.video = false;
-		ua_profile.sendOnly = true;
-		if (ua_profile.hangupTime <= 0)
-			ua_profile.hangupTime = MAX_LIFE_TIME;
-		new AnsweringMachine(new SipProvider(sipConfig), ua_profile, media_ports);
+		uaConfig.audio = true;
+		uaConfig.video = false;
+		uaConfig.sendOnly = true;
+		if (uaConfig.hangupTime <= 0)
+			uaConfig.hangupTime = MAX_LIFE_TIME;
+		new AnsweringMachine(new SipProvider(sipConfig), uaConfig, media_ports);
 
 		// promt before exit
 		if (prompt_exit) 

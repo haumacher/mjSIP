@@ -47,7 +47,7 @@ public class MediaAgent {
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MediaAgent.class);
 	
 	/** Audio application */
-	UAConfig ua_profile;
+	UAConfig uaConfig;
 
 	/** Active media streamers, as table of: (String)media-->(MediaStreamer)media_streamer */
 	Hashtable media_streamers=new Hashtable();
@@ -55,27 +55,27 @@ public class MediaAgent {
 
 
 	/** Creates a new MediaAgent. */
-	public MediaAgent(UAConfig ua_profile) {
-		this.ua_profile=ua_profile;
+	public MediaAgent(UAConfig uaConfig) {
+		this.uaConfig=uaConfig;
 
 		// ################# Patch to make audio working with javax.sound.. #################
 		// Currently ExtendedAudioSystem must be initialized before any AudioClipPlayer is initialized.
 		// This is caused by a problem with the definition of the audio format
 		// BEGIN PATCH
-		if (!ua_profile.useRat && !ua_profile.useJmfAudio) {
+		if (!uaConfig.useRat && !uaConfig.useJmfAudio) {
 			float audio_sample_rate=SimpleAudioSystem.DEFAULT_AUDIO_FORMAT.getSampleRate();
 			int channels=SimpleAudioSystem.DEFAULT_AUDIO_FORMAT.getChannels();
-			for (int i=0; i<ua_profile.mediaDescs.length; i++) {
-				MediaDesc media_desc=ua_profile.mediaDescs[i];
+			for (int i=0; i<uaConfig.mediaDescs.length; i++) {
+				MediaDesc media_desc=uaConfig.mediaDescs[i];
 				if (media_desc.getMedia().equalsIgnoreCase("audio")) {
 					MediaSpec ms=(MediaSpec)media_desc.getMediaSpecs()[0];
 					audio_sample_rate=ms.getSampleRate();
 					channels=ms.getChannels();
 				}
 			}
-			if (ua_profile.audio && !ua_profile.loopback) {
-				if (ua_profile.sendFile==null && !ua_profile.recvOnly && !ua_profile.sendTone)SimpleAudioSystem.initAudioInputLine(audio_sample_rate,channels);
-				if (ua_profile.recvFile==null && !ua_profile.sendOnly) SimpleAudioSystem.initAudioOutputLine(audio_sample_rate,channels);
+			if (uaConfig.audio && !uaConfig.loopback) {
+				if (uaConfig.sendFile==null && !uaConfig.recvOnly && !uaConfig.sendTone)SimpleAudioSystem.initAudioInputLine(audio_sample_rate,channels);
+				if (uaConfig.recvFile==null && !uaConfig.sendOnly) SimpleAudioSystem.initAudioOutputLine(audio_sample_rate,channels);
 			}
 		}
 		// END PATCH
@@ -98,7 +98,7 @@ public class MediaAgent {
 		// start new media streamer
 		MediaStreamer media_streamer=null;
 
-		if (ua_profile.loopback)
+		if (uaConfig.loopback)
 			media_streamer = new LoopbackMediaStreamer(flow_spec);
 		else
 		if (flow_spec.getMediaSpec().getType().equals("audio")) media_streamer=newAudioStreamer(flow_spec);
@@ -142,21 +142,20 @@ public class MediaAgent {
 		
 		MediaStreamer audio_streamer=null;
 		
-		if (ua_profile.useRat) {
+		if (uaConfig.useRat) {
 			// use a native audio streamer (e.g. RAT)
-			//if (ua_profile.audio_mcast_soaddr!=null) audio_flow=new FlowSpec(audio_flow.getMediaSpec(),ua_profile.audio_mcast_soaddr.getPort(),ua_profile.audio_mcast_soaddr.getAddress().toString(),ua_profile.audio_mcast_soaddr.getPort(),audio_flow.getDirection());
-			String remote_addr=(ua_profile.audioMcastSoAddr!=null)? ua_profile.audioMcastSoAddr.getAddress().toString() : audio_flow.getRemoteAddress();
-			int remote_port=(ua_profile.audioMcastSoAddr!=null)? ua_profile.audioMcastSoAddr.getPort() : audio_flow.getRemotePort();
-			int local_port=(ua_profile.audioMcastSoAddr!=null)? ua_profile.audioMcastSoAddr.getPort() : audio_flow.getLocalPort();
+			String remote_addr=(uaConfig.audioMcastSoAddr!=null)? uaConfig.audioMcastSoAddr.getAddress().toString() : audio_flow.getRemoteAddress();
+			int remote_port=(uaConfig.audioMcastSoAddr!=null)? uaConfig.audioMcastSoAddr.getPort() : audio_flow.getRemotePort();
+			int local_port=(uaConfig.audioMcastSoAddr!=null)? uaConfig.audioMcastSoAddr.getPort() : audio_flow.getLocalPort();
 			String[] args=new String[]{(remote_addr+"/"+remote_port)};
-			audio_streamer = new NativeMediaStreamer(ua_profile.binRat, args, local_port, remote_port);
+			audio_streamer = new NativeMediaStreamer(uaConfig.binRat, args, local_port, remote_port);
 		}
 		else 
-		if (ua_profile.useJmfAudio) {
+		if (uaConfig.useJmfAudio) {
 			// use JMF audio streamer
 			try {
-				String audio_source=(ua_profile.sendFile!=null)? Archive.getFileURL(ua_profile.sendFile).toString() : null;
-				if (ua_profile.recvFile!=null) LOG.warn("File destination is not supported with JMF audio");
+				String audio_source=(uaConfig.sendFile!=null)? Archive.getFileURL(uaConfig.sendFile).toString() : null;
+				if (uaConfig.recvFile!=null) LOG.warn("File destination is not supported with JMF audio");
 				Class media_streamer_class=Class.forName("local.ext.media.jmf.JmfMediaStreamer");
 				Class[] param_types={ FlowSpec.class, String.class};
 				Object[] param_values={ audio_flow, audio_source};
@@ -173,31 +172,31 @@ public class MediaAgent {
 		
 			// audio input
 			String audio_in=null;
-			if (ua_profile.sendTone) audio_in=AudioStreamer.TONE;
+			if (uaConfig.sendTone) audio_in=AudioStreamer.TONE;
 			else
-			if (ua_profile.sendFile!=null) audio_in=ua_profile.sendFile;
+			if (uaConfig.sendFile!=null) audio_in=uaConfig.sendFile;
 			// audio output
 			String audio_out=null;
-			if (ua_profile.recvFile!=null) audio_out=ua_profile.recvFile;        
+			if (uaConfig.recvFile!=null) audio_out=uaConfig.recvFile;        
 
 			// javax-based audio streamer
-			if (ua_profile.javaxSoundStreamer==null) {
+			if (uaConfig.javaxSoundStreamer==null) {
 				// standard javax-based audio streamer
 				audio_streamer = new AudioStreamer(audio_flow, audio_in, audio_out,
-						ua_profile.javaxSoundDirectConversion, null, ua_profile.javaxSoundSync,
-						ua_profile.randomEarlyDropRate, ua_profile.symmetricRtp);
+						uaConfig.javaxSoundDirectConversion, null, uaConfig.javaxSoundSync,
+						uaConfig.randomEarlyDropRate, uaConfig.symmetricRtp);
 			}
 			else {
 				// alternative audio streamer (just for experimental uses)
 				try {
-					Class media_streamer_class=Class.forName(ua_profile.javaxSoundStreamer);
+					Class media_streamer_class=Class.forName(uaConfig.javaxSoundStreamer);
 					Class[] param_types = { FlowSpec.class };
 					Object[] param_values = { audio_flow };
 					java.lang.reflect.Constructor media_streamer_constructor=media_streamer_class.getConstructor(param_types);
 					audio_streamer=(MediaStreamer)media_streamer_constructor.newInstance(param_values);
 				}
 				catch (Exception e) {
-					LOG.error("Error trying to create audio streamer '"+ua_profile.javaxSoundStreamer+"'", e);
+					LOG.error("Error trying to create audio streamer '"+uaConfig.javaxSoundStreamer+"'", e);
 				}
 			}
 		}
@@ -210,21 +209,20 @@ public class MediaAgent {
 		
 		MediaStreamer video_streamer=null;
 
-		if (ua_profile.useVic) {
+		if (uaConfig.useVic) {
 			// use a native audio streamer (e.g. VIC)
-			//if (ua_profile.video_mcast_soaddr!=null) video_flow=new FlowSpec(video_flow.getMediaSpec(),ua_profile.video_mcast_soaddr.getPort(),ua_profile.video_mcast_soaddr.getAddress().toString(),ua_profile.video_mcast_soaddr.getPort(),video_flow.getDirection());
-			String remote_addr=(ua_profile.videoMcastSoAddr!=null)? ua_profile.videoMcastSoAddr.getAddress().toString() : video_flow.getRemoteAddress();
-			int remote_port=(ua_profile.videoMcastSoAddr!=null)? ua_profile.videoMcastSoAddr.getPort() : video_flow.getRemotePort();
-			int local_port=(ua_profile.videoMcastSoAddr!=null)? ua_profile.videoMcastSoAddr.getPort() : video_flow.getLocalPort();
+			String remote_addr=(uaConfig.videoMcastSoAddr!=null)? uaConfig.videoMcastSoAddr.getAddress().toString() : video_flow.getRemoteAddress();
+			int remote_port=(uaConfig.videoMcastSoAddr!=null)? uaConfig.videoMcastSoAddr.getPort() : video_flow.getRemotePort();
+			int local_port=(uaConfig.videoMcastSoAddr!=null)? uaConfig.videoMcastSoAddr.getPort() : video_flow.getLocalPort();
 			String[] args=new String[]{(remote_addr+"/"+remote_port)};
-			video_streamer = new NativeMediaStreamer(ua_profile.binVic, args, local_port, remote_port);
+			video_streamer = new NativeMediaStreamer(uaConfig.binVic, args, local_port, remote_port);
 		}
 		else 
-		if (ua_profile.useJmfVideo) {
+		if (uaConfig.useJmfVideo) {
 			// use JMF video streamer
 			try {
-				String video_source=(ua_profile.sendVideoFile!=null)? Archive.getFileURL(ua_profile.sendVideoFile).toString() : null;
-				if (ua_profile.recvVideoFile!=null) LOG.warn("File destination is not supported with JMF video");
+				String video_source=(uaConfig.sendVideoFile!=null)? Archive.getFileURL(uaConfig.sendVideoFile).toString() : null;
+				if (uaConfig.recvVideoFile!=null) LOG.warn("File destination is not supported with JMF video");
 				Class media_streamer_class=Class.forName("local.ext.media.jmf.JmfMediaApp");
 				Class[] param_types = { FlowSpec.class, String.class };
 				Object[] param_values = { video_flow, video_source };
