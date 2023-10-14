@@ -116,9 +116,6 @@ public class SessionBorderController extends Proxy {
 		this.sip_provider=sip_provider;
 		this.sbc_profile=sbc_profile;
 		
-		// remove outbound proxy in case of the presence of a backend proxy
-		if (sbc_profile.backend_proxy!=null) sip_provider.setOutboundProxy(null);
-
 		if (sbc_profile.keepalive_time>0 && !sbc_profile.keepalive_aggressive) keepalive_daemons=new Hashtable();
 		if (sbc_profile.media_addr==null || sbc_profile.media_addr.equals("0.0.0.0")) sbc_profile.media_addr=sip_provider.getViaAddress();
 		
@@ -358,9 +355,7 @@ public class SessionBorderController extends Proxy {
 
 	/** The main method. */
 	public static void main(String[] args) {
-		
-		Flags flags=new Flags(args);
-		boolean help=flags.getBoolean("--prompt","prompt for exit");
+		Flags flags=new Flags(SessionBorderController.class.getName(), args);
 		boolean memory_debugging=flags.getBoolean("-d",null);
 		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
 		Config config = new Config(file);
@@ -370,15 +365,17 @@ public class SessionBorderController extends Proxy {
 			config.setOption(SessionBorderControllerProfile.MEDIA_PORTS, ports);
 		}
 		
-		if (help) {
-			System.out.println(flags.toUsageString(SessionBorderController.class.getName()));
-			return;
-		}
+		flags.close();
 		
 		SipConfig sipConfig = SipConfig.init(file);
 		ServerProfile server_profile=new ServerProfile(file);
 		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(config);
 
+		// remove outbound proxy in case of the presence of a backend proxy
+		if (sbc_profile.backend_proxy!=null) {
+			sipConfig.setOutboundProxyX(null);
+		}
+		
 		// create a new ExtendedSipProvider
 		long keepalive_aggressive_time=(sbc_profile.keepalive_aggressive)? sbc_profile.keepalive_time : 0;
 		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig,sbc_profile.binding_timeout,keepalive_aggressive_time);

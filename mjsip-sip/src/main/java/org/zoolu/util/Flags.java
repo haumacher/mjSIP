@@ -81,13 +81,42 @@ public class Flags {
 	/** Whether '--not' option is enabled */
 	boolean not_option=false;
 	
+	private String _program;
 	
-	/** Creates options.
-	 * @param args array of string contains the options and/or parameters. */
-	public Flags(String[] args) {
+	/**
+	 * Creates options.
+	 * 
+	 * @param program
+	 *        The program that is currently running.
+	 * @param args
+	 *        array of string contains the options and/or parameters.
+	 */
+	public Flags(String program, String[] args) {
+		_program = program;
 		this.args=new ArrayList(Arrays.asList(args));
+
+		while (getBoolean("--skip", null)) {
+			// skip
+		}
 	}
 	
+	/**
+	 * Must be called, after all options are read.
+	 */
+	public void close() {
+		boolean help = getBoolean("-h", "prints this message");
+		if (help) {
+			System.out.println(toUsageString());
+			System.exit(0);
+		}
+	
+		String[] remaining_params = getRemainingStrings(true, null, null);
+		if (remaining_params.length>0) {
+			System.out.println(toUsageString());
+			throw new IllegalArgumentException("Unrecognized option '"+remaining_params[0]+"'.");
+		}
+	}
+
 	/** Parses the array of string for a given 'boolean option'.
 	 * The option is removed from the list of unparsed strings.
 	 * @param tag option tag (e.g. '-u' or '--help')
@@ -328,10 +357,12 @@ public class Flags {
 	/** Gets the usage description.
 	 * @param program the main class
 	 * @return a string like "Usage: java program [options] ..." */
-	public String toUsageString(String program) {
+	public String toUsageString() {
 		StringBuffer sb=new StringBuffer();
-		if (FIRST_PARAMS_THEN_OPTIONS || options.size()==0) sb.append("Usage: java ").append(program);
-		else sb.append("Usage: java ").append(program).append(" [options]");
+		if (FIRST_PARAMS_THEN_OPTIONS || options.size() == 0)
+			sb.append("Usage: java ").append(_program);
+		else
+			sb.append("Usage: java ").append(_program).append(" [options]");
 		for (int i=0; i<params.size(); i++) {
 			Option p=(Option)params.get(i);
 			if (p.getTag()==OPTIONAL_PARAM) sb.append(" [").append(p.getParam()).append("]");

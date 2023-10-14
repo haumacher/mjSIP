@@ -47,16 +47,17 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.ua.UserAgent;
-import org.mjsip.ua.UserAgentConfig;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentProfile;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Archive;
+import org.zoolu.util.Flags;
 import org.zoolu.util.ScheduledWork;
 
 
@@ -630,11 +631,16 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	/** The main method. */
 	public static void main(String[] args) {
 		println("MJSIP UserAgent "+SipStack.version);
+		Flags flags=new Flags("local.ua.UA", args);
+		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
+		flags.close();
 
-		UserAgentConfig config = UserAgentConfig.init("local.ua.UA",args);
 		// else
-		if (config.no_gui.booleanValue()) new UserAgentCli(config.sip_provider,config.ua_profile);
-		else new UserAgentGui(config.sip_provider,config.ua_profile);
+		if (no_gui) new UserAgentCli(new SipProvider(sipConfig),ua_profile);
+		else new UserAgentGui(new SipProvider(sipConfig),ua_profile);
 	}
 	
 	/** Prints a message to standard output. */

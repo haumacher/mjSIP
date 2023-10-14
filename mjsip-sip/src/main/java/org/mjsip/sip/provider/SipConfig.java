@@ -32,6 +32,7 @@ import org.mjsip.sip.message.SipMethods;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.util.Configure;
+import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
 import org.zoolu.util.Timer;
 
@@ -309,6 +310,32 @@ public class SipConfig extends Configure {
 		Timer.DEFAULT_DAEMON_MODE = result.isTimerDaemonMode();
 		
 		return result;
+	}
+
+	/** Creates {@link SipConfig} from the specified file and program arguments */
+	public static SipConfig init(String config_file, Flags flags) {
+		SipConfig sipConfig = init(config_file);
+		
+		int host_port=flags.getInteger("-p","<port>",sipConfig.getDefaultPort(),"local SIP port, used ONLY without -f option");
+		String via_addr=flags.getString("--via-addr","<addr>",AUTO_CONFIGURATION,"host via address, used ONLY without -f option");
+	
+		String outbound_proxy=flags.getString("-o","<addr>[:<port>]",null,"uses the given outbound proxy");
+		if (outbound_proxy!=null) {
+			sipConfig.setOutboundProxyX(new SipURI(outbound_proxy));
+		}
+	
+		String contact_uri=flags.getString("--contact-uri","<uri>",null,"user's contact URI");
+		
+		String transport=flags.getString("--transport","<proto>",null,"use the given transport protocol for SIP");
+		if (transport!=null) {
+			sipConfig.setTransportProtocols(new String[]{transport});
+		}
+		
+		// init sip_provider
+		if (config_file==null) {
+			sipConfig.update(via_addr, host_port);
+		}
+		return sipConfig;
 	}
 
 	/** Inits the SipProvider, initializing the SipProviderListeners, the transport protocols, the outbound proxy, and other attributes. */ 
@@ -665,7 +692,10 @@ public class SipConfig extends Configure {
 		return _transportProtocols;
 	}
 
-	private void setTransportProtocols(String[] transportProtocols) {
+	/**
+	 * @see #getTransportProtocolsX()
+	 */
+	public void setTransportProtocols(String[] transportProtocols) {
 		this._transportProtocols = transportProtocols;
 	}
 
@@ -709,8 +739,7 @@ public class SipConfig extends Configure {
 		return _telGateway;
 	}
 
-	// TODO: Make private.
-	public void setTelGatewayX(SipURI telGateway) {
+	private void setTelGatewayX(SipURI telGateway) {
 		this._telGateway = telGateway;
 	}
 

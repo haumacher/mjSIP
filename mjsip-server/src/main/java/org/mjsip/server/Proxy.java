@@ -368,16 +368,11 @@ public class Proxy extends Registrar {
 
 	/** The main method. */
 	public static void main(String[] args) {
-				
-		Flags flags=new Flags(args);
-		boolean help=flags.getBoolean("--prompt","prompt for exit");
+		Flags flags=new Flags(Proxy.class.getName(), args);
 		boolean prompt_exit=flags.getBoolean("-h","prints this message");
 		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
 		
-		if (help) {
-			System.out.println(flags.toUsageString(Proxy.class.getName()));
-			return;
-		}
+		flags.close();
 					
 		SipProvider sip_provider=new SipProvider(SipConfig.init(file));
 		ServerProfile server_profile=new ServerProfile(file);

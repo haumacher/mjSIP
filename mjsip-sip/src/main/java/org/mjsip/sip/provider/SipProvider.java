@@ -142,17 +142,6 @@ public class SipProvider implements SipTransportListener {
 	
 	public final SipMessageFactory sipMessageFactory;
 
-	/** Creates a new SipProvider. 
-	 * @param via_addr SIP local via address
-	 * @param host_port SIP local port
-	 * @param transport_protocols array of active transport protocols */
-	public SipProvider(SipConfig sipConfig, String[] transport_protocols) {
-		this.sipConfig = sipConfig;
-		sipMessageFactory = new SipMessageFactory(sipConfig);
-		initLog();
-		initSipTrasport(transport_protocols,null);
-	}
-
 	/** Creates a new SipProvider. */ 
 	public SipProvider(SipConfig sipConfig) {
 		this.sipConfig = sipConfig;
@@ -464,16 +453,6 @@ public class SipProvider implements SipTransportListener {
 		return sipConfig.getOutboundProxyX();
 	}    
 
-	/** Sets the outbound proxy. Use 'null' for not using any outbound proxy. */ 
-	public synchronized void setOutboundProxy(SipURI uri) {
-		sipConfig.setOutboundProxyX(uri);
-	}
-
-	/** Removes the outbound proxy. */ 
-	/*public void removeOutboundProxy() {
-		setOutboundProxy(null);
-	}*/
-
 	/** Whether has tel gateway. */ 
 	public boolean hasTelGateway() {
 		return sipConfig.getTelGatewayX()!=null;
@@ -483,11 +462,6 @@ public class SipProvider implements SipTransportListener {
 	public SipURI getTelGateway() {
 		return sipConfig.getTelGatewayX();
 	}    
-
-	/** Sets the tel gateway. Use 'null' for not using any tel gateway. */ 
-	public synchronized void setTelGateway(SipURI uri) {
-		sipConfig.setTelGatewayX(uri);
-	}
 
 	/** Gets the max number of (contemporary) open connections. */ 
 	public int getNMaxConnections() {

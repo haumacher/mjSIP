@@ -30,12 +30,14 @@ import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.slf4j.LoggerFactory;
+import org.zoolu.util.Flags;
 
 
 
@@ -127,8 +129,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	
 	/** The main method. */
 	public static void main(String[] args) {
-		
-		UserAgentConfig.println("Echo "+SipStack.version);
+		System.out.println("Echo "+SipStack.version);
 
 		int media_ports=MEDIA_PORTS;
 		boolean force_reverse_route=false;
@@ -154,14 +155,18 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 				args[i]="--skip";
 			}
 		}
+		Flags flags=new Flags("Echo", args);
+		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		flags.close();
 		
-		UserAgentConfig config = UserAgentConfig.init("Echo",args);
-		config.ua_profile.audio=true;
-		config.ua_profile.video=true;
-		config.ua_profile.loopback=true;
-		config.ua_profile.sendOnly=false;
-		if (config.ua_profile.hangupTime<=0) config.ua_profile.hangupTime=MAX_LIFE_TIME;
-		new Echo(config.sip_provider,config.ua_profile,media_ports,force_reverse_route);
+		ua_profile.audio=true;
+		ua_profile.video=true;
+		ua_profile.loopback=true;
+		ua_profile.sendOnly=false;
+		if (ua_profile.hangupTime<=0) ua_profile.hangupTime=MAX_LIFE_TIME;
+		new Echo(new SipProvider(sipConfig),ua_profile,media_ports,force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

@@ -323,15 +323,9 @@ public class Registrar extends ServerEngine {
 
 	/** The main method. */
 	public static void main(String[] args) {
-		
-		Flags flags=new Flags(args);
-		boolean help=flags.getBoolean("-h","prints this message");
+		Flags flags=new Flags(Registrar.class.getName(), args);
 		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		
-		if (help) {
-			System.out.println(flags.toUsageString(Registrar.class.getName()));
-			return;
-		}
+		flags.close();
 			
 		SipProvider sip_provider=new SipProvider(SipConfig.init(file));
 		ServerProfile server_profile=new ServerProfile(file);

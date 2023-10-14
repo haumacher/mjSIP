@@ -50,27 +50,11 @@ public class ConnectedSipProvider extends SipProvider {
 	Hashtable connections=new Hashtable();
 
 
-
-	/** Creates a new ConnectedSipProvider.
-	 * @param via_addr SIP local via address
-	 * @param host_port SIP local port
-	 * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(SipConfig sipConfig, SipURI outbound_proxy) throws IOException {
+	/**
+	 * Creates a {@link ConnectedSipProvider}.
+	 */
+	public ConnectedSipProvider(SipConfig sipConfig) throws IOException {
 		super(sipConfig);
-		setOutboundProxy(outbound_proxy);
-		setForceRport(true);
-		connect();
-	}
-
-
-	/** Creates a new SipProvider. 
-	 * @param via_addr SIP local via address
-	 * @param host_port SIP local port
-	 * @param transport_protocols array of active transport protocols
-	 * @param outbound_proxy the URI of the outbound proxy */ 
-	public ConnectedSipProvider(SipConfig sipConfig, String[] transport_protocols, SipURI outbound_proxy) throws IOException {
-		super(sipConfig,transport_protocols);
-		setOutboundProxy(outbound_proxy);
 		setForceRport(true);
 		connect();
 	}

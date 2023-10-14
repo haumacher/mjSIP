@@ -26,10 +26,12 @@ package org.mjsip.ua;
 import java.io.File;
 
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
+import org.zoolu.util.Flags;
 
 
 
@@ -73,15 +75,18 @@ public class MiniJukebox extends UserAgentCli {
 	
 	/** The main method. */
 	public static void main(String[] args) {
-		
 		System.out.println("MiniJukebox"+SipStack.version);
+		Flags flags=new Flags("MiniJukebox", args);
+		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		flags.close();
 
-		UserAgentConfig config = UserAgentConfig.init("MiniJukebox",args);
-		config.ua_profile.audio=true;
-		config.ua_profile.video=false;
-		config.ua_profile.sendOnly=true;
-		if (config.ua_profile.hangupTime<=0) config.ua_profile.hangupTime=MAX_LIFE_TIME;
-		new MiniJukebox(config.sip_provider,config.ua_profile);
+		ua_profile.audio=true;
+		ua_profile.video=false;
+		ua_profile.sendOnly=true;
+		if (ua_profile.hangupTime<=0) ua_profile.hangupTime=MAX_LIFE_TIME;
+		new MiniJukebox(new SipProvider(sipConfig),ua_profile);
 	}    
 	
 }
