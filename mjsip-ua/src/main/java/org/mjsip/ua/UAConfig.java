@@ -22,7 +22,26 @@ import org.zoolu.util.VectorUtils;
   */
 public class UAConfig extends Configure {
 		 
-	// ********************** user configurations *********************
+	/** 
+	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
+	 */
+	public static UAConfig init(String file, Flags flags) {
+		UAConfig result=new UAConfig();
+		result.loadFile(file);
+		result.updateWith(flags);
+		result.normalize();
+		return result;
+	}
+
+	/** 
+	 * Constructs a {@link UAConfig} from configuration file values.
+	 */
+	public static UAConfig init(String file) {
+		UAConfig result=new UAConfig();
+		result.loadFile(file);
+		result.normalize();
+		return result;
+	}
 
 	/** Display name for the user.
 	  * It is used in the user's AOR registered to the registrar server
@@ -220,25 +239,13 @@ public class UAConfig extends Configure {
 	/** Fixed video multicast socket address; if defined, it forces the use of this maddr+port for video session */
 	public SocketAddress videoMcastSoAddr=null;
 
-
-	// ************************** costructors *************************
-	
-	/** Costructs a void UserAgentProfile */
-	public UAConfig() {
-		init();
-	}
-
-	/** Costructs a new UserAgentProfile
-	  * @param file the name of the configuration file */
-	public UAConfig(String file) {
-		// load configuration
-		loadFile(file);
-		// post-load manipulation     
-		init();
+	/** Constructs a {@link UAConfig} */
+	private UAConfig() {
+		super();
 	}
 
 	/** Inits the UserAgentProfile. */
-	private void init() {
+	private void normalize() {
 		if (proxy!=null && proxy.equalsIgnoreCase(Configure.NONE)) proxy=null;
 		if (registrar!=null && registrar.equalsIgnoreCase(Configure.NONE)) registrar=null;
 		if (displayName!=null && displayName.equalsIgnoreCase(Configure.NONE)) displayName=null;
@@ -464,136 +471,120 @@ public class UAConfig extends Configure {
 		if (attribute.equals("video_mcast_soaddr")) {  videoMcastSoAddr=new SocketAddress(par.getString());  return;  }
 	}
 
-	
-	/** 
-	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
+	/**
+	 * Adds settings read from command line arguments.
 	 */
-	public static UAConfig init(String file, Flags flags) {
-		UAConfig uaProfile = init(file);
-		updateWith(uaProfile, flags);
-		return uaProfile;
-	}
-
-	protected static void updateWith(UAConfig uaProfile, Flags flags) {
+	protected void updateWith(Flags flags) {
 		Boolean no_prompt=flags.getBoolean("--no-prompt",null,"do not prompt");
-		if (no_prompt!=null) uaProfile.noPrompt=no_prompt.booleanValue();
+		if (no_prompt!=null) this.noPrompt=no_prompt.booleanValue();
 		
 		Boolean no_system_audio=flags.getBoolean("--no-audio",null,"do not use system audio");
-		if (no_system_audio!=null) uaProfile.noSystemAudio=no_system_audio.booleanValue();
-	
+		if (no_system_audio!=null) this.noSystemAudio=no_system_audio.booleanValue();
+		
 		Boolean unregist=flags.getBoolean("-u",null,"unregisters the contact address with the registrar server (the same as -g 0)");
-		if (unregist!=null) uaProfile.doUnregister=unregist.booleanValue();
-	
+		if (unregist!=null) this.doUnregister=unregist.booleanValue();
+		
 		Boolean unregist_all=flags.getBoolean("-z",null,"unregisters ALL contact addresses");
-		if (unregist_all!=null) uaProfile.doUnregisterAll=unregist_all.booleanValue();
+		if (unregist_all!=null) this.doUnregisterAll=unregist_all.booleanValue();
 		
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
-		if (regist_time>=0) {  uaProfile.doRegister=true;  uaProfile.expires=regist_time;  }
-	
+		if (regist_time>=0) {  this.doRegister=true;  this.expires=regist_time;  }
+		
 		long keepalive_time=flags.getLong("--keep-alive","<msecs>",-1,"send keep-alive packets each given milliseconds");
-		if (keepalive_time>=0) uaProfile.keepaliveTime=keepalive_time;
-	
+		if (keepalive_time>=0) this.keepaliveTime=keepalive_time;
+		
 		Boolean no_offer=flags.getBoolean("-n",null,"no offer in invite (offer/answer in 2xx/ack)");
-		if (no_offer!=null) uaProfile.noOffer=no_offer.booleanValue();
-	
+		if (no_offer!=null) this.noOffer=no_offer.booleanValue();
+		
 		String call_to=flags.getString("-c","<call_to>",null,"calls a remote user");      
-		if (call_to!=null) uaProfile.callTo=NameAddress.parse(call_to);
+		if (call_to!=null) this.callTo=NameAddress.parse(call_to);
 		
 		String redirect_to=flags.getString("-r","<uri>",null,"redirects the call to new user <uri>");
-		if (redirect_to!=null) uaProfile.redirectTo=NameAddress.parse(redirect_to);
-	
+		if (redirect_to!=null) this.redirectTo=NameAddress.parse(redirect_to);
+		
 		String[] transfer=flags.getStringTuple("-q",2,"<uri> <secs>",null,"transfers the call to <uri> after <secs> seconds");
-	
+		
 		String transfer_to=transfer!=null? transfer[0] : null; 
-		if (transfer_to!=null) uaProfile.transferTo=NameAddress.parse(transfer_to);
-	
+		if (transfer_to!=null) this.transferTo=NameAddress.parse(transfer_to);
+		
 		int transfer_time=transfer!=null? Integer.parseInt(transfer[1]) : -1;
-		if (transfer_time>0) uaProfile.transferTime=transfer_time;
+		if (transfer_time>0) this.transferTime=transfer_time;
 		
 		int accept_time=flags.getInteger("-y","<secs>",-1,"auto answers after given seconds");      
-		if (accept_time>=0) uaProfile.acceptTime=accept_time;
+		if (accept_time>=0) this.acceptTime=accept_time;
 		
 		int hangup_time=flags.getInteger("-t","<secs>",-1,"auto hangups after given seconds (0 means manual hangup)");
-		if (hangup_time>0) uaProfile.hangupTime=hangup_time;
+		if (hangup_time>0) this.hangupTime=hangup_time;
 		
 		int re_invite_time=flags.getInteger("-i","<secs>",-1,"re-invites after given seconds");
-		if (re_invite_time>0) uaProfile.reinviteTime=re_invite_time;
+		if (re_invite_time>0) this.reinviteTime=re_invite_time;
 		
 		int re_call_time=flags.getInteger("--re-call-time","<time>",-1,"re-calls after given seconds");
-		if (re_call_time>0) uaProfile.recallTime=re_call_time;
-	
+		if (re_call_time>0) this.recallTime=re_call_time;
+		
 		int re_call_count=flags.getInteger("--re-call-count","<n>",-1,"number of successive automatic re-calls");
-		if (re_call_count>0) uaProfile.recallCount=re_call_count;
+		if (re_call_count>0) this.recallCount=re_call_count;
 		
 		Boolean audio=flags.getBoolean("-a",null,"audio");
-		if (audio!=null) uaProfile.audio=audio.booleanValue();
+		if (audio!=null) this.audio=audio.booleanValue();
 		
 		Boolean video=flags.getBoolean("-v",null,"video");
-		if (video!=null) uaProfile.video=video.booleanValue();
+		if (video!=null) this.video=video.booleanValue();
 		
 		int media_port=flags.getInteger("-m","<port>",0,"(first) local media port");
-		if (media_port>0) uaProfile.setMediaPort(media_port);
-	
+		if (media_port>0) this.setMediaPort(media_port);
+		
 		String display_name=flags.getString("--display-name","<str>",null,"display name");
-		if (display_name!=null) uaProfile.displayName=display_name;
+		if (display_name!=null) this.displayName=display_name;
 		
 		String user=flags.getString("--user","<user>",null,"user name");
-		if (user!=null) uaProfile.user=user;
+		if (user!=null) this.user=user;
 		
 		String proxy=flags.getString("--proxy","<proxy>",null,"proxy server");
-		if (proxy!=null) uaProfile.proxy=proxy;
+		if (proxy!=null) this.proxy=proxy;
 		
 		String registrar=flags.getString("--registrar","<registrar>",null,"registrar server");
-		if (registrar!=null) uaProfile.registrar=registrar;
+		if (registrar!=null) this.registrar=registrar;
 		
 		String auth_user=flags.getString("--auth-user","<user>",null,"user name used for authenticat");
-		if (auth_user!=null) uaProfile.authUser=auth_user;
+		if (auth_user!=null) this.authUser=auth_user;
 		
 		String auth_realm=flags.getString("--auth-realm","<realm>",null,"realm used for authentication");
-		if (auth_realm!=null) uaProfile.authRealm=auth_realm;
+		if (auth_realm!=null) this.authRealm=auth_realm;
 		
 		String auth_passwd=flags.getString("--auth-passwd","<passwd>",null,"passwd used for authentication");
-		if (auth_passwd!=null) uaProfile.authPasswd=auth_passwd; 
+		if (auth_passwd!=null) this.authPasswd=auth_passwd; 
 		
 		Boolean loopback=flags.getBoolean("--loopback",null,"loopback mode, received media are sent back to the remote sender");
-		if (loopback!=null) uaProfile.loopback=loopback.booleanValue();
+		if (loopback!=null) this.loopback=loopback.booleanValue();
 		
 		Boolean recv_only=flags.getBoolean("--recv-only",null,"receive only mode, no media is sent");
-		if (recv_only!=null) uaProfile.recvOnly=recv_only.booleanValue();
+		if (recv_only!=null) this.recvOnly=recv_only.booleanValue();
 		
 		Boolean send_only=flags.getBoolean("--send-only",null,"send only mode, no media is received");
-		if (send_only!=null) uaProfile.sendOnly=send_only.booleanValue();
+		if (send_only!=null) this.sendOnly=send_only.booleanValue();
 		
 		Boolean send_tone=flags.getBoolean("--send-tone",null,"send only mode, an audio test tone is generated");
-		if (send_tone!=null) uaProfile.sendTone=send_tone.booleanValue();
+		if (send_tone!=null) this.sendTone=send_tone.booleanValue();
 		
 		String  send_file=flags.getString("--send-file","<file>",null,"audio is played from the specified file");
-		if (send_file!=null) uaProfile.sendFile=send_file;
+		if (send_file!=null) this.sendFile=send_file;
 		
 		String  recv_file=flags.getString("--recv-file","<file>",null,"audio is recorded to the specified file");
-		if (recv_file!=null) uaProfile.recvFile=recv_file;
+		if (recv_file!=null) this.recvFile=recv_file;
 		
 		String  send_video_file=flags.getString("--send-video-file","<file>",null,"video is played from the specified file");
-		if (send_video_file!=null) uaProfile.sendVideoFile=send_video_file;
+		if (send_video_file!=null) this.sendVideoFile=send_video_file;
 		
 		String  recv_video_file=flags.getString("--recv-video-file","<file>",null,"video is recorded to the specified file");
-		if (recv_video_file!=null) uaProfile.recvVideoFile=recv_video_file;
+		if (recv_video_file!=null) this.recvVideoFile=recv_video_file;
 		
 		// for backward compatibility
 		String from_uri=flags.getString("--from-uri","<uri>",null,"user's address-of-record (AOR)");
-		if (from_uri!=null) uaProfile.setUserURI(NameAddress.parse(from_uri));
-	
+		if (from_uri!=null) this.setUserURI(NameAddress.parse(from_uri));
+		
 		// use audio as default media in case of..
-		if ((recv_only!=null || send_only!=null || send_tone!=null || send_file!=null || recv_file!=null) && video==null) uaProfile.audio=true;
-	}
-
-	/** 
-	 * Constructs a {@link UAConfig} from configuration file values.
-	 */
-	public static UAConfig init(String file) {
-		// init ua_profile
-		UAConfig uaProfile=new UAConfig(file);
-		return uaProfile;
+		if ((recv_only!=null || send_only!=null || send_tone!=null || send_file!=null || recv_file!=null) && video==null) this.audio=true;
 	}
 
 }
