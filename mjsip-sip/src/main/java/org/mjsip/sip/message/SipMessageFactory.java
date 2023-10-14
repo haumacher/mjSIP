@@ -299,7 +299,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		if (contact==null) {
 			ContactHeader star=new ContactHeader(); // contact is *
 			req.setContactHeader(star);
-			req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.default_expires)));
+			req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.defaultExpires)));
 		}
 		return req;
 	}

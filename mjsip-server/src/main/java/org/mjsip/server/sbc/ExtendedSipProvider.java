@@ -87,7 +87,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 		try {
 			// maintain socket address bindiding for symmetring NAT
 			ViaHeader via=msg.getViaHeader();
-			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():sipConfig.default_port);
+			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():sipConfig.defaultPort);
 			if (via_soaddr.equals(src_soaddr)) {
 				if (address_resolver.contains(via_soaddr)) {
 					// remove binding

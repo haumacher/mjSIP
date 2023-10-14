@@ -136,7 +136,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Creates a new empty DialogInfo. */
 	public DialogInfo(SipProvider provider) {
 		this.sip_provider=provider;
-		session_interval=sip_provider.sipConfig.default_session_interval;
+		session_interval=sip_provider.sipConfig.defaultSessionInterval;
 
 		this.local_name=null;
 		this.remote_name=null;
@@ -352,7 +352,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 			}
 		}
 		// REMOVE THE LOCAL NODE FROM THE ROUTE SET (ELIMINATE FIRST-HOP LOOP)
-		if (sip_provider.sipConfig.on_dialog_route) {
+		if (sip_provider.sipConfig.onDialogRoute) {
 			if (route!=null && route.size()>0) {
 				GenericURI uri=((NameAddress)route.elementAt(0)).getAddress();
 				SipURI sip_uri=(uri.isSipURI())? new SipURI(uri) : null; 

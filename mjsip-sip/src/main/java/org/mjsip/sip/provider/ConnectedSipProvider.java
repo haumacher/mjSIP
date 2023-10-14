@@ -77,12 +77,12 @@ public class ConnectedSipProvider extends SipProvider {
 
 	/** Connects to the Oubound Proxy. */ 
 	private void connect() throws IOException {
-		if (sip_transports==null || sipConfig.outbound_proxy==null) return;
+		if (sip_transports==null || sipConfig.outboundProxy==null) return;
 		// else
-		IpAddress proxy_addr=IpAddress.getByName(sipConfig.outbound_proxy.getHost());
-		int proxy_port=sipConfig.outbound_proxy.getPort();
+		IpAddress proxy_addr=IpAddress.getByName(sipConfig.outboundProxy.getHost());
+		int proxy_port=sipConfig.outboundProxy.getPort();
 		if (proxy_port<=0) proxy_port=5060;
-		String proxy_proto=(sipConfig.outbound_proxy.hasTransport())? sipConfig.outbound_proxy.getTransport() : null;
+		String proxy_proto=(sipConfig.outboundProxy.hasTransport())? sipConfig.outboundProxy.getTransport() : null;
 		
 		for (Enumeration i=sip_transports.elements(); i.hasMoreElements(); ) {
 			try {

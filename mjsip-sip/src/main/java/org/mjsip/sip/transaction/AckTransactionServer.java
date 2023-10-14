@@ -87,7 +87,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		transaction_id=new TransactionServerId(invite);
 		// init the timer just to set the timeout value and label, without listener (never started)
 		transaction_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
-		retransmission_to=new Timer(sip_provider.sipConfig.retransmission_timeout,null);
+		retransmission_to=new Timer(sip_provider.sipConfig.retransmissionTimeout,null);
 		// (CHANGE-040905) now timeouts are started when method respond() is called
 		//transaction_to=new Timer(transaction_to.getTime(),this);
 		//transaction_to.start();
@@ -140,7 +140,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 			if (to.equals(retransmission_to) && statusIs(STATE_PROCEEDING)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>sip_provider.sipConfig.max_retransmission_timeout) timeout=sip_provider.sipConfig.max_retransmission_timeout;
+				if (timeout>sip_provider.sipConfig.maxRetransmissionTimeout) timeout=sip_provider.sipConfig.maxRetransmissionTimeout;
 				retransmission_to=new Timer(timeout,this);
 				retransmission_to.start();
 				sip_provider.sendMessage(response);

@@ -108,9 +108,9 @@ public abstract class BasicSipMessageFactory {
 		req.setCSeqHeader(new CSeqHeader(cseq,method));
 		//optional headers:
 		if (contact!=null) req.addContactHeader(new ContactHeader(contact));
-		req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.default_expires)));
+		req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.defaultExpires)));
 		// add User-Agent header field
-		if (sipConfig.ua_info!=null) req.setUserAgentHeader(new UserAgentHeader(sipConfig.ua_info));
+		if (sipConfig.uaInfo!=null) req.setUserAgentHeader(new UserAgentHeader(sipConfig.uaInfo));
 		//if (body!=null) req.setBody(body); else req.setBody("");
 		req.setBody(content_type,body);
 		return req;
@@ -233,7 +233,7 @@ public abstract class BasicSipMessageFactory {
 		resp.setCSeqHeader(req.getCSeqHeader());
 		if (contact!=null) resp.setContactHeader(new ContactHeader(contact));
 		// add Server header field
-		if (sipConfig.server_info!=null) resp.setServerHeader(new ServerHeader(sipConfig.server_info));
+		if (sipConfig.serverInfo!=null) resp.setServerHeader(new ServerHeader(sipConfig.serverInfo));
 		//if (body!=null) resp.setBody(body); else resp.setBody("");
 		resp.setBody(content_type,body);
 		return resp;
@@ -251,7 +251,7 @@ public abstract class BasicSipMessageFactory {
 		//String reason=SipResponses.reasonOf(code);
 		String localtag=null;
 		if (req.createsDialog() && !req.getToHeader().hasTag()) {
-			if ((sipConfig.early_dialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
+			if ((sipConfig.earlyDialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
 		}
 		return createResponse(req,code,reason,localtag,contact,null,null);
 	}

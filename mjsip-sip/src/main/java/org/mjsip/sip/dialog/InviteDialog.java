@@ -222,9 +222,9 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	private void init(InviteDialogListener listener) {
 		this.listener=listener;
 		this.invite_offer=true;
-		supported_option_tags=sip_provider.sipConfig.supported_option_tags;
-		required_option_tags=sip_provider.sipConfig.required_option_tags;
-		allowed_methods=sip_provider.sipConfig.allowed_methods;
+		supported_option_tags=sip_provider.sipConfig.supportedOptionTags;
+		required_option_tags=sip_provider.sipConfig.requiredOptionTags;
+		allowed_methods=sip_provider.sipConfig.allowedMethods;
 		changeStatus(D_INIT);
 	}
 
@@ -351,7 +351,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		// else
 		changeStatus(D_INVITING);
 		// FORCE THIS NODE IN THE DIALOG ROUTE
-		if (sip_provider.sipConfig.on_dialog_route) {
+		if (sip_provider.sipConfig.onDialogRoute) {
 			SipURI uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
 			uri.addLr();
 			invite.addRecordRouteHeader(new RecordRouteHeader(new NameAddress(uri)));
@@ -369,7 +369,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		}
 		// SESSION TIMERS
 		if (invite.hasSupportedHeader() && invite.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && session_interval>0) {
-			invite.setMinSEHeader(new MinSEHeader(sip_provider.sipConfig.min_session_interval));
+			invite.setMinSEHeader(new MinSEHeader(sip_provider.sipConfig.minSessionInterval));
 			invite.setSessionExpiresHeader(new SessionExpiresHeader(session_interval));
 		}
 		// INFO PACKAGES
@@ -534,7 +534,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			}
 			// 1xx provisional responses
 			if (code>=100 && code<200) {
-				if (sip_provider.sipConfig.early_dialog) updateDialogInfo(false,resp);
+				if (sip_provider.sipConfig.earlyDialog) updateDialogInfo(false,resp);
 				// RELIABILITY OF PROVISIONAL RESPONSES
 				if (code!=100 && ((invite_req.hasRequireHeader() && invite_req.getRequireHeader().hasOptionTag(SipStack.OTAG_100rel)) || (isExtensionRequired(SipStack.OTAG_100rel) && invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_100rel)))) {
 					if (reliable_responder==null) reliable_responder=new ReliableProvisionalResponder(sip_provider.sipConfig,invite_ts, this);
@@ -573,7 +573,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				else
 				if (session_interval>0) {
 					MinSEHeader mh=invite_req.getMinSEHeader();
-					int min_seconds=(mh!=null)? mh.getDeltaSeconds() : sip_provider.sipConfig.min_session_interval;
+					int min_seconds=(mh!=null)? mh.getDeltaSeconds() : sip_provider.sipConfig.minSessionInterval;
 					if (min_seconds>session_interval) session_interval=min_seconds;
 					if (invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer)) {
 						RequireHeader rh=resp.getRequireHeader();
@@ -861,9 +861,9 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			}
 			// else
 			// SESSION TIMERS
-			if (msg.hasSupportedHeader() && msg.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && msg.hasSessionExpiresHeader() && msg.getSessionExpiresHeader().getDeltaSeconds()<sip_provider.sipConfig.min_session_interval) {
+			if (msg.hasSupportedHeader() && msg.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && msg.hasSessionExpiresHeader() && msg.getSessionExpiresHeader().getDeltaSeconds()<sip_provider.sipConfig.minSessionInterval) {
 				SipMessage resp=sipMessageFactory.createResponse(msg,422,null,null);
-				resp.setMinSEHeader(new MinSEHeader(sip_provider.sipConfig.min_session_interval));
+				resp.setMinSEHeader(new MinSEHeader(sip_provider.sipConfig.minSessionInterval));
 				(new TransactionServer(sip_provider,msg,null)).respondWith(resp);
 				return;
 			}
@@ -976,7 +976,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void onTransProvisionalResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransProvisionalResponse(tc,mdg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
-			if (sip_provider.sipConfig.early_dialog) updateDialogInfo(true,msg);
+			if (sip_provider.sipConfig.earlyDialog) updateDialogInfo(true,msg);
 			StatusLine statusline=msg.getStatusLine();
 			// RELIABILITY OF PROVISIONAL RESPONSES
 			if (msg.hasRequireHeader() && msg.getRequireHeader().hasOptionTag(SipStack.OTAG_100rel) && msg.hasRSeqHeader()) {
@@ -985,7 +985,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				final long last_rseq=getLastRSeq();
 				if (last_rseq<0 || last_rseq<rseq) {
 					setLastRSeq(rseq);
-					if (sip_provider.sipConfig.auto_prack) confirm1xx(msg,null,null);
+					if (sip_provider.sipConfig.autoPrack) confirm1xx(msg,null,null);
 					if (listener!=null) listener.onDlgInviteReliableProvisionalResponse(this,statusline.getCode(),statusline.getReason(),(msg.hasContentTypeHeader())?msg.getContentTypeHeader().getContentType():null,msg.getBody(),msg);
 				}
 			}
@@ -1167,7 +1167,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	private SipMessage processInviteMessage(SipMessage invite) {
 		SipMessage refuse_resp=null;
 		// FORCE THIS NODE IN THE DIALOG ROUTE
-		if (sip_provider.sipConfig.on_dialog_route) {
+		if (sip_provider.sipConfig.onDialogRoute) {
 			SipURI uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
 			uri.addLr();
 			invite.addRecordRouteHeader(new RecordRouteHeader(new NameAddress(uri)));

@@ -57,78 +57,78 @@ public class SipConfig extends Configure {
 	 * Note that this is not the port used by the running stack, but simply the standard default SIP port.
 	 * <br> Normally it sould be set to 5060 as defined by RFC 3261. Using a different value may cause
 	 * some problems when interacting with other unaware SIP UAs. */
-	public int default_port=5060; 
+	public int defaultPort=5060; 
 	/** Default SIP port for TLS transport (SIPS).
 	 * Note that this is not the port used by the running stack, but simply the standard default SIPS port.
 	 * <br> Normally it sould be set to 5061 as defined by RFC 3261. Using a different value may cause
 	 * some problems when interacting with other unaware SIP UAs. */
-	public int default_tls_port=5061; 
+	public int defaultTlsPort=5061; 
 	/** Default supported transport protocols. */
 	public String[] default_transport_protocols={ SipProvider.PROTO_UDP, SipProvider.PROTO_TCP };
 	/** Default max number of contemporary open transport connections. */
-	public int default_nmax_connections=32;
+	public int defaultMaxConnections=32;
 	/** Whether adding 'rport' parameter on via header fields of outgoing requests. */
-	public boolean use_rport=true;
+	public boolean useRport=true;
 	/** Whether adding (forcing) 'rport' parameter on via header fields of incoming requests. */
-	public boolean force_rport=false;
+	public boolean forceRport=false;
 
 	// ********************* transaction timeouts *********************
 
 	/** starting retransmission timeout (milliseconds); called T1 in RFC2361; they suggest T1=500ms */
-	public long retransmission_timeout=500;  
+	public long retransmissionTimeout=500;  
 	/** maximum retransmission timeout (milliseconds); called T2 in RFC2361; they suggest T2=4sec */
-	public long max_retransmission_timeout=4000;   
+	public long maxRetransmissionTimeout=4000;   
 	/** transaction timeout (milliseconds); RFC2361 suggests 64*T1=32000ms */
 	public long transaction_timeout=32000;    
 	/** clearing timeout (milliseconds); T4 in RFC2361; they suggest T4=5sec */
-	public long clearing_timeout=5000;
+	public long clearingTimeout=5000;
 
 	// ******************** general configurations ********************
 
 	/** default max-forwards value (RFC3261 recommends value 70) */
-	public int max_forwards=70;
+	public int maxForwards=70;
 	/** Whether the default timer mode is 'daemon', or not.
 	 * In 'daemon' mode, when all other threads terminate, the program also ends
 	 * regardless the timer was still running, and no timeout callback is fired.
 	 * In 'non-daemon' mode, the program ends only when all active timers have expired
 	 * or explicitly halted. */
-	public boolean timer_daemon_mode=true;
+	public boolean timerDaemonMode=true;
 	/** Whether at UAS side automatically sending (by default) a 100 Trying on INVITE. */
-	public boolean auto_trying=true;
+	public boolean autoTrying=true;
 	/** Whether 1xx responses create an "early dialog" for methods that create dialog. */
-	public boolean early_dialog=true;
+	public boolean earlyDialog=true;
 	/** Whether automatically sending PRACK messsages for incoming reliable 1xx responses in an INVITE dialog.
 	  * <br> Note that if you set <i>true</i>, the PRACK messge are sent automatically without any message body.
 	  * This may be in contrast with a possible offer/answer use of reliable 1xx response and PRACK. */
-	public boolean auto_prack=false;
+	public boolean autoPrack=false;
 	/** Default 'expires' value in seconds. RFC2361 suggests 3600s as default value. */
-	public int default_expires=3600;
+	public int defaultExpires=3600;
 	/** UA info included in request messages in the 'User-Agent' header field.
 	  * Use "NONE" if the 'User-Agent' header filed must not be added. */
-	public String ua_info=SipStack.release;
+	public String uaInfo=SipStack.release;
 	/** Server info included in response messages in the 'Server' header field
 	  * Use "NONE" if the 'Server' header filed must not be added. */
-	public String server_info=SipStack.release; 
+	public String serverInfo=SipStack.release; 
 	/** Supported option-tags for corresponding supported extensions. */
-	public String[] supported_option_tags={ SipStack.OTAG_100rel,SipStack.OTAG_timer }; //{ OTAG_100rel,OTAG_timer,OTAG_precondition };
+	public String[] supportedOptionTags={ SipStack.OTAG_100rel,SipStack.OTAG_timer }; //{ OTAG_100rel,OTAG_timer,OTAG_precondition };
 	/** Required option-tags for corresponding required extensions. */
-	public String[] required_option_tags=null; //{ OTAG_100rel,OTAG_timer };
+	public String[] requiredOptionTags=null; //{ OTAG_100rel,OTAG_timer };
 	/** List of supported methods. */
-	public String[] allowed_methods={ SipMethods.INVITE,SipMethods.ACK,SipMethods.OPTIONS,SipMethods.BYE,SipMethods.CANCEL,SipMethods.INFO,SipMethods.PRACK,SipMethods.NOTIFY,SipMethods.MESSAGE,SipMethods.UPDATE };
+	public String[] allowedMethods={ SipMethods.INVITE,SipMethods.ACK,SipMethods.OPTIONS,SipMethods.BYE,SipMethods.CANCEL,SipMethods.INFO,SipMethods.PRACK,SipMethods.NOTIFY,SipMethods.MESSAGE,SipMethods.UPDATE };
 	/** Minimum session interval (Min-SE header field) for supporting "Session Timers" (RFC 4028). */
-	public int min_session_interval=90;
+	public int minSessionInterval=90;
 	/** Default session interval (Session-Expires header field) for supporting "Session Timers" (RFC 4028). */
-	public int default_session_interval=0;
+	public int defaultSessionInterval=0;
 
 
 	// ************** registration client configurations **************
 
 	/** starting registration timeout (msecs) after a registration failure due to request timeout */
-	public long regc_min_attempt_timeout=60*1000; // 1min
+	public long regMinAttemptTimeout=60*1000; // 1min
 	/** maximum registration timeout (msecs) after a registration failure due to request timeout */
-	public long regc_max_attempt_timeout=900*1000; // 15min  
+	public long regMaxAttemptTimeout=900*1000; // 15min  
 	/** maximum number of consecutive registration authentication attempts before giving up */
-	public int regc_auth_attempts=3;
+	public int regAuthAttempts=3;
 
 
 	// ************************** extensions **************************
@@ -136,7 +136,7 @@ public class SipConfig extends Configure {
 	/** Whether forcing this node to stay within the dialog route as peer,
 	  * by means of the insertion of a RecordRoute header.
 	  * This is a non-standard behaviour and is normally not necessary. */
-	public boolean on_dialog_route=false;
+	public boolean onDialogRoute=false;
 
 	/** Whether using an alternative transaction id that does not include the 'sent-by' value. */
 	//public boolean alternative_transaction_id=false;
@@ -150,61 +150,61 @@ public class SipConfig extends Configure {
 
 	/** Network interface (IP address) used by SIP for selective binding.
 	  * Use 'ALL-INTERFACES' or let it undefined for binding SIP to all interfaces. */
-	IpAddress binding_ipaddr=null;
+	IpAddress bindingIpAddr=null;
 
 	/** List of enabled transport protocols (the first protocol is used as default). */
-	String[] transport_protocols=null;
+	String[] transportProtocols=null;
 	
 	/** List of transport ports, ordered as the corresponding transport_protocols. */
-	int[] transport_ports=null;
+	int[] transportPorts=null;
 
 	/** Max number of (contemporary) open connections */
-	int nmax_connections=0;
+	int maxConnections=0;
 
 	/** Outbound proxy URI ([sip:]host_addr[:host_port][;transport=proto]).
 	  * Use 'NONE' for not using an outbound proxy (or let it undefined). */
-	SipURI outbound_proxy=null;
+	SipURI outboundProxy=null;
 
 	/** Tel Gatway URI ([sip:]host_addr[:host_port][;transport=proto]).
 	  * URI of a default SIP proxy/gateway that is used for sending request messages with a "tel" URI as request-uri.
 	  * Use 'NONE' for not using a tel gateway (or let it undefined). */
-	SipURI tel_gateway=null;
+	SipURI telGateway=null;
 
 	/** Whether logging all packets (including non-SIP keepalive tokens). */
-	boolean log_all_packets=false;
+	boolean logAllPackets=false;
 
 
 	/** For TLS. Whether all client and server certificates should be considered trusted.
 	  * By default, trust_all={@link #default_tls_trust_all}. */
-	boolean trust_all;
+	boolean trustAll;
 
 	/** For TLS. names of the files containing trusted certificates.
 	  * The file names include the full path starting from the current working folder.
 	  * By default, trust_all={@link SipConfig#default_tls_trusted_certs}. */
-	String[] trusted_certs;
+	String[] trustedCerts;
 
 	/** For TLS. Path of the folder where trusted certificates are placed.
 	  * All certificates (with file extension ".crt") found in this folder are considered trusted.
 	  * By default, trust_folder={@link SipConfig#default_tls_trust_folder}. */
-	String trust_folder;
+	String trustFolder;
 
 	/** For TLS. Absolute file name of the certificate (containing the public key) of the local node.
 	  * The file name includes the full path starting from the current working folder.
 	  * By default, trust_folder={@link SipConfig#default_tls_cert_file}. */
-	String cert_file;
+	String certFile;
 
 	/** For TLS. Absolute file name of the private key of the local node.
 	  * The file name includes the full path starting from the current working folder.
 	  * By default, trust_folder={@link SipConfig#default_tls_key_file}. */
-	String key_file;
+	String keyFile;
 
 	// for backward compatibility:
 
 	/** Outbound proxy addr (for backward compatibility). */
-	private String outbound_addr=null;
+	private String outboundAddr=null;
 
 	/** Outbound proxy port (for backward compatibility). */
-	private int outbound_port=-1;
+	private int outboundPort=-1;
 
 	// ************************** constructor **************************
 
@@ -214,40 +214,40 @@ public class SipConfig extends Configure {
 		char[] delim={' ',','};
 
 		// default sip provider configurations
-		if (attribute.equals("default_port")) { default_port=par.getInt(); return; }
-		if (attribute.equals("default_tls_port")) { default_tls_port=par.getInt(); return; }
+		if (attribute.equals("default_port")) { defaultPort=par.getInt(); return; }
+		if (attribute.equals("default_tls_port")) { defaultTlsPort=par.getInt(); return; }
 		if (attribute.equals("default_transport_protocols")) { default_transport_protocols=par.getWordArray(delim); return; }
-		if (attribute.equals("default_nmax_connections")) { default_nmax_connections=par.getInt(); return; }
-		if (attribute.equals("use_rport")) { use_rport=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("force_rport")) { force_rport=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("default_nmax_connections")) { defaultMaxConnections=par.getInt(); return; }
+		if (attribute.equals("use_rport")) { useRport=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("force_rport")) { forceRport=(par.getString().toLowerCase().startsWith("y")); return; }
 
 		// transaction timeouts
-		if (attribute.equals("retransmission_timeout")) { retransmission_timeout=par.getInt(); return; }
-		if (attribute.equals("max_retransmission_timeout")) { max_retransmission_timeout=par.getInt(); return; }
+		if (attribute.equals("retransmission_timeout")) { retransmissionTimeout=par.getInt(); return; }
+		if (attribute.equals("max_retransmission_timeout")) { maxRetransmissionTimeout=par.getInt(); return; }
 		if (attribute.equals("transaction_timeout")) { transaction_timeout=par.getInt(); return; }
-		if (attribute.equals("clearing_timeout")) { clearing_timeout=par.getInt(); return; }
+		if (attribute.equals("clearing_timeout")) { clearingTimeout=par.getInt(); return; }
 
 		// general configurations
-		if (attribute.equals("max_forwards"))   { max_forwards=par.getInt(); return; }
-		if (attribute.equals("timer_daemon_mode"))   { timer_daemon_mode=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("auto_trying"))    { auto_trying=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("early_dialog"))   { early_dialog=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("default_expires")){ default_expires=par.getInt(); return; }
-		if (attribute.equals("ua_info"))        { ua_info=par.getRemainingString().trim(); return; }
-		if (attribute.equals("server_info"))    { server_info=par.getRemainingString().trim(); return; }
-		if (attribute.equals("supported_option_tags")) { supported_option_tags=par.getWordArray(delim); return; }
-		if (attribute.equals("required_option_tags"))  { required_option_tags=par.getWordArray(delim); return; }
-		if (attribute.equals("allowed_methods"))       { allowed_methods=par.getWordArray(delim); return; }
-		if (attribute.equals("min_session_interval"))  { min_session_interval=par.getInt(); return; }
-		if (attribute.equals("default_session_interval"))  { default_session_interval=par.getInt(); return; }
+		if (attribute.equals("max_forwards"))   { maxForwards=par.getInt(); return; }
+		if (attribute.equals("timer_daemon_mode"))   { timerDaemonMode=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("auto_trying"))    { autoTrying=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("early_dialog"))   { earlyDialog=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("default_expires")){ defaultExpires=par.getInt(); return; }
+		if (attribute.equals("ua_info"))        { uaInfo=par.getRemainingString().trim(); return; }
+		if (attribute.equals("server_info"))    { serverInfo=par.getRemainingString().trim(); return; }
+		if (attribute.equals("supported_option_tags")) { supportedOptionTags=par.getWordArray(delim); return; }
+		if (attribute.equals("required_option_tags"))  { requiredOptionTags=par.getWordArray(delim); return; }
+		if (attribute.equals("allowed_methods"))       { allowedMethods=par.getWordArray(delim); return; }
+		if (attribute.equals("min_session_interval"))  { minSessionInterval=par.getInt(); return; }
+		if (attribute.equals("default_session_interval"))  { defaultSessionInterval=par.getInt(); return; }
 
 		// registration client configurations
-		if (attribute.equals("regc_min_attempt_timeout")) { regc_min_attempt_timeout=par.getInt(); return; }
-		if (attribute.equals("regc_max_attempt_timeout")) { regc_max_attempt_timeout=par.getInt(); return; }
-		if (attribute.equals("regc_auth_attempts")) { regc_auth_attempts=par.getInt(); return; }
+		if (attribute.equals("regc_min_attempt_timeout")) { regMinAttemptTimeout=par.getInt(); return; }
+		if (attribute.equals("regc_max_attempt_timeout")) { regMaxAttemptTimeout=par.getInt(); return; }
+		if (attribute.equals("regc_auth_attempts")) { regAuthAttempts=par.getInt(); return; }
 
 		// extensions
-		if (attribute.equals("on_dialog_route")){ on_dialog_route=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("on_dialog_route")){ onDialogRoute=(par.getString().toLowerCase().startsWith("y")); return; }
 		//if (attribute.equals("alternative_transaction_id")){ alternative_transaction_id=(par.getString().toLowerCase().startsWith("y")); return; }
 
 		// old parameters
@@ -259,29 +259,29 @@ public class SipConfig extends Configure {
 		if (attribute.equals("via_addr")) {  via_addr=par.getString(); return;  }
 		if (attribute.equals("host_port")) {  host_port=par.getInt(); return;  }
 		if (attribute.equals("binding_ipaddr")) {  setBindingIpAddress(par.getString()); return;  }
-		if (attribute.equals("transport_protocols")) {  transport_protocols=par.getWordArray(delim); return;  }
-		if (attribute.equals("transport_ports")) {  transport_ports=par.getIntArray(); return;  }
-		if (attribute.equals("nmax_connections")) {  nmax_connections=par.getInt(); return;  }
+		if (attribute.equals("transport_protocols")) {  transportProtocols=par.getWordArray(delim); return;  }
+		if (attribute.equals("transport_ports")) {  transportPorts=par.getIntArray(); return;  }
+		if (attribute.equals("nmax_connections")) {  maxConnections=par.getInt(); return;  }
 		if (attribute.equals("outbound_proxy")) {
 			String str_uri=par.getString();
-			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE) || str_uri.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
-			else outbound_proxy=new SipURI(str_uri);
+			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE) || str_uri.equalsIgnoreCase("NO-OUTBOUND")) outboundProxy=null;
+			else outboundProxy=new SipURI(str_uri);
 			return;
 		}
 		if (attribute.equals("tel_gateway")) {
 			String str_uri=par.getString();
-			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE)) tel_gateway=null;
-			else tel_gateway=new SipURI(str_uri);
+			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE)) telGateway=null;
+			else telGateway=new SipURI(str_uri);
 			return;
 		}
-		if (attribute.equals("log_all_packets")) { log_all_packets=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("log_all_packets")) { logAllPackets=(par.getString().toLowerCase().startsWith("y")); return; }
 
 		// certificates
-		if (attribute.equals("trust_all")){ trust_all=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("trusted_certs")){ trusted_certs=par.getStringArray(); return; }
-		if (attribute.equals("trust_folder")){ trust_folder=par.getRemainingString().trim(); return; }
-		if (attribute.equals("cert_file")){ cert_file=par.getRemainingString().trim(); return; }
-		if (attribute.equals("key_file")){ key_file=par.getRemainingString().trim(); return; }
+		if (attribute.equals("trust_all")){ trustAll=(par.getString().toLowerCase().startsWith("y")); return; }
+		if (attribute.equals("trusted_certs")){ trustedCerts=par.getStringArray(); return; }
+		if (attribute.equals("trust_folder")){ trustFolder=par.getRemainingString().trim(); return; }
+		if (attribute.equals("cert_file")){ certFile=par.getRemainingString().trim(); return; }
+		if (attribute.equals("key_file")){ keyFile=par.getRemainingString().trim(); return; }
 
 		// old parameters
 		if (attribute.equals("host_addr"))
@@ -297,13 +297,13 @@ public class SipConfig extends Configure {
 		if (attribute.equals("outbound_addr")) {
 			LOG.warn(
 					"parameter 'outbound_addr' has been deprecated; use 'outbound_proxy=[sip:]<host_addr>[:<host_port>][;transport=proto]' instead.");
-			outbound_addr=par.getString();
+			outboundAddr=par.getString();
 			return;
 		}
 		if (attribute.equals("outbound_port")) {
 			LOG.warn(
 					"parameter 'outbound_port' has been deprecated; use 'outbound_proxy=<host_addr>[:<host_port>]' instead.");
-			outbound_port=par.getInt();
+			outboundPort=par.getInt();
 			return;
 		}
 		if (attribute.equals("host_ifaddr")) {
@@ -315,10 +315,10 @@ public class SipConfig extends Configure {
 
 	/** Sets the binding IP address . */
 	private void setBindingIpAddress(String str) {
-		if (str==null || str.equalsIgnoreCase(ALL_INTERFACES)) binding_ipaddr=null;
+		if (str==null || str.equalsIgnoreCase(ALL_INTERFACES)) bindingIpAddr=null;
 		else {
 			try {
-				binding_ipaddr=IpAddress.getByName(str);
+				bindingIpAddr=IpAddress.getByName(str);
 			}
 			catch (IOException e) {
 				LOG.warn("Unable to set the following binding address: " + str, e);
@@ -339,7 +339,7 @@ public class SipConfig extends Configure {
 		result.normalize();
 		
 		// timers
-		Timer.DEFAULT_DAEMON_MODE=result.timer_daemon_mode;
+		Timer.DEFAULT_DAEMON_MODE=result.timerDaemonMode;
 		
 		return result;
 	}
@@ -352,20 +352,20 @@ public class SipConfig extends Configure {
 
 	private void normalize() {
 		// user-agent info
-		if (ua_info!=null && (ua_info.length()==0 || ua_info.equalsIgnoreCase(Configure.NONE) || ua_info.equalsIgnoreCase("NO-UA-INFO"))) ua_info=null;      
+		if (uaInfo!=null && (uaInfo.length()==0 || uaInfo.equalsIgnoreCase(Configure.NONE) || uaInfo.equalsIgnoreCase("NO-UA-INFO"))) uaInfo=null;      
 
 		// server info
-		if (server_info!=null && (server_info.length()==0 || server_info.equalsIgnoreCase(Configure.NONE) || server_info.equalsIgnoreCase("NO-SERVER-INFO"))) server_info=null;      
+		if (serverInfo!=null && (serverInfo.length()==0 || serverInfo.equalsIgnoreCase(Configure.NONE) || serverInfo.equalsIgnoreCase("NO-SERVER-INFO"))) serverInfo=null;      
 
 		// just for backward compatibility..
-		if (outbound_port<0) outbound_port=default_port;
+		if (outboundPort<0) outboundPort=defaultPort;
 		
-		if (outbound_addr!=null) {
-			if (outbound_addr.equalsIgnoreCase(Configure.NONE) || outbound_addr.equalsIgnoreCase("NO-OUTBOUND")) outbound_proxy=null;
-			else outbound_proxy=new SipURI(outbound_addr,outbound_port);
+		if (outboundAddr!=null) {
+			if (outboundAddr.equalsIgnoreCase(Configure.NONE) || outboundAddr.equalsIgnoreCase("NO-OUTBOUND")) outboundProxy=null;
+			else outboundProxy=new SipURI(outboundAddr,outboundPort);
 		}
 		
 		if (via_addr==null || via_addr.equalsIgnoreCase(AUTO_CONFIGURATION)) via_addr=IpAddress.getLocalHostAddress().toString();
-		if (host_port<=0) host_port=default_port;
+		if (host_port<=0) host_port=defaultPort;
 	}
 }

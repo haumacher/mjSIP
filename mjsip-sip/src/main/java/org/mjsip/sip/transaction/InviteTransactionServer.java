@@ -115,11 +115,11 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 		this.invite_ts_listener=listener;
 		this.transaction_id=transaction_id;
 		this.connection_id=connection_id;
-		auto_trying=sip_provider.sipConfig.auto_trying;
+		auto_trying=sip_provider.sipConfig.autoTrying;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(sip_provider.sipConfig.retransmission_timeout,null);
+		retransmission_to=new Timer(sip_provider.sipConfig.retransmissionTimeout,null);
 		end_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
-		clearing_to=new Timer(sip_provider.sipConfig.clearing_timeout,null);
+		clearing_to=new Timer(sip_provider.sipConfig.clearingTimeout,null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
@@ -228,7 +228,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 			if (to.equals(retransmission_to) && statusIs(STATE_COMPLETED)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>sip_provider.sipConfig.max_retransmission_timeout) timeout=sip_provider.sipConfig.max_retransmission_timeout;
+				if (timeout>sip_provider.sipConfig.maxRetransmissionTimeout) timeout=sip_provider.sipConfig.maxRetransmissionTimeout;
 				retransmission_to=new Timer(timeout,this);
 				retransmission_to.start();
 				sip_provider.sendMessage(response);

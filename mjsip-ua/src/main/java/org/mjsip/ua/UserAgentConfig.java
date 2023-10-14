@@ -90,7 +90,7 @@ public class UserAgentConfig {
 		int transfer_time=transfer!=null? Integer.parseInt(transfer[1]) : -1;
 		int re_invite_time=flags.getInteger("-i","<secs>",-1,"re-invites after given seconds");
 		
-		int host_port=flags.getInteger("-p","<port>",sipConfig.default_port,"local SIP port, used ONLY without -f option");
+		int host_port=flags.getInteger("-p","<port>",sipConfig.defaultPort,"local SIP port, used ONLY without -f option");
 		int media_port=flags.getInteger("-m","<port>",0,"(first) local media port");
 		String via_addr=flags.getString("--via-addr","<addr>",SipConfig.AUTO_CONFIGURATION,"host via address, used ONLY without -f option");
 		String outbound_proxy=flags.getString("-o","<addr>[:<port>]",null,"uses the given outbound proxy");
