@@ -34,20 +34,20 @@ public class MA {
 		UserAgentProfile user_profile=new UserAgentProfile(file);         
 		
 		if (regist_time>0) {
-			user_profile.do_register=true;
+			user_profile.doRegister=true;
 			user_profile.expires=regist_time;
 		}
-		if (unregist) user_profile.do_unregister=true;
-		if (unregist_all) user_profile.do_unregister_all=true;
+		if (unregist) user_profile.doUnregister=true;
+		if (unregist_all) user_profile.doUnregisterAll=true;
 
 		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig),user_profile);
-		if (user_profile.do_unregister_all) {
+		if (user_profile.doUnregisterAll) {
 			cli.unregisterall();
 		} 
-		if (user_profile.do_unregister) {
+		if (user_profile.doUnregister) {
 			cli.unregister();
 		} 
-		if (user_profile.do_register) {
+		if (user_profile.doRegister) {
 			cli.register(user_profile.expires);
 		} 
 		

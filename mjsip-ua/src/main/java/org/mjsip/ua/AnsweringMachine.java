@@ -77,7 +77,7 @@ public class AnsweringMachine extends MultipleUAS {
 		if (new File(audioFile).isFile()) {
 			LOG.info("Playing media: " + audioFile);
 
-			ua_profile.send_file = audioFile;
+			ua_profile.sendFile = audioFile;
 
 			int current_media_port = ua_profile.getMediaPort();
 			if ((current_media_port += media_descs.length) > _lastMediaPort) {
@@ -127,9 +127,9 @@ public class AnsweringMachine extends MultipleUAS {
 		UserAgentConfig config = UserAgentConfig.init(program, args);
 		config.ua_profile.audio = true;
 		config.ua_profile.video = false;
-		config.ua_profile.send_only = true;
-		if (config.ua_profile.hangup_time <= 0)
-			config.ua_profile.hangup_time = MAX_LIFE_TIME;
+		config.ua_profile.sendOnly = true;
+		if (config.ua_profile.hangupTime <= 0)
+			config.ua_profile.hangupTime = MAX_LIFE_TIME;
 		new AnsweringMachine(config.sip_provider, config.ua_profile, media_ports);
 		
 		// promt before exit

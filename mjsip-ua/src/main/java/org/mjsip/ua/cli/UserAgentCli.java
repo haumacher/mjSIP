@@ -101,8 +101,8 @@ public class UserAgentCli implements UserAgentListener {
 		this.sip_provider=sip_provider;
 		this.ua_profile=ua_profile;
 		ua=new UserAgent(sip_provider,ua_profile,this);      
-		if (!ua_profile.no_prompt) stdin=new BufferedReader(new InputStreamReader(System.in)); 
-		if (!ua_profile.no_prompt) stdout=System.out;
+		if (!ua_profile.noPrompt) stdin=new BufferedReader(new InputStreamReader(System.in)); 
+		if (!ua_profile.noPrompt) stdout=System.out;
 		run();
 	}
 
@@ -134,7 +134,7 @@ public class UserAgentCli implements UserAgentListener {
 	public void accept() {
 		ua.accept();
 		changeStatus(UA_ONCALL);
-		if (ua_profile.hangup_time>0) automaticHangup(ua_profile.hangup_time); 
+		if (ua_profile.hangupTime>0) automaticHangup(ua_profile.hangupTime); 
 		LOG.info("press 'enter' to hangup"); 
 	} 
 
@@ -144,9 +144,9 @@ public class UserAgentCli implements UserAgentListener {
 		LOG.info("hangup");
 		ua.hangup();
 		changeStatus(UA_IDLE);
-		if (ua_profile.call_to!=null) {
-			if (ua_profile.re_call_time>0 && (ua_profile.re_call_count--)>0) {
-				automaticCall(ua_profile.re_call_time,ua_profile.call_to.toString());
+		if (ua_profile.callTo!=null) {
+			if (ua_profile.recallTime>0 && (ua_profile.recallCount--)>0) {
+				automaticCall(ua_profile.recallTime,ua_profile.callTo.toString());
 			} 
 			else exit();
 		}
@@ -159,43 +159,43 @@ public class UserAgentCli implements UserAgentListener {
 		
 		try {
 			// Set the re-invite
-			if (ua_profile.re_invite_time>0) {
-				reInvite(ua_profile.re_invite_time);
+			if (ua_profile.reinviteTime>0) {
+				reInvite(ua_profile.reinviteTime);
 			}
 
 			// Set the transfer (REFER)
-			if (ua_profile.transfer_to!=null && ua_profile.transfer_time>0) {
-				callTransfer(ua_profile.transfer_to,ua_profile.transfer_time);
+			if (ua_profile.transferTo!=null && ua_profile.transferTime>0) {
+				callTransfer(ua_profile.transferTo,ua_profile.transferTime);
 			}
 
-			if (ua_profile.do_unregister_all) {
+			if (ua_profile.doUnregisterAll) {
 				// ########## unregisters ALL contact URIs
 				LOG.info("UNREGISTER ALL contact URIs");
 				ua.unregisterall();
 			} 
 
-			if (ua_profile.do_unregister) {
+			if (ua_profile.doUnregister) {
 				// unregisters the contact URI
 				LOG.info("UNREGISTER the contact URI");
 				ua.unregister();
 			} 
 
-			if (ua_profile.do_register) {
+			if (ua_profile.doRegister) {
 				// ########## registers the contact URI with the registrar server
 				LOG.info("REGISTRATION");
-				ua.loopRegister(ua_profile.expires,ua_profile.expires/2,ua_profile.keepalive_time);
+				ua.loopRegister(ua_profile.expires,ua_profile.expires/2,ua_profile.keepaliveTime);
 			}         
 			
-			if (ua_profile.call_to!=null) {
+			if (ua_profile.callTo!=null) {
 				// UAC
-				call(ua_profile.call_to.toString()); 
+				call(ua_profile.callTo.toString()); 
 				LOG.info("press 'enter' to cancel");
 				readLine();
 				hangup();
 			}
 			else {
 				// UAS + UAC
-				if (ua_profile.accept_time>=0)
+				if (ua_profile.acceptTime>=0)
 					LOG.info("AUTO ACCEPT MODE");
 				readyToReceive();
 				while (stdin!=null) {
@@ -240,16 +240,16 @@ public class UserAgentCli implements UserAgentListener {
 	/** When a new call is incoming */
 	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-		if (ua_profile.redirect_to!=null) {
+		if (ua_profile.redirectTo!=null) {
 			// redirect the call
-			ua.redirect(ua_profile.redirect_to);
-			LOG.info("call redirected to "+ua_profile.redirect_to);
+			ua.redirect(ua_profile.redirectTo);
+			LOG.info("call redirected to "+ua_profile.redirectTo);
 		}         
 		else
-		if (ua_profile.accept_time>=0) {
+		if (ua_profile.acceptTime>=0) {
 			// automatically accept the call
 			//accept();
-			automaticAccept(ua_profile.accept_time);
+			automaticAccept(ua_profile.acceptTime);
 		}
 		else          {
 			changeStatus(UA_INCOMING_CALL);
@@ -275,7 +275,7 @@ public class UserAgentCli implements UserAgentListener {
 	public void onUaCallAccepted(UserAgent ua) {
 		changeStatus(UA_ONCALL);
 		LOG.info("call accepted");
-		if (ua_profile.hangup_time>0) automaticHangup(ua_profile.hangup_time);
+		if (ua_profile.hangupTime>0) automaticHangup(ua_profile.hangupTime);
 		else
 			LOG.info("press 'enter' to hangup");
 	}
@@ -295,14 +295,14 @@ public class UserAgentCli implements UserAgentListener {
 	/** When an ougoing call has been refused or timeout */
 	@Override
 	public void onUaCallFailed(UserAgent ua, String reason) {
-		if (ua_profile.call_to!=null) exit();
+		if (ua_profile.callTo!=null) exit();
 		else readyToReceive();
 	}
 
 	/** When a call has been locally or remotely closed */
 	@Override
 	public void onUaCallClosed(UserAgent ua) {
-		if (ua_profile.call_to!=null) exit();
+		if (ua_profile.callTo!=null) exit();
 		else readyToReceive();     
 	}
 

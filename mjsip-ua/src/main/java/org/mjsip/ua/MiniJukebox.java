@@ -63,10 +63,10 @@ public class MiniJukebox extends UserAgentCli {
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {
-				ua_profile.send_file=audio_file;
+				ua_profile.sendFile=audio_file;
 			}
 		}
-		if (ua_profile.send_file!=null) ua.accept();      
+		if (ua_profile.sendFile!=null) ua.accept();      
 		else ua.hangup();
 	}
 
@@ -79,8 +79,8 @@ public class MiniJukebox extends UserAgentCli {
 		UserAgentConfig config = UserAgentConfig.init("MiniJukebox",args);
 		config.ua_profile.audio=true;
 		config.ua_profile.video=false;
-		config.ua_profile.send_only=true;
-		if (config.ua_profile.hangup_time<=0) config.ua_profile.hangup_time=MAX_LIFE_TIME;
+		config.ua_profile.sendOnly=true;
+		if (config.ua_profile.hangupTime<=0) config.ua_profile.hangupTime=MAX_LIFE_TIME;
 		new MiniJukebox(config.sip_provider,config.ua_profile);
 	}    
 	

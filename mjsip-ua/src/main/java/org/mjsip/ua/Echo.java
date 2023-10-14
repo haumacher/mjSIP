@@ -159,8 +159,8 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		config.ua_profile.audio=true;
 		config.ua_profile.video=true;
 		config.ua_profile.loopback=true;
-		config.ua_profile.send_only=false;
-		if (config.ua_profile.hangup_time<=0) config.ua_profile.hangup_time=MAX_LIFE_TIME;
+		config.ua_profile.sendOnly=false;
+		if (config.ua_profile.hangupTime<=0) config.ua_profile.hangupTime=MAX_LIFE_TIME;
 		new Echo(config.sip_provider,config.ua_profile,media_ports,force_reverse_route);
 
 		// promt before exit

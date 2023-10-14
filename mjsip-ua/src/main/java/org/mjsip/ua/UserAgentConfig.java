@@ -147,44 +147,44 @@ public class UserAgentConfig {
 
 			// init ua_profile
 			ua_profile=new UserAgentProfile(config_file);
-			if (no_prompt!=null) ua_profile.no_prompt=no_prompt.booleanValue();
-			if (no_system_audio!=null) ua_profile.no_system_audio=no_system_audio.booleanValue();
+			if (no_prompt!=null) ua_profile.noPrompt=no_prompt.booleanValue();
+			if (no_system_audio!=null) ua_profile.noSystemAudio=no_system_audio.booleanValue();
 
-			if (unregist!=null) ua_profile.do_unregister=unregist.booleanValue();
-			if (unregist_all!=null) ua_profile.do_unregister_all=unregist_all.booleanValue();
-			if (regist_time>=0) {  ua_profile.do_register=true;  ua_profile.expires=regist_time;  }
-			if (keepalive_time>=0) ua_profile.keepalive_time=keepalive_time;
-			if (no_offer!=null) ua_profile.no_offer=no_offer.booleanValue();
-			if (call_to!=null) ua_profile.call_to=NameAddress.parse(call_to);
-			if (redirect_to!=null) ua_profile.redirect_to=NameAddress.parse(redirect_to);
-			if (transfer_to!=null) ua_profile.transfer_to=NameAddress.parse(transfer_to);
-			if (transfer_time>0) ua_profile.transfer_time=transfer_time;
-			if (accept_time>=0) ua_profile.accept_time=accept_time;
-			if (hangup_time>0) ua_profile.hangup_time=hangup_time;
-			if (re_invite_time>0) ua_profile.re_invite_time=re_invite_time;
-			if (re_call_time>0) ua_profile.re_call_time=re_call_time;
-			if (re_call_count>0) ua_profile.re_call_count=re_call_count;
+			if (unregist!=null) ua_profile.doUnregister=unregist.booleanValue();
+			if (unregist_all!=null) ua_profile.doUnregisterAll=unregist_all.booleanValue();
+			if (regist_time>=0) {  ua_profile.doRegister=true;  ua_profile.expires=regist_time;  }
+			if (keepalive_time>=0) ua_profile.keepaliveTime=keepalive_time;
+			if (no_offer!=null) ua_profile.noOffer=no_offer.booleanValue();
+			if (call_to!=null) ua_profile.callTo=NameAddress.parse(call_to);
+			if (redirect_to!=null) ua_profile.redirectTo=NameAddress.parse(redirect_to);
+			if (transfer_to!=null) ua_profile.transferTo=NameAddress.parse(transfer_to);
+			if (transfer_time>0) ua_profile.transferTime=transfer_time;
+			if (accept_time>=0) ua_profile.acceptTime=accept_time;
+			if (hangup_time>0) ua_profile.hangupTime=hangup_time;
+			if (re_invite_time>0) ua_profile.reinviteTime=re_invite_time;
+			if (re_call_time>0) ua_profile.recallTime=re_call_time;
+			if (re_call_count>0) ua_profile.recallCount=re_call_count;
 			if (audio!=null) ua_profile.audio=audio.booleanValue();
 			if (video!=null) ua_profile.video=video.booleanValue();
 			//if (media_port>0) ua_profile.media_port=media_port;
 			if (media_port>0) ua_profile.setMediaPort(media_port);
 
-			if (display_name!=null) ua_profile.display_name=display_name;
+			if (display_name!=null) ua_profile.displayName=display_name;
 			if (user!=null) ua_profile.user=user;
 			if (proxy!=null) ua_profile.proxy=proxy;
 			if (registrar!=null) ua_profile.registrar=registrar;   
-			if (auth_user!=null) ua_profile.auth_user=auth_user;
-			if (auth_realm!=null) ua_profile.auth_realm=auth_realm;
-			if (auth_passwd!=null) ua_profile.auth_passwd=auth_passwd; 
+			if (auth_user!=null) ua_profile.authUser=auth_user;
+			if (auth_realm!=null) ua_profile.authRealm=auth_realm;
+			if (auth_passwd!=null) ua_profile.authPasswd=auth_passwd; 
 			
 			if (loopback!=null) ua_profile.loopback=loopback.booleanValue();
-			if (recv_only!=null) ua_profile.recv_only=recv_only.booleanValue();
-			if (send_only!=null) ua_profile.send_only=send_only.booleanValue();             
-			if (send_tone!=null) ua_profile.send_tone=send_tone.booleanValue();
-			if (send_file!=null) ua_profile.send_file=send_file;
-			if (recv_file!=null) ua_profile.recv_file=recv_file;
-			if (send_video_file!=null) ua_profile.send_video_file=send_video_file;
-			if (recv_video_file!=null) ua_profile.recv_video_file=recv_video_file;
+			if (recv_only!=null) ua_profile.recvOnly=recv_only.booleanValue();
+			if (send_only!=null) ua_profile.sendOnly=send_only.booleanValue();             
+			if (send_tone!=null) ua_profile.sendTone=send_tone.booleanValue();
+			if (send_file!=null) ua_profile.sendFile=send_file;
+			if (recv_file!=null) ua_profile.recvFile=recv_file;
+			if (send_video_file!=null) ua_profile.sendVideoFile=send_video_file;
+			if (recv_video_file!=null) ua_profile.recvVideoFile=recv_video_file;
 			
 			// for backward compatibility
 			if (from_uri!=null) ua_profile.setUserURI(NameAddress.parse(from_uri));

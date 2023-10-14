@@ -172,30 +172,30 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("user's uri: "+ua_profile.getUserURI());
 		LOG.debug("proxy: "+ua_profile.proxy);
 		LOG.debug("registrar: "+ua_profile.registrar);
-		LOG.debug("auth_realm: "+ua_profile.auth_realm);
-		LOG.debug("auth_user: "+ua_profile.auth_user);
+		LOG.debug("auth_realm: "+ua_profile.authRealm);
+		LOG.debug("auth_user: "+ua_profile.authUser);
 		LOG.debug("auth_passwd: ******");
 		LOG.debug("audio: "+ua_profile.audio);
 		LOG.debug("video: "+ua_profile.video);
-		for (int i=0; i<ua_profile.media_descs.length; i++) {
-			LOG.debug("media: "+(ua_profile.media_descs[i]).toString());
+		for (int i=0; i<ua_profile.mediaDescs.length; i++) {
+			LOG.debug("media: "+(ua_profile.mediaDescs[i]).toString());
 		}      
 		// log other config parameters
 		LOG.trace("loopback: "+ua_profile.loopback);
-		LOG.trace("send_only: "+ua_profile.send_only);
-		LOG.trace("recv_only: "+ua_profile.recv_only);
-		LOG.trace("send_file: "+ua_profile.send_file);
-		LOG.trace("recv_file: "+ua_profile.recv_file);
-		LOG.trace("send_tone: "+ua_profile.send_tone);
+		LOG.trace("send_only: "+ua_profile.sendOnly);
+		LOG.trace("recv_only: "+ua_profile.recvOnly);
+		LOG.trace("send_file: "+ua_profile.sendFile);
+		LOG.trace("recv_file: "+ua_profile.recvFile);
+		LOG.trace("send_tone: "+ua_profile.sendTone);
 
 		// start listening for INVITE requests (UAS)
-		if (ua_profile.ua_server) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
+		if (ua_profile.uaServer) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
 		
 		// start OPTIONS server
-		if (ua_profile.options_server) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
+		if (ua_profile.optionsServer) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
 
 		// start "Not Implemented" server
-		if (ua_profile.null_server) null_server=new NotImplementedServer(sip_provider);
+		if (ua_profile.nullServer) null_server=new NotImplementedServer(sip_provider);
 
 		// init media agent
 		media_agent = new MediaAgent(ua_profile);
@@ -203,12 +203,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// load sounds
 		// ################# patch to make rat working.. #################
 		// in case of rat, do not load and play audio clips
-		if (!ua_profile.use_rat && !ua_profile.no_system_audio) {
+		if (!ua_profile.useRat && !ua_profile.noSystemAudio) {
 			try {
-				clip_on=getAudioClip(ua_profile.media_path+"/"+CLIP_ON);
-				clip_off=getAudioClip(ua_profile.media_path+"/"+CLIP_OFF);
-				clip_ring=getAudioClip(ua_profile.media_path+"/"+CLIP_RING);
-				clip_progress=getAudioClip(ua_profile.media_path+"/"+CLIP_PROGRESS);
+				clip_on=getAudioClip(ua_profile.mediaPath+"/"+CLIP_ON);
+				clip_off=getAudioClip(ua_profile.mediaPath+"/"+CLIP_OFF);
+				clip_ring=getAudioClip(ua_profile.mediaPath+"/"+CLIP_RING);
+				clip_progress=getAudioClip(ua_profile.mediaPath+"/"+CLIP_PROGRESS);
 				
 				clip_ring.setLoop();
 				clip_progress.setLoop();
@@ -226,14 +226,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Inits the RegistrationClient */
 	private void initRegistrationClient() {
-		rc=new RegistrationClient(sip_provider,new SipURI(ua_profile.registrar),ua_profile.getUserURI(),ua_profile.auth_user,ua_profile.auth_realm,ua_profile.auth_passwd,this);
+		rc=new RegistrationClient(sip_provider,new SipURI(ua_profile.registrar),ua_profile.getUserURI(),ua_profile.authUser,ua_profile.authRealm,ua_profile.authPasswd,this);
 	}
 
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
 	private SdpMessage getSessionDescriptor(MediaDesc[] media_descs) {
 		String owner=ua_profile.user;
-		String media_addr=(ua_profile.media_addr!=null)? ua_profile.media_addr : sip_provider.getViaAddress();
+		String media_addr=(ua_profile.mediaAddr!=null)? ua_profile.mediaAddr : sip_provider.getViaAddress();
 		SdpMessage sd=new SdpMessage(owner,media_addr);
 		for (int i=0; i<media_descs.length; i++) {
 			MediaDesc md=media_descs[i];
@@ -435,18 +435,18 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Makes a new call (acting as UAC) with specific media descriptions. */
 	public void call(NameAddress callee, MediaDesc[] media_descs) {
 		// new media description
-		if (media_descs==null) media_descs=ua_profile.media_descs;
+		if (media_descs==null) media_descs=ua_profile.mediaDescs;
 		this.media_descs=media_descs;
 		// new call
-		SdpMessage sdp=ua_profile.no_offer? null : getSessionDescriptor(media_descs);
+		SdpMessage sdp=ua_profile.noOffer? null : getSessionDescriptor(media_descs);
 		call(callee,sdp);
 	}
 
 
 	/** Makes a new call (acting as UAC) with specific SDP. */
 	public void call(NameAddress callee, SdpMessage sdp) {
-		call=new ExtendedCall(sip_provider,new SipUser(ua_profile.getUserURI(),ua_profile.auth_user,ua_profile.auth_realm,ua_profile.auth_passwd),this);      
-		if (ua_profile.no_offer) call.call(callee);
+		call=new ExtendedCall(sip_provider,new SipUser(ua_profile.getUserURI(),ua_profile.authUser,ua_profile.authRealm,ua_profile.authPasswd),this);      
+		if (ua_profile.noOffer) call.call(callee);
 		else {
 			call.call(callee,sdp.toString());
 		}
@@ -491,7 +491,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (call==null) return;
 		// else
 		// new media description
-		if (media_descs==null) media_descs=ua_profile.media_descs;
+		if (media_descs==null) media_descs=ua_profile.mediaDescs;
 		this.media_descs=media_descs;
 		// new sdp
 		SdpMessage local_sdp=getSessionDescriptor(media_descs);
@@ -566,9 +566,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		Vector md_list=OfferAnswerModel.makeMediaDescriptorProduct(local_sdp.getMediaDescriptors(),remote_sdp.getMediaDescriptors());
 		// select the media direction (send_only, recv_ony, fullduplex)
 		FlowSpec.Direction dir=FlowSpec.FULL_DUPLEX;
-		if (ua_profile.recv_only) dir=FlowSpec.RECV_ONLY;
+		if (ua_profile.recvOnly) dir=FlowSpec.RECV_ONLY;
 		else
-		if (ua_profile.send_only) dir=FlowSpec.SEND_ONLY;
+		if (ua_profile.sendOnly) dir=FlowSpec.SEND_ONLY;
 		// for each media
 		for (Enumeration ei=md_list.elements(); ei.hasMoreElements(); ) {
 			MediaField md=((MediaDescriptor)ei.nextElement()).getMedia();
@@ -659,7 +659,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// sound
 		if (clip_ring!=null) clip_ring.play();
 		// response timeout
-		if (ua_profile.refuse_time>=0) response_to=new Timer(ua_profile.refuse_time*1000,this);
+		if (ua_profile.refuseTime>=0) response_to=new Timer(ua_profile.refuseTime*1000,this);
 		response_to.start();
 		
 		MediaDesc[] media_descs=new MediaDesc[]{};
@@ -755,7 +755,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallAccepted()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("ACCEPTED/CALL");
-		if (ua_profile.no_offer) {
+		if (ua_profile.noOffer) {
 			// new sdp
 			SdpMessage local_sdp=getSessionDescriptor(media_descs);
 			SdpMessage remote_sdp=new SdpMessage(sdp);
