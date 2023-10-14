@@ -22,8 +22,6 @@
 package org.mjsip.ua;
 
 
-import java.io.PrintStream;
-
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
@@ -40,7 +38,7 @@ import org.zoolu.util.ScheduledWork;
 
 /** MultipleUAS is a simple UA that automatically responds to incoming calls.
   * <br>
-  * At start up it may register with a registrar server (if proper configured).
+  * At start up it may register with a registrar server (if properly configured).
   */
 public abstract class MultipleUAS implements UserAgentListener, RegistrationClientListener, SipProviderListener {
 	
@@ -52,9 +50,6 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
-	/** Standard output */
-	PrintStream stdout=null;
-
 	/** Creates a new MultipleUAS. */
 	public MultipleUAS(SipProvider sip_provider, UAConfig uaConfig) {
 		this.uaConfig=uaConfig;
@@ -62,17 +57,19 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 
 		// init UA profile
 		uaConfig.setUnconfiguredAttributes(sip_provider);
-		if (!uaConfig.noPrompt) stdout=System.out;
-		// set strict UA profile only 
-		uaConfig.uaServer=false;
-		uaConfig.optionsServer=false;
-		uaConfig.nullServer=false;
+
 		// registration client
 		if (uaConfig.doRegister || uaConfig.doUnregister || uaConfig.doUnregisterAll) {
 			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.registrar),uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd,this);
 			rc.loopRegister(uaConfig.expires,uaConfig.expires/2);
 		}
+		
+		// set strict receive-only profile, since this configuration is re-used for spawning multiple user agents when calls are received.
+		uaConfig.uaServer=false;
+		uaConfig.optionsServer=false;
+		uaConfig.nullServer=false;
 		uaConfig.doRegister=false;
+		
 		// start UAS     
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
 	} 
@@ -86,18 +83,22 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 		LOG.debug("onReceivedMessage()");
 		if (msg.isRequest() && msg.isInvite()) {
 			LOG.info("received new INVITE request");
-			// get caller, callee, sdp
-			//NameAddress callee=msg.getToHeader().getNameAddress();
-			//NameAddress caller=msg.getFromHeader().getNameAddress();
-			String sdp=msg.getStringBody();
-			// create new UA
+			
+			// create new user agent
 			final UserAgent ua=new UserAgent(sip_provider,uaConfig,this);
+			
 			// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
-			//printOut("Incoming call from "+caller.toString());
 			new ExtendedCall(sip_provider,msg,ua);
-			// automatic hangup after a maximum time
-			if (uaConfig.hangupTime>0) new ScheduledWork(uaConfig.hangupTime*1000) {  @Override
-			public void doWork() {  ua.hangup();  }  };
+			
+			// automatic hang-up after the maximum time
+			if (uaConfig.hangupTime>0) {
+				new ScheduledWork(uaConfig.hangupTime*1000) {  
+					@Override
+					public void doWork() {  
+						ua.hangup();  
+					}  
+				};
+			}
 		}
 	}
 

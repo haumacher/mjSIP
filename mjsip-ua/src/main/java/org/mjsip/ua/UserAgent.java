@@ -39,7 +39,6 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.Call;
 import org.mjsip.sip.call.CallListenerAdapter;
 import org.mjsip.sip.call.ExtendedCall;
-import org.mjsip.sip.call.ExtendedCallListener;
 import org.mjsip.sip.call.NotImplementedServer;
 import org.mjsip.sip.call.OptionsServer;
 import org.mjsip.sip.call.RegistrationClient;
@@ -68,7 +67,7 @@ import org.zoolu.util.TimerListener;
   * As media applications it can also use external audio/video tools.
   * Currently only support for RAT (Robust Audio Tool) and VIC has been implemented.
   */
-public class UserAgent extends CallListenerAdapter implements SipProviderListener, ExtendedCallListener, RegistrationClientListener, TimerListener {
+public class UserAgent extends CallListenerAdapter implements SipProviderListener, RegistrationClientListener, TimerListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgent.class);
 
