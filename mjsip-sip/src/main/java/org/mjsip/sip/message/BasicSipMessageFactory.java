@@ -94,7 +94,7 @@ public abstract class BasicSipMessageFactory {
 		SipMessage req=new SipMessage();
 		//mandatory headers first (To, From, Via, Max-Forwards, Call-ID, CSeq):
 		req.setRequestLine(new RequestLine(method,request_uri));
-		ViaHeader via=new ViaHeader(sipConfig.default_transport_protocols[0],DEFAULT_VIA_ADDRESS,0);
+		ViaHeader via=new ViaHeader(sipConfig.getDefaultTransportProtocols()[0],DEFAULT_VIA_ADDRESS,0);
 		//if (rport) via.setRport();
 		//if (branch==null) branch=SipProvider.pickBranch();
 		String branch=SipProvider.pickBranch();
@@ -108,9 +108,9 @@ public abstract class BasicSipMessageFactory {
 		req.setCSeqHeader(new CSeqHeader(cseq,method));
 		//optional headers:
 		if (contact!=null) req.addContactHeader(new ContactHeader(contact));
-		req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.defaultExpires)));
+		req.setExpiresHeader(new ExpiresHeader(String.valueOf(sipConfig.getDefaultExpires())));
 		// add User-Agent header field
-		if (sipConfig.uaInfo!=null) req.setUserAgentHeader(new UserAgentHeader(sipConfig.uaInfo));
+		if (sipConfig.getUaInfo()!=null) req.setUserAgentHeader(new UserAgentHeader(sipConfig.getUaInfo()));
 		//if (body!=null) req.setBody(body); else req.setBody("");
 		req.setBody(content_type,body);
 		return req;
@@ -233,7 +233,7 @@ public abstract class BasicSipMessageFactory {
 		resp.setCSeqHeader(req.getCSeqHeader());
 		if (contact!=null) resp.setContactHeader(new ContactHeader(contact));
 		// add Server header field
-		if (sipConfig.serverInfo!=null) resp.setServerHeader(new ServerHeader(sipConfig.serverInfo));
+		if (sipConfig.getServerInfo()!=null) resp.setServerHeader(new ServerHeader(sipConfig.getServerInfo()));
 		//if (body!=null) resp.setBody(body); else resp.setBody("");
 		resp.setBody(content_type,body);
 		return resp;
@@ -251,7 +251,7 @@ public abstract class BasicSipMessageFactory {
 		//String reason=SipResponses.reasonOf(code);
 		String localtag=null;
 		if (req.createsDialog() && !req.getToHeader().hasTag()) {
-			if ((sipConfig.earlyDialog && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
+			if ((sipConfig.isEarlyDialog() && code!=100) || (code>=200 && code<300)) localtag=SipProvider.pickTag(req);
 		}
 		return createResponse(req,code,reason,localtag,contact,null,null);
 	}

@@ -75,9 +75,9 @@ public class InviteTransactionClient extends TransactionClient implements TimerL
 		this.transaction_id=transaction_id;
 		this.ack=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(sip_provider.sipConfig.retransmissionTimeout,null);
-		transaction_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
-		end_to=new Timer(sip_provider.sipConfig.transaction_timeout,null);
+		retransmission_to=new Timer(sip_provider.sipConfig.getRetransmissionTimeout(),null);
+		transaction_to=new Timer(sip_provider.sipConfig.getTransactionTimeout(),null);
+		end_to=new Timer(sip_provider.sipConfig.getTransactionTimeout(),null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 

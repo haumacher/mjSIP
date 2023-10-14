@@ -89,7 +89,7 @@ public class TransactionClient extends Transaction {
 		sip_provider.addSelectiveListener(transaction_id,this);
 		connection_id=sip_provider.sendMessage(request);
 
-		startRetransmissionTimer(sip_provider.sipConfig.retransmissionTimeout);
+		startRetransmissionTimer(sip_provider.sipConfig.getRetransmissionTimeout());
 	}
 		
 	/** Terminates the transaction. */
@@ -155,15 +155,15 @@ public class TransactionClient extends Transaction {
 			sip_provider.sendMessage(request);
 
 			long timeout = 2 * timer.getTime();
-			if (timeout > sip_provider.sipConfig.maxRetransmissionTimeout || statusIs(STATE_PROCEEDING))
-				timeout = sip_provider.sipConfig.maxRetransmissionTimeout;
+			if (timeout > sip_provider.sipConfig.getMaxRetransmissionTimeout() || statusIs(STATE_PROCEEDING))
+				timeout = sip_provider.sipConfig.getMaxRetransmissionTimeout();
 
 			startRetransmissionTimer(timeout);
 		}
 	}
 	
 	private void startTransactionTimeout() {
-		long timeout = sip_provider.sipConfig.transaction_timeout;
+		long timeout = sip_provider.sipConfig.getTransactionTimeout();
 		LOG.debug("Starting transaction timeout: " + timeout + "ms");
 
 		transaction_to = new Timer(timeout, this::onTransactionTimeout);
@@ -187,7 +187,7 @@ public class TransactionClient extends Transaction {
 	}
 
 	private void startClearingTimeout() {
-		long timeout = sip_provider.sipConfig.clearingTimeout;
+		long timeout = sip_provider.sipConfig.getClearingTimeout();
 		LOG.debug("Starting clearing timeout: " + timeout + "ms");
 		clearing_to = new Timer(timeout, this::onClearingTimeout);
 		clearing_to.start();

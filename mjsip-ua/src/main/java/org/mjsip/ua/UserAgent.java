@@ -381,7 +381,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : new SipURI(rc.getTargetAOR().getAddress());
 			String target_host=target_uri.getHost();
 			int target_port=target_uri.getPort();
-			if (target_port<0) target_port=sip_provider.sipConfig.defaultPort;
+			if (target_port<0) target_port=sip_provider.sipConfig.getDefaultPort();
 			SocketAddress target_soaddr=new SocketAddress(target_host,target_port);
 			if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
 			keep_alive=new SipKeepAlive(sip_provider,target_soaddr,null,keepalive_time);

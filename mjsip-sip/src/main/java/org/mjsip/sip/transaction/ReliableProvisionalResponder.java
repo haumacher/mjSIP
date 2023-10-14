@@ -157,9 +157,9 @@ public class ReliableProvisionalResponder {
 
 	/** Sends the head-of-line response. */
 	private synchronized void sendNextResponse() {
-		transaction_to=new Timer(sipConfig.transaction_timeout,this_timer_listener);
+		transaction_to=new Timer(sipConfig.getTransactionTimeout(),this_timer_listener);
 		transaction_to.start();
-		retransmission_to=new Timer(sipConfig.retransmissionTimeout,this_timer_listener);
+		retransmission_to=new Timer(sipConfig.getRetransmissionTimeout(),this_timer_listener);
 		retransmission_to.start();
 		SipMessage resp=(SipMessage)responses.elementAt(0);
 		invite_ts.respondWith(resp); 
@@ -172,7 +172,7 @@ public class ReliableProvisionalResponder {
 			if (to.equals(retransmission_to)) {
 				LOG.info("Retransmission timeout expired");
 				long timeout=2*retransmission_to.getTime();
-				if (timeout>sipConfig.maxRetransmissionTimeout) timeout=sipConfig.maxRetransmissionTimeout;
+				if (timeout>sipConfig.getMaxRetransmissionTimeout()) timeout=sipConfig.getMaxRetransmissionTimeout();
 				retransmission_to=new Timer(timeout,this_timer_listener);
 				retransmission_to.start();
 				SipMessage resp=(SipMessage)responses.elementAt(0);

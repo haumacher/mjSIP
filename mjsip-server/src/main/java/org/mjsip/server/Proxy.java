@@ -186,7 +186,7 @@ public class Proxy extends Registrar {
 		// add Record-Route?
 		if (server_profile.on_route && msg.isInvite()/* && !is_on_route*/) {
 			SipURI rr_uri;
-			if (sip_provider.getPort()==sip_provider.sipConfig.defaultPort) rr_uri=new SipURI(sip_provider.getViaAddress());
+			if (sip_provider.getPort()==sip_provider.sipConfig.getDefaultPort()) rr_uri=new SipURI(sip_provider.getViaAddress());
 			else rr_uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
 			if (server_profile.loose_route) rr_uri.addLr();
 			RecordRouteHeader rrh=new RecordRouteHeader(new NameAddress(rr_uri));
@@ -229,7 +229,7 @@ public class Proxy extends Registrar {
 		// decrement Max-Forwards
 		MaxForwardsHeader maxfwd=msg.getMaxForwardsHeader();
 		if (maxfwd!=null) maxfwd.decrement();
-		else maxfwd=new MaxForwardsHeader(sip_provider.sipConfig.maxForwards);
+		else maxfwd=new MaxForwardsHeader(sip_provider.sipConfig.getMaxForwards());
 		msg.setMaxForwardsHeader(maxfwd);      
 
 		// check whether the next Route is formed according to RFC2543
