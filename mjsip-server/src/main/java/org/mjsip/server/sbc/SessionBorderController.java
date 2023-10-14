@@ -155,7 +155,7 @@ public class SessionBorderController extends Proxy {
 		// before doing anything, force the use of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {
 			ViaHeader via=req.getViaHeader();
-			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():sip_provider.sipConfig.getDefaultPort());
+			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():sip_provider.sipConfig().getDefaultPort());
 			// pass to the backend_proxy only requests that are not coming from it
 			if (!via_soaddr.equals(sbc_profile.backend_proxy)) {
 				Vector route_list;
@@ -176,7 +176,7 @@ public class SessionBorderController extends Proxy {
 					GenericURI route=(new RouteHeader((Header)route_list.elementAt(index))).getNameAddress().getAddress();
 					if (route.isSipURI()) {
 						SipURI sip_route=new SipURI(route);
-						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():sip_provider.sipConfig.getDefaultPort());
+						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():sip_provider.sipConfig().getDefaultPort());
 						already_on_route=route_soaddr.equals(sbc_profile.backend_proxy);
 					}
 				}
@@ -241,7 +241,7 @@ public class SessionBorderController extends Proxy {
 				SipURI sip_uri=new SipURI(uri);
 				String host=sip_uri.getHost();
 				int port=sip_uri.getPort();
-				if (port<=0) port=sip_provider.sipConfig.getDefaultPort();
+				if (port<=0) port=sip_provider.sipConfig().getDefaultPort();
 				SocketAddress soaddr=new SocketAddress(host,port);
 				int time=ch.getExpires();
 				if (time>0) {
@@ -373,7 +373,7 @@ public class SessionBorderController extends Proxy {
 
 		// remove outbound proxy in case of the presence of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {
-			sipConfig.setOutboundProxyX(null);
+			sipConfig.setOutboundProxy(null);
 		}
 		
 		// create a new ExtendedSipProvider

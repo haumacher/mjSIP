@@ -62,7 +62,7 @@ public class DummyUAS implements SipProviderListener {
 	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		if (msg.isRequest() && !msg.isAck()) {
-			SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,code,reason,null);
+			SipMessage resp=sip_provider.messageFactory().createResponse(msg,code,reason,null);
 		sip_provider.sendMessage(resp);
 		}
 	}

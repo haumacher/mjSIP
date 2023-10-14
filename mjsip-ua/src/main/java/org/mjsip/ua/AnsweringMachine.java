@@ -99,7 +99,7 @@ public class AnsweringMachine extends MultipleUAS {
 			uaConfig.hangupTime = MAX_LIFE_TIME;
 		new AnsweringMachine(new SipProvider(sipConfig), uaConfig, portCnt);
 
-		// promt before exit
+		// prompt before exit
 		if (prompt_exit) 
 		try {
 			System.out.println("press 'enter' to exit");

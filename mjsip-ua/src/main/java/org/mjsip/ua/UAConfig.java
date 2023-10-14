@@ -342,7 +342,7 @@ public class UAConfig extends Configure {
 		if (authUser==null && user!=null) authUser=user;
 		if (ua_address==null && sip_provider!=null) {
 			ua_address=sip_provider.getViaAddress();
-			if (sip_provider.getPort()!=sip_provider.sipConfig.getDefaultPort()) ua_address+=":"+sip_provider.getPort();
+			if (sip_provider.getPort()!=sip_provider.sipConfig().getDefaultPort()) ua_address+=":"+sip_provider.getPort();
 		}
 	}
 

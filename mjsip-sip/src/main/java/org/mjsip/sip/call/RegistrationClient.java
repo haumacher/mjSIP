@@ -248,8 +248,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		this.from_naddr=from_naddr;
 		this.contact_naddr=contact_naddr;
 
-		this.expire_time=sip_provider.sipConfig.getDefaultExpires();
-		this.renew_time=sip_provider.sipConfig.getDefaultExpires();
+		this.expire_time=sip_provider.sipConfig().getDefaultExpires();
+		this.renew_time=sip_provider.sipConfig().getDefaultExpires();
 	}
 
 
@@ -291,7 +291,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		attempts=0;
 		if (expire_time>0) this.expire_time=expire_time;
 		String call_id=sip_provider.pickCallId();
-		SipMessage req=sip_provider.sipMessageFactory.createRegisterRequest(registrar_uri,to_naddr,from_naddr,contact_naddr,call_id);
+		SipMessage req=sip_provider.messageFactory().createRegisterRequest(registrar_uri,to_naddr,from_naddr,contact_naddr,call_id);
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(expire_time)));
 		if (next_nonce!=null) {
 			AuthorizationHeader ah=new AuthorizationHeader("Digest");
@@ -325,7 +325,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		attempts=0;
 		NameAddress user=new NameAddress(to_naddr);
 		String call_id=sip_provider.pickCallId();
-		SipMessage req=sip_provider.sipMessageFactory.createRegisterRequest(registrar_uri,to_naddr,from_naddr,(NameAddress)null,call_id);
+		SipMessage req=sip_provider.messageFactory().createRegisterRequest(registrar_uri,to_naddr,from_naddr,(NameAddress)null,call_id);
 		//ContactHeader contact_star=new ContactHeader(); // contact is *
 		//req.setContactHeader(contact_star);
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(0)));
@@ -419,7 +419,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			StatusLine status=resp.getStatusLine();
 			int code=status.getCode();
-			if (code==401 && attempts<sip_provider.sipConfig.getRegAuthAttempts() && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
+			if (code==401 && attempts<sip_provider.sipConfig().getRegAuthAttempts() && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
 				// UAS authentication
 				attempts++;
 				SipMessage req=transaction.getRequestMessage();
@@ -439,7 +439,7 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				t.request();
 			}
 			else
-			if (code==407 && attempts<sip_provider.sipConfig.getRegAuthAttempts() && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
+			if (code==407 && attempts<sip_provider.sipConfig().getRegAuthAttempts() && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
 				// Proxy authentication
 				attempts++;
 				SipMessage req=transaction.getRequestMessage();
@@ -459,8 +459,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				LOG.info("Registration failure: "+result);
 				if (loop) {
 					registration_to=null;
-					(attempt_to=new Timer(sip_provider.sipConfig.getRegMaxAttemptTimeout(),this)).start();
-					LOG.trace("next attempt after "+(sip_provider.sipConfig.getRegMaxAttemptTimeout()/1000)+" secs");
+					(attempt_to=new Timer(sip_provider.sipConfig().getRegMaxAttemptTimeout(),this)).start();
+					LOG.trace("next attempt after "+(sip_provider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
 				}
 				if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,result);
 			}
@@ -474,8 +474,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			LOG.info("Registration failure: No response from server");
 			if (loop) {
 				registration_to=null;
-				long inter_time_msecs=(attempt_to==null)? sip_provider.sipConfig.getRegMinAttemptTimeout() : attempt_to.getTime()*2;
-				if (inter_time_msecs>sip_provider.sipConfig.getRegMaxAttemptTimeout()) inter_time_msecs=sip_provider.sipConfig.getRegMaxAttemptTimeout();
+				long inter_time_msecs=(attempt_to==null)? sip_provider.sipConfig().getRegMinAttemptTimeout() : attempt_to.getTime()*2;
+				if (inter_time_msecs>sip_provider.sipConfig().getRegMaxAttemptTimeout()) inter_time_msecs=sip_provider.sipConfig().getRegMaxAttemptTimeout();
 				(attempt_to=new Timer(inter_time_msecs,this)).start();
 				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}

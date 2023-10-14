@@ -86,7 +86,7 @@ public class NotImplementedServer implements SipProviderListener {
 			}
 			if (!is_implemented)      {
 				LOG.info("NotImplementedServer: " + "responding to a new " + method + " request");
-				SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,501,null,null);
+				SipMessage resp=sip_provider.messageFactory().createResponse(msg,501,null,null);
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 				ts.respondWith(resp);
 			}

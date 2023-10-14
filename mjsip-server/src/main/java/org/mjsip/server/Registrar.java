@@ -92,7 +92,7 @@ public class Registrar extends ServerEngine {
 		if (!msg.isAck()) {
 			// send a stateless error response
 			int result=501; // response code 501 ("Not Implemented")
-			SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);
+			SipMessage resp=sip_provider.messageFactory().createResponse(msg,result,null,null);
 			sip_provider.sendMessage(resp);
 		}     
 	}
@@ -103,7 +103,7 @@ public class Registrar extends ServerEngine {
 	public void processRequestToLocalUser(SipMessage msg) {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 		// stateless-response (in order to avoid DoS attacks)
-		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.sipMessageFactory.createResponse(msg,404,null,null));
+		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
 		else LOG.info("message discarded");
 	}
  
@@ -113,7 +113,7 @@ public class Registrar extends ServerEngine {
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 		// stateless-response (in order to avoid DoS attacks)
-		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.sipMessageFactory.createResponse(msg,404,null,null));
+		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
 		else LOG.info("message discarded");
 	}
 
@@ -198,7 +198,7 @@ public class Registrar extends ServerEngine {
 		if (th==null)   {
 			LOG.info("ToHeader missed: message discarded");
 			int result=400;
-			return sip_provider.sipMessageFactory.createResponse(msg,result,null,null);  
+			return sip_provider.messageFactory().createResponse(msg,result,null,null);  
 		}         
 		SipURI dest_sip_uri=new SipURI(th.getNameAddress().getAddress());
 		String user=dest_sip_uri.getUserName()+"@"+dest_sip_uri.getHost();
@@ -223,7 +223,7 @@ public class Registrar extends ServerEngine {
 			else {
 				LOG.info("user '"+user+"' unknown: message discarded.");
 				int result=404;
-				return sip_provider.sipMessageFactory.createResponse(msg,result,null,null);  
+				return sip_provider.messageFactory().createResponse(msg,result,null,null);  
 			}
 		}
 
@@ -239,7 +239,7 @@ public class Registrar extends ServerEngine {
 			//return SipMessageFactory.createResponse(msg,result,null,null,null);  
 			LOG.debug("no contact found: fetching bindings..");
 			int result=200;
-			SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);  
+			SipMessage resp=sip_provider.messageFactory().createResponse(msg,result,null,null);  
 			// add current contacts
 			Vector v=new Vector();
 			for (Enumeration e=location_service.getUserContactURIs(user); e.hasMoreElements(); ) {
@@ -259,7 +259,7 @@ public class Registrar extends ServerEngine {
 
 		Vector contacts=msg.getContacts().getHeaders();
 		int result=200;
-		SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,result,null,null);  
+		SipMessage resp=sip_provider.messageFactory().createResponse(msg,result,null,null);  
 
 		ContactHeader ch_0=new ContactHeader((Header)contacts.elementAt(0));
 		if (ch_0.isStar()) {

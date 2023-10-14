@@ -494,7 +494,7 @@ public abstract class ServerEngine implements SipProviderListener {
 
 		if (err_code>0) {
 			LOG.info("Message validation failed ("+err_code+" "+SipResponses.reasonOf(err_code)+"), message discarded");
-			return sip_provider.sipMessageFactory.createResponse(msg,err_code,null,null);
+			return sip_provider.messageFactory().createResponse(msg,err_code,null,null);
 		}
 		else return null;
 	}

@@ -178,14 +178,14 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Sends a new REFER within the dialog */
 	public void refer(NameAddress refer_to, NameAddress referred_by) {
-		SipMessage req=sip_provider.sipMessageFactory.createReferRequest(this,refer_to,referred_by);
+		SipMessage req=sip_provider.messageFactory().createReferRequest(this,refer_to,referred_by);
 		request(req);
 	}
 
 
 	/** Sends a new REFER within the dialog */
 	public void refer(NameAddress refer_to, NameAddress referred_by, Dialog replaced_dialog) {
-		SipMessage req=sip_provider.sipMessageFactory.createReferRequest(this,refer_to,referred_by);
+		SipMessage req=sip_provider.messageFactory().createReferRequest(this,refer_to,referred_by);
 		req.setReplacesHeader(new ReplacesHeader(replaced_dialog.getCallID(),replaced_dialog.getRemoteTag(),replaced_dialog.getLocalTag()));
 		request(req);
 	}
@@ -199,7 +199,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 
 	/** Sends a new NOTIFY within the dialog */
 	public void notify(String sipfragment) {
-		SipMessage req=sip_provider.sipMessageFactory.createNotifyRequest(this,"refer",null,sipfragment);
+		SipMessage req=sip_provider.messageFactory().createNotifyRequest(this,"refer",null,sipfragment);
 		request(req);
 	}
 
@@ -230,7 +230,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Accepts a REFER request. */
 	public void acceptRefer(SipMessage req) {
 		LOG.debug("inside acceptRefer(refer)");
-		SipMessage resp=sip_provider.sipMessageFactory.createResponse(req,202,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(req,202,null,null);
 		respond(resp);
 	} 
 
@@ -238,7 +238,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Refuses a REFER request. */
 	public void refuseRefer(SipMessage req) {
 		LOG.debug("inside refuseRefer(refer)");
-		SipMessage resp=sip_provider.sipMessageFactory.createResponse(req,603,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(req,603,null,null);
 		respond(resp);
 	} 
 
@@ -268,7 +268,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 			} 
 			else
 			if (msg.isNotify()) {
-				SipMessage resp=sip_provider.sipMessageFactory.createResponse(msg,200,null,null);
+				SipMessage resp=sip_provider.messageFactory().createResponse(msg,200,null,null);
 				respond(resp);
 				String event=msg.getEventHeader().getValue();
 				String sipfragment=msg.getStringBody();

@@ -138,22 +138,36 @@ public class SipProvider implements SipTransportListener {
 	/** Vector of exception listeners (Vector<SipProviderListener>) */
 	Vector exception_listeners=new Vector();
 
-	public final SipConfig sipConfig;
+	private final SipConfig _sipConfig;
 	
-	public final SipMessageFactory sipMessageFactory;
+	private final SipMessageFactory _sipMessageFactory;
 
 	/** Creates a new SipProvider. */ 
 	public SipProvider(SipConfig sipConfig) {
-		this.sipConfig = sipConfig;
-		sipMessageFactory = new SipMessageFactory(sipConfig);
+		this._sipConfig = sipConfig;
+		_sipMessageFactory = new SipMessageFactory(sipConfig);
 		initLog();
-		initSipTrasport(sipConfig.getTransportProtocolsX(),sipConfig.getTransportPorts());
+		initSipTrasport(sipConfig.getTransportProtocols(),sipConfig.getTransportPorts());
 	}
 
 	/** Inits logs. */ 
 	private void initLog() {
 		LOG.info("SipStack: " + SipStack.release);
 		LOG.info("SipProvider: " + toString());
+	}
+
+	/**
+	 * The {@link SipConfig} used.
+	 */
+	public SipConfig sipConfig() {
+		return _sipConfig;
+	}
+
+	/**
+	 * The {@link SipMessageFactory} in use.
+	 */
+	public SipMessageFactory messageFactory() {
+		return _sipMessageFactory;
 	}
 
 	/** Whether the given transport protocol is secure (TLS or DTLS) or not (UDP, TCP, SCTP, etc.).
@@ -175,21 +189,34 @@ public class SipProvider implements SipTransportListener {
 				int port=(transport_ports!=null && transport_ports.length>i)? port=transport_ports[i] : 0;
 				SipTransport transp=null;
 				if (proto.equals(PROTO_UDP)) {
-					if (port==0) port=sipConfig.getHostPort();
-					transp=new UdpTransport(port,sipConfig.getBindingIpAddr());
+					if (port == 0)
+						port = _sipConfig.getHostPort();
+					transp = new UdpTransport(port, _sipConfig.getBindingIpAddr());
 				}
 				else
 				if (proto.equals(PROTO_TCP)) {
-					if (port==0) port=sipConfig.getHostPort();
-					transp=new TcpTransport(port,sipConfig.getBindingIpAddr(),sipConfig.getMaxConnections());
+					if (port == 0)
+						port = _sipConfig.getHostPort();
+					transp = new TcpTransport(port, _sipConfig.getBindingIpAddr(), _sipConfig.getMaxConnections());
 				}
 				else
 				if (proto.equals(PROTO_TLS)) {
-					if (port==0) port=(sipConfig.getHostPort()==sipConfig.getDefaultPort())? sipConfig.getDefaultTlsPort() : sipConfig.getHostPort()+1;
-					if (sipConfig.isTrustAll()) transp=new TlsTransport(port,sipConfig.getBindingIpAddr(),sipConfig.getMaxConnections(),sipConfig.getKeyFile(),sipConfig.getCertFile());
+					if (port == 0)
+						port = (_sipConfig.getHostPort() == _sipConfig.getDefaultPort())
+								? _sipConfig.getDefaultTlsPort()
+								: _sipConfig.getHostPort() + 1;
+					if (_sipConfig.isTrustAll())
+						transp = new TlsTransport(port, _sipConfig.getBindingIpAddr(), _sipConfig.getMaxConnections(),
+								_sipConfig.getKeyFile(), _sipConfig.getCertFile());
 					else {
-						if (sipConfig.getTrustedCerts()!=null) transp=new TlsTransport(port,sipConfig.getBindingIpAddr(),sipConfig.getMaxConnections(),sipConfig.getKeyFile(),sipConfig.getCertFile(),sipConfig.getTrustedCerts());
-						else transp=new TlsTransport(port,sipConfig.getBindingIpAddr(),sipConfig.getMaxConnections(),sipConfig.getKeyFile(),sipConfig.getCertFile(),sipConfig.getTrustFolder());
+						if (_sipConfig.getTrustedCerts() != null)
+							transp = new TlsTransport(port, _sipConfig.getBindingIpAddr(),
+									_sipConfig.getMaxConnections(), _sipConfig.getKeyFile(), _sipConfig.getCertFile(),
+									_sipConfig.getTrustedCerts());
+						else
+							transp = new TlsTransport(port, _sipConfig.getBindingIpAddr(),
+									_sipConfig.getMaxConnections(), _sipConfig.getKeyFile(), _sipConfig.getCertFile(),
+									_sipConfig.getTrustFolder());
 					}
 				}
 				else
@@ -199,11 +226,13 @@ public class SipProvider implements SipTransportListener {
 				}
 				else
 				if (proto.equals(PROTO_SCTP)) {
-					if (port==0) port=sipConfig.getHostPort();
+					if (port == 0)
+						port = _sipConfig.getHostPort();
 					//transp=new SctpTransport(new SocketAddress(binding_ipaddr,port),nmax_connections,log_writer);
 					Class sctp_transport=Class.forName("org.zoolu.ext.sip.provider.SctpTransport");
 					Class[] param_classes={ Class.forName("org.zoolu.net.SocketAddress"), int.class, Class.forName("org.zoolu.util.LogWriter") };
-					Object[] param_objects={ new SocketAddress(sipConfig.getBindingIpAddr(),port), new Integer(sipConfig.getMaxConnections())};
+					Object[] param_objects = { new SocketAddress(_sipConfig.getBindingIpAddr(), port),
+							new Integer(_sipConfig.getMaxConnections()) };
 					try  {
 						java.lang.reflect.Constructor constructor=sctp_transport.getConstructor(param_classes);
 						transp=(SipTransport)constructor.newInstance(param_objects);
@@ -306,7 +335,7 @@ public class SipProvider implements SipTransportListener {
 
 	/** Gets via address. */ 
 	public String getViaAddress() {
-		return sipConfig.getViaAddr();
+		return _sipConfig.getViaAddr();
 	}    
 	
 	/** Sets via address. */ 
@@ -316,7 +345,7 @@ public class SipProvider implements SipTransportListener {
 
 	/** Gets host port. */ 
 	public int getPort() {
-		return sipConfig.getHostPort();
+		return _sipConfig.getHostPort();
 	}       
 
 	/** Gets tls port. */ 
@@ -348,7 +377,8 @@ public class SipProvider implements SipTransportListener {
 	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
 	  * @return a SIP or SIPS contact URI for this SIP provider */
 	public NameAddress getContactAddress(String user, boolean secure) {
-		SipURI uri=(getPort()!=sipConfig.getDefaultPort())? new SipURI(user,getViaAddress(),getPort()) : new SipURI(user,getViaAddress());
+		SipURI uri = (getPort() != _sipConfig.getDefaultPort()) ? new SipURI(user, getViaAddress(), getPort())
+				: new SipURI(user, getViaAddress());
 		if (secure) {
 			if (!hasSecureTransport()) return null;
 			// else
@@ -361,12 +391,12 @@ public class SipProvider implements SipTransportListener {
 
 	/** Whether binding the sip provider to all interfaces or only on the specified host address. */
 	public boolean isAllInterfaces() {
-		return sipConfig.getBindingIpAddr()==null;
+		return _sipConfig.getBindingIpAddr() == null;
 	}       
 
 	/** Gets the binding IP address. */ 
 	public IpAddress getBindingIpAddress() {
-		return sipConfig.getBindingIpAddr();
+		return _sipConfig.getBindingIpAddr();
 	}    
 	
 	/** Gets array of transport protocols. */ 
@@ -406,7 +436,7 @@ public class SipProvider implements SipTransportListener {
 
 	/** Whether using rport. */ 
 	public boolean isRportSet() {
-		return sipConfig.useRport();
+		return _sipConfig.useRport();
 	}   
 
 	/** Sets 'force-rport' mode. */ 
@@ -445,27 +475,27 @@ public class SipProvider implements SipTransportListener {
 
 	/** Whether has outbound proxy. */ 
 	public boolean hasOutboundProxy() {
-		return sipConfig.getOutboundProxyX()!=null;
+		return _sipConfig.getOutboundProxy() != null;
 	}    
 
 	/** Gets the outbound proxy. */ 
 	public SipURI getOutboundProxy() {
-		return sipConfig.getOutboundProxyX();
+		return _sipConfig.getOutboundProxy();
 	}    
 
 	/** Whether has tel gateway. */ 
 	public boolean hasTelGateway() {
-		return sipConfig.getTelGatewayX()!=null;
+		return _sipConfig.getTelGateway() != null;
 	}    
 
 	/** Gets the tel gateway. */ 
 	public SipURI getTelGateway() {
-		return sipConfig.getTelGatewayX();
+		return _sipConfig.getTelGateway();
 	}    
 
 	/** Gets the max number of (contemporary) open connections. */ 
 	public int getNMaxConnections() {
-		return sipConfig.getMaxConnections();
+		return _sipConfig.getMaxConnections();
 	}    
 
 	/** Returns the table of active listeners as Hastable:(SipId)IDs--&gt;(SipListener)listener. */ 
@@ -593,7 +623,7 @@ public class SipProvider implements SipTransportListener {
 	  * @return Returns a ConnectionId in case of connection-oriented delivery
 	  * (e.g. TCP) or null in case of connection-less delivery (e.g. UDP) */
 	public ConnectionId sendMessage(SipMessage msg) {
-		if (sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
+		if (_sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
 			LOG.trace("sendMessage()");
 		LOG.trace("message to send:\r\n" + MESSAGE_BEGIN_DELIMITER
 				+ msg.toString() + MESSAGE_END_DELIMITER);
@@ -629,7 +659,7 @@ public class SipProvider implements SipTransportListener {
 		
 		if (msg.isRequest()) {
 			// REQUESTS
-			GenericURI nexthop_uri=sipConfig.getOutboundProxyX();
+			GenericURI nexthop_uri = _sipConfig.getOutboundProxy();
 			// else
 			if (nexthop_uri==null) {
 				if (msg.hasRouteHeader()) {
@@ -670,13 +700,14 @@ public class SipProvider implements SipTransportListener {
 
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via=new ViaHeader(proto,sipConfig.getViaAddr(),sipConfig.getHostPort());
-				if (sipConfig.useRport()) via.setRport();
+				ViaHeader via = new ViaHeader(proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
+				if (_sipConfig.useRport())
+					via.setRport();
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}
 			// update the via according to transport information
-			updateViaHeader(msg,proto,sipConfig.getViaAddr(),sipConfig.getHostPort(),maddr,ttl);
+			updateViaHeader(msg, proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort(), maddr, ttl);
 			
 			LOG.debug("using transport " + proto);
 		}
@@ -692,7 +723,8 @@ public class SipProvider implements SipTransportListener {
 		}
 
 		// if port <= use default port
-		if (dest_port<=0) dest_port=(isSecureTransport(proto))? sipConfig.getDefaultPort()+1 : sipConfig.getDefaultPort();
+		if (dest_port <= 0)
+			dest_port = (isSecureTransport(proto)) ? _sipConfig.getDefaultPort() + 1 : _sipConfig.getDefaultPort();
 
 		return sendMessage(msg,proto,dest_addr,dest_port,ttl); 
 	}
@@ -763,8 +795,9 @@ public class SipProvider implements SipTransportListener {
 		if (msg.isRequest()) {
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via=new ViaHeader(proto,sipConfig.getViaAddr(),sipConfig.getHostPort());
-				if (sipConfig.useRport()) via.setRport();
+				ViaHeader via = new ViaHeader(proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
+				if (_sipConfig.useRport())
+					via.setRport();
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}
@@ -783,7 +816,7 @@ public class SipProvider implements SipTransportListener {
 	  * It does the same as method {@link #sendMessage(SipMessage,String,String,int,int)}, but no via address is added (if not already present) in request messages.  */
 	public ConnectionId sendRawMessage(SipMessage msg, String proto, String dest_addr, int dest_port, int ttl) {
 		try {
-			if (sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
+			if (_sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
 				LOG.debug("Resolving host address '" + dest_addr + "'");
 			IpAddress dest_ipaddr=IpAddress.getByName(dest_addr);  
 			return sendRawMessage(msg,proto,dest_ipaddr,dest_port,ttl); 
@@ -798,7 +831,7 @@ public class SipProvider implements SipTransportListener {
 	/** Sends the <i>msg</i> message, specifing the transport protocol, nexthop address and port.
 	  * For request messages, no via address is added. */
 	private ConnectionId sendRawMessage(SipMessage msg, String proto, IpAddress dest_ipaddr, int dest_port, int ttl) {
-		if (sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
+		if (_sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
 			LOG.debug("Sending message to "
 					+ (new ConnectionId(proto, dest_ipaddr, dest_port))
 							.toString());
@@ -857,14 +890,14 @@ public class SipProvider implements SipTransportListener {
 			
 			// discard too short messages (e.g. CRLFCRLF "PING", or CRLF "PONG")
 			if (msg.getLength()<=4) {
-				if (sipConfig.isLogAllPackets())
+				if (_sipConfig.isLogAllPackets())
 					LOG.debug("message too short: discarded\r\n");
 				return;
 			}
 			// discard non-SIP messages
 			String first_line=msg.getFirstLine();
 			if (first_line==null || first_line.toUpperCase().indexOf("SIP/2.0")<0) {
-				if (sipConfig.isLogAllPackets())
+				if (_sipConfig.isLogAllPackets())
 					LOG.debug("NOT a SIP message: discarded\r\n");
 				return;
 			}
@@ -877,7 +910,8 @@ public class SipProvider implements SipTransportListener {
 				int src_port=msg.getRemotePort();
 				String via_addr=vh.getHost();
 				int via_port=vh.getPort();
-				if (via_port<=0) via_port=sipConfig.getDefaultPort();
+				if (via_port <= 0)
+					via_port = _sipConfig.getDefaultPort();
 				 
 				if (!via_addr.equals(src_addr)) {
 					vh.setReceived(src_addr);
@@ -1013,7 +1047,7 @@ public class SipProvider implements SipTransportListener {
 					"transport UDP terminated with error: trying to restart it (after 1000ms)..");
 			try {  Thread.sleep(1000);  } catch (Exception e) {}
 			try {
-				SipTransport udp=new UdpTransport(sipConfig.getHostPort(),sipConfig.getBindingIpAddr());
+				SipTransport udp = new UdpTransport(_sipConfig.getHostPort(), _sipConfig.getBindingIpAddr());
 				setTransport(udp);
 			}
 			catch (Exception e) {
@@ -1171,8 +1205,11 @@ public class SipProvider implements SipTransportListener {
 	/** Gets a String value for this object. */ 
 	@Override
 	public String toString() {
-		if (sipConfig.getBindingIpAddr()==null) return sipConfig.getHostPort()+"/"+transportProtocolsToString();
-		else return sipConfig.getBindingIpAddr().toString()+":"+sipConfig.getHostPort()+"/"+transportProtocolsToString();
+		if (_sipConfig.getBindingIpAddr() == null)
+			return _sipConfig.getHostPort() + "/" + transportProtocolsToString();
+		else
+			return _sipConfig.getBindingIpAddr().toString() + ":" + _sipConfig.getHostPort() + "/"
+					+ transportProtocolsToString();
 	}   
 
 
@@ -1180,7 +1217,7 @@ public class SipProvider implements SipTransportListener {
 
 	/** Adds the SIP message to the message log. */
 	private final void logMessage(String message, String proto, String addr, int port, int len, SipMessage msg) {
-		if (sipConfig.isLogAllPackets() || len>=MIN_MESSAGE_LENGTH) {
+		if (_sipConfig.isLogAllPackets() || len >= MIN_MESSAGE_LENGTH) {
 			LOG.debug(message + "From: " + addr + ":" + port + "/" + proto + " (" + len + " bytes):\n\t"
 					+ msg.toString().replace("\n", "\n\t"));
 		}

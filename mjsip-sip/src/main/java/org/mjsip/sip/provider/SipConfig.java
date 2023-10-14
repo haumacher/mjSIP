@@ -195,14 +195,14 @@ public class SipConfig extends Configure {
 			setTimerDaemonMode((par.getString().toLowerCase().startsWith("y")));
 			return;
 		}
-		if (attribute.equals("auto_trying"))    { setAutoTryingX((par.getString().toLowerCase().startsWith("y"))); return; }
+		if (attribute.equals("auto_trying"))    { setAutoTrying((par.getString().toLowerCase().startsWith("y"))); return; }
 		if (attribute.equals("early_dialog"))   { setEarlyDialog((par.getString().toLowerCase().startsWith("y"))); return; }
 		if (attribute.equals("default_expires")){ setDefaultExpires(par.getInt()); return; }
 		if (attribute.equals("ua_info"))        { setUaInfo(par.getRemainingString().trim()); return; }
 		if (attribute.equals("server_info"))    { setServerInfo(par.getRemainingString().trim()); return; }
 		if (attribute.equals("supported_option_tags")) { setSupportedOptionTags(par.getWordArray(delim)); return; }
 		if (attribute.equals("required_option_tags"))  { setRequiredOptionTags(par.getWordArray(delim)); return; }
-		if (attribute.equals("allowed_methods"))       { setAllowedMethodsX(par.getWordArray(delim)); return; }
+		if (attribute.equals("allowed_methods"))       { setAllowedMethods(par.getWordArray(delim)); return; }
 		if (attribute.equals("min_session_interval"))  { setMinSessionInterval(par.getInt()); return; }
 		if (attribute.equals("default_session_interval"))  { setDefaultSessionInterval(par.getInt()); return; }
 
@@ -232,14 +232,14 @@ public class SipConfig extends Configure {
 		if (attribute.equals("nmax_connections")) {  setMaxConnections(par.getInt()); return;  }
 		if (attribute.equals("outbound_proxy")) {
 			String str_uri=par.getString();
-			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE) || str_uri.equalsIgnoreCase("NO-OUTBOUND")) setOutboundProxyX(null);
-			else setOutboundProxyX(new SipURI(str_uri));
+			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE) || str_uri.equalsIgnoreCase("NO-OUTBOUND")) setOutboundProxy(null);
+			else setOutboundProxy(new SipURI(str_uri));
 			return;
 		}
 		if (attribute.equals("tel_gateway")) {
 			String str_uri=par.getString();
-			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE)) setTelGatewayX(null);
-			else setTelGatewayX(new SipURI(str_uri));
+			if (str_uri==null || str_uri.length()==0 || str_uri.equalsIgnoreCase(Configure.NONE)) setTelGateway(null);
+			else setTelGateway(new SipURI(str_uri));
 			return;
 		}
 		if (attribute.equals("log_all_packets")) { setLogAllPackets((par.getString().toLowerCase().startsWith("y"))); return; }
@@ -321,7 +321,7 @@ public class SipConfig extends Configure {
 	
 		String outbound_proxy=flags.getString("-o","<addr>[:<port>]",null,"uses the given outbound proxy");
 		if (outbound_proxy!=null) {
-			sipConfig.setOutboundProxyX(new SipURI(outbound_proxy));
+			sipConfig.setOutboundProxy(new SipURI(outbound_proxy));
 		}
 	
 		String contact_uri=flags.getString("--contact-uri","<uri>",null,"user's contact URI");
@@ -355,8 +355,8 @@ public class SipConfig extends Configure {
 		if (getOutboundPort()<0) setOutboundPort(getDefaultPort());
 		
 		if (getOutboundAddr()!=null) {
-			if (getOutboundAddr().equalsIgnoreCase(Configure.NONE) || getOutboundAddr().equalsIgnoreCase("NO-OUTBOUND")) setOutboundProxyX(null);
-			else setOutboundProxyX(new SipURI(getOutboundAddr(),getOutboundPort()));
+			if (getOutboundAddr().equalsIgnoreCase(Configure.NONE) || getOutboundAddr().equalsIgnoreCase("NO-OUTBOUND")) setOutboundProxy(null);
+			else setOutboundProxy(new SipURI(getOutboundAddr(),getOutboundPort()));
 		}
 		
 		if (getViaAddr() == null || getViaAddr().equalsIgnoreCase(AUTO_CONFIGURATION)) {
@@ -366,7 +366,7 @@ public class SipConfig extends Configure {
 			setHostPort(getDefaultPort());
 		}
 
-		if (getTransportProtocolsX() == null) {
+		if (getTransportProtocols() == null) {
 			setTransportProtocols(getDefaultTransportProtocols());
 		}
 		if (getMaxConnections() <= 0) {
@@ -504,7 +504,7 @@ public class SipConfig extends Configure {
 		return _autoTrying;
 	}
 
-	private void setAutoTryingX(boolean autoTrying) {
+	private void setAutoTrying(boolean autoTrying) {
 		_autoTrying = autoTrying;
 	}
 
@@ -588,7 +588,7 @@ public class SipConfig extends Configure {
 		return _allowedMethods;
 	}
 
-	private void setAllowedMethodsX(String[] allowedMethods) {
+	private void setAllowedMethods(String[] allowedMethods) {
 		this._allowedMethods = allowedMethods;
 	}
 
@@ -688,12 +688,12 @@ public class SipConfig extends Configure {
 	}
 
 	/** List of enabled transport protocols (the first protocol is used as default). */
-	public String[] getTransportProtocolsX() {
+	public String[] getTransportProtocols() {
 		return _transportProtocols;
 	}
 
 	/**
-	 * @see #getTransportProtocolsX()
+	 * @see #getTransportProtocols()
 	 */
 	public void setTransportProtocols(String[] transportProtocols) {
 		this._transportProtocols = transportProtocols;
@@ -721,12 +721,12 @@ public class SipConfig extends Configure {
 	 * Outbound proxy URI ([sip:]host_addr[:host_port][;transport=proto]). Use 'NONE' for not using
 	 * an outbound proxy (or let it undefined).
 	 */
-	public SipURI getOutboundProxyX() {
+	public SipURI getOutboundProxy() {
 		return _outboundProxy;
 	}
 
 	// TODO: Make private.
-	public void setOutboundProxyX(SipURI outboundProxy) {
+	public void setOutboundProxy(SipURI outboundProxy) {
 		this._outboundProxy = outboundProxy;
 	}
 
@@ -735,11 +735,11 @@ public class SipConfig extends Configure {
 	 * proxy/gateway that is used for sending request messages with a "tel" URI as request-uri. Use
 	 * 'NONE' for not using a tel gateway (or let it undefined).
 	 */
-	public SipURI getTelGatewayX() {
+	public SipURI getTelGateway() {
 		return _telGateway;
 	}
 
-	private void setTelGatewayX(SipURI telGateway) {
+	private void setTelGateway(SipURI telGateway) {
 		this._telGateway = telGateway;
 	}
 

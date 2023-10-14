@@ -63,7 +63,7 @@ public class StatefulProxyState {
 		s_clients.put(sid,new HashSet());
 		SipMessage request=new SipMessage(ts.getRequestMessage());
 		//printlog("creating a possible server 408 final response",LogWriter.LEVEL_LOW);
-		SipMessage resp=sip_provider.sipMessageFactory.createResponse(request,408,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(request,408,null,null);
 		//printlog("DEBUG: addServer()\r\n"+resp,LogWriter.LEVEL_LOW);
 		s_response.put(sid,resp);
 	}
@@ -80,7 +80,7 @@ public class StatefulProxyState {
 		s_clients.put(sid,clients);
 		SipMessage request=new SipMessage(ts.getRequestMessage());
 		//printlog("creating a possible server 408 final response",LogWriter.LEVEL_LOW);
-		SipMessage resp=sip_provider.sipMessageFactory.createResponse(request,408,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(request,408,null,null);
 		//printlog("DEBUG addClient():\r\n"+resp,LogWriter.LEVEL_LOW);
 		s_response.put(sid,resp);
 	}

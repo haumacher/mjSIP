@@ -99,7 +99,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 			ts.respondWith(200);
 			// reply
-			SipMessage reply=sip_provider.sipMessageFactory.createMessageRequest(sender,recipient,sip_provider.pickCallId(),null,content_type,content);
+			SipMessage reply=sip_provider.messageFactory().createMessageRequest(sender,recipient,sip_provider.pickCallId(),null,content_type,content);
 			if (force_reverse_route) {
 				SipURI previous_hop=new SipURI(msg.getRemoteAddress(),msg.getRemotePort());
 				previous_hop.addLr();

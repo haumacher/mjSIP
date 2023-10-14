@@ -87,7 +87,7 @@ public class TransactionServer extends Transaction implements TimerListener {
 		this.connection_id=connection_id;
 		this.response=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		clearing_to=new Timer(sip_provider.sipConfig.getTransactionTimeout(),null);
+		clearing_to=new Timer(sip_provider.sipConfig().getTransactionTimeout(),null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}  
 
@@ -105,7 +105,7 @@ public class TransactionServer extends Transaction implements TimerListener {
 
 	/** Sends a response message */
 	public void respondWith(int code) {
-		SipMessage resp=sip_provider.sipMessageFactory.createResponse(request,code,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(request,code,null,null);
 		respondWith(resp);
 	}  
 
