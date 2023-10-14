@@ -33,6 +33,7 @@ import org.mjsip.sip.header.RSeqHeader;
 import org.mjsip.sip.header.RequireHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Random;
@@ -46,7 +47,7 @@ import org.zoolu.util.TimerListener;
   * with an exponential backoff until a corrensponding PRACK message is received (RFC 3262).
   * <p>
   * Ougoing reliable provisional (1xx) response should be passed to this ReliableProvisionalResponder through the method {@link ReliableProvisionalResponder#respond(SipMessage)}.
-  * Incoming PRACK messages should be passed to this ReliableProvisionalResponder through the method {@link ReliableProvisionalResponder#processPrack(SipMessage)}.
+  * Incoming PRACK messages should be passed to this ReliableProvisionalResponder through the method {@link ReliableProvisionalResponder#processPrack(SipProvider, SipMessage)}.
   */ 
 public class ReliableProvisionalResponder {
 	
@@ -114,8 +115,8 @@ public class ReliableProvisionalResponder {
 
 
 	/** Processes a new received PRACK message.
-	  * @param prack the received PRACK */
-	public synchronized void processPrack(SipMessage prack) {
+	 * @param prack the received PRACK */
+	public synchronized void processPrack(SipProvider sip_provider, SipMessage prack) {
 		LOG.debug("processPrack()");
 		if (responses.size()>0) {
 			SipMessage resp=(SipMessage)responses.elementAt(0);
@@ -124,7 +125,7 @@ public class ReliableProvisionalResponder {
 			if (rh!=null && rh.getCSeqSequenceNumber()==sh.getSequenceNumber() && rh.getCSeqMethod().equals(sh.getMethod()) && rh.getRAckSequenceNumber()==resp.getRSeqHeader().getSequenceNumber()) {
 				stopResponseRetransmission();
 				responses.removeElementAt(0);
-				(new TransactionServer(invite_ts.getSipProvider(),prack,null)).respondWith(200);
+				(new TransactionServer(sip_provider, prack, null)).respondWith(200);
 				if (listener!=null) listener.onReliableProvisionalResponseConfirmation(this,resp,prack);
 				if (retransmission_to==null && hasPendingResponses()) sendNextResponse();
 			}

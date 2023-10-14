@@ -89,7 +89,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ im
 	/** Lower layer dispatcher that sends and receive messages.
 	  * The messages received by the SipProvider are fired to the Transaction
 	  * by means of the onReceivedMessage() method. */
-	SipProvider sip_provider;
+	protected final SipProvider sip_provider;
  
 	/** Internal state-machine status */
 	int status;
@@ -152,12 +152,6 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ im
 		return status==STATE_TERMINATED;
 	}
 
-
-	/** Gets the SipProvider of this Transaction. */
-	public SipProvider getSipProvider() {
-		return sip_provider;
-	}
-
 	/** Gets the Transaction request message */
 	public SipMessage getRequestMessage() {
 		return request;
@@ -188,5 +182,5 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ im
 	
 	/** Terminates the transaction. */
 	public abstract void terminate();
-	
+
 }

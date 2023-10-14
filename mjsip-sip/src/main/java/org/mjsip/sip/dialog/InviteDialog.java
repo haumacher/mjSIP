@@ -937,7 +937,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			// if prack
 			if (msg.isPrack()) {
 				// RELIABILITY OF PROVISIONAL RESPONSES
-				if (reliable_responder!=null) reliable_responder.processPrack(msg);
+				if (reliable_responder!=null) reliable_responder.processPrack(sip_provider, msg);
 			}
 			else
 			if (msg.isUpdate())       {
