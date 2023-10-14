@@ -47,7 +47,7 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
 	/** UserAgentProfile */
-	protected UserAgentProfile ua_profile;
+	protected UAConfig ua_profile;
 			
 	/** SipProvider */
 	protected SipProvider sip_provider;
@@ -56,7 +56,7 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	PrintStream stdout=null;
 
 	/** Creates a new MultipleUAS. */
-	public MultipleUAS(SipProvider sip_provider, UserAgentProfile ua_profile) {
+	public MultipleUAS(SipProvider sip_provider, UAConfig ua_profile) {
 		this.ua_profile=ua_profile;
 		this.sip_provider=sip_provider;
 

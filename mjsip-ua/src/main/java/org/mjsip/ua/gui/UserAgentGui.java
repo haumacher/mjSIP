@@ -53,7 +53,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
-import org.mjsip.ua.UserAgentProfile;
+import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Archive;
@@ -76,7 +76,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	protected UserAgent ua;
 
 	/** UserAgentProfile */
-	protected UserAgentProfile ua_profile;
+	protected UAConfig ua_profile;
 
 	/** Title */
 	//String user_name=app_name;
@@ -157,7 +157,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentGui(SipProvider sip_provider, UserAgentProfile ua_profile) {
+	public UserAgentGui(SipProvider sip_provider, UAConfig ua_profile) {
 		this.sip_provider=sip_provider;
 		this.ua_profile=ua_profile;
 
@@ -634,7 +634,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		Flags flags=new Flags("local.ua.UA", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		UAConfig ua_profile = UAConfig.init(config_file, flags);
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		flags.close();
 

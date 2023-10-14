@@ -18,9 +18,9 @@ import org.zoolu.util.Parser;
 import org.zoolu.util.VectorUtils;
 
 
-/** UserAgentProfile maintains the user configuration.
+/** {@link UserAgent} configuration options.
   */
-public class UserAgentProfile extends Configure {
+public class UAConfig extends Configure {
 		 
 	// ********************** user configurations *********************
 
@@ -224,13 +224,13 @@ public class UserAgentProfile extends Configure {
 	// ************************** costructors *************************
 	
 	/** Costructs a void UserAgentProfile */
-	public UserAgentProfile() {
+	public UAConfig() {
 		init();
 	}
 
 	/** Costructs a new UserAgentProfile
 	  * @param file the name of the configuration file */
-	public UserAgentProfile(String file) {
+	public UAConfig(String file) {
 		// load configuration
 		loadFile(file);
 		// post-load manipulation     
@@ -466,15 +466,15 @@ public class UserAgentProfile extends Configure {
 
 	
 	/** 
-	 * Constructs a {@link UserAgentProfile} from the given configuration file and program arguments.
+	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
 	 */
-	public static UserAgentProfile init(String file, Flags flags) {
-		UserAgentProfile uaProfile = init(file);
+	public static UAConfig init(String file, Flags flags) {
+		UAConfig uaProfile = init(file);
 		updateWith(uaProfile, flags);
 		return uaProfile;
 	}
 
-	protected static void updateWith(UserAgentProfile uaProfile, Flags flags) {
+	protected static void updateWith(UAConfig uaProfile, Flags flags) {
 		Boolean no_prompt=flags.getBoolean("--no-prompt",null,"do not prompt");
 		if (no_prompt!=null) uaProfile.noPrompt=no_prompt.booleanValue();
 		
@@ -588,11 +588,11 @@ public class UserAgentProfile extends Configure {
 	}
 
 	/** 
-	 * Constructs a {@link UserAgentProfile} from configuration file values.
+	 * Constructs a {@link UAConfig} from configuration file values.
 	 */
-	public static UserAgentProfile init(String file) {
+	public static UAConfig init(String file) {
 		// init ua_profile
-		UserAgentProfile uaProfile=new UserAgentProfile(file);
+		UAConfig uaProfile=new UAConfig(file);
 		return uaProfile;
 	}
 

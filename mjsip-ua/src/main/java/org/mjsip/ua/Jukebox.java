@@ -66,7 +66,7 @@ public class Jukebox extends MultipleUAS {
 
 	/** Creates a new Jukebox. */
 	//public Jukebox(SipProvider sip_provider, UserAgentProfile ua_profile, int first_media_port, int num_of_ports)
-	public Jukebox(SipProvider sip_provider, UserAgentProfile ua_profile, int num_of_ports) {
+	public Jukebox(SipProvider sip_provider, UAConfig ua_profile, int num_of_ports) {
 		super(sip_provider,ua_profile);
 		
 		//if (ua_profile.media_port<0) ua_profile.media_port=((MediaDesc)ua_profile.media_descs.elementAt(0)).getPort();
@@ -126,7 +126,7 @@ public class Jukebox extends MultipleUAS {
 		Flags flags=new Flags("Jukebox", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		UAConfig ua_profile = UAConfig.init(config_file, flags);
 		flags.close();
 
 		ua_profile.audio=true;

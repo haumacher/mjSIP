@@ -32,7 +32,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
-import org.mjsip.ua.UserAgentProfile;
+import org.mjsip.ua.UAConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.ScheduledWork;
 
@@ -53,7 +53,7 @@ public class UserAgentCli implements UserAgentListener {
 	protected UserAgent ua;
 
 	/** UserAgentProfile */
-	protected UserAgentProfile ua_profile;
+	protected UAConfig ua_profile;
 			
 	/** Standard input */
 	BufferedReader stdin=null; 
@@ -97,7 +97,7 @@ public class UserAgentCli implements UserAgentListener {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentCli(SipProvider sip_provider, UserAgentProfile ua_profile) {
+	public UserAgentCli(SipProvider sip_provider, UAConfig ua_profile) {
 		this.sip_provider=sip_provider;
 		this.ua_profile=ua_profile;
 		ua=new UserAgent(sip_provider,ua_profile,this);      

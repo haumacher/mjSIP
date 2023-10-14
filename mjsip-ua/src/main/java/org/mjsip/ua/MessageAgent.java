@@ -44,7 +44,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MessageAgent.class);
 
 	/** UserProfile */
-	protected UserAgentProfile user_profile;
+	protected UAConfig user_profile;
 
 	/** SipProvider */
 	protected SipProvider sip_provider;
@@ -54,7 +54,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 
 	
 	/** Costructs a new MessageAgent. */
-	public MessageAgent(SipProvider sip_provider, UserAgentProfile user_profile, MessageAgentListener listener) {
+	public MessageAgent(SipProvider sip_provider, UAConfig user_profile, MessageAgentListener listener) {
 		this.sip_provider=sip_provider;
 		this.listener=listener;
 		this.user_profile=user_profile;

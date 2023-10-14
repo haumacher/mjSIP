@@ -47,7 +47,7 @@ public class MediaAgent {
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MediaAgent.class);
 	
 	/** Audio application */
-	UserAgentProfile ua_profile;
+	UAConfig ua_profile;
 
 	/** Active media streamers, as table of: (String)media-->(MediaStreamer)media_streamer */
 	Hashtable media_streamers=new Hashtable();
@@ -55,7 +55,7 @@ public class MediaAgent {
 
 
 	/** Creates a new MediaAgent. */
-	public MediaAgent(UserAgentProfile ua_profile) {
+	public MediaAgent(UAConfig ua_profile) {
 		this.ua_profile=ua_profile;
 
 		// ################# Patch to make audio working with javax.sound.. #################

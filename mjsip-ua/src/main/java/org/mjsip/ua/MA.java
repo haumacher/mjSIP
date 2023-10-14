@@ -22,7 +22,7 @@ public class MA {
 		flags.close();
 				
 		SipConfig sipConfig = SipConfig.init(file);
-		UserAgentProfile user_profile=new UserAgentProfile(file);         
+		UAConfig user_profile=new UAConfig(file);         
 		
 		if (regist_time>0) {
 			user_profile.doRegister=true;

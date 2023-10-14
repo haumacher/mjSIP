@@ -29,7 +29,7 @@ import org.mjsip.sip.call.RegistrationClientListener;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.MessageAgent;
 import org.mjsip.ua.MessageAgentListener;
-import org.mjsip.ua.UserAgentProfile;
+import org.mjsip.ua.UAConfig;
 import org.slf4j.LoggerFactory;
 
 
@@ -51,7 +51,7 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	
 	
 	/** Creates a new MA. */
-	public MessageAgentCli(SipProvider sip_provider, UserAgentProfile user_profile) {
+	public MessageAgentCli(SipProvider sip_provider, UAConfig user_profile) {
 		ma=new MessageAgent(sip_provider,user_profile,this);
 		ma.receive();
 		if (user_profile.doRegister || user_profile.doUnregister || user_profile.doUnregisterAll) {

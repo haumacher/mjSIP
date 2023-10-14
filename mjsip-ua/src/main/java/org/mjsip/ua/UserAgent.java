@@ -85,7 +85,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ***************************** attributes ****************************
 	
 	/** UserAgentProfile */
-	protected UserAgentProfile ua_profile;
+	protected UAConfig ua_profile;
 
 	/** SipProvider */
 	protected SipProvider sip_provider;
@@ -152,7 +152,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// **************************** constructors ***************************
 
 	/** Creates a new UserAgent. */
-	public UserAgent(SipProvider sip_provider, UserAgentProfile ua_profile, UserAgentListener listener) {
+	public UserAgent(SipProvider sip_provider, UAConfig ua_profile, UserAgentListener listener) {
 		init(sip_provider,ua_profile,listener);
 	} 
 
@@ -160,7 +160,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ************************** private methods **************************
 
 	/** Inits the UserAgent */
-	private void init(SipProvider sip_provider, UserAgentProfile ua_profile, UserAgentListener listener) {
+	private void init(SipProvider sip_provider, UAConfig ua_profile, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
 		this.listener=listener;
 		this.ua_profile=ua_profile;

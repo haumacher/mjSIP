@@ -73,7 +73,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 
 
 	/** Creates a new Echo. */
-	public Echo(SipProvider sip_provider, UserAgentProfile ua_profile, int media_ports, boolean force_reverse_route) {
+	public Echo(SipProvider sip_provider, UAConfig ua_profile, int media_ports, boolean force_reverse_route) {
 		// call UAS
 		super(sip_provider,ua_profile);
 		first_media_port=ua_profile.getMediaPort();
@@ -158,7 +158,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		Flags flags=new Flags("Echo", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		UAConfig ua_profile = UAConfig.init(config_file, flags);
 		flags.close();
 		
 		ua_profile.audio=true;

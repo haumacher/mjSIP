@@ -61,7 +61,7 @@ public class AnsweringMachine extends MultipleUAS {
 
 
 	/** Creates an {@link AnsweringMachine}. */
-	public AnsweringMachine(SipProvider sip_provider, UserAgentProfile ua_profile, int numberOfPorts) {
+	public AnsweringMachine(SipProvider sip_provider, UAConfig ua_profile, int numberOfPorts) {
 		super(sip_provider,ua_profile);
 
 		_firstMediaPort = ua_profile.getMediaPort();
@@ -127,7 +127,7 @@ public class AnsweringMachine extends MultipleUAS {
 		Flags flags=new Flags(program, args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		UAConfig ua_profile = UAConfig.init(config_file, flags);
 		flags.close();
 		
 		ua_profile.audio = true;

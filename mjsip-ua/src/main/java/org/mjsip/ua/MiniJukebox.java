@@ -54,7 +54,7 @@ public class MiniJukebox extends UserAgentCli {
 
 
 	/** Creates a new MiniJukebox. */
-	public MiniJukebox(SipProvider sip_provider, UserAgentProfile user_profile) {
+	public MiniJukebox(SipProvider sip_provider, UAConfig user_profile) {
 		super(sip_provider,user_profile);
 	}
 
@@ -79,7 +79,7 @@ public class MiniJukebox extends UserAgentCli {
 		Flags flags=new Flags("MiniJukebox", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UserAgentProfile ua_profile = UserAgentProfile.init(config_file, flags);
+		UAConfig ua_profile = UAConfig.init(config_file, flags);
 		flags.close();
 
 		ua_profile.audio=true;
