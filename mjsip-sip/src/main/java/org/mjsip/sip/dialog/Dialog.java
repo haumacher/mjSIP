@@ -95,13 +95,12 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		LOG.debug("changed dialog state: "+getStatus());
 		
 		// remove the sip_provider listener when going to "terminated" state
-		if (isTerminated()) {
-			if (dialog_id!=null && sip_provider.getListeners().containsKey(dialog_id)) sip_provider.removeSelectiveListener(dialog_id);
-		}
-		else
-		// add sip_provider listener when going to "early" or "confirmed" state
-		if (isEarly() || isConfirmed()) {
-			if (dialog_id!=null && !sip_provider.getListeners().containsKey(dialog_id)) sip_provider.addSelectiveListener(dialog_id,this);
+		if (dialog_id != null) {
+			if (isTerminated()) {
+				sip_provider.removeSelectiveListener(dialog_id);
+			} else if (isEarly() || isConfirmed()) {
+				sip_provider.addSelectiveListener(dialog_id, this);
+			}
 		}
 	}
 

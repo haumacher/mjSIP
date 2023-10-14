@@ -79,7 +79,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	protected CallState call_state=new CallState();
 
 	/** Invite dialog listener */
-	private final InviteDialogListener this_invite_dialog_listener;
+	private final InviteDialogListener dialogListener;
 	
 	/**
 	 * Creates a new Call for a caller.
@@ -103,7 +103,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		}
 		changeState(CallState.C_IDLE);
 
-		this_invite_dialog_listener=new ThisInviteDialogListener(this);
+		dialogListener=new InviteDialogListenerAdapter(this);
 	}
 
 	private static CallListener nonNull(CallListener callListener) {
@@ -115,7 +115,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** Waits for an incoming call. */
 	public void listen() {
-		dialog=new InviteDialog(sip_provider,this_invite_dialog_listener);
+		dialog=new InviteDialog(sip_provider,dialogListener);
 		dialog.listen();
 		changeState(CallState.C_IDLE);
 	}
@@ -187,7 +187,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param sdp the session descriptor */
 	public void call(NameAddress callee, NameAddress caller, String sdp) {
 		LOG.debug("calling "+callee);
-		dialog=new InviteDialog(sip_provider,this_invite_dialog_listener);
+		dialog=new InviteDialog(sip_provider,dialogListener);
 		if (caller==null) caller=from_naddr;
 		NameAddress caller_contact=getContactAddress(SipNameAddress.isSIPS(callee));
 		if (sdp!=null) local_sdp=sdp;
@@ -200,7 +200,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param invite the INVITE request message */
 	public void call(SipMessage invite) {
 		LOG.debug("calling "+invite.getRequestLine().getAddress());
-		dialog=new InviteDialog(sip_provider,this_invite_dialog_listener);
+		dialog=new InviteDialog(sip_provider,dialogListener);
 		local_sdp=invite.getStringBody();
 		if (local_sdp!=null) dialog.invite(invite);
 		else dialog.inviteWithoutOffer(invite);
@@ -528,111 +528,112 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	// ************************* Inner classes *************************
 
-	/** This InviteDialogListener.
-	  */ 
-	protected class ThisInviteDialogListener implements InviteDialogListener {
+	/**
+	 * Forwarding of all {@link InviteDialogListener} events to the given {@link Call}.
+	 */ 
+	protected class InviteDialogListenerAdapter implements InviteDialogListener {
 		
-		Call c;
+		private final Call _call;
 		
-		public ThisInviteDialogListener(Call c) {
-			this.c=c;
+		public InviteDialogListenerAdapter(Call call) {
+			this._call = call;
 		}
 
 		@Override
 		public void onDlgInvite(InviteDialog dialog, NameAddress callee, NameAddress caller, String body, SipMessage msg) {
-			c.processDlgInvite(dialog,callee,caller,body,msg);
+			_call.processDlgInvite(dialog, callee, caller, body, msg);
 		}
 		@Override
 		public void onDlgReInvite(InviteDialog dialog, String body, SipMessage msg) {
-			c.processDlgReInvite(dialog,body,msg);
+			_call.processDlgReInvite(dialog, body, msg);
 		}
 		@Override
 		public void onDlgInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			c.processDlgInviteProvisionalResponse(dialog,code,reason,body,msg);
+			_call.processDlgInviteProvisionalResponse(dialog, code, reason, body, msg);
 		}
 		@Override
 		public void onDlgInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			c.processDlgInviteSuccessResponse(dialog,code,reason,body,msg);
+			_call.processDlgInviteSuccessResponse(dialog, code, reason, body, msg);
 		}
 		@Override
 		public void onDlgInviteRedirectResponse(InviteDialog dialog, int code, String reason, MultipleHeader contacts, SipMessage msg) {
-			c.processDlgInviteRedirectResponse(dialog,code,reason,contacts,msg);
+			_call.processDlgInviteRedirectResponse(dialog, code, reason, contacts, msg);
 		}
 		@Override
 		public void onDlgInviteFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
-			c.processDlgInviteFailureResponse(dialog,code,reason,msg);
+			_call.processDlgInviteFailureResponse(dialog, code, reason, msg);
 		}
 		@Override
 		public void onDlgInviteTimeout(InviteDialog dialog) {
-			c.processDlgInviteTimeout(dialog);
+			_call.processDlgInviteTimeout(dialog);
 		}
 		@Override
 		public void onDlgReInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			c.processDlgReInviteProvisionalResponse(dialog,code,reason,body,msg);
+			_call.processDlgReInviteProvisionalResponse(dialog, code, reason, body, msg);
 		}
 		@Override
 		public void onDlgInviteReliableProvisionalResponse(InviteDialog dialog, int code, String reason, String content_type, byte[] body, SipMessage resp) {
-			c.processDlgInviteReliableProvisionalResponse(dialog,code,reason,content_type,body,resp);
+			_call.processDlgInviteReliableProvisionalResponse(dialog, code, reason, content_type, body, resp);
 		}
 		@Override
 		public void onDlgInviteReliableProvisionalResponseConfirmed(InviteDialog dialog, int code, SipMessage resp, String content_type, byte[] body, SipMessage prack) {
-			c.processDlgInviteReliableProvisionalResponseConfirmed(dialog,code,resp,content_type,body,prack);
+			_call.processDlgInviteReliableProvisionalResponseConfirmed(dialog, code, resp, content_type, body, prack);
 		}
 		@Override
 		public void onDlgInviteReliableProvisionalResponseTimeout(InviteDialog dialog, int code, SipMessage resp) {
-			c.processDlgInviteReliableProvisionalResponseTimeout(dialog,code,resp);
+			_call.processDlgInviteReliableProvisionalResponseTimeout(dialog, code, resp);
 		}
 		@Override
 		public void onDlgReInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			c.processDlgReInviteSuccessResponse(dialog,code,reason,body,msg);
+			_call.processDlgReInviteSuccessResponse(dialog, code, reason, body, msg);
 		}
 		@Override
 		public void onDlgReInviteFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
-			c.processDlgReInviteFailureResponse(dialog,code,reason,msg);
+			_call.processDlgReInviteFailureResponse(dialog, code, reason, msg);
 		}
 		@Override
 		public void onDlgReInviteTimeout(InviteDialog dialog) {
-			c.processDlgReInviteTimeout(dialog);
+			_call.processDlgReInviteTimeout(dialog);
 		}
 		@Override
 		public void onDlgAck(InviteDialog dialog, String body, SipMessage msg) {
-			c.processDlgAck(dialog,body,msg);
+			_call.processDlgAck(dialog, body, msg);
 		}
 		@Override
 		public void onDlgCall(InviteDialog dialog) {
-			c.processDlgCall(dialog);
+			_call.processDlgCall(dialog);
 		}
 		@Override
 		public void onDlgInfo(InviteDialog dialog, String info_package, String content_type, byte[] body, SipMessage msg) {
-			c.processDlgInfo(dialog,info_package,content_type,body,msg);
+			_call.processDlgInfo(dialog, info_package, content_type, body, msg);
 		}
 		@Override
 		public void onDlgCancel(InviteDialog dialog, SipMessage msg) {
-			c.processDlgCancel(dialog,msg);
+			_call.processDlgCancel(dialog, msg);
 		}
 		@Override
 		public void onDlgUpdate(InviteDialog dialog, String body, SipMessage msg) {
-			c.processDlgUpdate(dialog,body,msg);
+			_call.processDlgUpdate(dialog, body, msg);
 		}
 		@Override
 		public void onDlgUpdateResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			c.processDlgUpdateResponse(dialog,code,reason,body,msg);
+			_call.processDlgUpdateResponse(dialog, code, reason, body, msg);
 		}
 		@Override
 		public void onDlgBye(InviteDialog dialog, SipMessage msg) {
-			c.processDlgBye(dialog,msg);
+			_call.processDlgBye(dialog, msg);
 		}
 		@Override
 		public void onDlgByeSuccessResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
-			c.processDlgByeSuccessResponse(dialog, code,reason,msg);
+			_call.processDlgByeSuccessResponse(dialog, code, reason, msg);
 		}
 		@Override
 		public void onDlgByeFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
-			c.processDlgByeFailureResponse(dialog,code,reason,msg);
+			_call.processDlgByeFailureResponse(dialog, code, reason, msg);
 		}
 		@Override
 		public void onDlgClosed(InviteDialog dialog) {
-			c.processDlgClosed(dialog);
+			_call.processDlgClosed(dialog);
 		}
 
 	}

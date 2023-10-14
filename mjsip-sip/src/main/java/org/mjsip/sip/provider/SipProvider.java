@@ -27,8 +27,9 @@ package org.mjsip.sip.provider;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Vector;
+import java.util.Map;
 
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
@@ -42,7 +43,6 @@ import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Random;
 import org.zoolu.util.SimpleDigest;
-import org.zoolu.util.VectorUtils;
 
 
 
@@ -130,13 +130,23 @@ public class SipProvider implements SipTransportListener {
 	boolean force_rport=false;
 
 	/** Table of sip listeners (Hashtable<SipId id, SipProviderListener listener>) */
-	Hashtable sip_listeners=new Hashtable();
+	final Map<SipId, SipProviderListener> sip_listeners = new HashMap<>();
 	
 	/** Vector of promiscuous listeners (Vector<SipProviderListener>) */
-	Vector promiscuous_listeners=new Vector();
+	private CopyOnWriteListeners<SipProviderListener, SipMessage> promisquousListeners = new CopyOnWriteListeners<>() {
+		@Override
+		protected void handle(SipProviderListener listener, SipMessage msg) {
+			listener.onReceivedMessage(SipProvider.this, msg);
+		}
+	};
 
 	/** Vector of exception listeners (Vector<SipProviderListener>) */
-	Vector exception_listeners=new Vector();
+	private CopyOnWriteListeners<SipProviderExceptionListener, MessageProblem> exceptionListeners = new CopyOnWriteListeners<>() {
+		@Override
+		protected void handle(SipProviderExceptionListener listener, MessageProblem problem) {
+			listener.onMessageException(problem.getMsg(), problem.getException());
+		}
+	};
 
 	private final SipConfig _sipConfig;
 	
@@ -296,9 +306,9 @@ public class SipProvider implements SipTransportListener {
 	public synchronized void halt() {
 		LOG.debug("halt: SipProvider is going down");
 		stopSipTrasport();
-		sip_listeners=new Hashtable();
-		promiscuous_listeners=new Vector();
-		exception_listeners=new Vector();
+		sip_listeners.clear();
+		promisquousListeners.clear();
+		exceptionListeners.clear();
 	}
 
 	/** Converts the entire object into lines (to be saved into the config file) */
@@ -498,12 +508,6 @@ public class SipProvider implements SipTransportListener {
 		return _sipConfig.getMaxConnections();
 	}    
 
-	/** Returns the table of active listeners as Hastable:(SipId)IDs--&gt;(SipListener)listener. */ 
-	public Hashtable getListeners() {
-		return sip_listeners;
-	}   
-
-
 	/** Sets a SipProvider listener for a target type of method, transaction, or dialog messages.
 	  * @param id specifies the kind of messages that the listener
 	  * as to be associated to. It may identify a method, a transaction, or a dialog, or all messages.
@@ -511,13 +515,7 @@ public class SipProvider implements SipTransportListener {
 	  * @param listener is the SipProviderListener that the specified type of messages has to be passed to. */
 	public synchronized void addSelectiveListener(SipId id, SipProviderListener listener) {
 		LOG.debug("adding SipProviderListener: " + id);
-		if (sip_listeners.containsKey(id)) {
-			LOG.warn(
-					"adding a SipProvider listener with an identifier already present: the previous listener is removed.");
-			sip_listeners.remove(id);
-		}
 		sip_listeners.put(id,listener);   
-		LOG.trace("active sip listeners: " + sip_listeners.size());
 	}
 
 
@@ -525,15 +523,8 @@ public class SipProvider implements SipTransportListener {
 	  * @param id specifies the messages that the listener was associated to. */
 	public synchronized void removeSelectiveListener(SipId id) {
 		LOG.debug("removing SipProviderListener: " + id);
-		if (!sip_listeners.containsKey(id)) {
-			LOG.warn("removeListener(" + id + "): no such listener found.");
-		}
-		else {
-			sip_listeners.remove(id);
-		}
-		LOG.trace("active sip listeners: " + sip_listeners.size());
+		sip_listeners.remove(id);
 	}
-
   
 	/** Adds a SipProvider listener for caputering any message in promiscuous mode.
 	  * <p>
@@ -544,12 +535,8 @@ public class SipProvider implements SipTransportListener {
 	  * @param listener is the SipProviderListener. */
 	public synchronized void addPromiscuousListener(SipProviderListener listener) {
 		LOG.debug("adding SipProviderListener in promiscuous mode");
-		if (promiscuous_listeners.contains(listener)) {
-			LOG.warn(
-					"trying to add an already present SipProviderListener in promiscuous mode.");
-		}
-		else {
-			promiscuous_listeners.addElement(listener);
+		if (!promisquousListeners.add(listener)) {
+			LOG.warn("trying to add an already present SipProviderListener in promiscuous mode.");
 		}
 	}
 
@@ -558,27 +545,17 @@ public class SipProvider implements SipTransportListener {
 	  * @param listener is the SipProviderListener to be removed. */
 	public synchronized void removePromiscuousListener(SipProviderListener listener) {
 		LOG.debug("removing SipProviderListener in promiscuous mode");
-		if (!promiscuous_listeners.contains(listener)) {
-			LOG.warn(
-					"trying to remove a missed SipProviderListener in promiscuous mode.");
-		}
-		else {
-			promiscuous_listeners.removeElement(listener);
+		if (!promisquousListeners.remove(listener)) {
+			LOG.warn("trying to remove a missed SipProviderListener in promiscuous mode.");
 		}
 	}
-
 
 	/** Adds a SipProviderExceptionListener.
 	  * The SipProviderExceptionListener is a listener for all exceptions thrown by the SipProviders.
 	  * @param listener is the SipProviderExceptionListener. */
 	public synchronized void addExceptionListener(SipProviderExceptionListener listener) {
-		LOG.debug("adding a SipProviderExceptionListener");
-		if (exception_listeners.contains(listener)) {
-			LOG.warn(
-					"trying to add an already present SipProviderExceptionListener.");
-		}
-		else {
-			exception_listeners.addElement(listener);
+		if (!exceptionListeners.add(listener)) {
+			LOG.warn("trying to add an already present SipProviderExceptionListener.");
 		}
 	}
 
@@ -586,15 +563,10 @@ public class SipProvider implements SipTransportListener {
 	/** Removes a SipProviderExceptionListener. 
 	  * @param listener is the SipProviderExceptionListener to be removed. */
 	public synchronized void removeExceptionListener(SipProviderExceptionListener listener) {
-		LOG.debug("removing a SipProviderExceptionListener");
-		if (!exception_listeners.contains(listener)) {
+		if (!exceptionListeners.remove(listener)) {
 			LOG.warn("trying to remove a missed SipProviderExceptionListener.");
 		}
-		else {
-			exception_listeners.removeElement(listener);
-		}
 	}
-
 
 	/** Sends the <i>msg</i> message.
 	  * For request messages, if no Via header field is preset, a new Via is added;
@@ -935,72 +907,27 @@ public class SipProvider implements SipTransportListener {
 				}
 			}
 			
-			// is there any listeners?
-			if (sip_listeners.size()==0 && promiscuous_listeners.size()==0) {
-				LOG.info("no listener found: meesage discarded.");
-				return;
-			}
-
-			// try to look for listeners in promiscuous mode
-			Vector promiscuous_listeners=getPromisquousListeners();
-			for (int i=0; promiscuous_listeners!=null && i<promiscuous_listeners.size(); i++) {
-				SipProviderListener listener=(SipProviderListener)promiscuous_listeners.elementAt(i);
-				LOG.debug("message passed to promiscuous listener");
-				listener.onReceivedMessage(this,msg);
-			}
+			promisquousListeners.notify(msg);
 			
 			// check if the message is still valid
 			if (!msg.isRequest() && !msg.isResponse()) {
-				LOG.info("no valid SIP message: message discarded.");
+				LOG.info("No valid SIP message, discarded.");
 				return;
 			}
 
 			// look for a specific listener
 			SipProviderListener listener=getListener(msg);
-			if (listener!=null) listener.onReceivedMessage(this,msg);
-			else {
-				// no listener_ID matched..
-				LOG.info(
-						"no listener found matching that message: message discarded.");
-				LOG.debug("active listeners: " + sip_listeners.size());
+			if (listener != null) {
+				listener.onReceivedMessage(this, msg);
+			} else {
+				LOG.debug("No listener found for message, discarded.");
 			}
 		}
 		catch (Exception exception) {
 			LOG.warn("Error handling a new incoming message", exception);
-			Vector exception_listeners=getExceptionListeners();
-			for (int i=0; exception_listeners!=null && i<exception_listeners.size(); i++) {
-				try {
-					((SipProviderExceptionListener)exception_listeners.elementAt(i)).onMessageException(msg,exception);
-				}
-				catch (Exception e) {
-					LOG.warn("Error handling the Exception", e);
-				}
-			}
+			exceptionListeners.notify(new MessageProblem(msg, exception));
 		}
 	}
-
-
-	/** Gets all promisquous listeners. */
-	private synchronized Vector getPromisquousListeners() {
-		if (promiscuous_listeners!=null && promiscuous_listeners.size()>0) {
-			//return new Vector(promiscuous_listeners);
-			return VectorUtils.copy(promiscuous_listeners);
-		}
-		// else
-		return null;
-	}
-
-
-	/** Gets all exception listeners. */
-	private synchronized Vector getExceptionListeners() {
-		if (exception_listeners!=null && exception_listeners.size()>0) {
-			//return new Vector(exception_listeners);
-			return VectorUtils.copy(exception_listeners);
-		}
-		// else
-		return null;
-	}
-
 
 	/** Gets a listener for a given message.
 	 * @param msg the SIP message */
@@ -1011,25 +938,25 @@ public class SipProvider implements SipTransportListener {
 		LOG.debug("transaction-id: " + key);
 		if (sip_listeners.containsKey(key)) {
 			LOG.debug("message passed to transaction: " + key);
-			return (SipProviderListener)sip_listeners.get(key);
+			return sip_listeners.get(key);
 		}
 		// try to look for a dialog
 		key=new DialogId(msg);
 		LOG.debug("dialog-id: " + key);
 		if (sip_listeners.containsKey(key)) {
 			LOG.debug("message passed to dialog: " + key);
-			return (SipProviderListener)sip_listeners.get(key);
+			return sip_listeners.get(key);
 		}
 		// try to look for a UAS
 		key=new MethodId(msg);
 		if (sip_listeners.containsKey(key)) {
 			LOG.debug("message passed to uas: " + key);
-			return (SipProviderListener)sip_listeners.get(key);
+			return sip_listeners.get(key);
 		}        
 		// try to look for a default UA
 		if (sip_listeners.containsKey(MethodId.ANY)) {
 			LOG.debug("message passed to uas: " + MethodId.ANY);
-			return (SipProviderListener)sip_listeners.get(MethodId.ANY);
+			return sip_listeners.get(MethodId.ANY);
 		}
 		// else
 		return null;

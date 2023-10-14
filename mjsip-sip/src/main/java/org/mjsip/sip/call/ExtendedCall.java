@@ -70,9 +70,7 @@ public class ExtendedCall extends Call {
 	String qop;
 
 	/** Extended invite dialog listener */
-	private ExtendedInviteDialogListener this_extended_invite_dialog_listener;
-
-
+	private final ExtendedInviteDialogListener dialogListener = new ExtendedInviteDialogListenerAdapter(this);
 
 	/** Creates a new ExtendedCall for a caller.
 	  * @param sip_provider the SIP provider
@@ -83,7 +81,6 @@ public class ExtendedCall extends Call {
 		initExtendedCall(caller,call_listener);
 	}
 
-
 	/** Creates a new Call for a callee, based on an already received INVITE request.
 	  * @param sip_provider the SIP provider
 	  * @param invite the received INVITE message
@@ -92,9 +89,8 @@ public class ExtendedCall extends Call {
 		super(sip_provider,(SipUser)null,call_listener);
 		initExtendedCall(null,call_listener);
 		this.from_naddr=invite.getToHeader().getNameAddress();
-		this.dialog=new ExtendedInviteDialog(sip_provider,invite,this_extended_invite_dialog_listener);
-		//this.remote_sdp=invite.getStringBody();
-		//changeState(C_INCOMING);
+
+		this.dialog=new ExtendedInviteDialog(sip_provider,invite,dialogListener);
 	}
 
 	/** Inits the ExtendedCall. */
@@ -108,20 +104,16 @@ public class ExtendedCall extends Call {
 		}
 		this.qop=null;
 		changeState(CallState.C_IDLE);
-		
-		this_extended_invite_dialog_listener=new ThisExtendedInviteDialogListener(this);
 	}
-
 
 	/** Waits for an incoming call. */
 	@Override
 	public void listen() {
-		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
-		else dialog=new ExtendedInviteDialog(sip_provider,this_extended_invite_dialog_listener);
+		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,dialogListener);
+		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
 		dialog.listen();
 		changeState(CallState.C_IDLE);
 	}
-
 
 	/** Starts a new call, inviting a remote user (<i>callee</i>).
 	  * @param callee the callee address
@@ -130,8 +122,8 @@ public class ExtendedCall extends Call {
 	@Override
 	public void call(NameAddress callee, NameAddress caller, String sdp) {
 		LOG.debug("calling "+callee);
-		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
-		else dialog=new ExtendedInviteDialog(sip_provider,this_extended_invite_dialog_listener);
+		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,dialogListener);
+		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
 		if (caller==null) caller=from_naddr;
 		if (sdp!=null) local_sdp=sdp;
 		NameAddress caller_contact=getContactAddress(SipNameAddress.isSIPS(callee));
@@ -140,14 +132,13 @@ public class ExtendedCall extends Call {
 		changeState(CallState.C_OUTGOING);
 	} 
 
-
 	/** Starts a new call, with the given <i>INVITE</i> request.
 	  * @param invite the INVITE request message */
 	@Override
 	public void call(SipMessage invite) {
 		LOG.debug("calling "+invite.getRequestLine().getAddress());
-		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,this_extended_invite_dialog_listener);
-		else dialog=new ExtendedInviteDialog(sip_provider,this_extended_invite_dialog_listener);
+		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,dialogListener);
+		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
 		local_sdp=invite.getStringBody();
 		if (local_sdp!=null)
 			dialog.invite(invite);
@@ -264,36 +255,39 @@ public class ExtendedCall extends Call {
 	
 	// ************************* Inner classes *************************
 
-	/** This ExtendedInviteDialogListener.
-	  */ 
-	protected class ThisExtendedInviteDialogListener extends ThisInviteDialogListener implements ExtendedInviteDialogListener {
+	/**
+	 * Forwarding of all {@link ExtendedInviteDialogListener} events to the given
+	 * {@link ExtendedCall}.
+	 */ 
+	protected class ExtendedInviteDialogListenerAdapter extends InviteDialogListenerAdapter implements ExtendedInviteDialogListener {
 		
-		ExtendedCall c;
+		private final ExtendedCall _call;
 		
-		public ThisExtendedInviteDialogListener(ExtendedCall c) {
-			super(c);
-			this.c=c;
+		public ExtendedInviteDialogListenerAdapter(ExtendedCall call) {
+			super(call);
+
+			_call = call;
 		}
 
 		@Override
 		public void onDlgRefer(InviteDialog dialog, NameAddress refer_to, NameAddress referred_by, SipMessage msg) {
-			c.processDlgRefer(dialog,refer_to,referred_by,msg);
+			_call.processDlgRefer(dialog, refer_to, referred_by, msg);
 		}
 		@Override
 		public void onDlgReferResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
-			c.processDlgReferResponse(dialog,code,reason,msg);
+			_call.processDlgReferResponse(dialog, code, reason, msg);
 		}
 		@Override
 		public void onDlgNotify(InviteDialog dialog, String event, String sipfragment, SipMessage msg) {
-			c.processDlgNotify(dialog,event,sipfragment,msg);
+			_call.processDlgNotify(dialog, event, sipfragment, msg);
 		}
 		@Override
 		public void onDlgAltRequest(InviteDialog dialog, String method, String body, SipMessage msg) {
-			c.processDlgAltRequest(dialog,method,body,msg);
+			_call.processDlgAltRequest(dialog, method, body, msg);
 		}
 		@Override
 		public void onDlgAltResponse(InviteDialog dialog, String method, int code, String reason, String body, SipMessage msg) {
-			c.processDlgAltResponse(dialog,method,code,reason,body,msg);
+			_call.processDlgAltResponse(dialog, method, code, reason, body, msg);
 		}
 		
 	}
