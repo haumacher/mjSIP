@@ -32,9 +32,13 @@ import org.mjsip.sip.message.SipMessage;
 
 
 
-/** Interface CallListener can be implemented to manage SIP calls (sipx.call.Call).
- *  <p> Objects of class Call use CallListener callback methods to signal
- *  specific call events.  
+/**
+ * Call-back interface to manage SIP calls.
+ * 
+ * <p>
+ * Objects of class {@link Call} use {@link CallListener} callback methods to signal specific call
+ * events.
+ * </p>
  */
 public interface CallListener {
 	

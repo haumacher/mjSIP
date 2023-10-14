@@ -46,7 +46,7 @@ import org.mjsip.sip.message.SipMessage;
   * It signals the receiver the ring status (by using method Call.ring()),
   * adapts the sdp body and accepts the call (by using method Call.accept(sdp)). 
   */
-public abstract class CallListenerAdapter implements ExtendedCallListener {
+public class CallListenerAdapter implements ExtendedCallListener {
 	
 		
 	// ************************** Costructors ***************************
@@ -118,6 +118,16 @@ public abstract class CallListenerAdapter implements ExtendedCallListener {
 	@Override
 	public void onCallProgress(Call call, SipMessage resp) {
 		//log("PROGRESS");
+	}
+
+	@Override
+	public void onCallProgressConfirmed(Call call, SipMessage resp, SipMessage prack) {
+		// Ignore.
+	}
+
+	@Override
+	public void onCallConfirmableProgress(Call call, SipMessage resp) {
+		// Ignore.
 	}
 
 	/** Does nothing.
