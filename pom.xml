@@ -42,11 +42,10 @@
 		</license>
 	</licenses>
 
-
 	<modules>
-		<module>sip</module>
-		<module>server</module>
-		<module>ua</module>
+		<module>mjsip-sip</module>
+		<module>mjsip-server</module>
+		<module>mjsip-ua</module>
 	</modules>
 
 	<properties>
@@ -55,9 +54,6 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
-	<dependencies>
-	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
