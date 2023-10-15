@@ -24,7 +24,6 @@ package org.mjsip.ua;
 
 
 import org.mjsip.media.MediaDesc;
-import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
@@ -68,11 +67,10 @@ public class AnsweringMachine extends MultipleUAS {
 	/** From UserAgentListener. When a new call is incoming. */
 	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-		GenericURI address = callee.getAddress();
-		LOG.info("Incomming call from: " + address);
+		LOG.info("Incomming call from: " + callee.getAddress());
 
-		int current_media_port = uaConfig.getMediaPort();
-		if ((current_media_port += media_descs.length) > _lastMediaPort) {
+		int current_media_port = uaConfig.getMediaPort() + media_descs.length;
+		if (current_media_port > _lastMediaPort) {
 			current_media_port = _firstMediaPort;
 		}
 		uaConfig.setMediaPort(current_media_port, 1);

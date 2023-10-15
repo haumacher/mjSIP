@@ -21,7 +21,7 @@ public class VectorUtils {
 	/** Adds a array to a vector.
 	 * @param v vector to be filled (destination)
 	 * @param a the array to be added (source) */
-	public static void addArray(Vector v, Object[] a) {
+	public static <T> void addArray(Vector<T> v, T[] a) {
 		for (int i=0; i<a.length; i++) v.add(a[i]);
 	}
 
