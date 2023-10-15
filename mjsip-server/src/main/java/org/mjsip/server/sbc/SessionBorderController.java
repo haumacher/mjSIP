@@ -381,7 +381,7 @@ public class SessionBorderController extends Proxy {
 		
 		// create a new ExtendedSipProvider
 		long keepalive_aggressive_time=(sbc_profile.keepalive_aggressive)? sbc_profile.keepalive_time : 0;
-		ExtendedSipProvider extended_provider=new ExtendedSipProvider(new Scheduler(schedulerConfig), sipConfig, sbc_profile.binding_timeout,keepalive_aggressive_time);
+		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig, new Scheduler(schedulerConfig), sbc_profile.binding_timeout,keepalive_aggressive_time);
 
 		// create and start the SBC
 		new SessionBorderController(extended_provider,server_profile,sbc_profile);

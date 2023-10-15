@@ -57,10 +57,10 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 			address_resolver = new AddressResolver(this, refresh_time);
 	}
 
-	/** Costructs a new ExtendedSipProvider. 
-	 * The SipProvider attributres are read from file. 
+	/** 
+	 * Constructs an {@link ExtendedSipProvider}. 
 	 */ 
-	public ExtendedSipProvider(Scheduler scheduler, SipConfig sipConfig, long refresh_time, long keepalive_time) {
+	public ExtendedSipProvider(SipConfig sipConfig, Scheduler scheduler, long refresh_time, long keepalive_time) {
 		super(sipConfig, scheduler);
 		init(refresh_time,keepalive_time);
 	}
