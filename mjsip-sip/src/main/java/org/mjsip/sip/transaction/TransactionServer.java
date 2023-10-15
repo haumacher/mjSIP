@@ -25,13 +25,14 @@ package org.mjsip.sip.transaction;
 
 
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
@@ -40,7 +41,7 @@ import org.zoolu.util.TimerListener;
   * The changes of the internal status and the received messages are fired to the TransactionListener passed to the TransactionServer object.<BR>
   * When costructing a new TransactionServer, the transaction type is passed as String parameter to the costructor (e.g. "CANCEL", "BYE", etc..)
   */
-public class TransactionServer extends Transaction implements TimerListener {
+public class TransactionServer extends Transaction {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TransactionServer.class);
 
@@ -51,7 +52,7 @@ public class TransactionServer extends Transaction implements TimerListener {
 	SipMessage response;
 	
 	/** Clearing timeout ("Timer J" in RFC 3261) */
-	Timer clearing_to;
+	ScheduledFuture<?> clearing_to;
 
 
 	// ************************** Costructors **************************
@@ -87,7 +88,6 @@ public class TransactionServer extends Transaction implements TimerListener {
 		this.connection_id=connection_id;
 		this.response=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		clearing_to=new Timer(sip_provider.sipConfig().getTransactionTimeout(),null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}  
 
@@ -122,12 +122,12 @@ public class TransactionServer extends Transaction implements TimerListener {
 			if (code>=200 && code<700) {
 				changeStatus(STATE_COMPLETED);
 				if (connection_id==null) {
-					clearing_to=new Timer(clearing_to.getTime(),this);
-					clearing_to.start();
+					clearing_to = Scheduler.scheduleTask(sip_provider.sipConfig().getRetransmissionTimeout(),
+							this::onClearingTimeout);
 				}
 				else {
 					LOG.trace("clearing_to=0 for reliable transport");
-					onTimeout(clearing_to);
+					onClearingTimeout();
 				}
 			}
 		}
@@ -168,27 +168,18 @@ public class TransactionServer extends Transaction implements TimerListener {
 		}
 	}
 
-	/** From TimerListener. It's fired from an active Timer. */
-	@Override
-	public void onTimeout(Timer to) {
-		try {
-			if (to.equals(clearing_to)) {
-				LOG.info("Clearing timeout expired");
-				doTerminate();
-			}
-		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
-		}
+	protected void onClearingTimeout() {
+		LOG.info("Clearing timeout expired");
+		doTerminate();
 	}   
-
 
 	// *********************** Protected methods ***********************
 
 	/** Moves to terminate state. */
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
-			clearing_to.halt();
+			if (clearing_to != null)
+				clearing_to.cancel(false);
 			//clearing_to=null;
 			sip_provider.removeSelectiveListener(transaction_id);
 			changeStatus(STATE_TERMINATED);

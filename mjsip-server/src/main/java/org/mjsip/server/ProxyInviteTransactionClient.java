@@ -24,24 +24,25 @@
 package org.mjsip.server;
 
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.InviteTransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 /** ProxyInviteTransactionClient extends InviteTransactionClient adding "Timer C"
   * as defined in RFC 3261.
   */ 
-public class ProxyInviteTransactionClient extends InviteTransactionClient implements TimerListener {
+public class ProxyInviteTransactionClient extends InviteTransactionClient {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ProxyInviteTransactionClient.class);
 
 	/** Proxy-transaction timeout for client transactions ("Timer C" in RFC 3261) */
-	Timer proxy_transaction_to;
+	ScheduledFuture<?> proxy_transaction_to;
 
 	/** TransactionClientListener */
 	TransactionClientListener transaction_listener;
@@ -51,26 +52,14 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient implem
 	public ProxyInviteTransactionClient(SipProvider sip_provider, SipMessage req, TransactionClientListener listener) {
 		super(sip_provider,req,listener);
 		transaction_listener=listener;
-		proxy_transaction_to=new Timer(ServerProfile.proxy_transaction_timeout,this);
-		proxy_transaction_to.start();
+		proxy_transaction_to=Scheduler.scheduleTask(ServerProfile.proxy_transaction_timeout,this::onProxyTransactionTimeout);
 	}
 	
-
-	/** From interface TimerListener. When the Timer expires. */
-	@Override
-	public void onTimeout(Timer to) {
-		try {
-			if (to.equals(proxy_transaction_to)) {
-				LOG.info("Proxy-transaction timeout expired");
-				doTerminate();
-				if (transaction_listener!=null) transaction_listener.onTransTimeout(this);
-				transaction_listener=null;
-			}
-			else super.onTimeout(to);
-		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
-		}
+	private void onProxyTransactionTimeout() {
+		LOG.info("Proxy-transaction timeout expired");
+		doTerminate();
+		if (transaction_listener!=null) transaction_listener.onTransTimeout(this);
+		transaction_listener=null;
 	}
 
 
@@ -78,7 +67,7 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient implem
 	@Override
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
-			proxy_transaction_to.halt();
+			proxy_transaction_to.cancel(false);
 		}
 		super.doTerminate();
 	}

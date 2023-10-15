@@ -28,18 +28,18 @@ package org.mjsip.server.sbc;
 import java.net.DatagramSocket;
 import java.util.Vector;
 
+import org.mjsip.time.Scheduler;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.UdpPacket;
 import org.zoolu.net.UdpSocket;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
-/** OutputRegulatedUdpSocket provides a shaped UDP transport protocol.
-  * A minimum inter-packets time is guaranteed on departures.
-  */
-public class OutputRegulatedUdpSocket extends UdpSocket implements TimerListener {
+/**
+ * Provides a shaped UDP transport protocol. A minimum inter-packets time is guaranteed on
+ * departures.
+ */
+public class OutputRegulatedUdpSocket extends UdpSocket {
 	
 	/** Minimum inter-packet departure time (in milliseconds) */
 	long inter_time=0; 
@@ -90,13 +90,14 @@ public class OutputRegulatedUdpSocket extends UdpSocket implements TimerListener
 		sendRegulated(pkt);
 	}
 
-
-	/** When the Timer exceeds */
-	@Override
-	public void onTimeout(Timer t) {
-		try { sendTop(); } catch (Exception e) {  e.printStackTrace();  }
+	/** When the timer exceeds */
+	private void onTimeout() {
+		try {
+			sendTop(); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-
 
 	/** Sends an UDP packet from this socket. */ 
 	synchronized private void sendRegulated(UdpPacket pkt) throws java.io.IOException {
@@ -109,7 +110,8 @@ public class OutputRegulatedUdpSocket extends UdpSocket implements TimerListener
 			buffer.addElement(pkt);
 			if (buffer.size()==1) {
 				if (inter_time<=0) sendTop();
-				else (new Timer(last_departure+inter_time-now,this)).start();
+				else
+					Scheduler.scheduleTask(last_departure+inter_time-now,this::onTimeout);
 			}
 		}
 	}
@@ -123,7 +125,7 @@ public class OutputRegulatedUdpSocket extends UdpSocket implements TimerListener
 		last_departure=System.currentTimeMillis();
 		if (buffer.size()>0) {
 			if (inter_time<=0) sendTop();
-			else (new Timer(inter_time,this)).start();
+			else Scheduler.scheduleTask(inter_time,this::onTimeout);
 		}
 	}
 	

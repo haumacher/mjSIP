@@ -32,8 +32,8 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.ScheduledWork;
 
 
 /** MultipleUAS is a simple UA that automatically responds to incoming calls.
@@ -92,12 +92,7 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 			
 			// automatic hang-up after the maximum time
 			if (uaConfig.hangupTime>0) {
-				new ScheduledWork(uaConfig.hangupTime*1000) {  
-					@Override
-					public void doWork() {  
-						ua.hangup();  
-					}  
-				};
+				Scheduler.scheduleTask(uaConfig.hangupTime*1000, () -> ua.hangup());
 			}
 		}
 	}

@@ -32,7 +32,6 @@ import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Timer;
 
 
 
@@ -106,7 +105,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 
 	/** When the refresh timeout fires */
 	@Override
-	public void onTimeout(Timer t) {
+	protected void onTimeout() {
 		// enumerate expired binding
 		long now=(new Date()).getTime();
 		Vector aux=new Vector();
@@ -123,7 +122,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 			keepalive.halt();
 			LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
 		}
-		super.onTimeout(t);
+		super.onTimeout();
 	}
 
 }

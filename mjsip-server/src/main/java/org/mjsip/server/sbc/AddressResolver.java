@@ -27,11 +27,11 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.concurrent.ScheduledFuture;
 
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
@@ -43,7 +43,7 @@ import org.zoolu.util.TimerListener;
   * For example, it can be used to maintain correct remote address mapping
   * for symmetric NAT traversal.
   */
-public class AddressResolver implements TimerListener {
+public class AddressResolver {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AddressResolver.class);
 
@@ -62,7 +62,7 @@ public class AddressResolver implements TimerListener {
 	Hashtable time_table;
 
 	/** Refresh timer */
-	Timer timer;
+	ScheduledFuture<?> timer;
 	
 	/** Costructs an empty AddressResolve.r */
 	public AddressResolver(long refresh_time) {
@@ -70,10 +70,8 @@ public class AddressResolver implements TimerListener {
 		expire_time=refresh_time/2;
 		binding_table=new Hashtable();
 		time_table=new Hashtable();
-		timer=new Timer(refresh_time,this);
-		timer.start();
+		timer=Scheduler.scheduleWithFixedDelay(refresh_time, this::onTimeout);
 	}
-
 	
 	/** Gets the size of the resolver's db */
 	public int size() {
@@ -147,8 +145,7 @@ public class AddressResolver implements TimerListener {
 
 
 	/** When the refresh timeout fires */
-	@Override
-	public void onTimeout(Timer t) {
+	protected void onTimeout() {
 		// enumerate expired binding
 		LOG.debug("refresh all address bindings:");         
 		long now=(new Date()).getTime();
@@ -166,10 +163,6 @@ public class AddressResolver implements TimerListener {
 			time_table.remove(key);
 		}
 		LOG.debug("done.");         
-
-		// start a new refresh timer
-		timer=new Timer(refresh_time,this);
-		timer.start();
 	}
 
 }

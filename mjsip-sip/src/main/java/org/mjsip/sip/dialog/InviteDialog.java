@@ -537,7 +537,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				if (sip_provider.sipConfig().isEarlyDialog()) updateDialogInfo(false,resp);
 				// RELIABILITY OF PROVISIONAL RESPONSES
 				if (code!=100 && ((invite_req.hasRequireHeader() && invite_req.getRequireHeader().hasOptionTag(SipStack.OTAG_100rel)) || (isExtensionRequired(SipStack.OTAG_100rel) && invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_100rel)))) {
-					if (reliable_responder==null) reliable_responder=new ReliableProvisionalResponder(sip_provider.sipConfig(),invite_ts, this);
+					if (reliable_responder == null)
+						reliable_responder = new ReliableProvisionalResponder(sip_provider, invite_ts, this);
 					LOG.debug("respond(): reliable provisional response");
 					reliable_responder.respond(resp);
 				}

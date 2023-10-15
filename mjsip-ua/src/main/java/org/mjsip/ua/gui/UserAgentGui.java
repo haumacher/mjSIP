@@ -51,14 +51,14 @@ import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
+import org.mjsip.time.Scheduler;
+import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
-import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Archive;
 import org.zoolu.util.Flags;
-import org.zoolu.util.ScheduledWork;
 
 
 /** Simple SIP user agent GUI. */
@@ -563,8 +563,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void reInvite(final int delay_time) {
 		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
 		if (delay_time==0) ua.modify(null);
-		else new ScheduledWork(delay_time*1000) {  @Override
-		public void doWork() {  ua.modify(null);  }  };
+		else Scheduler.scheduleTask(delay_time*1000, ()->ua.modify(null));
 	}
 
 
@@ -581,8 +580,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
 		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
 		if (delay_time==0) ua.transfer(transfer_to);
-		else new ScheduledWork(delay_time*1000) {  @Override
-		public void doWork() {  ua.transfer(transfer_to);  }  };
+		else Scheduler.scheduleTask(delay_time*1000, () -> ua.transfer(transfer_to));
 	}
 
 
@@ -599,8 +597,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void automaticAccept(final int delay_time) {
 		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
 		if (delay_time==0) jButton1_actionPerformed();
-		else new ScheduledWork(delay_time*1000) {  @Override
-		public void doWork() {  jButton1_actionPerformed();  }  };
+		else Scheduler.scheduleTask(delay_time*1000, this::jButton1_actionPerformed);
 	}
 	
 
@@ -617,8 +614,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	void automaticHangup(final int delay_time) {
 		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
 		if (delay_time==0) jButton2_actionPerformed();
-		else new ScheduledWork(delay_time*1000) {  @Override
-		public void doWork() {  jButton2_actionPerformed();  }  };
+		else Scheduler.scheduleTask(delay_time*1000, this::jButton2_actionPerformed);
 	}
 
 

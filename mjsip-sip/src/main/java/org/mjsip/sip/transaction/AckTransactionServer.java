@@ -25,22 +25,24 @@ package org.mjsip.sip.transaction;
 
 
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.TransactionServerId;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
-/** ACK server transaction should follow an INVITE server transaction within an INVITE Dialog in a SIP UAC.
-  * The AckTransactionServer sends the final response message and retransmits it
-  * several times until the method terminate() is called or the trasaction timeout fires.
-  */ 
-public class AckTransactionServer extends Transaction implements SipProviderListener, TimerListener {
+/**
+ * ACK server transaction should follow an INVITE server transaction within an INVITE Dialog in a
+ * SIP UAC. The AckTransactionServer sends the final response message and retransmits it several
+ * times until the method terminate() is called or the transaction timeout occurs.
+ */ 
+public class AckTransactionServer extends Transaction implements SipProviderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AckTransactionServer.class);
 
@@ -51,9 +53,12 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 	SipMessage response;
 	
 	/** retransmission timeout */
-	Timer retransmission_to;
+	long retransmissionTimeout;
+
+	ScheduledFuture<?> retransmission_to;
+
 	/** transaction timeout */
-	Timer transaction_to;
+	ScheduledFuture<?> transaction_to;
 
 
 	/** Creates a new AckTransactionServer.
@@ -86,8 +91,6 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		response.setConnectionId(connection_id);
 		transaction_id=new TransactionServerId(invite);
 		// init the timer just to set the timeout value and label, without listener (never started)
-		transaction_to=new Timer(sip_provider.sipConfig().getTransactionTimeout(),null);
-		retransmission_to=new Timer(sip_provider.sipConfig().getRetransmissionTimeout(),null);
 		// (CHANGE-040905) now timeouts are started when method respond() is called
 		//transaction_to=new Timer(transaction_to.getTime(),this);
 		//transaction_to.start();
@@ -106,12 +109,15 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		sip_provider.addSelectiveListener(transaction_id,this);
 		//transaction_id=null; // it is not required since no SipProviderListener is implemented 
 		// (CHANGE-040905) now timeouts are started when method respond() is called
-		transaction_to.start();
-		if (connection_id==null) retransmission_to.start();
+		transaction_to = Scheduler.scheduleTask(sip_provider.sipConfig().getTransactionTimeout(),
+				this::onTransactionTimeout);
+
+		if (connection_id == null) {
+			scheduleRetransmission(sip_provider.sipConfig().getRetransmissionTimeout());
+		}
 
 		sip_provider.sendMessage(response); 
-	}  
-
+	}
 
 	/** From SipProviderListener. When a new SipMessage is received by the SipProvider. */
 	@Override
@@ -131,32 +137,27 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		}
 	}
 
+	private void onTransactionTimeout() {
+		LOG.info("Transaction timeout expired");
+		doTerminate();
+		// retransmission_to=null;
+		// transaction_to=null;
+		if (transaction_listener != null)
+			transaction_listener.onTransAckTimeout(this);
+	}
 
-	/** From TimerListener. When an active timer expires.
-	  */
-	@Override
-	public void onTimeout(Timer to) {
-		try {
-			if (to.equals(retransmission_to) && statusIs(STATE_PROCEEDING)) {
-				LOG.info("Retransmission timeout expired");
-				long timeout=2*retransmission_to.getTime();
-				if (timeout>sip_provider.sipConfig().getMaxRetransmissionTimeout()) timeout=sip_provider.sipConfig().getMaxRetransmissionTimeout();
-				retransmission_to=new Timer(timeout,this);
-				retransmission_to.start();
-				sip_provider.sendMessage(response);
-			}  
-			if (to.equals(transaction_to) && statusIs(STATE_PROCEEDING)) {
-				LOG.info("Transaction timeout expired");
-				doTerminate();
-				//retransmission_to=null;
-				//transaction_to=null;
-				if (transaction_listener!=null) transaction_listener.onTransAckTimeout(this);
-			}  
-		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
-		}
-	}   
+	private void onRetransmissionTimeout() {
+		LOG.info("Retransmission timeout expired");
+
+		scheduleRetransmission(sip_provider.retransmissionSlowdown(retransmissionTimeout));
+
+		sip_provider.sendMessage(response);
+	}
+
+	private void scheduleRetransmission(long timeout) {
+		retransmissionTimeout = timeout;
+		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+	}
 
 	/** Method used to drop an active transaction. */
 	@Override
@@ -174,8 +175,10 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
 			changeStatus(STATE_TERMINATED);
-			if (retransmission_to!=null) retransmission_to.halt();
-			transaction_to.halt();  
+			if (retransmission_to != null)
+				retransmission_to.cancel(false);
+			if (transaction_to != null)
+				transaction_to.cancel(false);
 			//retransmission_to=null;
 			//transaction_to=null;
 			sip_provider.removeSelectiveListener(transaction_id);

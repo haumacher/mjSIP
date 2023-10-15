@@ -1150,4 +1150,11 @@ public class SipProvider implements SipTransportListener {
 		}
 	}
 
+	/**
+	 * Computes a new timeout based on the last retransmission timeout.
+	 */
+	public long retransmissionSlowdown(long retransmissionTimeout) {
+		return Math.min(2 * retransmissionTimeout, sipConfig().getMaxRetransmissionTimeout());
+	}
+
 }

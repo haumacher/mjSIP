@@ -23,21 +23,22 @@ package org.mjsip.server.sbc;
 
 
 
+import java.util.concurrent.ScheduledFuture;
+
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpPacket;
 import org.zoolu.net.UdpProvider;
 import org.zoolu.net.UdpProviderListener;
 import org.zoolu.net.UdpSocket;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
 /**
  * SymmetricUdpRelay implements a symmetric bidirectional UDP relay system.
  */
-public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
+public class SymmetricUdpRelay implements UdpProviderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SymmetricUdpRelay.class);
 
@@ -66,7 +67,7 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 	protected long expire_time=0;
 
 	/** Timer that fires whether the SymmetricUdpRelay must expire. */
-	protected Timer timer=null;
+	protected ScheduledFuture<?> timer=null;
 
 	/** Whether the SymmetricUdpRelay is running. */
 	//protected boolean is_running=true;
@@ -122,8 +123,7 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 		if (relay_time>0) {
 			long timer_time=relay_time/2;
 			expire_time=System.currentTimeMillis()+relay_time;
-			timer=new Timer(timer_time,this);
-			timer.start();
+			timer=Scheduler.scheduleTask(timer_time,this::onTimeout);
 		}
 		last_left_change=last_right_change=System.currentTimeMillis();
 	}
@@ -251,13 +251,11 @@ public class SymmetricUdpRelay implements UdpProviderListener, TimerListener {
 
 
 	/** When the Timer exceeds */
-	@Override
-	public void onTimeout(Timer t) {
+	protected void onTimeout() {
 		long now=System.currentTimeMillis();
 		if (now<expire_time) {
 			long timer_time=relay_time/2;
-			timer=new Timer(timer_time,this);
-			timer.start();
+			timer=Scheduler.scheduleTask(timer_time,this::onTimeout);
 		}
 		else {
 			timer=null;

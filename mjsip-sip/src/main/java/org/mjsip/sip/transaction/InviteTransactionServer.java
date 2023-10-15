@@ -25,14 +25,15 @@ package org.mjsip.sip.transaction;
 
 
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
@@ -46,7 +47,7 @@ import org.zoolu.util.TimerListener;
   * a "100 Trying" response when the INVITE message is received
   * (as suggested by RFC3261) 
   */
-public class InviteTransactionServer extends TransactionServer implements TimerListener {
+public class InviteTransactionServer extends TransactionServer {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InviteTransactionServer.class);
 
@@ -60,16 +61,16 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 	/** last response message */
 	//Message response=null;
 	
-	/** retransmission timeout ("Timer G" in RFC 3261) */
-	Timer retransmission_to;
+	ScheduledFuture<?> retransmission_to;
 	/** end timeout ("Timer H" in RFC 3261) */
-	Timer end_to;
+	ScheduledFuture<?> end_to;
 	/** clearing timeout ("Timer I" in RFC 3261) */
 	//Timer clearing_to; 
 
 	/** Whether automatically sending 100 Trying on INVITE. */
 	boolean auto_trying;
 
+	private long _retransmissionTimeout;
 
 	// ************************** Costructors **************************
 
@@ -117,9 +118,6 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 		this.connection_id=connection_id;
 		auto_trying=sip_provider.sipConfig().isAutoTrying();
 		// init the timer just to set the timeout value and label, without listener (never started)
-		retransmission_to=new Timer(sip_provider.sipConfig().getRetransmissionTimeout(),null);
-		end_to=new Timer(sip_provider.sipConfig().getTransactionTimeout(),null);
-		clearing_to=new Timer(sip_provider.sipConfig().getClearingTimeout(),null);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}   
 
@@ -162,8 +160,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 			changeStatus(STATE_COMPLETED);
 			// retransmission only in case of unreliable transport 
 			if (connection_id==null) {
-				retransmission_to=new Timer(retransmission_to.getTime(),this);
-				retransmission_to.start();
+				scheduleRetransmission(sip_provider.sipConfig().getRetransmissionTimeout());
 				//end_to=new Timer(end_to.getTime(),this);
 				//end_to.start();
 			}
@@ -171,8 +168,7 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 				LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
 				//onTimeout(end_to);
 			}
-			end_to=new Timer(end_to.getTime(),this);
-			end_to.start();
+			end_to = Scheduler.scheduleTask(sip_provider.sipConfig().getTransactionTimeout(), this::onEndTimeout);
 		}
 	}
 
@@ -209,43 +205,36 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 			}
 			// ack received
 			if (req_method.equals(SipMethods.ACK) && statusIs(STATE_COMPLETED)) {
-				retransmission_to.halt();
-				end_to.halt();
+				if (retransmission_to != null)
+					retransmission_to.cancel(false);
+				end_to.cancel(false);
 				changeStatus(STATE_CONFIRMED);
 				if (invite_ts_listener!=null) invite_ts_listener.onTransFailureAck(this,msg);
-				clearing_to=new Timer(clearing_to.getTime(),this);
-				clearing_to.start();
+				clearing_to = Scheduler.scheduleTask(sip_provider.sipConfig().getClearingTimeout(),
+						this::onClearingTimeout);
 				return;
 			}
 		}    
 	}
 
-	/** Method derived from interface TimerListener.
-	  * It's fired from an active Timer. */
-	@Override
-	public void onTimeout(Timer to) {
-		try {
-			if (to.equals(retransmission_to) && statusIs(STATE_COMPLETED)) {
-				LOG.info("Retransmission timeout expired");
-				long timeout=2*retransmission_to.getTime();
-				if (timeout>sip_provider.sipConfig().getMaxRetransmissionTimeout()) timeout=sip_provider.sipConfig().getMaxRetransmissionTimeout();
-				retransmission_to=new Timer(timeout,this);
-				retransmission_to.start();
-				sip_provider.sendMessage(response);
-			}
-			if (to.equals(end_to) && statusIs(STATE_COMPLETED)) {
-				LOG.info("End timeout expired");
-				doTerminate();
-				invite_ts_listener=null;
-			}  
-			if (to.equals(clearing_to) && statusIs(STATE_CONFIRMED)) {
-				LOG.info("Clearing timeout expired");
-				doTerminate();
-				invite_ts_listener=null;
-			}  
+	private void onRetransmissionTimeout() {
+		if (statusIs(STATE_COMPLETED)) {
+			LOG.info("Retransmission timeout expired");
+			scheduleRetransmission(sip_provider.retransmissionSlowdown(_retransmissionTimeout));
+			sip_provider.sendMessage(response);
 		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
+	}
+
+	private void scheduleRetransmission(long timeout) {
+		_retransmissionTimeout = timeout;
+		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+	}
+
+	private void onEndTimeout() {
+		if (statusIs(STATE_COMPLETED)) {
+			LOG.info("End timeout expired");
+			doTerminate();
+			invite_ts_listener = null;
 		}
 	}   
 
@@ -263,9 +252,12 @@ public class InviteTransactionServer extends TransactionServer implements TimerL
 	@Override
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
-			retransmission_to.halt();
-			clearing_to.halt();     
-			end_to.halt();
+			if (retransmission_to != null)
+				retransmission_to.cancel(false);
+			if (clearing_to != null)
+				clearing_to.cancel(false);
+			if (end_to != null)
+				end_to.cancel(false);
 			//if (statusIs(STATE_WAITING)) sip_provider.removeSelectiveListener(new TransactionId(SipMethods.INVITE));
 			//else sip_provider.removeSelectiveListener(transaction_id);
 			sip_provider.removeSelectiveListener(transaction_id);

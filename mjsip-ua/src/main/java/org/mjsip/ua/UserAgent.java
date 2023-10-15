@@ -25,6 +25,7 @@ package org.mjsip.ua;
 
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.media.AudioClipPlayer;
 import org.mjsip.media.FlowSpec;
@@ -52,10 +53,9 @@ import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
@@ -67,7 +67,7 @@ import org.zoolu.util.TimerListener;
   * As media applications it can also use external audio/video tools.
   * Currently only support for RAT (Robust Audio Tool) and VIC has been implemented.
   */
-public class UserAgent extends CallListenerAdapter implements SipProviderListener, RegistrationClientListener, TimerListener {
+public class UserAgent extends CallListenerAdapter implements SipProviderListener, RegistrationClientListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgent.class);
 
@@ -122,7 +122,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	protected UserAgentListener listener=null;
 
 	/** Response timeout */
-	Timer response_to=null;
+	ScheduledFuture<?> response_to=null;
 
 	/** Whether the outgoing call is already in progress */
 	boolean progress;   
@@ -390,11 +390,15 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (clip_progress!=null) clip_progress.stop();
 		if (clip_ring!=null) clip_ring.stop();
 		// response timeout
-		if (response_to!=null) response_to.halt();
+		cancelResponseTimeout();
 
 		closeMediaSessions();
 		if (call!=null) call.hangup();
 		call=null;
+	}
+
+	private void cancelResponseTimeout() {
+		if (response_to!=null) response_to.cancel(false);
 	} 
 
 	/** Accepts an incoming call. */
@@ -407,7 +411,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// sound
 		if (clip_ring!=null) clip_ring.stop();
 		// response timeout
-		if (response_to!=null) response_to.halt();
+		cancelResponseTimeout();
 		// return if no active call
 		if (call==null) return;
 		// else
@@ -437,7 +441,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// sound
 		if (clip_ring!=null) clip_ring.stop();
 		// response timeout
-		if (response_to!=null) response_to.halt();
+		cancelResponseTimeout();
 		
 		if (call!=null) call.redirect(redirect_to);
 	}   
@@ -580,8 +584,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// sound
 		if (clip_ring!=null) clip_ring.play();
 		// response timeout
-		if (uaConfig.refuseTime>=0) response_to=new Timer(uaConfig.refuseTime*1000,this);
-		response_to.start();
+		if (uaConfig.refuseTime>=0) response_to=Scheduler.scheduleTask(uaConfig.refuseTime*1000,this::onResponseTimeout);
 		
 		MediaDesc[] media_descs=new MediaDesc[]{};
 		if (sdp!=null) {
@@ -773,7 +776,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (clip_ring!=null) clip_ring.stop();
 		if (clip_off!=null) clip_off.play();
 		// response timeout
-		if (response_to!=null) response_to.halt();
+		cancelResponseTimeout();
 		
 		if (listener!=null) listener.onUaCallCancelled(this);
 	}
@@ -891,15 +894,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	// *********************** Timer callbacks ***********************
 
-	/** When the Timer exceeds. */
-	@Override
-	public void onTimeout(Timer t) {
-		if (response_to==t) {
-			LOG.info("response time expired: incoming call declined");
-			if (call!=null) call.refuse();
-			// sound
-			if (clip_ring!=null) clip_ring.stop();
-		}
+	private void onResponseTimeout() {
+		LOG.info("response time expired: incoming call declined");
+		if (call!=null) call.refuse();
+		// sound
+		if (clip_ring!=null) clip_ring.stop();
 	}
 
 

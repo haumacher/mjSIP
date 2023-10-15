@@ -24,6 +24,7 @@ package org.mjsip.sip.call;
 
 
 import java.util.Vector;
+import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
@@ -45,16 +46,15 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
 /** RegistrationClient does register (one time or periodically)
   * a contact address with a registrar server.
   */
-public class RegistrationClient implements TransactionClientListener, TimerListener {
+public class RegistrationClient implements TransactionClientListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RegistrationClient.class);
 
@@ -98,10 +98,12 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	protected int renew_time;
 
 	/** Attempt timeout */
-	Timer attempt_to;
+	ScheduledFuture<?> attempt_to;
+
+	long attemptTimeout;
 
 	/** Registration timeout */
-	Timer registration_to;
+	ScheduledFuture<?> registration_to;
 
 	/** Whether keep on registering. */
 	boolean loop=false;
@@ -341,12 +343,23 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 	public void loopRegister(int expire_time, int renew_time) {
 		this.expire_time=expire_time;
 		this.renew_time=renew_time;
-		attempt_to=null;
-		registration_to=null;
+		cancelAttemptTimeout();
+		cancelRegistrationTimeout();
 		loop=true;
 		register(expire_time);
 	}
 
+	private void cancelAttemptTimeout() {
+		if (attempt_to != null)
+			attempt_to.cancel(false);
+		attempt_to = null;
+	}
+
+	private void cancelRegistrationTimeout() {
+		if (registration_to != null)
+			registration_to.cancel(false);
+		registration_to = null;
+	}
 
 	/** Periodically registers with the registrar server.
 	  * @param expire_time expiration time in seconds
@@ -405,8 +418,8 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 			
 			LOG.info("Registration success, expires in " + expires + "s: " + result);
 			if (loop) {
-				attempt_to=null;
-				(registration_to=new Timer((long)renew_time*1000,this)).start();
+				cancelAttemptTimeout();
+				registration_to = Scheduler.scheduleTask((long) renew_time * 1000, this::onRegistrationTimeout);
 				LOG.trace("Scheduling next registration in " + renew_time + "s");
 			}
 			if (listener!=null) listener.onRegistrationSuccess(this,to_naddr,contact_naddr,expires,result);
@@ -458,8 +471,9 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 				String result=code+" "+status.getReason();
 				LOG.info("Registration failure: "+result);
 				if (loop) {
-					registration_to=null;
-					(attempt_to=new Timer(sip_provider.sipConfig().getRegMaxAttemptTimeout(),this)).start();
+					cancelRegistrationTimeout();
+					attemptTimeout = sip_provider.sipConfig().getRegMaxAttemptTimeout();
+					attempt_to = Scheduler.scheduleTask(attemptTimeout, this::onAttemptTimeout);
 					LOG.trace("next attempt after "+(sip_provider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
 				}
 				if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,result);
@@ -473,10 +487,12 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			LOG.info("Registration failure: No response from server");
 			if (loop) {
-				registration_to=null;
-				long inter_time_msecs=(attempt_to==null)? sip_provider.sipConfig().getRegMinAttemptTimeout() : attempt_to.getTime()*2;
+				cancelRegistrationTimeout();
+				long inter_time_msecs = (attempt_to == null) ? sip_provider.sipConfig().getRegMinAttemptTimeout()
+						: attemptTimeout * 2;
 				if (inter_time_msecs>sip_provider.sipConfig().getRegMaxAttemptTimeout()) inter_time_msecs=sip_provider.sipConfig().getRegMaxAttemptTimeout();
-				(attempt_to=new Timer(inter_time_msecs,this)).start();
+				attemptTimeout = inter_time_msecs;
+				attempt_to = Scheduler.scheduleTask(attemptTimeout, this::onAttemptTimeout);
 				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}
 			if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,"Timeout");
@@ -486,14 +502,19 @@ public class RegistrationClient implements TransactionClientListener, TimerListe
 
 	// ******************* Timer callback functions ********************
 
-	/** When the Timer exceeds. */
-	@Override
-	public void onTimeout(Timer t) {
-		if ((t==attempt_to || t==registration_to) && loop) {
+	private void onAttemptTimeout() {
+		if (loop) {
 			register();
 		}
+		attempt_to = null;
 	}
 
+	private void onRegistrationTimeout() {
+		if (loop) {
+			register();
+		}
+		registration_to = null;
+	}
 
 	// ***************************** run() *****************************
 

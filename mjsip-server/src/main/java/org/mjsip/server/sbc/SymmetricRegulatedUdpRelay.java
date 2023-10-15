@@ -23,10 +23,10 @@ package org.mjsip.server.sbc;
 
 
 
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpSocket;
-import org.zoolu.util.Timer;
 
 
 
@@ -78,8 +78,7 @@ public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 		if (relay_time>0) {
 			long timer_time=relay_time/2;
 			expire_time=System.currentTimeMillis()+relay_time;
-			timer=new Timer(timer_time,this);
-			timer.start();
+			timer=Scheduler.scheduleTask(timer_time,this::onTimeout);
 		}
 		last_left_change=last_right_change=System.currentTimeMillis();
 	}

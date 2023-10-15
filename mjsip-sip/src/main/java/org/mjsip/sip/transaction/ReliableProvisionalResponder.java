@@ -26,6 +26,7 @@ package org.mjsip.sip.transaction;
 
 
 import java.util.Vector;
+import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.header.CSeqHeader;
 import org.mjsip.sip.header.RAckHeader;
@@ -35,10 +36,9 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Random;
-import org.zoolu.util.Timer;
-import org.zoolu.util.TimerListener;
 
 
 
@@ -63,9 +63,12 @@ public class ReliableProvisionalResponder {
 	Vector responses=new Vector();
 	
 	/** Retransmission timeout */
-	Timer retransmission_to=null;
+	ScheduledFuture<?> retransmission_to = null;
+
+	long retransmissionTimeout;
+
 	/** Transaction timeout */
-	Timer transaction_to=null;
+	ScheduledFuture<?> transaction_to = null;
 
 	/** ReliableProvisionalResponderListener that captures the ReliableProvisionalResponder events */
 	ReliableProvisionalResponderListener listener;
@@ -73,23 +76,18 @@ public class ReliableProvisionalResponder {
 	/** RSeq counter */
 	long rseq_counter;
 	
-	/** Timer listener */
-	TimerListener this_timer_listener;
-
 	private final SipConfig sipConfig;
 
+	private SipProvider sip_provider;
+
 	/** Creates a new ReliableProvisionalResponder.*/
-	public ReliableProvisionalResponder(SipConfig sipConfig, InviteTransactionServer invite_ts, ReliableProvisionalResponderListener listener) {
-		this.sipConfig = sipConfig;
+	public ReliableProvisionalResponder(SipProvider sip_provider, InviteTransactionServer invite_ts,
+			ReliableProvisionalResponderListener listener) {
+		this.sip_provider = sip_provider;
+		this.sipConfig = sip_provider.sipConfig();
 		this.invite_ts=invite_ts;
 		this.listener=listener;
 		this.rseq_counter=(DEBUG_RSEQ_INIT1)? 1 : Random.nextLong(2147483648L); // chosen uniformly between 1 and 2^31 - 1
-		this_timer_listener=new TimerListener() {
-			@Override
-			public void onTimeout(Timer t) {
-				processTimeout(t);
-			}
-		};
 		LOG.info("new ReliableProvisionalResponder has been created");
 	}    
 
@@ -143,7 +141,7 @@ public class ReliableProvisionalResponder {
 
 
 	/** Terminates any retransmission. */
-	public void terminate() {
+	public synchronized void terminate() {
 		stopResponseRetransmission();
 		listener=null;
 	}
@@ -158,47 +156,47 @@ public class ReliableProvisionalResponder {
 
 	/** Sends the head-of-line response. */
 	private synchronized void sendNextResponse() {
-		transaction_to=new Timer(sipConfig.getTransactionTimeout(),this_timer_listener);
-		transaction_to.start();
-		retransmission_to=new Timer(sipConfig.getRetransmissionTimeout(),this_timer_listener);
-		retransmission_to.start();
+		transaction_to = Scheduler.scheduleTask(sipConfig.getTransactionTimeout(), this::onTransactionTimeout);
+
+		scheduleRetransmission(sipConfig.getRetransmissionTimeout());
 		SipMessage resp=(SipMessage)responses.elementAt(0);
 		invite_ts.respondWith(resp); 
 	}  
 
+	private synchronized void onTransactionTimeout() {
+		LOG.info("Transaction timeout expired");
+		stopResponseRetransmission();
+		SipMessage resp=(SipMessage)responses.elementAt(0);
+		responses.removeElementAt(0);
+		if (listener!=null) listener.onReliableProvisionalResponseTimeout(this,resp);
+		if (responses.size()>0) sendNextResponse();
+	}
 
-	/** When an active timer expires. */
-	private synchronized void processTimeout(Timer to) {
-		try {
-			if (to.equals(retransmission_to)) {
-				LOG.info("Retransmission timeout expired");
-				long timeout=2*retransmission_to.getTime();
-				if (timeout>sipConfig.getMaxRetransmissionTimeout()) timeout=sipConfig.getMaxRetransmissionTimeout();
-				retransmission_to=new Timer(timeout,this_timer_listener);
-				retransmission_to.start();
-				SipMessage resp=(SipMessage)responses.elementAt(0);
-				invite_ts.respondWith(resp); 
-			}
-			else
-			if (to.equals(transaction_to)) {
-				LOG.info("Transaction timeout expired");
-				stopResponseRetransmission();
-				SipMessage resp=(SipMessage)responses.elementAt(0);
-				responses.removeElementAt(0);
-				if (listener!=null) listener.onReliableProvisionalResponseTimeout(this,resp);
-				if (responses.size()>0) sendNextResponse();
-			}  
-		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
-		}
+	private synchronized void onRetransmissionTimeout() {
+		LOG.info("Retransmission timeout expired");
+
+		scheduleRetransmission(sip_provider.retransmissionSlowdown(retransmissionTimeout));
+
+		SipMessage resp=(SipMessage)responses.elementAt(0);
+		invite_ts.respondWith(resp);
+	}
+
+	private void scheduleRetransmission(long timeout) {
+		retransmissionTimeout = timeout;
+		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
 	}   
 
 
-	/** Stops current response retransmission. */
-	private synchronized void stopResponseRetransmission() {
-		if (retransmission_to!=null) retransmission_to.halt();
-		if (transaction_to!=null) transaction_to.halt();  
+	/**
+	 * Stops current response retransmission.
+	 * 
+	 * Must only be called from synchronized context.
+	 */
+	private void stopResponseRetransmission() {
+		if (retransmission_to != null)
+			retransmission_to.cancel(false);
+		if (transaction_to != null)
+			transaction_to.cancel(false);
 		retransmission_to=null;
 		transaction_to=null;
 	}

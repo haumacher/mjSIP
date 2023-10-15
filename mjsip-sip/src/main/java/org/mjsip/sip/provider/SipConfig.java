@@ -29,12 +29,12 @@ import java.io.IOException;
 
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
-import org.zoolu.util.Timer;
 
 
 
@@ -306,8 +306,8 @@ public class SipConfig extends Configure {
 		result.loadFile(file);
 		result.normalize();
 		
-		// timers
-		Timer.DEFAULT_DAEMON_MODE = result.isTimerDaemonMode();
+		// TODO: Move to some reasonable location
+		Scheduler.DEFAULT_DAEMON_MODE = result.isTimerDaemonMode();
 		
 		return result;
 	}

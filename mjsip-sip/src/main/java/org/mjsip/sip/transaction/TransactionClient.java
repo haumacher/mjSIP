@@ -25,11 +25,13 @@ package org.mjsip.sip.transaction;
 
 
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionClientId;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Timer;
 
 
 
@@ -44,16 +46,17 @@ public class TransactionClient extends Transaction {
 	/** The TransactionClientListener that captures the events fired by the TransactionClient */
 	TransactionClientListener transaction_listener;
 
+	protected long retransmissionTimeout;
+
 	/** Retransmission timeout ("Timer E" in RFC 3261) */
-	Timer retransmission_to;
+	ScheduledFuture<?> retransmission_to;
 
 	/** Transaction timeout ("Timer F" in RFC 3261) */
-	Timer transaction_to;
+	ScheduledFuture<?> transaction_to;
 
 	/** Clearing timeout ("Timer K" in RFC 3261) */
-	Timer clearing_to;
+	ScheduledFuture<?> clearing_to;
 
- 
 	// ************************** Costructors **************************
 
 	/** Creates a new TransactionClient. */
@@ -89,7 +92,11 @@ public class TransactionClient extends Transaction {
 		sip_provider.addSelectiveListener(transaction_id,this);
 		connection_id=sip_provider.sendMessage(request);
 
-		startRetransmissionTimer(sip_provider.sipConfig().getRetransmissionTimeout());
+		// Retransmission only for unreliable transport
+		if (connection_id == null) {
+			LOG.debug("Starting retransmission timeout.");
+			scheduleRetransmission(sip_provider.sipConfig().getRetransmissionTimeout());
+		}
 	}
 		
 	/** Terminates the transaction. */
@@ -132,51 +139,35 @@ public class TransactionClient extends Transaction {
 		}
 	}
 
-	private void startRetransmissionTimer(long timeout) {
-		// Retransmission only for unreliable transport
-		if (connection_id == null) {
-			LOG.debug("Starting retransmission timeout: " + timeout + "ms");
-
-			retransmission_to = new Timer(timeout, this::onRetransmissionTimeout);
-			retransmission_to.start();
-		}
-	}
-
 	/**
 	 * Event handler for the retransmission timeout.
-	 * 
-	 * @param timer
-	 *        The timer that sent the event.
 	 */
-	private void onRetransmissionTimeout(Timer timer) {
+	protected void onRetransmissionTimeout() {
 		if (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING)) {
 			LOG.debug("Retransmission timeout expired");
 
 			sip_provider.sendMessage(request);
 
-			long timeout = 2 * timer.getTime();
-			if (timeout > sip_provider.sipConfig().getMaxRetransmissionTimeout() || statusIs(STATE_PROCEEDING))
-				timeout = sip_provider.sipConfig().getMaxRetransmissionTimeout();
-
-			startRetransmissionTimer(timeout);
+			scheduleRetransmission(sip_provider.retransmissionSlowdown(retransmissionTimeout));
 		}
 	}
 	
+	protected final void scheduleRetransmission(long timeout) {
+		retransmissionTimeout = timeout;
+		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+	}
+
 	private void startTransactionTimeout() {
 		long timeout = sip_provider.sipConfig().getTransactionTimeout();
 		LOG.debug("Starting transaction timeout: " + timeout + "ms");
 
-		transaction_to = new Timer(timeout, this::onTransactionTimeout);
-		transaction_to.start();
+		transaction_to = Scheduler.scheduleTask(timeout, this::onTransactionTimeout);
 	}
 
 	/**
 	 * Event handler for the transaction timeout.
-	 *
-	 * @param timer
-	 *        The timer that sent the event.
 	 */
-	private void onTransactionTimeout(Timer timer) {
+	protected void onTransactionTimeout() {
 		LOG.debug("Transaction timeout expired.");
 		doTerminate();
 
@@ -189,17 +180,13 @@ public class TransactionClient extends Transaction {
 	private void startClearingTimeout() {
 		long timeout = sip_provider.sipConfig().getClearingTimeout();
 		LOG.debug("Starting clearing timeout: " + timeout + "ms");
-		clearing_to = new Timer(timeout, this::onClearingTimeout);
-		clearing_to.start();
+		clearing_to = Scheduler.scheduleTask(timeout, this::onClearingTimeout);
 	}
 
 	/**
 	 * Event handler for the clearing timeout.
-	 *
-	 * @param timer
-	 *        The timer that sent the event.
 	 */
-	private void onClearingTimeout(Timer timer) {
+	protected void onClearingTimeout() {
 		LOG.debug("Clearing timeout expired.");
 		doTerminate();
 	}
@@ -219,21 +206,21 @@ public class TransactionClient extends Transaction {
 
 	private void stopTransactionTimeout() {
 		if (transaction_to != null) {
-			transaction_to.halt();
+			transaction_to.cancel(false);
 			transaction_to = null;
 		}
 	}
 
 	private void stopRetransmissionTimeout() {
 		if (retransmission_to != null) {
-			retransmission_to.halt();
+			retransmission_to.cancel(false);
 			retransmission_to = null;
 		}
 	}
 
 	private void stopClearingTimeout() {
 		if (clearing_to != null) {
-			clearing_to.halt();
+			clearing_to.cancel(false);
 			clearing_to = null;
 		}
 	}
