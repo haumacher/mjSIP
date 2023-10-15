@@ -77,10 +77,9 @@ public class SdpMessage {
 	/** Encryption key (optional) */
 	KeyField k;
 	/** Zero or more session attribute (Vector<AttributeField>) */
-    //AttributeField[] av=null;
-    Vector av=new Vector();
+	Vector<AttributeField> av = new Vector<AttributeField>();
 	/** Zero or more media descriptions (Vector<MediaDescriptor>) */
-	Vector media=new Vector();
+	Vector<MediaDescriptor> media = new Vector<>();
 		
 
 	/** Inits the mandatory fields of the SDP message. */
@@ -103,8 +102,10 @@ public class SdpMessage {
 		bv=sd.bv;
 		z=sd.z;
 		k=sd.k;
-		for (int i=0; i<sd.av.size(); i++) addAttribute((AttributeField)sd.av.elementAt(i));
-		for (int i=0; i<sd.media.size(); i++) addMediaDescriptor((MediaDescriptor)sd.media.elementAt(i));
+		for (int i = 0; i < sd.av.size(); i++)
+			addAttribute(sd.av.elementAt(i));
+		for (int i = 0; i < sd.media.size(); i++)
+			addMediaDescriptor(sd.media.elementAt(i));
 	}
 
 	/** Creates a new SDP message specifying o, s, c, and t fields.
@@ -304,7 +305,7 @@ public class SdpMessage {
 	}
 
 	/** Gets all MediaDescriptors */
-	public Vector getMediaDescriptors() {
+	public Vector<MediaDescriptor> getMediaDescriptors() {
 		return media;
 	}
 
@@ -312,7 +313,8 @@ public class SdpMessage {
 	 * @return this SDP message */
 	public SdpMessage removeMediaDescriptor(String media_type) {
 		for (int i=media.size()-1; i>=0; i--)
-			if (((MediaDescriptor)media.elementAt(i)).getMedia().getMedia().equals(media_type)) media.removeElementAt(i);
+			if (media.elementAt(i).getMedia().getMedia().equals(media_type))
+				media.removeElementAt(i);
 		return this;
 	}
 
@@ -329,7 +331,7 @@ public class SdpMessage {
 	  * @return the media descriptor */
 	public MediaDescriptor getMediaDescriptor(String media_type) {
 		for (int i=0; i<media.size(); i++) {
-			MediaDescriptor md=(MediaDescriptor)media.elementAt(i);
+			MediaDescriptor md = media.elementAt(i);
 			if (md.getMedia().getMedia().equals(media_type)) return md; 
 		}
 		return null;
@@ -391,7 +393,8 @@ public class SdpMessage {
 	  * @return true if found, otherwise returns 'null' */
 	public boolean hasAttribute(String attribute_name) {
 		for (int i=0; i<av.size(); i++) {
-			if (((AttributeField)av.get(i)).getAttributeName().equals(attribute_name)) return true;
+			if (av.get(i).getAttributeName().equals(attribute_name))
+				return true;
 		}
 		return false;
 	} 
@@ -401,7 +404,7 @@ public class SdpMessage {
 	  * @return the attribute field, or 'null' if not found */
 	public AttributeField getAttribute(String attribute_name) {
 		for (int i=0; i<av.size(); i++) {
-			AttributeField af=(AttributeField)av.get(i);
+			AttributeField af = av.get(i);
 			if (af.getAttributeName().equals(attribute_name)) return af; 
 		}
 		return null;
@@ -413,7 +416,7 @@ public class SdpMessage {
 	public Vector getAttributes(String attribute_name) {
 		Vector v=new Vector(av.size());
 		for (int i=0; i<av.size(); i++) {
-			AttributeField af=(AttributeField)av.get(i);
+			AttributeField af = av.get(i);
 			if (af.getAttributeName().equals(attribute_name)) v.addElement(af);
 		}
 		return v;
