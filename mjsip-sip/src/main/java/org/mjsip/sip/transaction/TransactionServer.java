@@ -31,7 +31,6 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -122,7 +121,7 @@ public class TransactionServer extends Transaction {
 			if (code>=200 && code<700) {
 				changeStatus(STATE_COMPLETED);
 				if (connection_id==null) {
-					clearing_to = Scheduler.scheduleTask(sip_provider.sipConfig().getRetransmissionTimeout(),
+					clearing_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getRetransmissionTimeout(),
 							this::onClearingTimeout);
 				}
 				else {

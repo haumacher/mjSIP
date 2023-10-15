@@ -32,7 +32,6 @@ import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.TransactionServerId;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -109,7 +108,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		sip_provider.addSelectiveListener(transaction_id,this);
 		//transaction_id=null; // it is not required since no SipProviderListener is implemented 
 		// (CHANGE-040905) now timeouts are started when method respond() is called
-		transaction_to = Scheduler.scheduleTask(sip_provider.sipConfig().getTransactionTimeout(),
+		transaction_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getTransactionTimeout(),
 				this::onTransactionTimeout);
 
 		if (connection_id == null) {
@@ -156,7 +155,7 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 
 	private void scheduleRetransmission(long timeout) {
 		retransmissionTimeout = timeout;
-		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+		retransmission_to = sip_provider.scheduler().schedule(timeout, this::onRetransmissionTimeout);
 	}
 
 	/** Method used to drop an active transaction. */

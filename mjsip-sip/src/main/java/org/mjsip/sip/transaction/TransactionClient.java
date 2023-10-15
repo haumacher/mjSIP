@@ -30,7 +30,6 @@ import java.util.concurrent.ScheduledFuture;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionClientId;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -154,14 +153,14 @@ public class TransactionClient extends Transaction {
 	
 	protected final void scheduleRetransmission(long timeout) {
 		retransmissionTimeout = timeout;
-		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+		retransmission_to = sip_provider.scheduler().schedule(timeout, this::onRetransmissionTimeout);
 	}
 
 	private void startTransactionTimeout() {
 		long timeout = sip_provider.sipConfig().getTransactionTimeout();
 		LOG.debug("Starting transaction timeout: " + timeout + "ms");
 
-		transaction_to = Scheduler.scheduleTask(timeout, this::onTransactionTimeout);
+		transaction_to = sip_provider.scheduler().schedule(timeout, this::onTransactionTimeout);
 	}
 
 	/**
@@ -180,7 +179,7 @@ public class TransactionClient extends Transaction {
 	private void startClearingTimeout() {
 		long timeout = sip_provider.sipConfig().getClearingTimeout();
 		LOG.debug("Starting clearing timeout: " + timeout + "ms");
-		clearing_to = Scheduler.scheduleTask(timeout, this::onClearingTimeout);
+		clearing_to = sip_provider.scheduler().schedule(timeout, this::onClearingTimeout);
 	}
 
 	/**

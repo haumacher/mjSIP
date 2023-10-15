@@ -32,7 +32,6 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -168,7 +167,8 @@ public class InviteTransactionServer extends TransactionServer {
 				LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
 				//onTimeout(end_to);
 			}
-			end_to = Scheduler.scheduleTask(sip_provider.sipConfig().getTransactionTimeout(), this::onEndTimeout);
+			end_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getTransactionTimeout(),
+					this::onEndTimeout);
 		}
 	}
 
@@ -210,7 +210,7 @@ public class InviteTransactionServer extends TransactionServer {
 				end_to.cancel(false);
 				changeStatus(STATE_CONFIRMED);
 				if (invite_ts_listener!=null) invite_ts_listener.onTransFailureAck(this,msg);
-				clearing_to = Scheduler.scheduleTask(sip_provider.sipConfig().getClearingTimeout(),
+				clearing_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getClearingTimeout(),
 						this::onClearingTimeout);
 				return;
 			}
@@ -227,7 +227,7 @@ public class InviteTransactionServer extends TransactionServer {
 
 	private void scheduleRetransmission(long timeout) {
 		_retransmissionTimeout = timeout;
-		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+		retransmission_to = sip_provider.scheduler().schedule(timeout, this::onRetransmissionTimeout);
 	}
 
 	private void onEndTimeout() {

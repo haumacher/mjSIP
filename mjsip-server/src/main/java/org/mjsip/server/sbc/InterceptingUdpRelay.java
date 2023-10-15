@@ -23,6 +23,7 @@ package org.mjsip.server.sbc;
 
 
 
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpPacket;
@@ -51,15 +52,14 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 	/** Whether injecting new UDP flows. */
 	public boolean active_interception;
 
-
-	/** Costructs a new InterceptingUdpRelay. */
-	public InterceptingUdpRelay(int left_port, SocketAddress left_soaddr,
+	/** Constructs a new InterceptingUdpRelay. */
+	public InterceptingUdpRelay(Scheduler scheduler, int left_port, SocketAddress left_soaddr,
 											int right_port, SocketAddress right_soaddr,
 											int left_intercept_port, SocketAddress left_intercept_soaddr,
 											int right_intercept_port, SocketAddress right_intercept_soaddr,
 			boolean active_interception, long relay_time, SymmetricUdpRelayListener listener) {
 		
-		super(left_port, left_soaddr, right_port, right_soaddr, relay_time, listener);
+		super(scheduler, left_port, left_soaddr, right_port, right_soaddr, relay_time, listener);
 		this.left_intercept_soaddr=left_intercept_soaddr;
 		this.right_intercept_soaddr=right_intercept_soaddr;
 		this.active_interception=active_interception;

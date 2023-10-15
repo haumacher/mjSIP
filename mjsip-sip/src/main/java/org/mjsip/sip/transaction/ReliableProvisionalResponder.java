@@ -36,7 +36,6 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Random;
 
@@ -156,7 +155,8 @@ public class ReliableProvisionalResponder {
 
 	/** Sends the head-of-line response. */
 	private synchronized void sendNextResponse() {
-		transaction_to = Scheduler.scheduleTask(sipConfig.getTransactionTimeout(), this::onTransactionTimeout);
+		transaction_to = sip_provider.scheduler().schedule(sipConfig.getTransactionTimeout(),
+				this::onTransactionTimeout);
 
 		scheduleRetransmission(sipConfig.getRetransmissionTimeout());
 		SipMessage resp=(SipMessage)responses.elementAt(0);
@@ -183,7 +183,7 @@ public class ReliableProvisionalResponder {
 
 	private void scheduleRetransmission(long timeout) {
 		retransmissionTimeout = timeout;
-		retransmission_to = Scheduler.scheduleTask(timeout, this::onRetransmissionTimeout);
+		retransmission_to = sip_provider.scheduler().schedule(timeout, this::onRetransmissionTimeout);
 	}   
 
 

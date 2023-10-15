@@ -78,26 +78,19 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 	/** Last change time of right soaddr (in milliseconds) */
 	protected long last_right_change;
 
+	private final Scheduler _scheduler;
 
-
-	/** Costructs a new SymmetricUdpRelay. */
-	protected SymmetricUdpRelay() {}
-
-
-	/** Costructs a new SymmetricUdpRelay. */
-	/*
-	 * public SymmetricUdpRelay(UdpSocket left_socket, SocketAddress left_soaddr, UdpSocket right_socket, SocketAddress
-	 * right_soaddr, long relay_time, SymmetricUdpRelayListener listener) {
-	 * init(left_socket,left_soaddr,right_socket,right_soaddr,relay_time,log,listener); }
-	 */
-	
+	/** Constructs a new SymmetricUdpRelay. */
+	protected SymmetricUdpRelay(Scheduler scheduler) {
+		_scheduler = scheduler;
+	}
 	
 	/** Costructs a new SymmetricUdpRelay. */
-	public SymmetricUdpRelay(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr,
+	public SymmetricUdpRelay(Scheduler scheduler, int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr,
 			long relay_time, SymmetricUdpRelayListener listener) {
+		_scheduler = scheduler;
 		init(left_port, left_soaddr, right_port, right_soaddr, relay_time, listener);
 	}
-
 
 	/** Initializes the SymmetricUdpRelay. */
 	private void init(int left_port, SocketAddress left_soaddr, int right_port, SocketAddress right_soaddr,
@@ -123,7 +116,7 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 		if (relay_time>0) {
 			long timer_time=relay_time/2;
 			expire_time=System.currentTimeMillis()+relay_time;
-			timer=Scheduler.scheduleTask(timer_time,this::onTimeout);
+			timer=scheduler().schedule(timer_time, this::onTimeout);
 		}
 		last_left_change=last_right_change=System.currentTimeMillis();
 	}
@@ -255,7 +248,7 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 		long now=System.currentTimeMillis();
 		if (now<expire_time) {
 			long timer_time=relay_time/2;
-			timer=Scheduler.scheduleTask(timer_time,this::onTimeout);
+			timer=scheduler().schedule(timer_time, this::onTimeout);
 		}
 		else {
 			timer=null;
@@ -269,6 +262,13 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 	@Override
 	public String toString() {
 		return left_soaddr+"<-->"+left_udp.getUdpSocket().getLocalPort()+"[--]"+right_udp.getUdpSocket().getLocalPort()+"<-->"+right_soaddr;
+	}
+
+	/**
+	 * The system scheduler.
+	 */
+	protected final Scheduler scheduler() {
+		return _scheduler;
 	}
 
 }

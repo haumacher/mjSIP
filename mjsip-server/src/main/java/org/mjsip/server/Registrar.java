@@ -38,6 +38,8 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.TransactionServer;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.DateFormat;
 import org.zoolu.util.Flags;
@@ -324,11 +326,13 @@ public class Registrar extends ServerEngine {
 	/** The main method. */
 	public static void main(String[] args) {
 		Flags flags=new Flags(Registrar.class.getName(), args);
-		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
+		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 			
-		SipProvider sip_provider=new SipProvider(SipConfig.init(file));
-		ServerProfile server_profile=new ServerProfile(file);
+		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		ServerProfile server_profile=new ServerProfile(config_file);
 		
 		new Registrar(sip_provider,server_profile);
 	}

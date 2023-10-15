@@ -30,7 +30,6 @@ import java.util.concurrent.ScheduledFuture;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionClientId;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -83,7 +82,8 @@ public class InviteTransactionClient extends TransactionClient {
 	public void request() {
 		LOG.trace("start");
 		changeStatus(STATE_TRYING); 
-		transaction_to = Scheduler.scheduleTask(sip_provider.sipConfig().getTransactionTimeout(), this::onTransaction);
+		transaction_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getTransactionTimeout(),
+				this::onTransaction);
 		sip_provider.addSelectiveListener(transaction_id,this); 
 		connection_id=sip_provider.sendMessage(request);
 		scheduleRetransmission(sip_provider.sipConfig().getRetransmissionTimeout());
@@ -115,7 +115,8 @@ public class InviteTransactionClient extends TransactionClient {
 					if (invite_tc_listener!=null) invite_tc_listener.onTransFailureResponse(this,msg);
 					invite_tc_listener=null;
 					if (connection_id==null) {
-						end_to = Scheduler.scheduleTask(sip_provider.sipConfig().getTransactionTimeout(), this::onEnd);
+						end_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getTransactionTimeout(),
+								this::onEnd);
 					}
 					else {
 						LOG.trace("end_to=0 for reliable transport");

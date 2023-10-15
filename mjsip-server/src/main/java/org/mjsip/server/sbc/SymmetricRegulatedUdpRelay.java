@@ -38,13 +38,13 @@ public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SymmetricRegulatedUdpRelay.class);
 
 	/** Minimum inter-packet departure time */
-	long inter_time=0; 
+	long inter_time=0;
 
-
-	/** Costructs a new SymmetricRegulatedUdpRelay. */
-	public SymmetricRegulatedUdpRelay(int left_port, SocketAddress left_soaddr, int right_port,
+	/** Costructs a new SymmetricRegulatedUdpRelay. 
+	 * @param scheduler */
+	public SymmetricRegulatedUdpRelay(Scheduler scheduler, int left_port, SocketAddress left_soaddr, int right_port,
 			SocketAddress right_soaddr, long relay_time, long inter_time, SymmetricUdpRelayListener listener) {
-		super();
+		super(scheduler);
 		init(left_port, left_soaddr, right_port, right_soaddr, relay_time, inter_time, listener);
 	}
 
@@ -78,7 +78,7 @@ public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 		if (relay_time>0) {
 			long timer_time=relay_time/2;
 			expire_time=System.currentTimeMillis()+relay_time;
-			timer=Scheduler.scheduleTask(timer_time,this::onTimeout);
+			timer=scheduler().schedule(timer_time, this::onTimeout);
 		}
 		last_left_change=last_right_change=System.currentTimeMillis();
 	}

@@ -28,6 +28,8 @@ import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 
 
 
@@ -51,7 +53,7 @@ public class DummyUAS implements SipProviderListener {
 		this.reason=reason;
 		SipConfig sipConfig = SipConfig.init(null);
 		sipConfig.update(null, port);
-		sip_provider = new SipProvider(sipConfig);
+		sip_provider = new SipProvider(sipConfig, new Scheduler(SchedulerConfig.init()));
 		sip_provider.addSelectiveListener(MethodId.ANY,this);
 	}
 

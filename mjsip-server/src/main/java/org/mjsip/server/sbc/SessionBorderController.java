@@ -41,6 +41,8 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipKeepAlive;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Config;
@@ -119,7 +121,7 @@ public class SessionBorderController extends Proxy {
 		if (sbc_profile.keepalive_time>0 && !sbc_profile.keepalive_aggressive) keepalive_daemons=new Hashtable();
 		if (sbc_profile.media_addr==null || sbc_profile.media_addr.equals("0.0.0.0")) sbc_profile.media_addr=sip_provider.getViaAddress();
 		
-		media_gw = new MediaGw(sbc_profile);
+		media_gw = new MediaGw(sip_provider.scheduler(), sbc_profile);
 
 		// be sure to stay on route
 		//server_profile.on_route=true;
@@ -357,18 +359,19 @@ public class SessionBorderController extends Proxy {
 	public static void main(String[] args) {
 		Flags flags=new Flags(SessionBorderController.class.getName(), args);
 		boolean memory_debugging=flags.getBoolean("-d",null);
-		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		Config config = new Config(file);
+		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
+		Config config = new Config(config_file);
 		
 		String ports=flags.getString("-m","<first_port> <last_port>",null, "interval of media ports");
 		if (ports != null) {
 			config.setOption(SessionBorderControllerProfile.MEDIA_PORTS, ports);
 		}
 		
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 		
-		SipConfig sipConfig = SipConfig.init(file);
-		ServerProfile server_profile=new ServerProfile(file);
+		ServerProfile server_profile=new ServerProfile(config_file);
 		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(config);
 
 		// remove outbound proxy in case of the presence of a backend proxy
@@ -378,7 +381,7 @@ public class SessionBorderController extends Proxy {
 		
 		// create a new ExtendedSipProvider
 		long keepalive_aggressive_time=(sbc_profile.keepalive_aggressive)? sbc_profile.keepalive_time : 0;
-		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig,sbc_profile.binding_timeout,keepalive_aggressive_time);
+		ExtendedSipProvider extended_provider=new ExtendedSipProvider(new Scheduler(schedulerConfig), sipConfig, sbc_profile.binding_timeout,keepalive_aggressive_time);
 
 		// create and start the SBC
 		new SessionBorderController(extended_provider,server_profile,sbc_profile);

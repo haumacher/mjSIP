@@ -29,7 +29,6 @@ import java.io.IOException;
 
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.message.SipMethods;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.util.Configure;
@@ -90,7 +89,6 @@ public class SipConfig extends Configure {
 
 	private int _maxForwards = 70;
 
-	private boolean _timerDaemonMode = true;
 	private boolean _autoTrying=true;
 	private boolean _earlyDialog=true;
 	private boolean _autoPrack=false;
@@ -191,10 +189,6 @@ public class SipConfig extends Configure {
 
 		// general configurations
 		if (attribute.equals("max_forwards"))   { setMaxForwards(par.getInt()); return; }
-		if (attribute.equals("timer_daemon_mode")) {
-			setTimerDaemonMode((par.getString().toLowerCase().startsWith("y")));
-			return;
-		}
 		if (attribute.equals("auto_trying"))    { setAutoTrying((par.getString().toLowerCase().startsWith("y"))); return; }
 		if (attribute.equals("early_dialog"))   { setEarlyDialog((par.getString().toLowerCase().startsWith("y"))); return; }
 		if (attribute.equals("default_expires")){ setDefaultExpires(par.getInt()); return; }
@@ -305,9 +299,6 @@ public class SipConfig extends Configure {
 		SipConfig result = new SipConfig();
 		result.loadFile(file);
 		result.normalize();
-		
-		// TODO: Move to some reasonable location
-		Scheduler.DEFAULT_DAEMON_MODE = result.isTimerDaemonMode();
 		
 		return result;
 	}
@@ -483,20 +474,6 @@ public class SipConfig extends Configure {
 
 	private void setMaxForwards(int maxForwards) {
 		this._maxForwards = maxForwards;
-	}
-
-	/**
-	 * Whether the default timer mode is 'daemon', or not. In 'daemon' mode, when all other threads
-	 * terminate, the program also ends regardless the timer was still running, and no timeout
-	 * callback is fired. In 'non-daemon' mode, the program ends only when all active timers have
-	 * expired or explicitly halted.
-	 */
-	public boolean isTimerDaemonMode() {
-		return _timerDaemonMode;
-	}
-
-	private void setTimerDaemonMode(boolean timerDaemonMode) {
-		this._timerDaemonMode = timerDaemonMode;
 	}
 
 	/** Whether at UAS side automatically sending (by default) a 100 Trying on INVITE. */

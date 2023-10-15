@@ -53,7 +53,6 @@ import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 
@@ -584,7 +583,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// sound
 		if (clip_ring!=null) clip_ring.play();
 		// response timeout
-		if (uaConfig.refuseTime>=0) response_to=Scheduler.scheduleTask(uaConfig.refuseTime*1000,this::onResponseTimeout);
+		if (uaConfig.refuseTime>=0) response_to=(ScheduledFuture<?>) sip_provider.scheduler().schedule((long) (uaConfig.refuseTime*1000), this::onResponseTimeout);
 		
 		MediaDesc[] media_descs=new MediaDesc[]{};
 		if (sdp!=null) {

@@ -48,19 +48,23 @@ public class OutputRegulatedUdpSocket extends UdpSocket {
 	long last_departure=0; 
 
 	/** Packet buffer */
-	Vector buffer=new Vector(); 
+	Vector buffer=new Vector();
+
+	private Scheduler _scheduler; 
 
 
 	/** Creates a new OutputRegulatedUdpSocket */ 
-	public OutputRegulatedUdpSocket(int port, long inter_time) throws java.net.SocketException {
+	public OutputRegulatedUdpSocket(Scheduler scheduler, int port, long inter_time) throws java.net.SocketException {
 		super(port);
+		_scheduler = scheduler;
 		this.inter_time=inter_time;
 	}
 
 
 	/** Creates a new OutputRegulatedUdpSocket */ 
-	public OutputRegulatedUdpSocket(int port, IpAddress ipaddr, long inter_time) throws java.net.SocketException {
+	public OutputRegulatedUdpSocket(Scheduler scheduler, int port, IpAddress ipaddr, long inter_time) throws java.net.SocketException {
 		super(port,ipaddr);
+		_scheduler = scheduler;
 		this.inter_time=inter_time;
 	}
  
@@ -111,7 +115,7 @@ public class OutputRegulatedUdpSocket extends UdpSocket {
 			if (buffer.size()==1) {
 				if (inter_time<=0) sendTop();
 				else
-					Scheduler.scheduleTask(last_departure+inter_time-now,this::onTimeout);
+					_scheduler.schedule(last_departure+inter_time-now, this::onTimeout);
 			}
 		}
 	}
@@ -125,7 +129,8 @@ public class OutputRegulatedUdpSocket extends UdpSocket {
 		last_departure=System.currentTimeMillis();
 		if (buffer.size()>0) {
 			if (inter_time<=0) sendTop();
-			else Scheduler.scheduleTask(inter_time,this::onTimeout);
+			else
+				_scheduler.schedule(inter_time, this::onTimeout);
 		}
 	}
 	

@@ -30,7 +30,6 @@ import java.io.PrintStream;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.time.Scheduler;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
@@ -347,7 +346,8 @@ public class UserAgentCli implements UserAgentListener {
 	void reInvite(final int delay_time) {
 		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
 		if (delay_time==0) ua.modify(null);
-		else Scheduler.scheduleTask(delay_time*1000L, () -> ua.modify(null));
+		else
+			sip_provider.scheduler().schedule(delay_time*1000L, () -> ua.modify(null));
 	}
 
 
@@ -364,7 +364,8 @@ public class UserAgentCli implements UserAgentListener {
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
 		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
 		if (delay_time==0) ua.transfer(transfer_to);
-		else Scheduler.scheduleTask(delay_time*1000L, () -> ua.transfer(transfer_to));
+		else
+			sip_provider.scheduler().schedule(delay_time*1000L, () -> ua.transfer(transfer_to));
 	}
 
 	/** Schedules an automatic answer after <i>delay_time</i> secs. */
@@ -380,7 +381,8 @@ public class UserAgentCli implements UserAgentListener {
 	void automaticAccept(final int delay_time) {
 		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
 		if (delay_time==0) accept();
-		else Scheduler.scheduleTask(delay_time*1000L, this::accept);
+		else
+			sip_provider.scheduler().schedule(delay_time*1000L, this::accept);
 	}
 
 	/** Schedules an automatic hangup after <i>delay_time</i> secs. */
@@ -396,14 +398,16 @@ public class UserAgentCli implements UserAgentListener {
 	void automaticHangup(final int delay_time) {
 		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
 		if (delay_time==0) hangup();
-		else Scheduler.scheduleTask(delay_time*1000L, this::hangup);
+		else
+			sip_provider.scheduler().schedule(delay_time*1000L, this::hangup);
 	}
 	
 	/** Schedules an automatic re-call after <i>delay_time</i> secs. */
 	void automaticCall(final int delay_time, final String remote_uri) {
 		LOG.info("AUTOMATIC RE-CALL: "+delay_time+" secs");
 		if (delay_time==0) call(remote_uri);
-		else Scheduler.scheduleTask(delay_time*1000L, () -> call(remote_uri));
+		else
+			sip_provider.scheduler().schedule(delay_time*1000L, () -> call(remote_uri));
 	}
 
 

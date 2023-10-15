@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
 
-import org.mjsip.time.Scheduler;
+import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 
@@ -63,14 +63,20 @@ public class AddressResolver {
 
 	/** Refresh timer */
 	ScheduledFuture<?> timer;
+
+	protected final SipProvider sip_provider;
 	
-	/** Costructs an empty AddressResolve.r */
-	public AddressResolver(long refresh_time) {
+	/**
+	 * Constructs an empty AddressResolve.r
+	 */
+	public AddressResolver(SipProvider sip_provider, long refresh_time) {
+		this.sip_provider = sip_provider;
 		this.refresh_time=refresh_time;
 		expire_time=refresh_time/2;
 		binding_table=new Hashtable();
 		time_table=new Hashtable();
-		timer=Scheduler.scheduleWithFixedDelay(refresh_time, this::onTimeout);
+		
+		timer=sip_provider.scheduler().schedulerWithFixedDelay(refresh_time, this::onTimeout);
 	}
 	
 	/** Gets the size of the resolver's db */

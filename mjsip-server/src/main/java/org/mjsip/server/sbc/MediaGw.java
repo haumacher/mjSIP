@@ -31,6 +31,7 @@ import org.mjsip.sdp.MediaDescriptor;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sdp.field.MediaField;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 
@@ -68,14 +69,24 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	/** Hashtable of established call_id. */
 	HashSet call_set;
 
+	private Scheduler _scheduler;
 
-
-	/** Costructs a new MediaGw. */
-	public MediaGw(SessionBorderControllerProfile sbc_profile) {
+	/**
+	 * Constructs a new MediaGw.
+	 */
+	public MediaGw(Scheduler scheduler, SessionBorderControllerProfile sbc_profile) {
+		_scheduler = scheduler;
 		this.sbc_profile=sbc_profile;
 		media_ports=new CircularEnumeration(sbc_profile.media_ports);
 		masq_table=new Hashtable();
 		call_set=new HashSet();
+	}
+	
+	/**
+	 * The task scheduler.
+	 */
+	public Scheduler scheduler() {
+		return _scheduler;
 	}
 
 	/** Processes the sdp data */
@@ -164,7 +175,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 				int right_intercept_port=((Integer)media_ports.nextElement()).intValue();
 				SocketAddress sink_soaddr=null;
 				if (sbc_profile.sink_addr!=null && sbc_profile.sink_port>0) sink_soaddr=new SocketAddress(sbc_profile.sink_addr,sbc_profile.sink_port);
-				symm_relay = new InterceptingUdpRelay(left_port, masq_left.getPeerSoaddr(), right_port,
+				symm_relay = new InterceptingUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), left_intercept_port, sink_soaddr, right_intercept_port, sink_soaddr,
 						sbc_profile.do_active_interception, sbc_profile.relay_timeout, this);
 				LOG.debug("IMGW started: "+symm_relay);
@@ -172,13 +183,13 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			else
 			if (sbc_profile.interpacket_time>0) {
 				// symmetric regulated UDP relay
-				symm_relay = new SymmetricRegulatedUdpRelay(left_port, masq_left.getPeerSoaddr(), right_port,
+				symm_relay = new SymmetricRegulatedUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), sbc_profile.relay_timeout, sbc_profile.interpacket_time, this);
 				LOG.debug("MGW started: "+symm_relay);
 			}
 			else {
 				// simple symmetric UDP relay
-				symm_relay = new SymmetricUdpRelay(left_port, masq_left.getPeerSoaddr(), right_port,
+				symm_relay = new SymmetricUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), sbc_profile.relay_timeout, this);
 				LOG.debug("MGW started: "+symm_relay);
 			}

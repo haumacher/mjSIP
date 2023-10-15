@@ -53,13 +53,9 @@ public class AddressResolverKeepAlive extends AddressResolver {
 	/** Sip keep-alive daemons */
 	Hashtable keepalive_daemons=null;
 	
-	/** SipProvider */
-	SipProvider sip_provider;
-	
 	/** Costructs an empty AddressResolverKeepAlive */
-	public AddressResolverKeepAlive(long refresh_time, SipProvider sip_provider, long keepalive_time) {
-		super(refresh_time);
-		this.sip_provider=sip_provider;
+	public AddressResolverKeepAlive(SipProvider sip_provider, long refresh_time, long keepalive_time) {
+		super(sip_provider, refresh_time);
 		this.keepalive_time=keepalive_time;
 		keepalive_daemons=new Hashtable();
 	}

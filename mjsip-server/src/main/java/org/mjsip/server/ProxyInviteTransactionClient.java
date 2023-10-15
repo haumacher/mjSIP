@@ -30,7 +30,6 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.InviteTransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -52,7 +51,7 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient {
 	public ProxyInviteTransactionClient(SipProvider sip_provider, SipMessage req, TransactionClientListener listener) {
 		super(sip_provider,req,listener);
 		transaction_listener=listener;
-		proxy_transaction_to=Scheduler.scheduleTask(ServerProfile.proxy_transaction_timeout,this::onProxyTransactionTimeout);
+		proxy_transaction_to=sip_provider.scheduler().schedule((long) ServerProfile.proxy_transaction_timeout, this::onProxyTransactionTimeout);
 	}
 	
 	private void onProxyTransactionTimeout() {

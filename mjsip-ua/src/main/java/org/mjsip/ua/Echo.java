@@ -36,6 +36,8 @@ import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -159,6 +161,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 		
 		uaConfig.audio=true;
@@ -166,7 +169,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		uaConfig.loopback=true;
 		uaConfig.sendOnly=false;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Echo(new SipProvider(sipConfig),uaConfig,media_ports,force_reverse_route);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,media_ports,force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

@@ -32,7 +32,6 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -92,7 +91,7 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 			
 			// automatic hang-up after the maximum time
 			if (uaConfig.hangupTime>0) {
-				Scheduler.scheduleTask(uaConfig.hangupTime*1000, () -> ua.hangup());
+				sip_provider.scheduler().schedule((long) (uaConfig.hangupTime*1000), () -> ua.hangup());
 			}
 		}
 	}

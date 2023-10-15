@@ -38,6 +38,7 @@ import org.mjsip.sip.address.UnexpectedUriSchemeException;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
@@ -150,11 +151,16 @@ public class SipProvider implements SipTransportListener {
 
 	private final SipConfig _sipConfig;
 	
+	private final Scheduler _scheduler;
+
 	private final SipMessageFactory _sipMessageFactory;
 
-	/** Creates a new SipProvider. */ 
-	public SipProvider(SipConfig sipConfig) {
+	/**
+	 * Creates a new {@link SipProvider}.
+	 */
+	public SipProvider(SipConfig sipConfig, Scheduler scheduler) {
 		this._sipConfig = sipConfig;
+		_scheduler = scheduler;
 		_sipMessageFactory = new SipMessageFactory(sipConfig);
 		initLog();
 		initSipTrasport(sipConfig.getTransportProtocols(),sipConfig.getTransportPorts());
@@ -171,6 +177,13 @@ public class SipProvider implements SipTransportListener {
 	 */
 	public SipConfig sipConfig() {
 		return _sipConfig;
+	}
+
+	/**
+	 * The scheduler for tasks.
+	 */
+	public Scheduler scheduler() {
+		return _scheduler;
 	}
 
 	/**

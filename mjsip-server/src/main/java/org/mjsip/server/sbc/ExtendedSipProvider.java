@@ -28,6 +28,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipTransport;
+import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 
@@ -51,16 +52,16 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 	/** Inits private attribute. */ 
 	private void init(long refresh_time, long keepalive_time) {
 		if (keepalive_time > 0)
-			address_resolver = new AddressResolverKeepAlive(refresh_time, this, keepalive_time);
+			address_resolver = new AddressResolverKeepAlive(this, refresh_time, keepalive_time);
 		else
-			address_resolver = new AddressResolver(refresh_time);
+			address_resolver = new AddressResolver(this, refresh_time);
 	}
 
 	/** Costructs a new ExtendedSipProvider. 
 	 * The SipProvider attributres are read from file. 
 	 */ 
-	public ExtendedSipProvider(SipConfig sipConfig, long refresh_time, long keepalive_time) {
-		super(sipConfig);
+	public ExtendedSipProvider(Scheduler scheduler, SipConfig sipConfig, long refresh_time, long keepalive_time) {
+		super(sipConfig, scheduler);
 		init(refresh_time,keepalive_time);
 	}
 

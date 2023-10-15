@@ -46,7 +46,6 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
-import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
 
 
@@ -419,7 +418,8 @@ public class RegistrationClient implements TransactionClientListener {
 			LOG.info("Registration success, expires in " + expires + "s: " + result);
 			if (loop) {
 				cancelAttemptTimeout();
-				registration_to = Scheduler.scheduleTask((long) renew_time * 1000, this::onRegistrationTimeout);
+				registration_to = sip_provider.scheduler().schedule((long) renew_time * 1000,
+						this::onRegistrationTimeout);
 				LOG.trace("Scheduling next registration in " + renew_time + "s");
 			}
 			if (listener!=null) listener.onRegistrationSuccess(this,to_naddr,contact_naddr,expires,result);
@@ -473,7 +473,7 @@ public class RegistrationClient implements TransactionClientListener {
 				if (loop) {
 					cancelRegistrationTimeout();
 					attemptTimeout = sip_provider.sipConfig().getRegMaxAttemptTimeout();
-					attempt_to = Scheduler.scheduleTask(attemptTimeout, this::onAttemptTimeout);
+					attempt_to = sip_provider.scheduler().schedule(attemptTimeout, this::onAttemptTimeout);
 					LOG.trace("next attempt after "+(sip_provider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
 				}
 				if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,result);
@@ -492,7 +492,7 @@ public class RegistrationClient implements TransactionClientListener {
 						: attemptTimeout * 2;
 				if (inter_time_msecs>sip_provider.sipConfig().getRegMaxAttemptTimeout()) inter_time_msecs=sip_provider.sipConfig().getRegMaxAttemptTimeout();
 				attemptTimeout = inter_time_msecs;
-				attempt_to = Scheduler.scheduleTask(attemptTimeout, this::onAttemptTimeout);
+				attempt_to = sip_provider.scheduler().schedule(attemptTimeout, this::onAttemptTimeout);
 				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}
 			if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,"Timeout");

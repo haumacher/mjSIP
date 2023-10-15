@@ -5,6 +5,8 @@ import java.io.InputStreamReader;
 
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.cli.MessageAgentCli;
 import org.zoolu.util.Flags;
 
@@ -13,16 +15,16 @@ public class MA {
 	/** The main method. */
 	public static void main(String[] args) {
 		Flags flags=new Flags(MA.class.getName(), args);
-		String file=flags.getString("-f","<config_file>",null,"specifies a configuration file");
+		String config_file=flags.getString("-f","<config_file>",null,"specifies a configuration file");
 		String remote_user=flags.getString("-c","<call_to>",null,"calls a remote user");      
 		boolean unregist=flags.getBoolean("-u","unregisters the contact address with the registrar server (the same as -g 0)");
 		boolean unregist_all=flags.getBoolean("-z","unregisters ALL contact addresses");
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
-
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		UAConfig user_profile=UAConfig.init(config_file, flags);         
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 				
-		SipConfig sipConfig = SipConfig.init(file);
-		UAConfig user_profile=UAConfig.init(file);         
 		
 		if (regist_time>0) {
 			user_profile.doRegister=true;
@@ -31,7 +33,7 @@ public class MA {
 		if (unregist) user_profile.doUnregister=true;
 		if (unregist_all) user_profile.doUnregisterAll=true;
 
-		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig),user_profile);
+		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),user_profile);
 		if (user_profile.doUnregisterAll) {
 			cli.unregisterall();
 		} 

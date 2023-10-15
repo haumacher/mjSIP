@@ -28,28 +28,12 @@ public class Scheduler {
 	 */
 	private ScheduledThreadPoolExecutor daemonExecutor;
 
-	/** Whether the default mode is 'daemon', or not */
-	public static boolean DEFAULT_DAEMON_MODE=false;
-
-	private static Scheduler INSTANCE;
-
-	/**
-	 * The {@link Scheduler} singleton.
-	 */
-	public static synchronized Scheduler getInstance() {
-		if (INSTANCE == null) {
-			INSTANCE = new Scheduler();
-		}
-
-		return INSTANCE;
-	}
-
 	/**
 	 * Creates a {@link Scheduler}.
 	 */
-	public Scheduler() {
-		executor = new ScheduledThreadPoolExecutor(3,
-				Scheduler.DEFAULT_DAEMON_MODE ? new DaemonFactory() : Executors.defaultThreadFactory());
+	public Scheduler(SchedulerConfig config) {
+		executor = new ScheduledThreadPoolExecutor(config.getThreadPoolSize(),
+				config.useDaemonThreads() ? new DaemonFactory() : Executors.defaultThreadFactory());
 	}
 
 	/**
@@ -67,7 +51,7 @@ public class Scheduler {
 	}
 
 	/**
-	 * Schedule a new task.
+	 * Schedules a new task.
 	 * 
 	 * @param delay
 	 *        the delay in milliseconds to wait before starting the given task
@@ -76,15 +60,15 @@ public class Scheduler {
 	 * 
 	 * @return The {@link ScheduledFuture} to control the task.
 	 */
-	public static ScheduledFuture<?> scheduleTask(long delay, Runnable task) {
-		return getInstance().executor().schedule(task, delay, TimeUnit.MILLISECONDS);
+	public ScheduledFuture<?> schedule(long delay, Runnable task) {
+		return executor().schedule(task, delay, TimeUnit.MILLISECONDS);
 	}
 
 	/**
 	 * Schedules the given repeated task with a given fixed delay.
 	 */
-	public static ScheduledFuture<?> scheduleWithFixedDelay(long delay, Runnable task) {
-		return getInstance().executor().scheduleWithFixedDelay(task, delay, delay, TimeUnit.MILLISECONDS);
+	public ScheduledFuture<?> schedulerWithFixedDelay(long delay, Runnable task) {
+		return executor().scheduleWithFixedDelay(task, delay, delay, TimeUnit.MILLISECONDS);
 	}
 
 	private static class DaemonFactory implements ThreadFactory {

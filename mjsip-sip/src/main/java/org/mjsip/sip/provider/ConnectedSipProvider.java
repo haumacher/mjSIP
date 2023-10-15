@@ -31,6 +31,7 @@ import java.util.Hashtable;
 
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
+import org.mjsip.time.Scheduler;
 import org.zoolu.net.IpAddress;
 
 
@@ -53,8 +54,8 @@ public class ConnectedSipProvider extends SipProvider {
 	/**
 	 * Creates a {@link ConnectedSipProvider}.
 	 */
-	public ConnectedSipProvider(SipConfig sipConfig) throws IOException {
-		super(sipConfig);
+	public ConnectedSipProvider(SipConfig sipConfig, Scheduler scheduler) throws IOException {
+		super(sipConfig, scheduler);
 		setForceRport(true);
 		connect();
 	}

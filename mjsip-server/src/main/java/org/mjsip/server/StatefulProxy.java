@@ -40,6 +40,8 @@ import org.mjsip.sip.transaction.Transaction;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.mjsip.sip.transaction.TransactionServer;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -356,12 +358,14 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	public static void main(String[] args) {
 		Flags flags=new Flags(StatefulProxy.class.getName(), args);
 		boolean prompt_exit=flags.getBoolean("-h","prints this message");
-		String file=flags.getString("-f","<file>",null,"loads configuration from the given file");
+		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
 		
+		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 						
-		SipProvider sip_provider=new SipProvider(SipConfig.init(file));
-		ServerProfile server_profile=new ServerProfile(file);
+		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		ServerProfile server_profile=new ServerProfile(config_file);
 		
 		StatefulProxy sproxy=new StatefulProxy(sip_provider,server_profile);   
 		

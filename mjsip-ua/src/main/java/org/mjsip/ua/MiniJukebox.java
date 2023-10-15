@@ -29,6 +29,8 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
@@ -80,13 +82,14 @@ public class MiniJukebox extends UserAgentCli {
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 
 		uaConfig.audio=true;
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new MiniJukebox(new SipProvider(sipConfig),uaConfig);
+		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig);
 	}    
 	
 }
