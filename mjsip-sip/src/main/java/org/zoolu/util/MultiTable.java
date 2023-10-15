@@ -34,16 +34,16 @@ import java.util.Vector;
 /** MultiTable (multiple-values table) is a one-to-many table.
   * A MultiTable maps a key to a set (actually Vector) of objects.
   */
-public class MultiTable {
+public class MultiTable<K, V> {
 	
 	/** Hashtable that maps (String)key to (Vector)set. */
-	Hashtable table;
+	Hashtable<K, Vector<V>> table;
 
 
 
 	/** Creates a new MultiTable. */
 	public MultiTable() {
-		table=new Hashtable();
+		table = new Hashtable<>();
 	}  
 
 	/** Clears this hashtable so that it contains no keys. */
@@ -52,9 +52,10 @@ public class MultiTable {
 	}
 	
 	/** Tests if some key maps into the specified value in this table. */
-	public boolean contains(Object value) {
-		for (Enumeration keys=keys(); keys.hasMoreElements(); ) {
-			if (((Vector)keys.nextElement()).contains(value)) return true;
+	public boolean contains(V value) {
+		for (var keys = keys(); keys.hasMoreElements();) {
+			if (get(keys.nextElement()).contains(value))
+				return true;
 		}
 		return false;
 	}
@@ -65,18 +66,19 @@ public class MultiTable {
 	}
 	
 	/** Returns an enumeration of the values in this table. */
-	public Enumeration elements() {
-		Vector elements=new Vector();
-		for (Enumeration keys=keys(); keys.hasMoreElements(); ) {
+	public Enumeration<V> elements() {
+		Vector<V> elements = new Vector<>();
+		for (Enumeration<K> keys = keys(); keys.hasMoreElements();) {
 			//elements.addAll(((Vector)keys.nextElement()));
-			for (Enumeration e=((Vector)keys.nextElement()).elements(); e.hasMoreElements(); ) elements.addElement(e.nextElement());
+			for (Enumeration<V> e = get(keys.nextElement()).elements(); e.hasMoreElements();)
+				elements.addElement(e.nextElement());
 		}
 		return elements.elements();
 	}
 	
 	/** Returns the set of values to which the specified key is mapped in this table. */
-	public Vector get(Object key) {
-		return (Vector)table.get(key);
+	public Vector<V> get(Object key) {
+		return table.get(key);
 	}
 	
 	/** Tests if this hashtable maps no keys to values. */
@@ -85,14 +87,15 @@ public class MultiTable {
 	}
 	
 	/** Returns an enumeration of the keys in this table. */
-	public Enumeration keys() {
+	public Enumeration<K> keys() {
 		return table.keys();
 	}
 	
 	/** Maps the specified key to the specified value in this table. */
-	public void put(Object key, Object value) {
-		if (!table.containsKey(key)) table.put(key,new Vector());
-		Vector set=(Vector)table.get(key);
+	public void put(K key, V value) {
+		if (!table.containsKey(key))
+			table.put(key, new Vector<>());
+		Vector<V> set = table.get(key);
 		set.addElement(value);
 	}
 	
@@ -102,8 +105,8 @@ public class MultiTable {
 	}
 	
 	/** Removes a given mapping <i>key--&gt;value</i> from this table. */
-	public void remove(Object key, Object value) {
-		Vector set=(Vector)table.get(key);
+	public void remove(K key, V value) {
+		Vector<V> set = table.get(key);
 		if (set!=null) {
 			set.removeElement(value);
 			if (set.isEmpty()) table.remove(key);
@@ -113,8 +116,8 @@ public class MultiTable {
 	/** Returns the number of keys in this table. */
 	public int size() {
 		int size=0;
-		for (Enumeration keys=keys(); keys.hasMoreElements(); ) {
-			size+=((Vector)keys.nextElement()).size();
+		for (Enumeration<K> keys = keys(); keys.hasMoreElements();) {
+			size += get(keys.nextElement()).size();
 		}
 		return size;
 	}

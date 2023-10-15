@@ -28,7 +28,7 @@ public class VectorUtils {
 	/** Adds a vector to a vector.
 	 * @param v vector to be filled (destination)
 	 * @param a the vector to be added (source) */
-	public static void addVector(Vector v, Vector a) {
+	public static <T> void addVector(Vector<T> v, Vector<? extends T> a) {
 		for (int i=0; i<a.size(); i++) v.add(a.get(i));
 	}
 

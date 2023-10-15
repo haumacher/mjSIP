@@ -172,9 +172,9 @@ public class UAConfig extends Configure {
 	/** Array of media descriptions */
 	public MediaDesc[] mediaDescs=new MediaDesc[]{};
 	/** Vector of media descriptions */
-	private Vector mediaDescVector=new Vector();
+	private Vector<MediaDesc> mediaDescVector=new Vector<>();
 	/** Table of media specifications, as multiple-values table of (String)media-->(MediaSpec)media_spec */
-	private MultiTable mediaSpecTable=new MultiTable();
+	private MultiTable<String,MediaSpec> mediaSpecTable=new MultiTable<>();
 
 	/** Whether using JMF for audio streaming */
 	public boolean useJmfAudio=false;
@@ -273,14 +273,14 @@ public class UAConfig extends Configure {
 		}
 		mediaDescs=new MediaDesc[mediaDescVector.size()];
 		for (int i=0; i<mediaDescVector.size(); i++) {
-			MediaDesc md=(MediaDesc)mediaDescVector.elementAt(i);
-			Vector media_spec_vector=new Vector();
+			MediaDesc md=mediaDescVector.elementAt(i);
+			Vector<MediaSpec> media_spec_vector=new Vector<MediaSpec>();
 			MediaSpec[] ms_array=md.getMediaSpecs();
 			if (ms_array.length>0) {
 				//media_spec_vector.addAll(Arrays.asList(ms_array));
 				VectorUtils.addArray(media_spec_vector,ms_array);
 			}
-			Vector ms_vector=mediaSpecTable.get(md.getMedia());
+			Vector<MediaSpec> ms_vector=mediaSpecTable.get(md.getMedia());
 			if (ms_vector!=null) {
 				//media_spec_vector.addAll(ms_vector);
 				VectorUtils.addVector(media_spec_vector,ms_vector);
@@ -366,7 +366,7 @@ public class UAConfig extends Configure {
 	  * @param diff the incremented value for successive media ports */
 	public void setMediaPort(int media_port, int diff) {
 		for (int i=0; i<mediaDescs.length; i++) {
-			MediaDesc md=(MediaDesc)mediaDescs[i];
+			MediaDesc md=mediaDescs[i];
 			md.setPort(media_port);
 			media_port+=diff;
 		}
@@ -376,7 +376,7 @@ public class UAConfig extends Configure {
 	/** Gets the transport port of the first medium.
 	  * @return the port number of the first medium,if any, otherwise -1 */
 	public int getMediaPort() {
-		if (mediaDescs!=null && mediaDescs.length>0) return ((MediaDesc)mediaDescs[0]).getPort();
+		if (mediaDescs!=null && mediaDescs.length>0) return mediaDescs[0].getPort();
 		else return -1;
 	}
 
@@ -384,7 +384,9 @@ public class UAConfig extends Configure {
 	// *********************** protected methods **********************
 
 	/** Parses a single line (loaded from the config file)
-	  * @param line a string containing the pair attribute name and attribute value, separated by a "=" */
+	 * @param attribute The name of the option.
+	 * @param par The {@link Parser} delivering the option value.
+	  */
 	@Override
 	public void setOption(String attribute, Parser par) {
 		if (attribute.equals("display_name"))   {  displayName=par.getRemainingString().trim();  return;  }
