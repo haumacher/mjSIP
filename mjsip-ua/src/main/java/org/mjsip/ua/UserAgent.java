@@ -166,25 +166,30 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		uaConfig.setUnconfiguredAttributes(sip_provider);
 
 		// log main config parameters
-		LOG.debug("ua_address: "+uaConfig.ua_address);
-		LOG.debug("user's uri: "+uaConfig.getUserURI());
-		LOG.debug("proxy: "+uaConfig.proxy);
-		LOG.debug("registrar: "+uaConfig.registrar);
-		LOG.debug("auth_realm: "+uaConfig.authRealm);
-		LOG.debug("auth_user: "+uaConfig.authUser);
-		LOG.debug("auth_passwd: ******");
-		LOG.debug("audio: "+uaConfig.audio);
-		LOG.debug("video: "+uaConfig.video);
-		for (int i=0; i<uaConfig.mediaDescs.length; i++) {
-			LOG.debug("media: "+(uaConfig.mediaDescs[i]).toString());
-		}      
-		// log other config parameters
-		LOG.trace("loopback: "+uaConfig.loopback);
-		LOG.trace("send_only: "+uaConfig.sendOnly);
-		LOG.trace("recv_only: "+uaConfig.recvOnly);
-		LOG.trace("send_file: "+uaConfig.sendFile);
-		LOG.trace("recv_file: "+uaConfig.recvFile);
-		LOG.trace("send_tone: "+uaConfig.sendTone);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("ua_address: "+uaConfig.ua_address);
+			LOG.debug("user's uri: "+uaConfig.getUserURI());
+			LOG.debug("proxy: "+uaConfig.proxy);
+			LOG.debug("registrar: "+uaConfig.registrar);
+			LOG.debug("auth_realm: "+uaConfig.authRealm);
+			LOG.debug("auth_user: "+uaConfig.authUser);
+			LOG.debug("auth_passwd: " + (uaConfig.authPasswd != null && !uaConfig.authPasswd.isEmpty() ? "***" : "-"));
+			LOG.debug("audio: "+uaConfig.audio);
+			LOG.debug("video: "+uaConfig.video);
+			for (int i=0; i<uaConfig.mediaDescs.length; i++) {
+				LOG.debug("media: "+(uaConfig.mediaDescs[i]).toString());
+			}
+			
+			// log other config parameters
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("loopback: "+uaConfig.loopback);
+				LOG.trace("send_only: "+uaConfig.sendOnly);
+				LOG.trace("recv_only: "+uaConfig.recvOnly);
+				LOG.trace("send_file: "+uaConfig.sendFile);
+				LOG.trace("recv_file: "+uaConfig.recvFile);
+				LOG.trace("send_tone: "+uaConfig.sendTone);
+			}
+		}
 
 		// start listening for INVITE requests (UAS)
 		if (uaConfig.uaServer) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
