@@ -83,11 +83,11 @@ public class UAConfig extends Configure {
 
 	/** Relative path of UA media resources (gif, wav, etc.) within the UA jar file or within the resources folder. 
 	  * By default, the folder "media/org/mjsip/ua" is used. */
-	public static String mediaPath="media/org/mjsip/ua";
+	public String mediaPath="media/org/mjsip/ua";
 
 	/** Absolute path (or complete URI) of the buddy list file where the buddy list is and loaded from (and saved to).
 	  * By default, the file "buddy.lst" is used. */
-	public static String buddyListFile="buddy.lst";
+	public String buddyListFile="buddy.lst";
 
 	/** Whether registering with the registrar server */
 	public boolean doRegister=false;
