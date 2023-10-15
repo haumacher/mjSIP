@@ -330,19 +330,6 @@ public class SipProvider implements SipTransportListener {
 		return toString();
 	}
 
-
-	/** Gets a String with the list of transport protocols. */ 
-	private String transportProtocolsToString() {
-		if (sip_transports==null) return ""; 
-		// else
-		StringBuffer sb=new StringBuffer();
-		for (Enumeration e=sip_transports.keys(); e.hasMoreElements(); ) {
-			sb.append("/").append((String)e.nextElement());
-		}
-		return sb.toString();
-	}
-
-
 	// ************************** Public methods *************************
 
 	/** Whether it has the given transport protocol. */
@@ -1145,13 +1132,27 @@ public class SipProvider implements SipTransportListener {
 	/** Gets a String value for this object. */ 
 	@Override
 	public String toString() {
-		if (_sipConfig.getBindingIpAddr() == null)
-			return _sipConfig.getHostPort() + "/" + transportProtocolsToString();
-		else
-			return _sipConfig.getBindingIpAddr().toString() + ":" + _sipConfig.getHostPort() + "/"
-					+ transportProtocolsToString();
+		String portAndProtocols = _sipConfig.getHostPort() + toStringTransportProtocols();
+
+		if (_sipConfig.getBindingIpAddr() == null) {
+			return portAndProtocols;
+		} else {
+			return _sipConfig.getBindingIpAddr().toString() + ":" + portAndProtocols;
+		}
 	}   
 
+	/** Gets a String with the list of transport protocols. */
+	private String toStringTransportProtocols() {
+		if (sip_transports == null) {
+			return "";
+		}
+
+		StringBuffer sb = new StringBuffer();
+		for (Enumeration<String> e = sip_transports.keys(); e.hasMoreElements();) {
+			sb.append("/").append(e.nextElement());
+		}
+		return sb.toString();
+	}
 
 	//******************************* Logs *******************************
 
