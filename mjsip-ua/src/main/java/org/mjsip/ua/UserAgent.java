@@ -545,12 +545,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 	}
 
-	private MediaSpec findMatchingMediaSpec(String media, int avp) {
+	private MediaSpec findMatchingMediaSpec(String mediaType, int avp) {
 		MediaSpec media_spec=null;
 		
 		findMediaSpec:
 		for (MediaDesc descriptors : media_descs) {
-			if (descriptors.getMedia().equalsIgnoreCase(media)) {
+			if (descriptors.getMedia().equalsIgnoreCase(mediaType)) {
 				MediaSpec[] specs=descriptors.getMediaSpecs();
 				for (MediaSpec spec : specs) {
 					if (spec.getAVP() == avp) {
