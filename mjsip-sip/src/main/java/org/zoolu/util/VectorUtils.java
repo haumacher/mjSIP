@@ -45,8 +45,8 @@ public class VectorUtils {
 	/** Copy a vector.
 	 * @param v the vector to be copied
 	 * @return a vector containing all elements of the given vector */
-	public static Vector copy(Vector v) {
-		Vector v2=new Vector();
+	public static <T> Vector<T> copy(Vector<T> v) {
+		Vector<T> v2 = new Vector<>();
 		for (int i=0; i<v.size(); i++) v2.add(v.get(i));
 		return v2;
 	}

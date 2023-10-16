@@ -167,13 +167,13 @@ class SdpParser extends Parser {
 		index=end;
 		SdpParser par=new SdpParser(str.substring(begin,end));
 		ConnectionField c=par.parseConnectionField();
-		Vector av=new Vector();
+		Vector<AttributeField> av = new Vector<>();
 		AttributeField a=par.parseAttributeField();
 		while (a!=null) {
 			av.addElement(a);
 			a=par.parseAttributeField();
 		}
-		return new MediaDescriptor(m,c,(AttributeField[])av.toArray(new AttributeField[]{}));
+		return new MediaDescriptor(m, c, av.toArray(new AttributeField[] {}));
 	}
 
 }

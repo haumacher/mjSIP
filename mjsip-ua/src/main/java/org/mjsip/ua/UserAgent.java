@@ -112,7 +112,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	MediaAgent media_agent;
 	
 	/** List of active media sessions */
-	protected Vector media_sessions=new Vector();
+	protected Vector<String> media_sessions=new Vector<>();
 
 	/** Current local media descriptions */
 	protected MediaDesc[] media_descs=null;
@@ -480,27 +480,27 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Starts media sessions (audio and/or video). */
 	protected void startMediaSessions() {
-		
 		// exit if the media application is already running  
 		if (media_sessions.size()>0) {
 			LOG.debug("media sessions already active");
 			return;
 		}
+
 		// get local and remote rtp addresses and ports
 		SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
 		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
-		String local_address=local_sdp.getConnection().getAddress();
-		String remote_address=remote_sdp.getConnection().getAddress();
+		
 		// calculate media descriptor product
-		Vector md_list=OfferAnswerModel.makeMediaDescriptorProduct(local_sdp.getMediaDescriptors(),remote_sdp.getMediaDescriptors());
+		Vector<MediaDescriptor> md_list=OfferAnswerModel.makeMediaDescriptorProduct(local_sdp.getMediaDescriptors(),remote_sdp.getMediaDescriptors());
+		
 		// select the media direction (send_only, recv_ony, fullduplex)
 		FlowSpec.Direction dir=FlowSpec.FULL_DUPLEX;
 		if (uaConfig.recvOnly) dir=FlowSpec.RECV_ONLY;
 		else
 		if (uaConfig.sendOnly) dir=FlowSpec.SEND_ONLY;
 		// for each media
-		for (Enumeration ei=md_list.elements(); ei.hasMoreElements(); ) {
-			MediaField md=((MediaDescriptor)ei.nextElement()).getMedia();
+		for (Enumeration<MediaDescriptor> ei=md_list.elements(); ei.hasMoreElements(); ) {
+			MediaField md=ei.nextElement().getMedia();
 			String media=md.getMedia();
 			// local and remote ports
 			int local_port=md.getPort();
@@ -508,7 +508,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			remote_sdp.removeMediaDescriptor(media);
 			// media and flow specifications
 			String transport=md.getTransport();
-			String format=(String)md.getFormatList().elementAt(0);
+			String format=md.getFormatList().elementAt(0);
 			int avp=Integer.parseInt(format);
 			MediaSpec media_spec=null;
 			for (int i=0; i<media_descs.length && media_spec==null; i++) {
@@ -516,12 +516,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				if (media_desc.getMedia().equalsIgnoreCase(media)) {
 					MediaSpec[] media_specs=media_desc.getMediaSpecs();
 					for (int j=0; j<media_specs.length && media_spec==null; j++) {
-						MediaSpec ms=(MediaSpec)media_specs[j];
+						MediaSpec ms=media_specs[j];
 						if (ms.getAVP()==avp) media_spec=ms;
 					}
 				}
 			}
 			if (local_port!=0 && remote_port!=0 && media_spec!=null) {
+				String remote_address=remote_sdp.getConnection().getAddress();
 				FlowSpec flow_spec=new FlowSpec(media_spec,local_port,remote_address,remote_port,dir);
 				LOG.info(media+" format: "+flow_spec.getMediaSpec().getCodec());
 				boolean success=media_agent.startMediaSession(flow_spec);           
@@ -540,7 +541,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Closes media sessions.  */
 	protected void closeMediaSessions() {
 		for (int i=0; i<media_sessions.size(); i++) {
-			String media=(String)media_sessions.elementAt(i);
+			String media=media_sessions.elementAt(i);
 			media_agent.stopMediaSession(media);
 			if (listener!=null) listener.onUaMediaSessionStopped(this,media);
 		}
