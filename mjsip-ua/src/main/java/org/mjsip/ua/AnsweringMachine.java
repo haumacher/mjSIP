@@ -23,6 +23,13 @@ package org.mjsip.ua;
 
 
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
@@ -58,8 +65,16 @@ public class AnsweringMachine extends MultipleUAS {
 		
 		_firstMediaPort = uaConfig.getMediaPort();
 		_lastMediaPort = _firstMediaPort + portCnt - 1;
-	} 
-
+		
+		if (uaConfig.sendFile != null) {
+			try {
+				AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(uaConfig.sendFile));
+				LOG.info("Announcement file format: " + audioFormat);
+			} catch (UnsupportedAudioFileException | IOException ex) {
+				LOG.error("Failed to analyze send file.", ex);
+			}
+		}
+	}
 
 	/** From UserAgentListener. When a new call is incoming. */
 	@Override
