@@ -4,6 +4,7 @@ package org.mjsip.media;
 
 import java.io.IOException;
 
+import org.mjsip.media.FlowSpec.Direction;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.sound.CodecType;
 
@@ -213,7 +214,8 @@ public class AudioApp {
 			System.exit(0);
 		}
 		
-		FlowSpec.Direction dir=(remote_soaddr==null)? FlowSpec.RECV_ONLY: ((local_port==0)? FlowSpec.SEND_ONLY : FlowSpec.FULL_DUPLEX);
+		FlowSpec.Direction dir = (remote_soaddr == null) ? Direction.RECV_ONLY
+				: ((local_port == 0) ? Direction.SEND_ONLY : Direction.FULL_DUPLEX);
 		String remote_ipaddr=(remote_soaddr!=null)? remote_soaddr.getAddress().toString() : null;
 		int remote_port=(remote_soaddr!=null)? remote_soaddr.getPort() : 0;
 		

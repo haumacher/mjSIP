@@ -309,12 +309,18 @@ public class SdpMessage {
 		return media;
 	}
 
-	/** Removes all MediaDescriptors
-	 * @return this SDP message */
+	/**
+	 * Removes all {@link MediaDescriptor} matching the given media type.
+	 * 
+	 * @return this SDP message
+	 */
 	public SdpMessage removeMediaDescriptor(String media_type) {
-		for (int i=media.size()-1; i>=0; i--)
-			if (media.elementAt(i).getMedia().getMedia().equals(media_type))
+		for (int i = media.size() - 1; i >= 0; i--) {
+			MediaDescriptor mediaElement = media.elementAt(i);
+			if (mediaElement.getMedia().getMedia().equals(media_type)) {
 				media.removeElementAt(i);
+			}
+		}
 		return this;
 	}
 

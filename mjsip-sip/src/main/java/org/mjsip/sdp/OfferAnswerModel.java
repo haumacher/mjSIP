@@ -111,71 +111,48 @@ public class OfferAnswerModel {
 	  * @param start_sdp the starting SDP (SessionDescriptor)
 	  * @param offer_sdp the offered SDP (SessionDescriptor)
 	  * @return the answered SDP (SessionDescriptor) */
-	public static SdpMessage makeSessionDescriptorProduct(SdpMessage start_sdp, SdpMessage offer_sdp) {
+	public static SdpMessage makeSessionDescriptorMatch(SdpMessage start_sdp, SdpMessage offer_sdp) {
 		SdpMessage answer_sdp=new SdpMessage(start_sdp);
 		answer_sdp.removeMediaDescriptors();
-		Vector answer_md_list=makeMediaDescriptorProduct(start_sdp.getMediaDescriptors(),offer_sdp.getMediaDescriptors());
+		Vector<MediaDescriptor> answer_md_list = makeMediaDescriptorMatch(start_sdp.getMediaDescriptors(),
+				offer_sdp.getMediaDescriptors());
 		answer_sdp.addMediaDescriptors(answer_md_list);
 		return answer_sdp;
 	}
 
 
-	/** Calculates a MediaDescriptor list product of a starting MediaDescriptor list
-	  * and an offered MediaDescriptor list.
-	  * <p>
-	  * The product is calculated as answer of a media offer, according to RFC3264.
-	  * @param start_md_list the starting MediaDescriptor list (as Vector of MediaDescriptors)
-	  * @param offer_md_list the offered MediaDescriptor list (as Vector of MediaDescriptors)
-	  * @return the answered MediaDescriptor list (as Vector of MediaDescriptors) */
-	public static Vector makeMediaDescriptorProduct(Vector start_md_list, Vector offer_md_list) {
-		Vector answer_md_list=new Vector();
-		//Vector aux_md_list=new Vector(start_md_list);
-		Vector aux_md_list=VectorUtils.copy(start_md_list);
-		for (int i=0; i<offer_md_list.size(); i++) {
-			MediaDescriptor offer_md=(MediaDescriptor)offer_md_list.elementAt(i);
-			String media_type=offer_md.getMedia().getMedia();
-			for (int j=0; j<aux_md_list.size(); j++) {
-				MediaDescriptor aux_md=(MediaDescriptor)aux_md_list.elementAt(j);
-				MediaField aux_mf=aux_md.getMedia();
-				if (aux_mf.getMedia().equals(media_type)) {
-					/*
-					// select the proper formats 
-					Vector aux_ft_list=aux_mf.getFormatList();
-					Vector offer_ft_list=offer_md.getMedia().getFormatList();
-					Vector answer_ft_list=new Vector();
-					for (int h=0; h<offer_ft_list.size(); h++) {
-						String offer_ft=(String)offer_ft_list.elementAt(h);
-						for (int k=0; k<aux_ft_list.size(); k++) {
-							if (offer_ft.equals((String)aux_ft_list.elementAt(k))) {
-								answer_ft_list.addElement(offer_ft);
-								break;
-							}
-						}
-					}
-					// select the proper attributes
-					Vector aux_attr_list=aux_md.getAttributes("rtpmap");
-					Vector answer_attr_list=new Vector();
-					for (int h=0; h<answer_ft_list.size(); h++) {
-						String answer_ft=(String)answer_ft_list.elementAt(h);
-						for (int k=0; k<aux_attr_list.size(); k++) {
-							AttributeField attr=(AttributeField)aux_attr_list.elementAt(k);
-							if (attr.getAttributeValue().startsWith(answer_ft)) {
-								answer_attr_list.addElement(attr);
-							}
-						}
-					}
-					MediaField answer_mf=new MediaField(aux_mf.getMedia(),aux_mf.getPort(),0,aux_mf.getTransport(),answer_ft_list);
-					MediaDescriptor answer_md=new MediaDescriptor(answer_mf,null,answer_attr_list);
-					*/
-					MediaDescriptor answer_md=makeMediaDescriptorProduct(aux_md,offer_md);
-					answer_md_list.addElement(answer_md);
+	/**
+	 * Calculates a MediaDescriptor list product of a starting MediaDescriptor list and an offered
+	 * MediaDescriptor list.
+	 * <p>
+	 * The product is calculated as answer of a media offer, according to RFC3264.
+	 * 
+	 * @param localDescriptors
+	 *        the starting MediaDescriptor list (as Vector of MediaDescriptors)
+	 * @param remoteDescriptors
+	 *        the offered MediaDescriptor list (as Vector of MediaDescriptors)
+	 * @return the answered MediaDescriptor list (as Vector of MediaDescriptors)
+	 */
+	public static Vector<MediaDescriptor> makeMediaDescriptorMatch(Vector<MediaDescriptor> localDescriptors,
+			Vector<MediaDescriptor> remoteDescriptors) {
+		Vector<MediaDescriptor> result = new Vector<>();
+
+		Vector<MediaDescriptor> availableDescriptors = VectorUtils.copy(localDescriptors);
+		for (MediaDescriptor remote : remoteDescriptors) {
+			String mediaType = remote.getMedia().getMedia();
+			for (int j = 0; j < availableDescriptors.size(); j++) {
+				MediaDescriptor available = availableDescriptors.elementAt(j);
+				if (available.getMedia().getMedia().equals(mediaType)) {
+					MediaDescriptor match = makeMediaDescriptorMatch(available, remote);
+					result.addElement(match);
+
 					// remove this media from the base list (actually from the aux copy), and break
-					aux_md_list.removeElementAt(j);
+					availableDescriptors.removeElementAt(j);
 					break;
 				}
 			}
 		}
-		return answer_md_list;
+		return result;
 	}   
 
 
@@ -183,40 +160,44 @@ public class OfferAnswerModel {
 	  * MediaDescriptor.
 	  * <p>
 	  * The result is calculated as answer of a media offer, according to RFC3264. */
-	public static MediaDescriptor makeMediaDescriptorProduct(MediaDescriptor start_md, MediaDescriptor offer_md) {
+	public static MediaDescriptor makeMediaDescriptorMatch(MediaDescriptor local, MediaDescriptor remote) {
 		// select the proper formats 
-		MediaField start_mf=start_md.getMedia();
-		Vector start_ft_list=start_mf.getFormatList();
-		Vector offer_ft_list=offer_md.getMedia().getFormatList();
-		Vector answer_ft_list=new Vector();
-		for (int h=0; h<offer_ft_list.size(); h++) {
-			String offer_ft=(String)offer_ft_list.elementAt(h);
-			for (int k=0; k<start_ft_list.size(); k++) {
-				if (offer_ft.equals((String)start_ft_list.elementAt(k))) {
-					answer_ft_list.addElement(offer_ft);
-					break;
-				}
-			}
-		}
+		MediaField localMedia = local.getMedia();
+
+		Vector<String> answerFormats = intersection(localMedia.getFormatList(), remote.getMedia().getFormatList());
+
 		// select the 'rtpmap' attributes
-		AttributeField[] start_attrs=start_md.getAttributes("rtpmap");
-		Vector answer_attr_list=new Vector();
-		for (int h=0; h<answer_ft_list.size(); h++) {
-			String answer_ft=(String)answer_ft_list.elementAt(h);
-			for (int k=0; k<start_attrs.length; k++) {
-				AttributeField attr=(AttributeField)start_attrs[k];
-				if (attr.getAttributeValue().startsWith(answer_ft)) {
-					answer_attr_list.addElement(attr);
+		AttributeField[] localAttributes = local.getAttributes("rtpmap");
+		Vector<AttributeField> answerAttributes = new Vector<>();
+		for (String answerFormat : answerFormats) {
+			for (AttributeField localAttr : localAttributes) {
+				if (localAttr.getAttributeValue().startsWith(answerFormat)) {
+					answerAttributes.addElement(localAttr);
 				}
 			}
 		}
-		MediaField answer_mf=new MediaField(start_mf.getMedia(),start_mf.getPort(),0,start_mf.getTransport(),answer_ft_list);
-		MediaDescriptor answer_md=new MediaDescriptor(answer_mf,null,(AttributeField[])answer_attr_list.toArray(new AttributeField[]{}));
+		MediaField answerMedia = new MediaField(localMedia.getMedia(), localMedia.getPort(), 0,
+				localMedia.getTransport(), answerFormats);
+		MediaDescriptor answer = new MediaDescriptor(answerMedia, null,
+				answerAttributes.toArray(new AttributeField[] {}));
 		
 		// select other attributes
 		//answer_md.addAttributes(SdesOfferAnswerModel.makeCryptoAttributeProduct(start_md,offer_md));     
 		
-		return answer_md;
+		return answer;
+	}
+
+	private static <T> Vector<T> intersection(Vector<T> l1, Vector<T> l2) {
+		Vector<T> result = new Vector<>();
+		for (T e2 : l2) {
+			for (T e1 : l1) {
+				if (e2.equals(e1)) {
+					result.addElement(e2);
+					break;
+				}
+			}
+		}
+		return result;
 	}
 
 }

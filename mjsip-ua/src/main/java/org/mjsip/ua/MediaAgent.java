@@ -50,7 +50,7 @@ public class MediaAgent {
 	UAConfig uaConfig;
 
 	/** Active media streamers, as table of: (String)media-->(MediaStreamer)media_streamer */
-	Hashtable media_streamers=new Hashtable();
+	Hashtable<String, MediaStreamer> media_streamers=new Hashtable<>();
 
 
 
@@ -68,7 +68,7 @@ public class MediaAgent {
 			for (int i=0; i<uaConfig.mediaDescs.length; i++) {
 				MediaDesc media_desc=uaConfig.mediaDescs[i];
 				if (media_desc.getMedia().equalsIgnoreCase("audio")) {
-					MediaSpec ms=(MediaSpec)media_desc.getMediaSpecs()[0];
+					MediaSpec ms=media_desc.getMediaSpecs()[0];
 					audio_sample_rate=ms.getSampleRate();
 					channels=ms.getChannels();
 				}
@@ -84,38 +84,35 @@ public class MediaAgent {
 	
 	/** Starts a media session */
 	public boolean startMediaSession(FlowSpec flow_spec) {
-		LOG.info("start("+flow_spec.getMediaSpec()+")");
-		LOG.info("new flow: "+flow_spec.getLocalPort()+((flow_spec.getDirection()==FlowSpec.SEND_ONLY)? "=-->" : ((flow_spec.getDirection()==FlowSpec.RECV_ONLY)? "<--=" : "<-->" ))+flow_spec.getRemoteAddress()+":"+flow_spec.getRemotePort());
+		LOG.info("Starting media session: " + flow_spec.getMediaSpec());
+		LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
 
 		String media=flow_spec.getMediaSpec().getType();
 		
 		// stop previous media streamer (just in case something was wrong..)
-		if (media_streamers.containsKey(media)) {
-			((MediaStreamer)media_streamers.get(media)).halt();
-			media_streamers.remove(media);
+		MediaStreamer existing = media_streamers.remove(media);
+		if (existing != null) {
+			existing.halt();
 		}
 		 
 		// start new media streamer
-		MediaStreamer media_streamer=null;
-
-		if (uaConfig.loopback)
+		MediaStreamer media_streamer;
+		if (uaConfig.loopback) {
 			media_streamer = new LoopbackMediaStreamer(flow_spec);
-		else
-		if (flow_spec.getMediaSpec().getType().equals("audio")) media_streamer=newAudioStreamer(flow_spec);
-		else
-		if (flow_spec.getMediaSpec().getType().equals("video")) media_streamer=newVideoStreamer(flow_spec);
-		else
-		if (flow_spec.getMediaSpec().getType().equals("ptt")) media_streamer=newPttStreamer(flow_spec);
-
-		if (media_streamer!=null) {
-			if (media_streamer.start()) {
-				media_streamers.put(media,media_streamer);
-				return true;
+		} else {
+			if (media.equals("audio")) media_streamer=newAudioStreamer(flow_spec);
+			else if (media.equals("video")) media_streamer=newVideoStreamer(flow_spec);
+			else if (media.equals("ptt")) media_streamer=newPttStreamer(flow_spec);
+			else {
+				LOG.warn("No media streamer found for: " + media);
+				return false;
 			}
-			else return false;
 		}
-		else {
-			LOG.warn("No "+media+" streamer has been found: "+media+" not started");
+		
+		if (media_streamer.start()) {
+			media_streamers.put(media, media_streamer);
+			return true;
+		} else {
 			return false;
 		}
 	}
@@ -126,7 +123,7 @@ public class MediaAgent {
 		LOG.info("stop("+media+")");
 
 		if (media_streamers.containsKey(media)) {
-			((MediaStreamer)media_streamers.get(media)).halt();
+			media_streamers.get(media).halt();
 			media_streamers.remove(media);
 		}
 		else {

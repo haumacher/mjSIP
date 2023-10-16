@@ -43,9 +43,6 @@ public class AnsweringMachine extends MultipleUAS {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AnsweringMachine.class);
 
-	/** Maximum life time (call duration) in seconds */
-	public static int MAX_LIFE_TIME=600;
-
 	/** Media file to play when answering the call. */
 	public static String DEFAULT_ANNOUNCEMENT_FILE="./announcement-8000hz-mono-a-law.wav";
 
@@ -93,11 +90,6 @@ public class AnsweringMachine extends MultipleUAS {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 		
-		uaConfig.audio = true;
-		uaConfig.video = false;
-		uaConfig.sendOnly = true;
-		if (uaConfig.hangupTime <= 0)
-			uaConfig.hangupTime = MAX_LIFE_TIME;
 		new AnsweringMachine(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), uaConfig, portCnt);
 
 		// prompt before exit

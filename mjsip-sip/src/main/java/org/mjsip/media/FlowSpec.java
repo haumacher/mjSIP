@@ -1,23 +1,38 @@
 package org.mjsip.media;
 
-
-
+import java.util.NoSuchElementException;
 
 /** Flow(s) specification.
   */
 public class FlowSpec {
 	
 	/** Interface for characterizing media direction */
-	public static class Direction {};
+	public enum Direction {
 
-	/** Send only mode */
-	public static final Direction SEND_ONLY=new Direction();
+		/** Send only mode */
+		SEND_ONLY,
 
-	/** Receive only mode */
-	public static final Direction RECV_ONLY=new Direction();
+		/** Receive only mode */
+		RECV_ONLY,
 
-	/** Full duplex mode */
-	public static final Direction FULL_DUPLEX=new Direction();
+		/** Full duplex mode */
+		FULL_DUPLEX;
+
+		/**
+		 * An ASCII art arrow symbolizing the data flow direction.
+		 */
+		public String arrow() {
+			switch (this) {
+			case SEND_ONLY:
+				return "-->";
+			case RECV_ONLY:
+				return "<--";
+			case FULL_DUPLEX:
+				return "<-->";
+			}
+			throw new NoSuchElementException(name());
+		}
+	}
 
 	/** None mode */
 	//public static final Direction NONE=new Direction();

@@ -87,7 +87,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 			SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
 			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-			new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);
+			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 			local_session=new_sdp.toString();
 		}
 		else local_session=call.getLocalSessionDescriptor();
@@ -105,7 +105,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 			SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
 			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-			new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);
+			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 			local_session=new_sdp.toString();
 		}
 		else local_session=call.getLocalSessionDescriptor();
@@ -233,7 +233,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 			SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
 			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-			new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);
+			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 			local_session=new_sdp.toString();
 		}
 		else local_session=call.getLocalSessionDescriptor();

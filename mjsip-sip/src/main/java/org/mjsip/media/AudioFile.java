@@ -137,7 +137,7 @@ public class AudioFile {
 	  * @param file_name the file name
 	  * @param audio_format the audio format */
 	 public static OutputStream getAudioFileOutputStream(String file_name, AudioFormat audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
-		LOG.info("output to file "+file_name);
+			LOG.info("Writing audio to: " + file_name);
 		if (file_name.toLowerCase().endsWith(".wav")) {
 			// WAV
 			/* Wave file header:

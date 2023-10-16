@@ -23,12 +23,12 @@ package org.mjsip.ua;
 
 
 
-import java.util.Enumeration;
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.media.AudioClipPlayer;
 import org.mjsip.media.FlowSpec;
+import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
 import org.mjsip.sdp.MediaDescriptor;
@@ -427,7 +427,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
 		SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
 		new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-		new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);
+		new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 		// accept
 		call.accept(new_sdp.toString());
 	}
@@ -491,50 +491,76 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
 		
 		// calculate media descriptor product
-		Vector<MediaDescriptor> md_list=OfferAnswerModel.makeMediaDescriptorProduct(local_sdp.getMediaDescriptors(),remote_sdp.getMediaDescriptors());
+		Vector<MediaDescriptor> localMedia = local_sdp.getMediaDescriptors();
+		Vector<MediaDescriptor> remoteMedia = remote_sdp.getMediaDescriptors();
+		Vector<MediaDescriptor> matchingMedia = OfferAnswerModel.makeMediaDescriptorMatch(localMedia,remoteMedia);
+		
+		if (LOG.isDebugEnabled()) {
+			for (MediaDescriptor desc : localMedia) {
+				LOG.debug("Local media: " + desc);
+			}
+			for (MediaDescriptor desc : remoteMedia) {
+				LOG.debug("Remote media: " + desc);
+			}
+			for (MediaDescriptor desc : matchingMedia) {
+				LOG.debug("Matching media: " + desc);
+			}
+		}
 		
 		// select the media direction (send_only, recv_ony, fullduplex)
-		FlowSpec.Direction dir=FlowSpec.FULL_DUPLEX;
-		if (uaConfig.recvOnly) dir=FlowSpec.RECV_ONLY;
+		FlowSpec.Direction dir=Direction.FULL_DUPLEX;
+		if (uaConfig.recvOnly) dir=Direction.RECV_ONLY;
 		else
-		if (uaConfig.sendOnly) dir=FlowSpec.SEND_ONLY;
+		if (uaConfig.sendOnly) dir=Direction.SEND_ONLY;
 		// for each media
-		for (Enumeration<MediaDescriptor> ei=md_list.elements(); ei.hasMoreElements(); ) {
-			MediaField md=ei.nextElement().getMedia();
-			String media=md.getMedia();
-			// local and remote ports
-			int local_port=md.getPort();
-			int remote_port=remote_sdp.getMediaDescriptor(media).getMedia().getPort();
+		for (MediaDescriptor matchingDescriptor : matchingMedia) {
+			MediaField mediaField=matchingDescriptor.getMedia();
+			String media=mediaField.getMedia();
+			
+			MediaDescriptor remoteDescriptor = remote_sdp.getMediaDescriptor(media);
 			remote_sdp.removeMediaDescriptor(media);
+
 			// media and flow specifications
-			String transport=md.getTransport();
-			String format=md.getFormatList().elementAt(0);
+			String transport=mediaField.getTransport();
+
+			String format=mediaField.getFormatList().elementAt(0);
 			int avp=Integer.parseInt(format);
-			MediaSpec media_spec=null;
-			for (int i=0; i<media_descs.length && media_spec==null; i++) {
-				MediaDesc media_desc=media_descs[i];
-				if (media_desc.getMedia().equalsIgnoreCase(media)) {
-					MediaSpec[] media_specs=media_desc.getMediaSpecs();
-					for (int j=0; j<media_specs.length && media_spec==null; j++) {
-						MediaSpec ms=media_specs[j];
-						if (ms.getAVP()==avp) media_spec=ms;
-					}
-				}
-			}
+
+			int local_port=mediaField.getPort();
+			int remote_port=remoteDescriptor.getMedia().getPort();
+			MediaSpec media_spec = findMatchingMediaSpec(media, avp);
+			
 			if (local_port!=0 && remote_port!=0 && media_spec!=null) {
 				String remote_address=remote_sdp.getConnection().getAddress();
 				FlowSpec flow_spec=new FlowSpec(media_spec,local_port,remote_address,remote_port,dir);
-				LOG.info(media+" format: "+flow_spec.getMediaSpec().getCodec());
+				LOG.info("Starting media session: " + media + " format: " + flow_spec.getMediaSpec().getCodec());
 				boolean success=media_agent.startMediaSession(flow_spec);           
 				if (success) {
 					media_sessions.addElement(media);
 					if (listener!=null) listener.onUaMediaSessionStarted(this,media,format);
 				}
-			}
-			else {
-				LOG.info("DEBUG: media session cannot be started (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
+			} else {
+				LOG.info("No matching media found (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
 			}
 		}
+	}
+
+	private MediaSpec findMatchingMediaSpec(String media, int avp) {
+		MediaSpec media_spec=null;
+		
+		findMediaSpec:
+		for (MediaDesc descriptors : media_descs) {
+			if (descriptors.getMedia().equalsIgnoreCase(media)) {
+				MediaSpec[] specs=descriptors.getMediaSpecs();
+				for (MediaSpec spec : specs) {
+					if (spec.getAVP() == avp) {
+						media_spec=spec;
+						break findMediaSpec;
+					}
+				}
+			}
+		}
+		return media_spec;
 	}
  
 	
@@ -690,7 +716,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			SdpMessage remote_sdp=new SdpMessage(sdp);
 			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-			new_sdp=OfferAnswerModel.makeSessionDescriptorProduct(new_sdp,remote_sdp);         
+			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);         
 			// answer with the local sdp
 			call.confirm2xxWithAnswer(new_sdp.toString());
 		}

@@ -29,6 +29,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.rtp.AmrRtpPayloadFormat;
 import org.mjsip.rtp.RtpControl;
 import org.slf4j.LoggerFactory;
@@ -305,7 +306,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			udp_socket=new UdpSocket(local_port);
 			
 			// 6) sender
-			if ((dir==FlowSpec.SEND_ONLY || dir==FlowSpec.FULL_DUPLEX)) {
+			if ((dir == Direction.SEND_ONLY || dir == Direction.FULL_DUPLEX)) {
 				LOG.debug("new audio sender to "+remote_addr+":"+remote_port);
 				if (audiofile_in!=null && audiofile_in.equals(AudioStreamer.TONE)) {
 					// tone generator
@@ -341,7 +342,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			}
 			
 			// 7) receiver
-			if (dir==FlowSpec.RECV_ONLY || dir==FlowSpec.FULL_DUPLEX) {
+			if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
 				LOG.debug("new audio receiver on "+local_port);
 				if (audiofile_out!=null) {
 					OutputStream output_stream=AudioFile.getAudioFileOutputStream(audiofile_out,codec,sample_rate);

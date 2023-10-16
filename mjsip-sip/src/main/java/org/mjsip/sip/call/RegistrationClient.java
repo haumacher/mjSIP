@@ -415,7 +415,7 @@ public class RegistrationClient implements TransactionClientListener {
 			}
 			if (expires>0 && expires<renew_time) renew_time=expires;
 			
-			LOG.info("Registration success, expires in " + expires + "s: " + result);
+			LOG.info("Registration " + result + ", expires in " + expires + "s, renewing in " + renew_time + "s.");
 			if (loop) {
 				cancelAttemptTimeout();
 				registration_to = sip_provider.scheduler().schedule((long) renew_time * 1000,
