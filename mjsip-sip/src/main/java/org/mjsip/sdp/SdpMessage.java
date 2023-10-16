@@ -34,20 +34,20 @@ import org.mjsip.sdp.field.SessionNameField;
 import org.mjsip.sdp.field.TimeField;
 
 
-/** SDP message as defined in RFC 4566.
-  * <p>
-  * A SDP message consists of a session-level description
-  * (information that apply to the whole session and all media streams) and
-  * zero or more media-level descriptions (details that apply onto
-  * to a single media stream).
-  * <p>
-  * The session-level part starts with a
-  * `v=' line and continues to the first media-level section.  The media
-  * description starts with an `m=' line and continues to the next media
-  * description or end of the whole session description.  In general,
-  * session-level values are the default for all media unless overridden
-  * by an equivalent media-level value.
-  */
+/**
+ * SDP (Session Description Protocol) message as defined in RFC 4566.
+ * <p>
+ * A SDP message consists of a session-level description (information that apply to the whole
+ * session and all media streams) and zero or more media-level descriptions (details that apply to a
+ * single media stream).
+ * </p>
+ * <p>
+ * The session-level part starts with a `v=' line and continues to the first media-level section.
+ * The media description starts with an `m=' line and continues to the next media description or to
+ * the end of the whole session description. In general, session-level values are the default for
+ * all media unless overridden by an equivalent media-level value.
+ * </p>
+ */
 public class SdpMessage {
 	
 	/** Protocol version */
@@ -76,9 +76,9 @@ public class SdpMessage {
 	SdpField z;
 	/** Encryption key (optional) */
 	KeyField k;
-	/** Zero or more session attribute (Vector<AttributeField>) */
+	/** Zero or more session attributes */
 	Vector<AttributeField> av = new Vector<AttributeField>();
-	/** Zero or more media descriptions (Vector<MediaDescriptor>) */
+	/** Zero or more media descriptions. */
 	Vector<MediaDescriptor> media = new Vector<>();
 		
 
