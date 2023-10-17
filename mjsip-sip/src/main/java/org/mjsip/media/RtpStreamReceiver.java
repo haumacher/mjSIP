@@ -355,6 +355,8 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 				}
 				catch (java.io.InterruptedIOException e) {}
 			}
+
+			output_stream.close();
 		}
 		catch (Exception e) {
 			running=false;
