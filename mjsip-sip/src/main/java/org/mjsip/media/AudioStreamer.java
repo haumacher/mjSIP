@@ -23,6 +23,7 @@ package org.mjsip.media;
 
 
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.sound.sampled.AudioFormat;
@@ -346,7 +347,18 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 				LOG.debug("new audio receiver on "+local_port);
 				if (audiofile_out!=null) {
 					OutputStream output_stream=AudioFile.getAudioFileOutputStream(audiofile_out,codec,sample_rate);
-					rtp_receiver=new RtpStreamReceiver(output_stream,additional_decoder,udp_socket);
+					rtp_receiver = new RtpStreamReceiver(output_stream, additional_decoder, udp_socket) {
+						@Override
+						protected void onRtpStreamReceiverTerminated(Exception error) {
+							super.onRtpStreamReceiverTerminated(error);
+
+							try {
+								output_stream.close();
+							} catch (IOException ex) {
+								LOG.error("Closing audio stream failed: " + audiofile_out, ex);
+							}
+						}
+					};
 				}
 				else {
 					// javax sound

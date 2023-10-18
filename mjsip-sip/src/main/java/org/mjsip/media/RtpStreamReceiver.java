@@ -60,48 +60,47 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	/** Long value 2^32 */
 	private static final long TWO_32=(1<<32);
 
-
 	/** Listener */
-	RtpStreamReceiverListener listener=null;
+	private RtpStreamReceiverListener listener = null;
 
 	/** The OutputStream */
-	OutputStream output_stream=null;
+	private OutputStream output_stream = null;
 
 	/** The RtpSocket */
-	RtpSocket rtp_socket=null;
+	private RtpSocket rtp_socket = null;
 
 	/** Whether the socket has been created here */
-	boolean socket_is_local_attribute=false;
+	private boolean socket_is_local_attribute = false;
 
 	/** Remote socket address */
-	SocketAddress remote_soaddr=null;
+	private SocketAddress remote_soaddr = null;
 
 	/** Packet random early drop (RED) value; if greater than 0, it is the inverse of the packet drop rate */
-	int random_early_drop=0;
+	private int random_early_drop = 0;
 
 	/** Whether it is running */
-	boolean running=false;
+	private boolean running = false;
 
 	/** Packet counter (incremented only if packet_drop_rate>0) */
-	long packet_counter=0;
+	private long packet_counter = 0;
 
 	/** RTCP. */
-	 RtpControl rtp_control=null;
+	private RtpControl rtp_control = null;
 
 	/** RTP payload format */
-	RtpPayloadFormat rtp_payload_format=null;
+	private RtpPayloadFormat rtp_payload_format = null;
 	
 	/** Whether discarding packets with wrong SSRC (i.e. with a different SSRC compared to the first packet) */
-	boolean ssrc_check=false;
+	private boolean ssrc_check = false;
 
 	/** Whether discarding out-of-sequence and duplicated packets */
-	boolean sequence_check=false;
+	private boolean sequence_check = false;
 
 	/** Whether filling silence intervals with (silence-equivalent) void data */
-	boolean silence_padding=false;
+	private boolean silence_padding = false;
 	
 	/** Additional RTP payload decoder */
-	Encoder additional_decoder;
+	private Encoder additional_decoder;
 
 
 
@@ -355,8 +354,6 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 				}
 				catch (java.io.InterruptedIOException e) {}
 			}
-
-			output_stream.close();
 		}
 		catch (Exception e) {
 			running=false;
@@ -374,6 +371,16 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 		output_stream=null;
 		rtp_socket=null;
 		
+		onRtpStreamReceiverTerminated(error);
+	}
+
+	/**
+	 * Callback invoked when stream terminates.
+	 *
+	 * @param error
+	 *        The error, if termination was caused by an exception.
+	 */
+	protected void onRtpStreamReceiverTerminated(Exception error) {
 		if (DEBUG)
 			LOG.debug("rtp receiver terminated");
 		if (listener!=null) listener.onRtpStreamReceiverTerminated(this,error);
