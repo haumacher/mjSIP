@@ -296,7 +296,8 @@ public abstract class BasicSipMessage {
 	@Override
 	public String toString() {
 		StringBuffer str=getMessageHeader();
-		if (body!=null) str.append(new String(body));
+		if (body != null)
+			str.append(getStringBody());
 		return str.toString();
 	}
 
@@ -716,7 +717,8 @@ public abstract class BasicSipMessage {
 	  * or from the end of message if no Content-Length header is present (non-RFC3261 compliant). */
 	public byte[] getBody() {
 		return body;
-	}  
+	}
+
 	/** Removes the message body (if it exists), the body related methods, and the final empty line. */
 	public void removeBody()  {
 		removeContentTypeHeader();
@@ -728,15 +730,27 @@ public abstract class BasicSipMessage {
 	public void setSdpBody(String body)  {
 		if (body!=null) setBody("application/sdp",body.getBytes());
 		else setBody(null,null);
-	}            
-	/** Gets text body. The end of body is evaluated
-	  * from the Content-Length header if present (RFC3261 compliant),
-	  * or from the end of message if no Content-Length header is present (non-RFC3261 compliant). */
-	public String getStringBody() {
-		if (body!=null) return new String(body);
-		else return null;
-	}  
+	}
 
+	/**
+	 * Gets body as text.
+	 * 
+	 * <p>
+	 * The body size is evaluated from the Content-Length header if present (RFC3261 compliant), or
+	 * from the end of message if no Content-Length header is present (non-RFC3261 compliant).
+	 * </p>
+	 * 
+	 * <p>
+	 * Note: The platform's default character encoding is used for the conversion. Since SIP
+	 * messages are expected to use ASCII characters only, this should be OK.
+	 * </p>
+	 * 
+	 * @return The {@link #getBody()} converted to text, or <code>null</code>, if no body is
+	 *         present.
+	 */
+	public String getStringBody() {
+		return body == null ? null : new String(body);
+	}  
 
 	//**************************** Specific Headers ****************************/
   

@@ -4,6 +4,7 @@ package org.mjsip.ua;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.call.DTMFInfo;
 
 
 
@@ -46,5 +47,15 @@ public interface UserAgentListener {
 
 	/** When a media session is stopped */
 	public void onUaMediaSessionStopped(UserAgent ua, String type);
+
+	/** 
+	 * When a DTMF info message is received.
+	 * 
+	 * @param ua The {@link UserAgent} that received the message.
+	 * @param dtmf Description of the pressed key.
+	 */
+	default void onDtmfInfo(UserAgent ua, DTMFInfo dtmf) {
+		// Hook for subclasses.
+	}
 
 }

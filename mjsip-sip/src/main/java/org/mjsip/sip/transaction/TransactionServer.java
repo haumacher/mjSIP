@@ -35,11 +35,18 @@ import org.slf4j.LoggerFactory;
 
 
 
-/** Generic server transaction as defined in RFC 3261 (Section 17.2.2).
-  * A TransactionServer is responsable to create a new SIP transaction that starts with a request message received by the SipProvider and ends sending a final response.<BR>
-  * The changes of the internal status and the received messages are fired to the TransactionListener passed to the TransactionServer object.<BR>
-  * When costructing a new TransactionServer, the transaction type is passed as String parameter to the costructor (e.g. "CANCEL", "BYE", etc..)
-  */
+/**
+ * Generic server transaction as defined in RFC 3261 (Section 17.2.2).
+ * 
+ * <p>
+ * A {@link TransactionServer} is responsible to create a new SIP transaction that starts with a
+ * request message received by the SipProvider and ends sending a final response.<BR>
+ * The changes of the internal status and the received messages are fired to the TransactionListener
+ * passed to the TransactionServer object.<BR>
+ * When constructing a new TransactionServer, the transaction type is passed as String parameter to
+ * the constructor (e.g. "CANCEL", "BYE", etc..)
+ * </p>
+ */
 public class TransactionServer extends Transaction {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TransactionServer.class);
@@ -75,7 +82,6 @@ public class TransactionServer extends Transaction {
 		request=new SipMessage(req);
 		init(listener,new TransactionServerId(request),request.getConnectionId());
 		
-		LOG.trace("start");
 		changeStatus(STATE_TRYING);
 		sip_provider.addSelectiveListener(transaction_id,this); 
 	}  
@@ -87,7 +93,9 @@ public class TransactionServer extends Transaction {
 		this.connection_id=connection_id;
 		this.response=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		LOG.info("new transaction-id: "+transaction_id.toString());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Starting transaction " + transaction_id.toString() + ": " + request);
+		}
 	}  
 
 
@@ -96,7 +104,6 @@ public class TransactionServer extends Transaction {
 	/** Starts the TransactionServer. */
 	public void listen() {
 		if (statusIs(STATE_IDLE)) {
-			LOG.trace("start");
 			changeStatus(STATE_WAITING);  
 			sip_provider.addSelectiveListener(transaction_id,this); 
 		}
@@ -110,6 +117,10 @@ public class TransactionServer extends Transaction {
 
 	/** Sends a response message */
 	public void respondWith(SipMessage resp) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Transaction " + transaction_id.toString() + " response: " + resp);
+		}
+
 		response=resp;
 		response.setConnectionId(connection_id);
 		if (statusIs(STATE_TRYING) || statusIs(STATE_PROCEEDING)) {
@@ -123,10 +134,9 @@ public class TransactionServer extends Transaction {
 				if (connection_id==null) {
 					clearing_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getRetransmissionTimeout(),
 							this::onClearingTimeout);
-				}
-				else {
-					LOG.trace("clearing_to=0 for reliable transport");
-					onClearingTimeout();
+				} else {
+					// Reliable transport
+					doTerminate();
 				}
 			}
 		}
@@ -136,15 +146,17 @@ public class TransactionServer extends Transaction {
 	@Override
 	public void terminate() {
 		doTerminate();
-		transaction_listener=null;
 	}
-
 
 	// *********************** Callback methods ************************
 
 	/** From SipListener. It's fired from the SipProvider when a new message is received for to the present TransactionServer. */
 	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Transaction " + transaction_id.toString() + ": " + msg);
+		}
+
 		if (msg.isRequest()) {
 			if (statusIs(STATE_WAITING)) {
 				request=new SipMessage(msg);
@@ -168,7 +180,9 @@ public class TransactionServer extends Transaction {
 	}
 
 	protected void onClearingTimeout() {
-		LOG.info("Clearing timeout expired");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Transaction timeout reached: " + transaction_id.toString());
+		}
 		doTerminate();
 	}   
 
@@ -181,7 +195,12 @@ public class TransactionServer extends Transaction {
 				clearing_to.cancel(false);
 			//clearing_to=null;
 			sip_provider.removeSelectiveListener(transaction_id);
+			transaction_listener = null;
 			changeStatus(STATE_TERMINATED);
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Transaction terminated: " + transaction_id.toString());
+			}
 		}
 	}
 

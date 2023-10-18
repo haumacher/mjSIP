@@ -32,53 +32,45 @@ import org.mjsip.sdp.OfferAnswerModel;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
+import org.slf4j.LoggerFactory;
 
 
 
-/** Class CallListenerAdapter implements CallListener interface
-  * providing a dummy implementation of all Call callback functions used to capture Call events.
-  * <p> CallListenerAdapter can be extended to manage basic SIP calls.
-  * The callback methods defined in this class have basically a void implementation.
-  * This class exists as convenience for creating call listener objects. 
-  * <br> You can extend this class overriding only methods corresponding to events
-  * you want to handle.
-  * <p> <i>onCallInvite(NameAddress,String)</i> is the only non-empty method.
-  * It signals the receiver the ring status (by using method Call.ring()),
-  * adapts the sdp body and accepts the call (by using method Call.accept(sdp)). 
-  */
+/**
+ * {@link CallListenerAdapter} implements {@link CallListener} providing a dummy implementation of
+ * all {@link Call} callback functions used to capture call events.
+ * 
+ * <p>
+ * {@link CallListenerAdapter} can be extended to manage basic SIP calls. The callback methods
+ * defined in this class have basically empty implementation. This class exists as convenience for
+ * creating call listener implementations.
+ * </p>
+ * <p>
+ * You can extend this class overriding only methods corresponding to events you want to handle.
+ * </p>
+ * <p>
+ * {@link #onCallInvite(Call, NameAddress, NameAddress, String, SipMessage)} is the only non-empty
+ * method. It signals the receiver the ring status (by using method Call.ring()), adapts the sdp
+ * body and accepts the call (by using method Call.accept(sdp)).
+ * </p>
+ */
 public class CallListenerAdapter implements ExtendedCallListener {
 	
-		
-	// ************************** Costructors ***************************
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CallListenerAdapter.class);
+
+	// ************************** Constructors ***************************
 
 	/** Creates a new dummy call listener */
 	protected CallListenerAdapter() {
-		
+		super();
 	}
 	
-	
-	// ************************* Static methods *************************
-  
-	/** Changes the current session descriptor specifing the receiving RTP/UDP port number, the AVP format, the codec, and the clock rate */
-	/*public static String audioSession(int port, int avp, String codec, int rate) {
-		SessionDescriptor sdp=new SessionDescriptor();
-		sdp.addMedia(new MediaField("audio ",port,0,"RTP/AVP",String.valueOf(avp)),new AttributeField("rtpmap",avp+" "+codec+"/"+rate));
-		return sdp.toString();
-	}*/
-
-	/** Changes the current session descriptor specifing the receiving RTP/UDP port number, the AVP format, the codec, and the clock rate */
-	/*public static String audioSession(int port) {
-		return audioSession(port,0,"PCMU",8000);
-	}*/
-
-
 	// *********************** Callback functions ***********************
 
 	/** Accepts an incoming call.
 	  * Callback function called when arriving a new INVITE method (incoming call) */
 	@Override
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite) {
-		//log("INCOMING");
 		call.ring();
 		// accept immediatly
 		String local_session;
@@ -89,8 +81,9 @@ public class CallListenerAdapter implements ExtendedCallListener {
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
 			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 			local_session=new_sdp.toString();
+		} else {
+			local_session = call.getLocalSessionDescriptor();
 		}
-		else local_session=call.getLocalSessionDescriptor();
 		call.accept(local_session);
 	}
 
@@ -98,7 +91,6 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	  * Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	@Override
 	public void onCallModify(Call call, String sdp, SipMessage invite) {
-		//log("RE-INVITE/MODIFY");
 		String local_session;
 		if (sdp!=null && sdp.length()>0) {
 			SdpMessage remote_sdp=new SdpMessage(sdp);
@@ -107,9 +99,9 @@ public class CallListenerAdapter implements ExtendedCallListener {
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
 			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 			local_session=new_sdp.toString();
+		} else {
+			local_session = call.getLocalSessionDescriptor();
 		}
-		else local_session=call.getLocalSessionDescriptor();
-		// accept immediatly
 		call.accept(local_session);
 	}
 
@@ -117,45 +109,44 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	  * Callback function called when arriving a 183 Session Progress */
 	@Override
 	public void onCallProgress(Call call, SipMessage resp) {
-		//log("PROGRESS");
+		// Hook for subclasses.
 	}
 
 	@Override
 	public void onCallProgressConfirmed(Call call, SipMessage resp, SipMessage prack) {
-		// Ignore.
+		// Hook for subclasses.
 	}
 
 	@Override
 	public void onCallConfirmableProgress(Call call, SipMessage resp) {
-		// Ignore.
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 180 Ringing */
 	@Override
 	public void onCallRinging(Call call, SipMessage resp) {
-		//log("RINGING");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 2xx (call accepted) */
 	@Override
 	public void onCallAccepted(Call call, String sdp, SipMessage resp) {
-		//log("ACCEPTED/CALL");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 4xx (call failure) */
 	@Override
 	public void onCallRefused(Call call, String reason, SipMessage resp) {
-		//log("REFUSED ("+reason+")");
+		// Hook for subclasses.
 	}
 
 	/** Redirects the call when remotly requested.
 	  * Callback function called when arriving a 3xx (call redirection) */
 	@Override
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
-		//log("REDIRECTION ("+reason+")");
 		NameAddress first_contact=NameAddress.parse((String)contact_list.elementAt(0));
 		call.call(first_contact); 
 	}
@@ -164,65 +155,93 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	  * Callback function called when arriving an ACK method (call confirmed) */
 	@Override
 	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
-		//log("CONFIRMED/CALL");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving an  INFO method. */ 
 	@Override
 	public void onCallInfo(Call call, String info_package, String content_type, byte[] body, SipMessage msg) {
-		//log("INFO");
+		switch (content_type) {
+		case "application/dtmf-relay": {
+			DTMFInfo dtmf = DTMFInfo.parse(msg.getStringBody());
+			onDtmfInfo(call, msg, dtmf);
+			break;
+		}
+		case "application/dtmf": {
+			DTMFInfo dtmf = new DTMFInfo(msg.getStringBody());
+			onDtmfInfo(call, msg, dtmf);
+			break;
+		}
+		}
+		// Hook for subclasses.
+	}
+
+	/**
+	 * Informs about a DTMF info message has been received.
+	 * 
+	 * @param msg
+	 *        The current {@link Call}.
+	 * @param call
+	 *        The source {@link SipMessage}.
+	 * @param dtmf
+	 *        The parsed DTMF information.
+	 */
+	protected void onDtmfInfo(Call call, SipMessage msg, DTMFInfo dtmf) {
+		// Hook for subclasses.
+		if (LOG.isInfoEnabled()) {
+			LOG.info("Received DTMF info: " + dtmf);
+		}
 	}
 
 	/** Does nothing.
 	  * Callback function called when the invite expires */
 	@Override
 	public void onCallTimeout(Call call) {
-		//log("TIMEOUT/CLOSE");
+		// Hook for subclasses.
 	}   
 
 	/** Does nothing.
 	  * Callback function called when arriving a 2xx (re-invite/modify accepted) */
 	@Override
 	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp) {
-		//log("RE-INVITE-ACCEPTED/CALL");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a 4xx (re-invite/modify failure) */
 	@Override
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
-		//log("RE-INVITE-REFUSED ("+reason+")/CALL");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when a re-invite expires */
 	@Override
 	public void onCallModifyTimeout(Call call) {
-		//log("RE-INVITE-TIMEOUT/CALL");
+		// Hook for subclasses.
 	}   
 
 	/** Does nothing.
 	  * Callback function called when arriving a CANCEL request */
 	@Override
 	public void onCallCancel(Call call, SipMessage cancel) {
-		//log("CANCELING");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function that may be overloaded (extended). Called when arriving a BYE request */
 	@Override
 	public void onCallBye(Call call, SipMessage bye) {
-		//log("CLOSING");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function that may be overloaded (extended). Called when arriving a response for a BYE request (call closed) */
 	@Override
 	public void onCallClosed(Call call, SipMessage resp) {
-		//log("CLOSED");
+		// Hook for subclasses.
 	}
-
 
 	/** From ExtendedCallListener. Callback function called when arriving a new UPDATE method (update request). */
 	@Override
@@ -244,54 +263,54 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	/** Callback function called when arriving a 2xx for an UPDATE request */
 	@Override
 	public void onCallUpdateAccepted(Call call, String sdp, SipMessage resp) {
-		
+		// Hook for subclasses.
 	}
 
 	/** Callback function called when arriving a non 2xx for an UPDATE request */
 	@Override
 	public void onCallUpdateRefused(Call call, String sdp, SipMessage resp) {
-		
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when arriving a new REFER method (transfer request) */
 	@Override
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
-		//log("REFER-TO/TRANSFER");
+		// Hook for subclasses.
 	}
 
 	/** Callback function called when arriving a new REFER method (transfer request) with Replaces header, replacing an existing call. */
 	@Override
 	public void onCallAttendedTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, String replcall_id, SipMessage refer) {
-		//log("REFER-TO/TRANSFER");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is accepted. */
 	@Override
 	public void onCallTransferAccepted(ExtendedCall call, SipMessage resp) {
-		
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is refused. */
 	@Override
 	public void onCallTransferRefused(ExtendedCall call, String reason, SipMessage resp) {
-		
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is successfully completed */
 	@Override
 	public void onCallTransferSuccess(ExtendedCall call, SipMessage notify) {
-		//log("TRANSFER SUCCESS");
+		// Hook for subclasses.
 	}
 
 	/** Does nothing.
 	  * Callback function called when a call transfer is NOT sucessfully completed */
 	@Override
 	public void onCallTransferFailure(ExtendedCall call, String reason, SipMessage notify) {
-		//log("TRANSFER FAILURE");
+		// Hook for subclasses.
 	}
 
 }

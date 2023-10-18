@@ -39,6 +39,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.Call;
 import org.mjsip.sip.call.CallListenerAdapter;
+import org.mjsip.sip.call.DTMFInfo;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.call.NotImplementedServer;
 import org.mjsip.sip.call.OptionsServer;
@@ -862,6 +863,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
 
+	@Override
+	protected void onDtmfInfo(Call call, SipMessage msg, DTMFInfo dtmf) {
+		super.onDtmfInfo(call, msg, dtmf);
+		
+		if (listener!=null) listener.onDtmfInfo(this, dtmf);
+	}
 
 	// ******************* ExtendedCall callbacks ********************
 
