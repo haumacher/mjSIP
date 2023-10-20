@@ -1,50 +1,47 @@
 package org.mjsip.media;
 
-
-
 import org.zoolu.util.Parser;
 
-
-
-/** Media specification.
-  */
+/**
+ * Media specification.
+ */
 public class MediaSpec {
-	
 
 	/** Media type (e.g. audio, video, message, etc.) */
-	String type;
+	private final String type;
 
 	/** AVP code */
-	int avp;
+	private final int avp;
 
 	/** Codec */
-	String codec;
+	private final String codec;
 
 	/** Sample rate [samples/sec] */
-	int sample_rate;
+	private final int sample_rate;
 
 	/** Number of channels (e.g. in case of audio, 1 for mono, 2 for stereo) */
-	int channels;
+	private final int channels;
 
 	/** Packet size [bytes] */
-	int packet_size;
+	private final int packet_size;
 	
-
-	
-	/** Creates a new MediaSpec.
-	  * @param type edia type
-	  * @param avp AVP code
-	  * @param codec codec type
-	  * @param sample_rate sample rate
-	  * @param channels number of channels (e.g. in case of audio, 1 for mono, 2 for stereo)
-	  * @param packet_size packet size */
+	/**
+	 * Creates a new MediaSpec.
+	 * 
+	 * @param type
+	 *        media type
+	 * @param avp
+	 *        AVP code
+	 * @param codec
+	 *        codec type
+	 * @param sample_rate
+	 *        sample rate
+	 * @param channels
+	 *        number of channels (e.g. in case of audio, 1 for mono, 2 for stereo)
+	 * @param packet_size
+	 *        packet size
+	 */
 	public MediaSpec(String type, int avp, String codec, int sample_rate, int channels, int packet_size) {
-		init(type,avp,codec,sample_rate,channels,packet_size);
-	}
-
-
-	/** Inits the MediaSpec. */
-	private void init(String type, int avp, String codec, int sample_rate, int channels, int packet_size) {
 		this.type=type;
 		this.avp=avp;
 		this.codec=codec;
@@ -53,44 +50,36 @@ public class MediaSpec {
 		this.packet_size=packet_size;
 	}
 
-
-	/** Gets media type. */
+	/** The media type. */
 	public String getType() {
 		return type;
 	}
 
-
-	/** Gets AVP code. */
+	/** The AVP code. */
 	public int getAVP() {
 		return avp;
 	}
 
-
-	/** Gets codec. */
+	/** The codec name. */
 	public String getCodec() {
 		return codec;
 	}
 
-
-	/** Gets sample rate. */
+	/** The sample rate of the stream. */
 	public int getSampleRate() {
 		return sample_rate;
 	}
 	
-	
-	/** Gets number of channels. */
+	/** The number of channels. */
 	public int getChannels() {
 		return channels;
 	}
 
-
-	/** Gets packet size. */
+	/** The packet size. */
 	public int getPacketSize() {
 		return packet_size;
 	}
 
-
-	/** Gets a string representation of this object. */
 	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
