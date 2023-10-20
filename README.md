@@ -20,6 +20,16 @@ implementations. mjSIP comes with a core package implementation that includes:
 * some useful call control APIs (e.g. Call-Control, UserAgent, etc.),
 * a reference implementation of some SIP systems (Proxy Server, Session Border Controlleer, and User Agent).
 
+## Changes since 1.8
+
+* Split source into sip, server, and ua modules, added Maven build.
+* Code cleanup: Added type parameter, added override annotations, reduced excessive logging, made fields private final, removed statics, replaced lazy initialization with defined initialization order, reduced number of constructors, enhanced configuration file parsing, applied Java naming conventions, encapsulated fields. 
+* 9c7089390a933cb98258f4c70479e70fe03ac200 Replaced self-made logging with slf4j over tinylog.
+* e30134b87cb73df2bd50d8913be6d7325d652cb4 Clarified transaction timeout handling with separate handler methods for each timeout. 
+* 6c95f80a44d812aef22fe46f828a190776cbbb82 Modernized scheduling using ScheduledThreadPoolExecutor.
+* 68e4597972e46c8bf03ab365f1f69f72e4206b6a Implemented listening on DTMF info messages.
+* ec6a2aad70d28ce9f90697bd7a4869502dc69cb5 Implemented port pool for RTP media streams. 
+
 ## License
 
 mjSIP is available open source under the terms of the GNU GPL license (General Public Licence) 
