@@ -27,6 +27,7 @@ import java.io.File;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
@@ -55,31 +56,54 @@ public class Jukebox extends MultipleUAS {
 	/** Media file path */
 	public static String MEDIA_PATH=".";
 
-	/** First media port */
-	int first_media_port;
+	private MediaConfig _mediaConfig;
 
-	/** Last media port */
-	int last_media_port;
+	private PortPool _portPool;
 
-	/** Creates a new Jukebox. */
-	public Jukebox(SipProvider sip_provider, UAConfig uaConfig, int num_of_ports) {
+	/** 
+	 * Creates a new Jukebox. 
+	 */
+	public Jukebox(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
 		super(sip_provider,uaConfig);
-		
-		this.first_media_port=uaConfig.getMediaPort();
-		this.last_media_port=first_media_port+num_of_ports-1;
-	} 
-
-	/** From UserAgentListener. When a new call is incoming. */
-	@Override
-	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-		String audio_file=MEDIA_PATH+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
-		if (audio_file!=null) if (new File(audio_file).isFile()) uaConfig.sendFile=audio_file;
-		if (uaConfig.sendFile!=null) ua.accept(); else ua.hangup();
-		int current_media_port=uaConfig.getMediaPort();
-		if ((current_media_port+=media_descs.length)>last_media_port) current_media_port=first_media_port;
-		uaConfig.setMediaPort(current_media_port,1);
+		_mediaConfig = mediaConfig;
+		_portPool = portPool;
 	}
 	
+	@Override
+	protected UserAgentListener createCallHandler(SipMessage msg) {
+		return new UserAgentListenerAdapter() {
+			private MediaConfig _callMedia;
+
+			/** From UserAgentListener. When a new call is incoming. */
+			@Override
+			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
+				String audio_file=MEDIA_PATH+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
+				if (audio_file!=null) {
+					if (new File(audio_file).isFile()) {
+						uaConfig.sendFile=audio_file;
+					}
+				}
+				if (uaConfig.sendFile != null) {
+					_callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
+					_callMedia.allocateMediaPorts(_portPool);
+					ua.accept(_callMedia);
+				} else {
+					ua.hangup();
+				}
+				
+				_mediaConfig.allocateMediaPorts(_portPool);
+			}
+			
+			@Override
+			public void onUaCallClosed(UserAgent ua) {
+				super.onUaCallClosed(ua);
+				
+				if (_callMedia != null) {
+					_callMedia.releaseMediaPorts(_portPool);
+				}
+			}
+		};
+	}
 
 	/** The main method. */
 	public static void main(String[] args) {
@@ -114,13 +138,17 @@ public class Jukebox extends MultipleUAS {
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
+		
+		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 
 		uaConfig.audio=true;
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,media_ports);
+		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,mediaConfig, portPool);
 		
 		// promt before exit
 		if (prompt_exit) 

@@ -53,11 +53,11 @@ public class MiniJukebox extends UserAgentCli {
 	/** Maximum life time (call duration) in seconds */
 	public static int MAX_LIFE_TIME=600;
 
-
-
-	/** Creates a new MiniJukebox. */
-	public MiniJukebox(SipProvider sip_provider, UAConfig uaConfig) {
-		super(sip_provider,uaConfig);
+	/** 
+	 * Creates a new MiniJukebox. 
+	 */
+	public MiniJukebox(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig) {
+		super(sip_provider,uaConfig, mediaConfig);
 	}
 
 
@@ -70,7 +70,7 @@ public class MiniJukebox extends UserAgentCli {
 				uaConfig.sendFile=audio_file;
 			}
 		}
-		if (uaConfig.sendFile!=null) ua.accept();      
+		if (uaConfig.sendFile!=null) ua.accept(_mediaConfig);      
 		else ua.hangup();
 	}
 
@@ -83,13 +83,14 @@ public class MiniJukebox extends UserAgentCli {
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		flags.close();
 
 		uaConfig.audio=true;
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig);
+		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, mediaConfig);
 	}    
 	
 }

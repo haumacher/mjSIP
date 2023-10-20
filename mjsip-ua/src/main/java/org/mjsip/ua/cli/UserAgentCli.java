@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
@@ -74,6 +75,8 @@ public class UserAgentCli implements UserAgentListener {
 	
 	/** Call state: <P>UA_IDLE=0, <BR>UA_INCOMING_CALL=1, <BR>UA_OUTGOING_CALL=2, <BR>UA_ONCALL=3 */
 	String call_state=UA_IDLE;
+
+	protected final MediaConfig _mediaConfig;
 	
 
 	/** Changes the call state */
@@ -96,9 +99,10 @@ public class UserAgentCli implements UserAgentListener {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentCli(SipProvider sip_provider, UAConfig uaConfig) {
+	public UserAgentCli(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig) {
 		this.sip_provider=sip_provider;
 		this.uaConfig=uaConfig;
+		_mediaConfig = mediaConfig;
 		ua=new UserAgent(sip_provider,uaConfig,this);      
 		if (!uaConfig.noPrompt) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.noPrompt) stdout=System.out;
@@ -131,7 +135,7 @@ public class UserAgentCli implements UserAgentListener {
 
 	/** Accepts an incoming call */
 	public void accept() {
-		ua.accept();
+		ua.accept(_mediaConfig);
 		changeStatus(UA_ONCALL);
 		if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
 		LOG.info("press 'enter' to hangup"); 

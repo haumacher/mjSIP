@@ -53,6 +53,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
@@ -136,6 +137,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	
 	/** Call state: <P>UA_IDLE=0, <BR>UA_INCOMING_CALL=1, <BR>UA_OUTGOING_CALL=2, <BR>UA_ONCALL=3 */
 	String call_state=UA_IDLE;
+
+	private MediaConfig _mediaConfig;
 	
 
 	/** Changes the call state */
@@ -158,9 +161,10 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig) {
+	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig) {
 		this.sip_provider=sip_provider;
 		this.uaConfig=uaConfig;
+		_mediaConfig = mediaConfig;
 
 		initUA();
 		initGraphics();                  
@@ -324,7 +328,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(uaConfig.callTo.toString());
 			display.setText("CALLING "+uaConfig.callTo);
-			ua.call(uaConfig.callTo);
+			ua.call(uaConfig.callTo, _mediaConfig);
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
@@ -357,7 +361,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		}
 		else
 		if (statusIs(UA_INCOMING_CALL)) {
-			ua.accept();
+			ua.accept(_mediaConfig);
 			display.setText("ON CALL");
 			changeStatus(UA_ONCALL);
 		}
@@ -638,11 +642,12 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		flags.close();
 
 		// else
-		if (no_gui) new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig);
-		else new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig);
+		if (no_gui) new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, mediaConfig);
+		else new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, mediaConfig);
 	}
 	
 	/** Prints a message to standard output. */

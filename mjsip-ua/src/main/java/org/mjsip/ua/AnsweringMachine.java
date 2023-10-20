@@ -32,6 +32,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
@@ -53,18 +54,17 @@ public class AnsweringMachine extends MultipleUAS {
 	/** Media file to play when answering the call. */
 	public static String DEFAULT_ANNOUNCEMENT_FILE="./announcement-8000hz-mono-a-law.wav";
 
-	/** First media port */
-	int _firstMediaPort;
+	private MediaConfig _mediaConfig;
 
-	/** Last media port */
-	int _lastMediaPort;
+	private PortPool _portPool;
 
-	/** Creates an {@link AnsweringMachine}. */
-	public AnsweringMachine(SipProvider sip_provider, UAConfig uaConfig, int portCnt) {
+	/** 
+	 * Creates an {@link AnsweringMachine}. 
+	 */
+	public AnsweringMachine(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
 		super(sip_provider,uaConfig);
-		
-		_firstMediaPort = uaConfig.getMediaPort();
-		_lastMediaPort = _firstMediaPort + portCnt - 1;
+		_mediaConfig = mediaConfig;
+		_portPool = portPool;
 		
 		if (uaConfig.sendFile != null) {
 			try {
@@ -75,21 +75,26 @@ public class AnsweringMachine extends MultipleUAS {
 			}
 		}
 	}
-
-	/** From UserAgentListener. When a new call is incoming. */
-	@Override
-	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-		LOG.info("Incomming call from: " + callee.getAddress());
-
-		int current_media_port = uaConfig.getMediaPort() + media_descs.length;
-		if (current_media_port > _lastMediaPort) {
-			current_media_port = _firstMediaPort;
-		}
-		uaConfig.setMediaPort(current_media_port, 1);
-
-		ua.accept();
-	}
 	
+	@Override
+	protected UserAgentListener createCallHandler(SipMessage msg) {
+		MediaConfig callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
+		callMedia.allocateMediaPorts(_portPool);
+		
+		return new UserAgentListenerAdapter() {
+			@Override
+			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
+				LOG.info("Incomming call from: " + callee.getAddress());
+				ua.accept(callMedia);
+			}
+			
+			@Override
+			public void onUaCallClosed(UserAgent ua) {
+				LOG.info("Call closed.");
+				callMedia.releaseMediaPorts(_portPool);
+			}
+		};
+	}
 
 	/** The main method. */
 	public static void main(String[] args) {
@@ -103,9 +108,12 @@ public class AnsweringMachine extends MultipleUAS {
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
 		
-		new AnsweringMachine(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), uaConfig, portCnt);
+		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
+		new AnsweringMachine(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), uaConfig, mediaConfig, portPool);
 
 		// prompt before exit
 		if (prompt_exit) 

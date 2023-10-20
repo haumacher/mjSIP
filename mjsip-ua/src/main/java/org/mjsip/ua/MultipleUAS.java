@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
   * <br>
   * At start up it may register with a registrar server (if properly configured).
   */
-public abstract class MultipleUAS implements UserAgentListener, RegistrationClientListener, SipProviderListener {
+public abstract class MultipleUAS implements RegistrationClientListener, SipProviderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
@@ -81,90 +81,49 @@ public abstract class MultipleUAS implements UserAgentListener, RegistrationClie
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		LOG.debug("onReceivedMessage()");
 		if (msg.isRequest() && msg.isInvite()) {
-			LOG.info("received new INVITE request");
-			
-			// create new user agent
-			final UserAgent ua=new UserAgent(sip_provider,uaConfig,this);
-			
-			// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
-			new ExtendedCall(sip_provider,msg,ua);
-			
-			// automatic hang-up after the maximum time
-			if (uaConfig.hangupTime>0) {
-				sip_provider.scheduler().schedule((long) (uaConfig.hangupTime*1000), () -> ua.hangup());
-			}
+			onInviteReceived(sip_provider, msg);
+		}
+	}
+
+	/**
+	 * Handles an SIP invite.
+	 * 
+	 * <p>
+	 * By default the call is accepted and a {@link UserAgent} created for handling the new call.
+	 * </p>
+	 *
+	 * @param sip_provider
+	 *        The sip stack.
+	 * @param msg
+	 *        The invite message.
+	 * 
+	 * @see #createCallHandler(SipMessage)
+	 */
+	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
+		LOG.info("received new INVITE request");
+		
+		// create new user agent
+		final UserAgent ua=new UserAgent(sip_provider,uaConfig, createCallHandler(msg));
+		
+		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
+		new ExtendedCall(sip_provider,msg,ua);
+		
+		// automatic hang-up after the maximum time
+		if (uaConfig.hangupTime>0) {
+			sip_provider.scheduler().schedule(uaConfig.hangupTime*1000, () -> ua.hangup());
 		}
 	}
 
 
-	// ******************** UserAgentListener methods ********************
-
-	/** From UserAgentListener. When registration succeeded. */
-	@Override
-	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
-		
-	}
-
-	/** From UserAgentListener. When registration failed. */
-	@Override
-	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		
-	}
-	
-	/** From UserAgentListener. When an ougoing call is stated to be in progress. */
-	@Override
-	public void onUaCallProgress(UserAgent ua) {
-		
-	}
-
-	/** From UserAgentListener. When an ougoing call is remotly ringing. */
-	@Override
-	public void onUaCallRinging(UserAgent ua) {
-		
-	}
-
-	/** From UserAgentListener. When an ougoing call has been accepted. */
-	@Override
-	public void onUaCallAccepted(UserAgent ua) {
-		
-	}
-	
-	/** From UserAgentListener. When a call has been transferred. */
-	@Override
-	public void onUaCallTransferred(UserAgent ua) {
-		
-	}
-
-	/** From UserAgentListener. When an incoming call has been cancelled. */
-	@Override
-	public void onUaCallCancelled(UserAgent ua) {
-		
-	}
-
-	/** From UserAgentListener. When an ougoing call has been refused or timeout. */
-	@Override
-	public void onUaCallFailed(UserAgent ua, String reason) {
-		
-	}
-
-	/** From UserAgentListener. When a call has been locally or remotely closed. */
-	@Override
-	public void onUaCallClosed(UserAgent ua) {
-		
-	}
-
-	/** From UserAgentListener. When a new media session is started. */
-	@Override
-	public void onUaMediaSessionStarted(UserAgent ua, String type, String codec) {
-		
-	}
-
-	/** From UserAgentListener. When a media session is stopped. */
-	@Override
-	public void onUaMediaSessionStopped(UserAgent ua, String type) {
-		
-	}
-
+	/**
+	 * Creates a handler for controlling the call started with the given invite message.
+	 * 
+	 * @param msg
+	 *        The message that represents the invite to the new call.
+	 *
+	 * @return The handler for controlling the user agent that handles the new call.
+	 */
+	protected abstract UserAgentListener createCallHandler(SipMessage msg);
 
 	// *************** RegistrationClientListener methods ****************
 

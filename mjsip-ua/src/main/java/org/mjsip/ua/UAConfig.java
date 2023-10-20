@@ -1,10 +1,6 @@
 package org.mjsip.ua;
 
 
-import java.util.Vector;
-
-import org.mjsip.media.MediaDesc;
-import org.mjsip.media.MediaSpec;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
@@ -13,9 +9,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
-import org.zoolu.util.MultiTable;
 import org.zoolu.util.Parser;
-import org.zoolu.util.VectorUtils;
 
 
 /** {@link UserAgent} configuration options.
@@ -163,18 +157,9 @@ public class UAConfig extends Configure {
 
 	/** Media address (use it if you want to use a media address different from the via address) */
 	public String mediaAddr=null;
-	/** First media port (use it if you want to use media ports different from those specified in media_descs) */
-	private int mediaPort=-1;
 
 	/** Whether using symmetric_rtp */
 	public boolean symmetricRtp=false;
-
-	/** Array of media descriptions */
-	public MediaDesc[] mediaDescs=new MediaDesc[]{};
-	/** Vector of media descriptions */
-	private Vector<MediaDesc> mediaDescVector=new Vector<>();
-	/** Table of media specifications, as multiple-values table of (String)media-->(MediaSpec)media_spec */
-	private MultiTable<String,MediaSpec> mediaSpecTable=new MultiTable<>();
 
 	/** Whether using JMF for audio streaming */
 	public boolean useJmfAudio=false;
@@ -254,44 +239,6 @@ public class UAConfig extends Configure {
 		if (sendFile!=null && sendFile.equalsIgnoreCase(Configure.NONE)) sendFile=null;
 		if (recvFile!=null && recvFile.equalsIgnoreCase(Configure.NONE)) recvFile=null;
 
-		// BEGIN PATCH FOR JMF SUPPORT
-		if (audio && useJmfAudio) {
-			mediaSpecTable.remove("audio");
-			mediaSpecTable.put("audio",new MediaSpec("audio",11,"L16",16000,1,320));
-		}
-		else
-		if (video && useJmfVideo) {
-			mediaSpecTable.remove("video");
-			mediaSpecTable.put("video",new MediaSpec("video",101,null,-1,1,-1));
-		}
-		// END PATCH FOR JMF SUPPORT
-		
-		// media descriptions
-		if (mediaDescVector.size()==0 && audio) {
-			// add default auido support
-			mediaDescVector.addElement(MediaDesc.parseMediaDesc("audio 4080 RTP/AVP { audio 0 PCMU 8000 160, audio 8 PCMA 8000 160 }"));
-		}
-		mediaDescs=new MediaDesc[mediaDescVector.size()];
-		for (int i=0; i<mediaDescVector.size(); i++) {
-			MediaDesc md=mediaDescVector.elementAt(i);
-			Vector<MediaSpec> media_spec_vector=new Vector<MediaSpec>();
-			MediaSpec[] ms_array=md.getMediaSpecs();
-			if (ms_array.length>0) {
-				//media_spec_vector.addAll(Arrays.asList(ms_array));
-				VectorUtils.addArray(media_spec_vector,ms_array);
-			}
-			Vector<MediaSpec> ms_vector=mediaSpecTable.get(md.getMedia());
-			if (ms_vector!=null) {
-				//media_spec_vector.addAll(ms_vector);
-				VectorUtils.addVector(media_spec_vector,ms_vector);
-			}
-			//MediaSpec[] media_specs=(MediaSpec[])media_spec_vector.toArray(new MediaSpec[]{});
-			MediaSpec[] media_specs=(MediaSpec[])VectorUtils.vectorToArray(media_spec_vector,new MediaSpec[media_spec_vector.size()]);
-			mediaDescs[i]=new MediaDesc(md.getMedia(),md.getPort(),md.getTransport(),media_specs);
-		}
-		
-		if (mediaPort>0) setMediaPort(mediaPort);
-		
 		setUnconfiguredAttributes(null);
 	}
 
@@ -345,41 +292,6 @@ public class UAConfig extends Configure {
 			if (sip_provider.getPort()!=sip_provider.sipConfig().getDefaultPort()) ua_address+=":"+sip_provider.getPort();
 		}
 	}
-
-
-	/** Sets the transport port for each medium.
-	  * The media ports are set incrementally starting from the given value and incremented by 2 for each medium.
-	  * Example, if two media are present, e.g. audio, video, text, and <i>media_port</i> is 4000,
-	  * then the audio port will be 4000, the video port will be 4002, and the text port will be 4004. 
-	  * @param media_port the port number for the first medium */
-	public void setMediaPort(int media_port) {
-		setMediaPort(media_port,2);
-	}
-
-
-	/** Sets the transport port for each medium.
-	  * The media ports are set incrementally starting from the given value <i>media_port</i> and incremented by the given value <i>diff</i>.
-	  * The assigned ports will be <i>media_port</i>, <i>media_port</i>+<i>diff</i>, <i>media_port</i>+2*<i>diff</i>, etc.
-	  * Example, if two media are present, e.g. audio, video, text, <i>media_port</i> is 4000, and <i>diff</i> is 2,
-	  * then the audio port will be 4000+<i>inc</i>, the video port will be 4000+2*<i>inc</i>, and the text port will be 4004. 
-	  * @param media_port the port number for the first medium
-	  * @param diff the incremented value for successive media ports */
-	public void setMediaPort(int media_port, int diff) {
-		for (int i=0; i<mediaDescs.length; i++) {
-			MediaDesc md=mediaDescs[i];
-			md.setPort(media_port);
-			media_port+=diff;
-		}
-	}
-
-
-	/** Gets the transport port of the first medium.
-	  * @return the port number of the first medium,if any, otherwise -1 */
-	public int getMediaPort() {
-		if (mediaDescs!=null && mediaDescs.length>0) return mediaDescs[0].getPort();
-		else return -1;
-	}
-
 
 	// *********************** protected methods **********************
 
@@ -449,11 +361,7 @@ public class UAConfig extends Configure {
 		if (attribute.equals("video"))          {  video=(par.getString().toLowerCase().startsWith("y"));  return;  }
 
 		if (attribute.equals("media_addr"))     {  mediaAddr=par.getString();  return;  } 
-		if (attribute.equals("media_port"))     {  mediaPort=par.getInt();  return;  } 
 		if (attribute.equals("symmetric_rtp"))  {  symmetricRtp=(par.getString().toLowerCase().startsWith("y"));  return;  } 
-		if (attribute.equals("media") ||
-			 attribute.equals("media_desc"))    {  mediaDescVector.addElement(MediaDesc.parseMediaDesc(par.getRemainingString().trim()));  return;  }
-		if (attribute.equals("media_spec"))     {  MediaSpec ms=MediaSpec.parseMediaSpec(par.getRemainingString().trim());  mediaSpecTable.put(ms.getType(),ms);  return;  }
 
 		if (attribute.equals("use_jmf_audio"))  {  useJmfAudio=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("use_jmf_video"))  {  useJmfVideo=(par.getString().toLowerCase().startsWith("y"));  return;  }
@@ -532,9 +440,6 @@ public class UAConfig extends Configure {
 		
 		Boolean video=flags.getBoolean("-v",null,"video");
 		if (video!=null) this.video=video.booleanValue();
-		
-		int media_port=flags.getInteger("-m","<port>",0,"(first) local media port");
-		if (media_port>0) this.setMediaPort(media_port);
 		
 		String display_name=flags.getString("--display-name","<str>",null,"display name");
 		if (display_name!=null) this.displayName=display_name;

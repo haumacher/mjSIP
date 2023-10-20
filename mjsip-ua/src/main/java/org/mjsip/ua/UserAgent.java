@@ -115,9 +115,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** List of active media sessions */
 	protected Vector<String> media_sessions=new Vector<>();
 
-	/** Current local media descriptions */
-	protected MediaDesc[] media_descs=null;
-
 	/** UserAgent listener */
 	protected UserAgentListener listener=null;
 
@@ -146,6 +143,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	float clip_ring_volume_gain=(float)0.0; // not changed
 	/** Progress volume gain */
 	float clip_progress_volume_gain=(float)0.0; // not changed
+
+	private MediaConfig _mediaConfig;
 
 
 	// **************************** constructors ***************************
@@ -177,9 +176,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			LOG.debug("auth_passwd: " + (uaConfig.authPasswd != null && !uaConfig.authPasswd.isEmpty() ? "***" : "-"));
 			LOG.debug("audio: "+uaConfig.audio);
 			LOG.debug("video: "+uaConfig.video);
-			for (int i=0; i<uaConfig.mediaDescs.length; i++) {
-				LOG.debug("media: "+(uaConfig.mediaDescs[i]).toString());
-			}
 			
 			// log other config parameters
 			if (LOG.isTraceEnabled()) {
@@ -249,21 +245,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		return sd;
 	}
-
-
-	/** Creates a new SessionDescriptor from owner, address, and Vector of MediaDesc. */
-	/*private static SessionDescriptor newSessionDescriptor(String owner, String media_addr, Vector media_descs) {
-		SessionDescriptor sd=new SessionDescriptor(owner,media_addr);
-		for (int i=0; i<media_descs.size(); i++) sd.addMediaDescriptor((media_descs[i]).toMediaDescriptor());
-		return sd;
-	}*/
-
-
-	/** Sets new media descriptions. */
-	public void setMediaDescription(MediaDesc[] media_descs) {
-		this.media_descs=media_descs;
-	}
-
 
 	/** Gets a NameAddress based on an input string.
 	  * The input string can be a:
@@ -355,25 +336,18 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** Makes a new call (acting as UAC) with specific media description (Vector of MediaDesc). */
-	public void call(String callee, MediaDesc[] media_descs) {
+	public void call(String callee, MediaConfig mediaConfig) {
 		// in case of incomplete URI (e.g. only 'user' is present), try to complete it
-		call(completeNameAddress(callee),media_descs);
+		call(completeNameAddress(callee),mediaConfig);
 	}
-
-
-	/** Makes a new call (acting as UAC). */
-	public void call(NameAddress callee) {
-		call(callee,(MediaDesc[])null);
-	}
-
 
 	/** Makes a new call (acting as UAC) with specific media descriptions. */
-	public void call(NameAddress callee, MediaDesc[] media_descs) {
+	public void call(NameAddress callee, MediaConfig mediaConfig) {
 		// new media description
-		if (media_descs==null) media_descs=uaConfig.mediaDescs;
-		this.media_descs=media_descs;
+		_mediaConfig=mediaConfig;
+		
 		// new call
-		SdpMessage sdp=uaConfig.noOffer? null : getSessionDescriptor(media_descs);
+		SdpMessage sdp=uaConfig.noOffer? null : getSessionDescriptor(_mediaConfig.mediaDescs);
 		call(callee,sdp);
 	}
 
@@ -406,25 +380,18 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (response_to!=null) response_to.cancel(false);
 	} 
 
-	/** Accepts an incoming call. */
-	public void accept() {
-		accept(null);
-	}
-
 	/** Accepts an incoming call with specific media description (Vector of MediaDesc). */
-	public void accept(MediaDesc[] media_descs) {
+	public void accept(MediaConfig mediaConfig) {
+		_mediaConfig = mediaConfig;
+		
 		// sound
 		if (clip_ring!=null) clip_ring.stop();
 		// response timeout
 		cancelResponseTimeout();
 		// return if no active call
 		if (call==null) return;
-		// else
-		// new media description
-		if (media_descs==null) media_descs=uaConfig.mediaDescs;
-		this.media_descs=media_descs;
 		// new sdp
-		SdpMessage local_sdp=getSessionDescriptor(media_descs);
+		SdpMessage local_sdp=getSessionDescriptor(_mediaConfig.mediaDescs);
 		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
 		SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
 		new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
@@ -535,7 +502,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				String remote_address=remote_sdp.getConnection().getAddress();
 				FlowSpec flow_spec=new FlowSpec(media_spec,local_port,remote_address,remote_port,dir);
 				LOG.info("Starting media session: " + media + " format: " + flow_spec.getMediaSpec().getCodec());
-				boolean success=media_agent.startMediaSession(flow_spec);           
+				boolean success=media_agent.startMediaSession(flow_spec, _mediaConfig);           
 				if (success) {
 					media_sessions.addElement(media);
 					if (listener!=null) listener.onUaMediaSessionStarted(this,media,format);
@@ -550,7 +517,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		MediaSpec media_spec=null;
 		
 		findMediaSpec:
-		for (MediaDesc descriptors : media_descs) {
+		for (MediaDesc descriptors : _mediaConfig.mediaDescs) {
 			if (descriptors.getMedia().equalsIgnoreCase(mediaType)) {
 				MediaSpec[] specs=descriptors.getMediaSpecs();
 				for (MediaSpec spec : specs) {
@@ -713,7 +680,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("ACCEPTED/CALL");
 		if (uaConfig.noOffer) {
 			// new sdp
-			SdpMessage local_sdp=getSessionDescriptor(media_descs);
+			SdpMessage local_sdp=getSessionDescriptor(_mediaConfig.mediaDescs);
 			SdpMessage remote_sdp=new SdpMessage(sdp);
 			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
@@ -866,6 +833,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	@Override
 	protected void onDtmfInfo(Call call, SipMessage msg, DTMFInfo dtmf) {
 		super.onDtmfInfo(call, msg, dtmf);
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Received DTMF info: " + dtmf);
+		}
 		
 		if (listener!=null) listener.onDtmfInfo(this, dtmf);
 	}
@@ -892,7 +863,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("transfer to "+refer_to.toString());
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI()),this);
-		call_transfer.call(refer_to,getSessionDescriptor(media_descs).toString());
+		call_transfer.call(refer_to,getSessionDescriptor(_mediaConfig.mediaDescs).toString());
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is accepted. */

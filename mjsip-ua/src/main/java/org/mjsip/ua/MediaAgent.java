@@ -52,41 +52,17 @@ public class MediaAgent {
 	/** Active media streamers, as table of: (String)media-->(MediaStreamer)media_streamer */
 	Hashtable<String, MediaStreamer> media_streamers=new Hashtable<>();
 
-
-
 	/** Creates a new MediaAgent. */
 	public MediaAgent(UAConfig uaConfig) {
 		this.uaConfig=uaConfig;
-
-		// ################# Patch to make audio working with javax.sound.. #################
-		// Currently ExtendedAudioSystem must be initialized before any AudioClipPlayer is initialized.
-		// This is caused by a problem with the definition of the audio format
-		// BEGIN PATCH
-		if (!uaConfig.useRat && !uaConfig.useJmfAudio) {
-			float audio_sample_rate=SimpleAudioSystem.DEFAULT_AUDIO_FORMAT.getSampleRate();
-			int channels=SimpleAudioSystem.DEFAULT_AUDIO_FORMAT.getChannels();
-			for (int i=0; i<uaConfig.mediaDescs.length; i++) {
-				MediaDesc media_desc=uaConfig.mediaDescs[i];
-				if (media_desc.getMedia().equalsIgnoreCase("audio")) {
-					MediaSpec ms=media_desc.getMediaSpecs()[0];
-					audio_sample_rate=ms.getSampleRate();
-					channels=ms.getChannels();
-				}
-			}
-			if (uaConfig.audio && !uaConfig.loopback) {
-				if (uaConfig.sendFile==null && !uaConfig.recvOnly && !uaConfig.sendTone)SimpleAudioSystem.initAudioInputLine(audio_sample_rate,channels);
-				if (uaConfig.recvFile==null && !uaConfig.sendOnly) SimpleAudioSystem.initAudioOutputLine(audio_sample_rate,channels);
-			}
-		}
-		// END PATCH
 	}
 
-	
 	/** Starts a media session */
-	public boolean startMediaSession(FlowSpec flow_spec) {
+	public boolean startMediaSession(FlowSpec flow_spec, MediaConfig mediaConfig) {
 		LOG.info("Starting media session: " + flow_spec.getMediaSpec());
 		LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
-
+		
+		initMedia(mediaConfig);
 		String media=flow_spec.getMediaSpec().getType();
 		
 		// stop previous media streamer (just in case something was wrong..)
@@ -115,6 +91,30 @@ public class MediaAgent {
 		} else {
 			return false;
 		}
+	}
+
+	private void initMedia(MediaConfig mediaConfig) {
+		// ################# Patch to make audio working with javax.sound.. #################
+		// Currently ExtendedAudioSystem must be initialized before any AudioClipPlayer is initialized.
+		// This is caused by a problem with the definition of the audio format
+		// BEGIN PATCH
+		if (!uaConfig.useRat && !uaConfig.useJmfAudio) {
+			float audio_sample_rate=SimpleAudioSystem.DEFAULT_AUDIO_FORMAT.getSampleRate();
+			int channels=SimpleAudioSystem.DEFAULT_AUDIO_FORMAT.getChannels();
+			for (int i=0; i<mediaConfig.mediaDescs.length; i++) {
+				MediaDesc media_desc=mediaConfig.mediaDescs[i];
+				if (media_desc.getMedia().equalsIgnoreCase("audio")) {
+					MediaSpec ms=media_desc.getMediaSpecs()[0];
+					audio_sample_rate=ms.getSampleRate();
+					channels=ms.getChannels();
+				}
+			}
+			if (uaConfig.audio && !uaConfig.loopback) {
+				if (uaConfig.sendFile==null && !uaConfig.recvOnly && !uaConfig.sendTone)SimpleAudioSystem.initAudioInputLine(audio_sample_rate,channels);
+				if (uaConfig.recvFile==null && !uaConfig.sendOnly) SimpleAudioSystem.initAudioOutputLine(audio_sample_rate,channels);
+			}
+		}
+		// END PATCH
 	}
  
 	

@@ -51,41 +51,26 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Echo.class);
 
-	/** Default number of available media ports */
-	public static int MEDIA_PORTS=40;
-
 	/** Maximum life time (call duration) in seconds */
 	public static int MAX_LIFE_TIME=600;
-
-
-
-	/** First media port */
-	int first_media_port;
-
-	/** Last media port */
-	int last_media_port;
 
 	/** Current media port */
 	int media_port;
 
-	
 	/** Whether forcing reverse route */
 	boolean force_reverse_route;
 
-
+	private PortPool _portPool;
 
 	/** Creates a new Echo. */
-	public Echo(SipProvider sip_provider, UAConfig uaConfig, int media_ports, boolean force_reverse_route) {
+	public Echo(SipProvider sip_provider, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route) {
 		// call UAS
 		super(sip_provider,uaConfig);
-		first_media_port=uaConfig.getMediaPort();
-		last_media_port=first_media_port+media_ports-1;
-		media_port=first_media_port;
+		_portPool = portPool;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.MESSAGE),this); 
 	} 
-
 
 	/** From SipProviderListener. When a new Message is received by the SipProvider. */
 	@Override
@@ -114,39 +99,37 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		else super.onReceivedMessage(sip_provider,msg);
 	}
 	
-
-	/** From UserAgentListener. When a new call is incoming. */
 	@Override
-	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-		if (media_descs!=null) {
-			for (int i=0; i<media_descs.length; i++) {
-				(media_descs[i]).setPort(media_port);
-				if ((++media_port)>last_media_port) media_port=first_media_port;
+	protected UserAgentListener createCallHandler(SipMessage msg) {
+		return new UserAgentListenerAdapter() {
+			MediaConfig _callMedia;
+
+			@Override
+			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
+				_callMedia = MediaConfig.from(media_descs);
+				_callMedia.allocateMediaPorts(_portPool);
+				
+				ua.accept(_callMedia);
+				LOG.info("incoming call accepted");
 			}
-			ua.accept(media_descs);
-		}
-		else ua.accept();
-		LOG.info("incoming call accepted");
+			
+			@Override
+			public void onUaCallClosed(UserAgent ua) {
+				super.onUaCallClosed(ua);
+				
+				_callMedia.releaseMediaPorts(_portPool);
+			}
+		};
 	}
-	
+
 	/** The main method. */
 	public static void main(String[] args) {
 		System.out.println("Echo "+SipStack.version);
 
-		int media_ports=MEDIA_PORTS;
 		boolean force_reverse_route=false;
 		boolean prompt_exit=false;
 
 		for (int i=0; i<args.length; i++) {
-			if (args[i].equals("--mports")) {
-				try {
-					media_ports=Integer.parseInt(args[i+1]);
-					args[i]="--skip";
-					args[++i]="--skip";
-				}
-				catch (Exception e) {  e.printStackTrace();  }
-			}
-			else
 			if (args[i].equals("--rroute")) {
 				force_reverse_route=true;
 				args[i]="--skip";
@@ -162,14 +145,17 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
+		
+		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		
 		uaConfig.audio=true;
 		uaConfig.video=true;
 		uaConfig.loopback=true;
 		uaConfig.sendOnly=false;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,media_ports,force_reverse_route);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,portPool,force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

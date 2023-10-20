@@ -32,7 +32,6 @@ import org.mjsip.sdp.OfferAnswerModel;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
-import org.slf4j.LoggerFactory;
 
 
 
@@ -56,8 +55,6 @@ import org.slf4j.LoggerFactory;
  */
 public class CallListenerAdapter implements ExtendedCallListener {
 	
-	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CallListenerAdapter.class);
-
 	// ************************** Constructors ***************************
 
 	/** Creates a new dummy call listener */
@@ -189,9 +186,6 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	 */
 	protected void onDtmfInfo(Call call, SipMessage msg, DTMFInfo dtmf) {
 		// Hook for subclasses.
-		if (LOG.isInfoEnabled()) {
-			LOG.info("Received DTMF info: " + dtmf);
-		}
 	}
 
 	/** Does nothing.
