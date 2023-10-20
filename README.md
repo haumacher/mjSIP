@@ -31,6 +31,8 @@ The project's original home page is at: http://mjsip.org/
  
 There are several independent forks of the project on Github:
  
+* https://github.com/VovaSokol/mjsip (1.8) - Added support for Opus and H264 codec.
+* https://github.com/mrichardsdb/mjsip (1.8) - Turned into a maven project.
 * https://github.com/inckie/mjsip (1.8)
 * https://github.com/opentelecoms-org/MjSIP-fork (1.6)
 * https://github.com/moki80/OpenComm/tree/master/sipvoip
