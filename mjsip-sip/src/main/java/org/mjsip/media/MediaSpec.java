@@ -3,7 +3,7 @@ package org.mjsip.media;
 import org.zoolu.util.Parser;
 
 /**
- * Media specification.
+ * Media encoding specification.
  */
 public class MediaSpec {
 

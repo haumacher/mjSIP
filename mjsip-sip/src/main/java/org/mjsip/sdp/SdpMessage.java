@@ -264,17 +264,6 @@ public class SdpMessage {
 		return k;
 	}
   
-	/** Adds a new attribute for a particular media
-	  * @param media the MediaField
-	  * @param attribute an AttributeField 
-	  * @return this SDP message */
-	public SdpMessage addMedia(MediaField media, AttributeField attribute) {
-		//printlog("DEBUG: media: "+media,5);
-		//printlog("DEBUG: attribute: "+attribute,5);
-		addMediaDescriptor(new MediaDescriptor(media,null,attribute));
-		return this;
-	}
-	
 	/** Adds a new media.
 	  * @param mf the MediaField
 	  * @param attributes array of attributes
@@ -291,7 +280,7 @@ public class SdpMessage {
 	  * @return this SDP message */
 	public SdpMessage addMediaDescriptor(MediaDescriptor media_desc) {
 		//printlog("DEBUG: media desc: "+media_desc,5);
-		media.addElement(new MediaDescriptor(media_desc));
+		media.addElement(MediaDescriptor.copy(media_desc));
 		return this;
 	}
 

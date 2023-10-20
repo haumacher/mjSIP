@@ -12,8 +12,8 @@ public class VectorUtils {
 	/** Converts an array into a vector.
 	 * @param array the array
 	 * @return a vector containing all elements of array */
-	public static Vector arrayToVector(Object[] array) {
-		Vector v=new Vector();
+	public static <T> Vector<T> arrayToVector(T[] array) {
+		Vector<T> v = new Vector<>();
 		for (int i=0; i<array.length; i++) v.add(array[i]);
 		return v;
 	}

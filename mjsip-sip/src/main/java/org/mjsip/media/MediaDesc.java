@@ -1,43 +1,34 @@
 package org.mjsip.media;
 
-
-
+import java.util.Collection;
 import java.util.Vector;
 
 import org.mjsip.sdp.AttributeField;
 import org.mjsip.sdp.MediaDescriptor;
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sdp.field.MediaField;
 import org.zoolu.util.Parser;
 
-
-
-/** Media description.
-  */
+/**
+ * RTP media stream description.
+ */
 public class MediaDesc {
-	
+
+	private static final MediaDesc[] NO_MEDIA = new MediaDesc[]{};
+
+	private static final char[] DELIMITER = { '/' };
 
 	/** Media type (e.g. audio, video, message, etc.) */
-	String media;
+	private final String media;
 
 	/** Port */
-	int port;
+	private int port;
 
 	/** Transport */
-	String transport;
+	private final String transport;
 	
 	/** Vector of media specifications (as Vector<MediaSpec>) */
-	MediaSpec[] specs;
-
-
-	
-	/** Creates a new MediaDesc.
-	  * @param media Media type
-	  * @param port Port
-	  * @param transport Transport protocol */
-	/*public MediaDesc(String media, int port, String transport) {
-		init(media,port,transport,specs);
-	}*/
-
+	private final MediaSpec[] specs;
 
 	/** Creates a new MediaDesc.
 	  * @param media media type
@@ -45,105 +36,45 @@ public class MediaDesc {
 	  * @param transport transport protocol
 	  * @param specs array of media specifications */
 	public MediaDesc(String media, int port, String transport, MediaSpec[] specs) {
-		init(media,port,transport,specs);
-	}
-
-
-	/** Creates a new MediaDesc.
-	  * @param md media descriptor (as {@link org.mjsip.sdp.MediaDescriptor}) */
-	public MediaDesc(MediaDescriptor md) {
-		MediaField mf=md.getMedia();
-		String media=mf.getMedia();
-		int port=mf.getPort();
-		String transport=mf.getTransport();
-
-		AttributeField[] attributes=md.getAttributes("rtpmap");
-		Vector spec_vector=new Vector(attributes.length);
-		for (int i=0; i<attributes.length; i++) {
-			Parser par=new Parser((attributes[i]).getAttributeValue());
-			int avp=par.getInt();
-			String codec=null;
-			int sample_rate=0;
-			int channels=1;
-			if (par.skipChar().hasMore()) {
-				char[] delim={'/'};
-				codec=par.getWord(delim);
-				sample_rate=Integer.parseInt(par.skipChar().getWord(delim));
-				if (par.hasMore()) {
-					channels=Integer.parseInt(par.skipChar().getWord(delim));
-				}
-			}
-			spec_vector.addElement(new MediaSpec(media,avp,codec,sample_rate,channels,0));
-		}
-		specs=(MediaSpec[])spec_vector.toArray(new MediaSpec[]{});
-		init(media,port,transport,specs);
-	}
-
-
-	/** Inits the MediaDesc. */
-	private void init(String media, int port, String transport, MediaSpec[] specs) {
 		this.media=media;
 		this.port=port;
 		this.transport=transport;
 		this.specs=specs;
 	}
 
-
-	/** Gets media type.
-	  * @return the media type */
+	/**
+	 * The media type.
+	 */
 	public String getMedia() {
 		return media;
 	}
 
-
-	/** Gets port.
-	  * @return the transport port */
+	/**
+	 * The port of the stream.
+	 */
 	public int getPort() {
 		return port;
 	}
 
-
-	/** Sets port.
-	  * @param port the transport port */
+	/** @see #getPort() */
 	public void setPort(int port) {
 		this.port=port;
 	}
 
-
-	/** Gets transport protocol.
-	  * @return the transport protocol */
+	/** The transport protocol. */
 	public String getTransport() {
 		return transport;
 	}
 
-
-	/** Gets media specifications.
-	  * @return array of media specifications */
+	/** The supported media encodings. */
 	public MediaSpec[] getMediaSpecs() {
 		return specs;
 	}
 
-
-	/** Sets media specifications.
-	  * @param media_specs array of media specifications */
-	/*public void setMediaSpecs(MediaSpec[] media_specs) {
-		this.specs=media_specs;
-	}*/
-
-
-	/** Adds a new media specification.
-	  * @param media_spec media specifications */
-	/*public void addMediaSpec(MediaSpec media_spec) {
-		if (specs==null) specs=new Vector();
-		specs.addElement(media_spec);
-	}*/
-
-
-	/** Gets the corresponding MediaDescriptor.
-	  * @return media description (as {@link org.mjsip.sdp.MediaDescriptor}) of this MediaDesc */
+	/** Gets the corresponding {@link MediaDescriptor} for creating SIP messages. */
 	public MediaDescriptor toMediaDescriptor() {
-		Vector formats=new Vector();
-		Vector av=new Vector();
+		Vector<String> formats = new Vector<>();
+		Vector<AttributeField> attributes = new Vector<>();
 		if (specs!=null) {
 			for (int i=0; i<specs.length; i++) {
 				MediaSpec ms=specs[i];
@@ -151,13 +82,17 @@ public class MediaDesc {
 				String codec=ms.getCodec();
 				int sample_rate=ms.getSampleRate();
 				int channels=ms.getChannels();
-				formats.addElement(String.valueOf(avp));
-				av.addElement(new AttributeField("rtpmap",String.valueOf(avp)+((codec!=null && sample_rate>0)? " "+codec+"/"+sample_rate+(channels>1? "/"+channels : "") : "")));
+				String avpString = String.valueOf(avp);
+				formats.addElement(avpString);
+				attributes.addElement(new AttributeField("rtpmap",
+						avpString + ((codec != null && sample_rate > 0)
+								? " " + codec + "/" + sample_rate + (channels > 1 ? "/" + channels : "")
+								: "")));
 			}
 		}
-		return new MediaDescriptor(new MediaField(media,port,0,transport,formats),null,(AttributeField[])av.toArray(new AttributeField[]{}));
+		MediaField mediaField = new MediaField(media, port, 0, transport, formats);
+		return new MediaDescriptor(mediaField, null, attributes.toArray(new AttributeField[] {}));
 	}
-
 
 	/** Gets a string representation of this object.
 	  * @return a string representing this object */
@@ -176,24 +111,18 @@ public class MediaDesc {
 		return sb.toString();
 	}
 
-
-	/** Gets a String compact representation of this object (only media, port, and transport are included). */
-	/*public String toStringCompact() {
-		StringBuffer sb=new StringBuffer();
-		sb.append(media).append(" ").append(port).append(" ").append(transport);
-		return sb.toString();
-	}*/
-
-
-	/** Parses a String and gets a new MediaDesc.
-	  * @param str a string containing the representation of a MediaDesc */
-	public static MediaDesc parseMediaDesc(String str) {
-		//System.out.println("MediaDesc: parsing: "+str);
-		Parser par=new Parser(str);
+	/**
+	 * Parses a configuration string into a {@link MediaDesc}.
+	 * 
+	 * @param source
+	 *        Representation of a {@link MediaDesc} in a configuration file.
+	 */
+	public static MediaDesc parseMediaDesc(String source) {
+		Parser par = new Parser(source);
 		String media=par.getString();
 		int port=par.getInt();
 		String transport=par.getString();
-		Vector spec_vector=new Vector();
+		Vector<MediaSpec> spec_vector = new Vector<>();
 		if (par.goTo("{").hasMore()) {
 			par.skipChar();
 			int len=par.indexOf("}")-par.getPos();
@@ -201,13 +130,72 @@ public class MediaDesc {
 				par=new Parser(par.getString(len));
 				char[] delim={ ';', ',' };
 				while (par.skipWSP().hasMore()) {
-					str=par.getWord(delim);
-					if (str!=null && str.length()>0) spec_vector.addElement(MediaSpec.parseMediaSpec(str));
+					source = par.getWord(delim);
+					if (source != null && source.length() > 0)
+						spec_vector.addElement(MediaSpec.parseMediaSpec(source));
 				}
 			}
 		}
-		MediaSpec[] specs=(MediaSpec[])spec_vector.toArray(new MediaSpec[]{});
+		MediaSpec[] specs = spec_vector.toArray(new MediaSpec[] {});
 		return new MediaDesc(media,port,transport,specs);
+	}
+
+	/**
+	 * Parses all media descriptors from the given {@link SdpMessage}.
+	 */
+	public static MediaDesc[] parseSdpDescriptors(String sdp) {
+		if (sdp == null) {
+			return NO_MEDIA;
+		}
+		return parseDescriptors(new SdpMessage(sdp).getMediaDescriptors());
+	}
+
+	/**
+	 * Parses a collection of raw {@link MediaDescriptor} into a {@link MediaDesc}s internally used
+	 * by mjSIP.
+	 */
+	public static MediaDesc[] parseDescriptors(Collection<MediaDescriptor> descriptors) {
+		int i = 0;
+		MediaDesc[] result = new MediaDesc[descriptors.size()];
+		for (MediaDescriptor descriptor : descriptors) {
+			result[i++] = parseDescriptor(descriptor);
+		}
+		return result;
+	}
+
+	/**
+	 * Parses a raw {@link MediaDescriptor} into a {@link MediaDesc} internally used by mjSIP.
+	 */
+	public static MediaDesc parseDescriptor(MediaDescriptor descriptor) {
+		MediaField mf = descriptor.getMedia();
+		String media = mf.getMedia();
+		int port = mf.getPort();
+		String transport = mf.getTransport();
+
+		AttributeField[] rtpmap = descriptor.getAttributes("rtpmap");
+		Vector<MediaSpec> specs = new Vector<>(rtpmap.length);
+		for (AttributeField field : rtpmap) {
+			specs.addElement(parseMediaSpec(media, field.getAttributeValue()));
+		}
+		return new MediaDesc(media, port, transport, specs.toArray(new MediaSpec[] {}));
+	}
+
+	private static MediaSpec parseMediaSpec(String media, String source) {
+		Parser parser = new Parser(source);
+
+		int avp = parser.getInt();
+
+		String codec = null;
+		int sample_rate = 0;
+		int channels = 1;
+		if (parser.skipChar().hasMore()) {
+			codec = parser.getWord(DELIMITER);
+			sample_rate = Integer.parseInt(parser.skipChar().getWord(DELIMITER));
+			if (parser.hasMore()) {
+				channels = Integer.parseInt(parser.skipChar().getWord(DELIMITER));
+			}
+		}
+		return new MediaSpec(media, avp, codec, sample_rate, channels, 0);
 	}
 
 }

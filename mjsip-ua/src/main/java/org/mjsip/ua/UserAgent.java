@@ -234,16 +234,17 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private SdpMessage getSessionDescriptor(MediaDesc[] media_descs) {
 		String owner=uaConfig.user;
 		String media_addr=(uaConfig.mediaAddr!=null)? uaConfig.mediaAddr : sip_provider.getViaAddress();
-		SdpMessage sd=new SdpMessage(owner,media_addr);
+		SdpMessage sdp=new SdpMessage(owner,media_addr);
 		for (int i=0; i<media_descs.length; i++) {
 			MediaDesc md=media_descs[i];
+
 			// check if audio or video have been disabled
 			if (md.getMedia().equalsIgnoreCase("audio") && !uaConfig.audio) continue;
 			if (md.getMedia().equalsIgnoreCase("video") && !uaConfig.video) continue;
-			// else
-			sd.addMediaDescriptor(md.toMediaDescriptor());
+
+			sdp.addMediaDescriptor(md.toMediaDescriptor());
 		}
-		return sd;
+		return sdp;
 	}
 
 	/** Gets a NameAddress based on an input string.
@@ -585,13 +586,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// response timeout
 		if (uaConfig.refuseTime>=0) response_to=(ScheduledFuture<?>) sip_provider.scheduler().schedule((long) (uaConfig.refuseTime*1000), this::onResponseTimeout);
 		
-		MediaDesc[] media_descs=new MediaDesc[]{};
-		if (sdp!=null) {
-			Vector md_list=(new SdpMessage(sdp)).getMediaDescriptors();
-			media_descs=new MediaDesc[md_list.size()];
-			for (int i=0; i<md_list.size(); i++) media_descs[i]=new MediaDesc((MediaDescriptor)md_list.elementAt(i));
-		}
-		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,media_descs);
+		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseSdpDescriptors(sdp));
 	}
 
 	private String extractFrom(SipMessage invite) {

@@ -31,57 +31,33 @@ import org.mjsip.sdp.field.MediaField;
 import org.zoolu.util.VectorUtils;
 
 
-/** Class MediaDescriptor handles SDP media descpriptions.
-  * <p> A MediaDescriptor can be part of a SessionDescriptor, and contains
-  * details that apply onto to a single media stream.
-  * <p> A single SessionDescriptor may convey zero or more MediaDescriptors.
-  * <p> In the current implementation, the MediaDescriptor consists of
-  * the m (media) and c (connection information) fields, followed by zero
-  * or more a (attribute) fields.
-  * The m field is mandatory for a MediaDescriptor.
-  */
+/**
+ * A raw SDP media description record.
+ * 
+ * <p>
+ * A {@link MediaDescriptor} can be part of a SessionDescriptor, and contains details that apply to
+ * a single media stream.
+ * </p>
+ * <p>
+ * A single SessionDescriptor may contain zero or more {@link MediaDescriptor}s.
+ * </p>
+ * <p>
+ * In the current implementation, the {@link MediaDescriptor} consists of the <code>m</code> (media)
+ * and <code>c</code> (connection information) fields, followed by zero or more <code>a</code>
+ * (attribute) fields. The <code>m</code> field is mandatory.
+ * </p>
+ */
 public class MediaDescriptor {
 	
 	/** Media field ('m'). */
-	MediaField m;
+	private final MediaField m;
+
 	/** Connection field ('c') */
-	ConnectionField c;
+	private final ConnectionField c;
+
 	/** Vector of attribute fileds ('a') */
-	Vector av;
+	private final Vector<AttributeField> av;
 
-	/** Creates a new MediaDescriptor.
-	  * @param md the cloned MediaDescriptor */
-	public MediaDescriptor(MediaDescriptor md) {
-		m=new MediaField(md.m);
-		if (md.c!=null) c=new ConnectionField(md.c); else c=null;
-		av=new Vector();
-		for (int i=0; i<md.av.size(); i++) av.addElement(new AttributeField((AttributeField)md.av.elementAt(i)));
-	}
-
-	/** Creates a new MediaDescriptor with m <i>media</i> and c <i>connection</i>.
-	  * No attribute is set by default.
-	  * @param media the MediaField
-	  * @param connection the ConnectionField, or null if no ConnectionField
-	  * is present in the MediaDescriptor */
-	public MediaDescriptor(MediaField media, ConnectionField connection) {
-		m=media;
-		c=connection;
-		av=new Vector();
-	}
-
-	/** Creates a new MediaDescriptor with m <i>media</i>, c <i>connection</i>,
-	  * and a <i>attribute</i>.
-	  * @param media the MediaField
-	  * @param connection the ConnectionField, or null if no ConnectionField
-	  * is present in the MediaDescriptor
-	  * @param attribute the first AttributeField */
-	public MediaDescriptor(MediaField media, ConnectionField connection, AttributeField attribute) {
-		m=media;
-		c=connection;
-		av=new Vector();
-		if (attribute!=null) av.addElement(attribute);
-	}   
-	
 	/** Creates a new MediaDescriptor with m=<i>media</i> and c=<i>connection</i>,
 	  * with attributes 'a' equals to <i>attributes</i> (Vector of AttributeField).
 	  * @param media the MediaField
@@ -91,37 +67,9 @@ public class MediaDescriptor {
 	public MediaDescriptor(MediaField media, ConnectionField connection, AttributeField[] attributes) {
 		m=media;
 		c=connection;
-		//av=new Vector(Arrays.asList(attributes));
 		av=VectorUtils.arrayToVector(attributes);
 	}
 
-	/** Creates a new MediaDescriptor with m <i>media</i>, c <i>connection</i>,
-	  * and a <i>attribute</i>.
-	  * @param media the media field vaule
-	  * @param connection the connection field vaule, or null if no connection field
-	  * is present in the MediaDescriptor
-	  * @param attribute the first media attribute alue */
-	public MediaDescriptor(String media, String connection, String attribute) {
-		m=new MediaField(media);
-		if (connection!=null) c=new ConnectionField(connection);
-		av=new Vector();
-		if (attribute!=null) av.addElement(new AttributeField(attribute));
-	}   
-
-	/** Creates a new MediaDescriptor from String <i>str</i>.
-	  * @param str the media field line */
-	/*public MediaDescriptor(String str) {
-		SdpParser par=new SdpParser(str);
-		m=par.parseMediaField();
-		c=par.parseConnectionField();
-		av=new Vector();
-		AttributeField a=par.parseAttributeField();
-		while (a!=null) {
-			av.addElement(a);
-			a=par.parseAttributeField();
-		}
-	}*/
-			  
 	/** Gets media.
 	  * @return the MediaField */
 	public MediaField getMedia() {
@@ -137,7 +85,7 @@ public class MediaDescriptor {
 	/** Gets attributes.
 	  * @return an array of attributes */
 	public AttributeField[] getAttributes() {
-		return (AttributeField[])av.toArray(new AttributeField[]{});
+		return av.toArray(new AttributeField[] {});
 	} 
 
 	/** Adds a new attribute.
@@ -151,8 +99,9 @@ public class MediaDescriptor {
 	/** Adds a new attributes.
 	  * @param attributes a vector o new attribute fields (Vector of <code>AttributeField</code>)
 	  * @return this MediaDescriptor */
-	public MediaDescriptor addAttributes(Vector attributes) {
-		for (int i=0; i<attributes.size(); i++) addAttribute((AttributeField)attributes.elementAt(i));
+	public MediaDescriptor addAttributes(Vector<AttributeField> attributes) {
+		for (int i = 0; i < attributes.size(); i++)
+			addAttribute(attributes.elementAt(i));
 		return this;
 	} 
 
@@ -161,7 +110,8 @@ public class MediaDescriptor {
 	  * @return true if found, otherwise returns null */
 	public boolean hasAttribute(String a_name) {
 		for (int i=0; i<av.size(); i++) {
-			if (((AttributeField)av.elementAt(i)).getAttributeName().equals(a_name)) return true;
+			if (av.elementAt(i).getAttributeName().equals(a_name))
+				return true;
 		}
 		return false;
 	} 
@@ -171,7 +121,7 @@ public class MediaDescriptor {
 	  * @return the AttributeField, or null if not found */
 	public AttributeField getAttribute(String a_name) {
 		for (int i=0; i<av.size(); i++) {
-			AttributeField a=(AttributeField)av.elementAt(i);
+			AttributeField a = av.elementAt(i);
 			if (a.getAttributeName().equals(a_name)) return a;
 		}
 		return null;
@@ -181,12 +131,12 @@ public class MediaDescriptor {
 	  * @param a_name the attribute name
 	  * @return an array of attributes */
 	public AttributeField[] getAttributes(String a_name) {
-		Vector v=new Vector(av.size());
+		Vector<AttributeField> v = new Vector<>(av.size());
 		for (int i=0; i<av.size(); i++) {
-			AttributeField a=(AttributeField)av.elementAt(i);
+			AttributeField a = av.elementAt(i);
 			if (a.getAttributeName().equals(a_name)) v.addElement(a);
 		}
-		return (AttributeField[])v.toArray(new AttributeField[]{});
+		return v.toArray(new AttributeField[] {});
 	} 
 	
 	/** Gets a String rapresentation of the MediaDescriptor.
@@ -194,8 +144,22 @@ public class MediaDescriptor {
 	@Override
 	public String toString() {
 		String str=""; str+=m; if (c!=null) str+=c;
-		for (int i=0; i<av.size(); i++) str+=(AttributeField)av.elementAt(i);
+		for (int i = 0; i < av.size(); i++)
+			str += av.elementAt(i);
 		return str;
+	}
+
+	/**
+	 * Creates a deep copy of the given {@link MediaDescriptor}.
+	 */
+	public static MediaDescriptor copy(MediaDescriptor other) {
+		MediaField m = new MediaField(other.m);
+		ConnectionField c = (other.c != null) ? c = new ConnectionField(other.c) : null;
+		Vector<AttributeField> av = new Vector<>();
+		for (int i = 0; i < other.av.size(); i++) {
+			av.addElement(new AttributeField(other.av.elementAt(i)));
+		}
+		return new MediaDescriptor(m, c, av.toArray(new AttributeField[] {}));
 	}
 	
 }
