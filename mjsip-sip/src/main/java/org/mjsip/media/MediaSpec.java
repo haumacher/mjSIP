@@ -7,9 +7,6 @@ import org.zoolu.util.Parser;
  */
 public class MediaSpec {
 
-	/** Media type (e.g. audio, video, message, etc.) */
-	private final String type;
-
 	/** AVP code */
 	private final int avp;
 
@@ -27,9 +24,6 @@ public class MediaSpec {
 	
 	/**
 	 * Creates a new MediaSpec.
-	 * 
-	 * @param type
-	 *        media type
 	 * @param avp
 	 *        AVP code
 	 * @param codec
@@ -41,18 +35,12 @@ public class MediaSpec {
 	 * @param packet_size
 	 *        packet size
 	 */
-	public MediaSpec(String type, int avp, String codec, int sample_rate, int channels, int packet_size) {
-		this.type=type;
+	public MediaSpec(int avp, String codec, int sample_rate, int channels, int packet_size) {
 		this.avp=avp;
 		this.codec=codec;
 		this.sample_rate=sample_rate;
 		this.channels=channels;
 		this.packet_size=packet_size;
-	}
-
-	/** The media type. */
-	public String getType() {
-		return type;
 	}
 
 	/** The AVP code. */
@@ -83,22 +71,20 @@ public class MediaSpec {
 	@Override
 	public String toString() {
 		StringBuffer sb=new StringBuffer();
-		sb.append(type).append(" ").append(avp);
+		sb.append(avp);
 		if (codec!=null) sb.append(" ").append(codec).append(" ").append(sample_rate).append(" ").append(packet_size).append(" ").append(channels);
 		return sb.toString();
 	}
 
 	/** Parses a string and gets a new MediaSpec. */
 	public static MediaSpec parseMediaSpec(String str) {
-		//System.out.println("MediaSpec: parsing: "+str);
 		Parser par=new Parser(str);
-		String type=par.getString();
 		int avp=par.getInt();
 		String codec=(par.skipWSP().hasMore())? par.getString() : null;
 		int sample_rate=(par.skipWSP().hasMore())? par.getInt() : 0;
 		int packet_size=(par.skipWSP().hasMore())? par.getInt() : 0;
 		int channels=(par.skipWSP().hasMore())? par.getInt() : 1;
-		return new MediaSpec(type,avp,codec,sample_rate,channels,packet_size);
+		return new MediaSpec(avp, codec, sample_rate, channels, packet_size);
 	}
 
 }

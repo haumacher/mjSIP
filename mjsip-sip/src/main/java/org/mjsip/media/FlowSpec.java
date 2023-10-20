@@ -48,19 +48,41 @@ public class FlowSpec {
 	
 	/** Flow direction */
 	private final Direction direction;
+
+	private String _mediaType;
 	
-	/** Creates a new FlowSpec.
-	  * @param media_spec media specification
-	  * @param local_port local port
-	  * @param remote_addr remote address
-	  * @param remote_port remote port
-	  * @param direction flow direction (Direction.SEND_ONLY, Direction.RECV_ONLY, or Direction.FULL_DUPLEX) */
-	public FlowSpec(MediaSpec media_spec, int local_port, String remote_addr, int remote_port, Direction direction) {
+	/**
+	 * Creates a new {@link FlowSpec}.
+	 * 
+	 * @param mediaType
+	 *        The type of media transported.
+	 * @param media_spec
+	 *        media specification
+	 * @param local_port
+	 *        local port
+	 * @param remote_addr
+	 *        remote address
+	 * @param remote_port
+	 *        remote port
+	 * @param direction
+	 *        flow direction (Direction.SEND_ONLY, Direction.RECV_ONLY, or Direction.FULL_DUPLEX)
+	 */
+	public FlowSpec(String mediaType, MediaSpec media_spec, int local_port, String remote_addr, int remote_port, Direction direction) {
+		_mediaType = mediaType;
 		this.media_spec=media_spec;
 		this.local_port=local_port;
 		this.remote_addr=remote_addr;
 		this.remote_port=remote_port;
 		this.direction=direction;
+	}
+
+	/**
+	 * The type of media being transported.
+	 * 
+	 * @see MediaDesc#getMedia()
+	 */
+	public String getMediaType() {
+		return _mediaType;
 	}
 
 	/** Gets media specification. */

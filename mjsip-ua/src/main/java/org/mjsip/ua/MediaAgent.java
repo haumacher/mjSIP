@@ -63,7 +63,7 @@ public class MediaAgent {
 		LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
 		
 		initMedia(mediaConfig);
-		String media=flow_spec.getMediaSpec().getType();
+		String media=flow_spec.getMediaType();
 		
 		// stop previous media streamer (just in case something was wrong..)
 		MediaStreamer existing = media_streamers.remove(media);

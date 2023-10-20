@@ -240,8 +240,8 @@ public class AudioApp {
 		println("Packet size: "+packet_size+" B");
 		if (random_early_drop>0) println("Random early drop at receiver: 1 packet out of "+random_early_drop);
 		if (sync_adj!=0) println("Inter-packet time adjustment at sender: "+sync_adj+" ms every "+packet_time+" ms");
-		MediaSpec mspec=new MediaSpec("audio",avp,codec_name,sample_rate,channels,packet_size);      
-		FlowSpec fspec=new FlowSpec(mspec,local_port,remote_ipaddr,remote_port,dir);
+		MediaSpec mspec=new MediaSpec(avp,codec_name,sample_rate,channels,packet_size);      
+		FlowSpec fspec = new FlowSpec("audio", mspec, local_port, remote_ipaddr, remote_port, dir);
 
 		AudioStreamer audio_streamer = createAudioStreamer(fspec, audio_in, audio_out, direct_convertion, null, do_sync,
 				random_early_drop, symmetric_rtp, rtcp);

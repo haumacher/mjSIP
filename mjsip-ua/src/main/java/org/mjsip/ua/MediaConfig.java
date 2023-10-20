@@ -3,15 +3,14 @@
  */
 package org.mjsip.ua;
 
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
-import org.zoolu.util.MultiTable;
 import org.zoolu.util.Parser;
-import org.zoolu.util.VectorUtils;
 
 /**
  * Definition of static media files to serve.
@@ -30,10 +29,9 @@ public class MediaConfig extends Configure {
 
 	/** Array of media descriptions */
 	public MediaDesc[] mediaDescs=new MediaDesc[]{};
-	/** Vector of media descriptions */
-	private Vector<MediaDesc> mediaDescVector=new Vector<>();
-	/** Table of media specifications, as multiple-values table of (String)media-->(MediaSpec)media_spec */
-	private MultiTable<String,MediaSpec> mediaSpecTable=new MultiTable<>();
+	
+	/** Temporary mapping of media type to {@link MediaDesc}. */
+	private Map<String, MediaDesc> _descByType=new HashMap<>();
 
 	/**
 	 * Sets the transport port for each medium.
@@ -63,46 +61,35 @@ public class MediaConfig extends Configure {
 	
 	@Override
 	public void setOption(String attribute, Parser par) {
-		if (attribute.equals("media") ||
-				 attribute.equals("media_desc"))    {  mediaDescVector.addElement(MediaDesc.parseMediaDesc(par.getRemainingString().trim()));  return;  }
-		if (attribute.equals("media_spec"))     {  MediaSpec ms=MediaSpec.parseMediaSpec(par.getRemainingString().trim());  mediaSpecTable.put(ms.getType(),ms);  return;  }
+		if (attribute.equals("media") || attribute.equals("media_desc"))    {
+			MediaDesc desc = MediaDesc.parseMediaDesc(par.getRemainingString().trim());
+			_descByType.put(desc.getMedia(), desc);  
+		}
 	}
 	
 	private void normalize(UAConfig uaConfig) {
 		// BEGIN PATCH FOR JMF SUPPORT
 		if (uaConfig.audio && uaConfig.useJmfAudio) {
-			mediaSpecTable.remove("audio");
-			mediaSpecTable.put("audio",new MediaSpec("audio",11,"L16",16000,1,320));
+			MediaDesc desc = _descByType.remove("audio");
+			_descByType.put("audio", desc.withSpecs(new MediaSpec[] {new MediaSpec(11,"L16",16000,1,320)}));
 		}
 		else
 		if (uaConfig.video && uaConfig.useJmfVideo) {
-			mediaSpecTable.remove("video");
-			mediaSpecTable.put("video",new MediaSpec("video",101,null,-1,1,-1));
+			MediaDesc desc = _descByType.remove("video");
+			_descByType.put("video",desc.withSpecs(new MediaSpec[] {new MediaSpec(101,null,-1,1,-1)}));
 		}
 		// END PATCH FOR JMF SUPPORT
 		
 		// media descriptions
-		if (mediaDescVector.size()==0 && uaConfig.audio) {
+		if (_descByType.size()==0 && uaConfig.audio) {
 			// add default auido support
-			mediaDescVector.addElement(MediaDesc.parseMediaDesc("audio 4080 RTP/AVP { audio 0 PCMU 8000 160, audio 8 PCMA 8000 160 }"));
+			_descByType.put("audio",MediaDesc.parseMediaDesc("audio 4080 RTP/AVP { 0 PCMU 8000 160, 8 PCMA 8000 160 }"));
 		}
-		mediaDescs=new MediaDesc[mediaDescVector.size()];
-		for (int i=0; i<mediaDescVector.size(); i++) {
-			MediaDesc md=mediaDescVector.elementAt(i);
-			Vector<MediaSpec> media_spec_vector=new Vector<MediaSpec>();
-			MediaSpec[] ms_array=md.getMediaSpecs();
-			if (ms_array.length>0) {
-				//media_spec_vector.addAll(Arrays.asList(ms_array));
-				VectorUtils.addArray(media_spec_vector,ms_array);
-			}
-			Vector<MediaSpec> ms_vector=mediaSpecTable.get(md.getMedia());
-			if (ms_vector!=null) {
-				//media_spec_vector.addAll(ms_vector);
-				VectorUtils.addVector(media_spec_vector,ms_vector);
-			}
-			//MediaSpec[] media_specs=(MediaSpec[])media_spec_vector.toArray(new MediaSpec[]{});
-			MediaSpec[] media_specs=(MediaSpec[])VectorUtils.vectorToArray(media_spec_vector,new MediaSpec[media_spec_vector.size()]);
-			mediaDescs[i]=new MediaDesc(md.getMedia(),md.getPort(),md.getTransport(),media_specs);
+		
+		int i = 0;
+		mediaDescs=new MediaDesc[_descByType.size()];
+		for (MediaDesc md : _descByType.values()) {
+			mediaDescs[i++]=new MediaDesc(md.getMedia(),md.getPort(),md.getTransport(),md.getMediaSpecs());
 		}
 	}
 
@@ -119,7 +106,8 @@ public class MediaConfig extends Configure {
 		MediaDesc[] result = new MediaDesc[descriptors.length];
 		for (int n = 0, cnt = descriptors.length; n < cnt; n++) {
 			MediaDesc descriptor = descriptors[n];
-			result[n] = new MediaDesc(descriptor.getMedia(), descriptor.getPort(), descriptor.getTransport(), descriptor.getMediaSpecs());
+			MediaSpec[] specs = descriptor.getMediaSpecs();
+			result[n] = descriptor.withSpecs(specs);
 		}
 		return result;
 	}	

@@ -484,10 +484,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// for each media
 		for (MediaDescriptor matchingDescriptor : matchingMedia) {
 			MediaField mediaField=matchingDescriptor.getMedia();
-			String media=mediaField.getMedia();
+			String mediaType=mediaField.getMedia();
 			
-			MediaDescriptor remoteDescriptor = remote_sdp.getMediaDescriptor(media);
-			remote_sdp.removeMediaDescriptor(media);
+			MediaDescriptor remoteDescriptor = remote_sdp.getMediaDescriptor(mediaType);
+			remote_sdp.removeMediaDescriptor(mediaType);
 
 			// media and flow specifications
 			String transport=mediaField.getTransport();
@@ -497,16 +497,16 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 			int local_port=mediaField.getPort();
 			int remote_port=remoteDescriptor.getMedia().getPort();
-			MediaSpec media_spec = findMatchingMediaSpec(media, avp);
+			MediaSpec media_spec = findMatchingMediaSpec(mediaType, avp);
 			
 			if (local_port!=0 && remote_port!=0 && media_spec!=null) {
 				String remote_address=remote_sdp.getConnection().getAddress();
-				FlowSpec flow_spec=new FlowSpec(media_spec,local_port,remote_address,remote_port,dir);
-				LOG.info("Starting media session: " + media + " format: " + flow_spec.getMediaSpec().getCodec());
+				FlowSpec flow_spec=new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
+				LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
 				boolean success=media_agent.startMediaSession(flow_spec, _mediaConfig);           
 				if (success) {
-					media_sessions.addElement(media);
-					if (listener!=null) listener.onUaMediaSessionStarted(this,media,format);
+					media_sessions.addElement(mediaType);
+					if (listener!=null) listener.onUaMediaSessionStarted(this,mediaType,format);
 				}
 			} else {
 				LOG.info("No matching media found (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");

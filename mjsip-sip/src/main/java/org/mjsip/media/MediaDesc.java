@@ -43,7 +43,7 @@ public class MediaDesc {
 	}
 
 	/**
-	 * The media type.
+	 * The media type (e.g. audio, video, message, etc.).
 	 */
 	public String getMedia() {
 		return media;
@@ -195,7 +195,14 @@ public class MediaDesc {
 				channels = Integer.parseInt(parser.skipChar().getWord(DELIMITER));
 			}
 		}
-		return new MediaSpec(media, avp, codec, sample_rate, channels, 0);
+		return new MediaSpec(avp, codec, sample_rate, channels, 0);
+	}
+
+	/**
+	 * A copy of this {@link MediaDesc} with alternative {@link #getMediaSpecs()}.
+	 */
+	public MediaDesc withSpecs(MediaSpec[] newSpecs) {
+		return new MediaDesc(getMedia(), getPort(), getTransport(), newSpecs);
 	}
 
 }
