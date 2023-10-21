@@ -25,10 +25,12 @@ package org.mjsip.media;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.rtp.AmrRtpPayloadFormat;
@@ -103,118 +105,112 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	public static final String TONE="TONE";
 
 	/** Test tone frequency [Hz] */
-	public static int TONE_FREQ=100;
+	public static int TONE_FREQ = 100;
 
 	/** Test tone amplitude (from 0.0 to 1.0) */
-	public static double TONE_AMPL=1.0;
+	public static double TONE_AMPL = 1.0;
 
 	/** Test tone sample size [bits] */
-	public static int TONE_SAMPLE_SIZE=8;
+	public static final int TONE_SAMPLE_SIZE = 8;
 
 
 	/** Whether using symmetric_rtp */
-	boolean symmetric_rtp=DEFAULT_SYMMETRIC_RTP;
-
-	/** Audio format */
-	//AudioFormat audio_format;
+	private final boolean symmetric_rtp;
 
 	/** Stream direction */
-	FlowSpec.Direction dir;
+	private final FlowSpec.Direction dir;
 
 	/** UDP socket */
-	UdpSocket udp_socket=null;
+	private final UdpSocket udp_socket;
 
 	/** RtpStreamSender */
-	protected RtpStreamSender rtp_sender=null;
+	private RtpStreamSender rtp_sender;
 
 	/** RtpStreamReceiver */
-	protected RtpStreamReceiver rtp_receiver=null;
+	private RtpStreamReceiver rtp_receiver;
 
 	/** Whether using system audio capture */
-	boolean audio_input=false;
+	private final boolean audio_input;
 
 	/** Whether using system audio playout */
-	boolean audio_output=false;
+	private final boolean audio_output;
 	
 	/** RTCP */
-	RtpControl rtp_control=null;
+	private final RtpControl rtp_control;
 
-
-
-	/** Creates a new audio streamer. */
-	public AudioStreamer(RtpStreamSender rtp_sender, RtpStreamReceiver rtp_receiver, boolean symmetric_rtp) {
-		this.rtp_sender=rtp_sender;
-		this.rtp_receiver=rtp_receiver;
-		this.symmetric_rtp=symmetric_rtp;
-		LOG.debug("codec: [unknown]");
+	/**
+	 * Creates a new audio streamer without {@link RtpControl}.
+	 * 
+	 * @param flow_spec
+	 *        the flow specification
+	 * @param direct_convertion
+	 *        whether using explicit external converter (i.e. direct access to an external
+	 *        conversion provider) instead of that provided by javax.sound.sampled.spi. It applies
+	 *        only when javax sound is used, that is when no other audio streamers (such as jmf or
+	 *        rat) are used
+	 * @param additional_encoding
+	 *        additional audio encoder/decoder (optional)
+	 * @param do_sync
+	 *        whether enforcing time synchronization to RTP source stream. If synchronization is
+	 *        explicitly performed, the departure time of each RTP packet is equal to its nominal
+	 *        time. Note that when using audio capturing, synchronization with the sample rate is
+	 *        implicitly performed by the audio capture device and frames are read at constant bit
+	 *        rate. However, an explicit re-synchronization is suggested in order to let the read()
+	 *        method be non-blocking (in the other case the UA audio performance seems decreasing
+	 * @param random_early_drop
+	 *        receiver random early drop (RED) rate. Actually it is the inverse of packet drop rate.
+	 *        It can used to prevent long play back delay. A value less or equal to 0 means that no
+	 *        packet dropping is explicitly performed at the RTP receiver
+	 * @param symmetric_rtp
+	 *        whether using symmetric_rtp
+	 */
+	public AudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out, boolean direct_convertion,
+			Codec additional_encoding, boolean do_sync, int random_early_drop, boolean symmetric_rtp) {
+		this(flow_spec, audiofile_in, audiofile_out, direct_convertion, additional_encoding, do_sync, random_early_drop,
+				symmetric_rtp, false);
 	}
 
+	/**
+	 * Creates a new audio streamer.
+	 * 
+	 * @param flow_spec
+	 *        the flow specification
+	 * @param direct_convertion
+	 *        whether using explicit external converter (i.e. direct access to an external
+	 *        conversion provider) instead of that provided by javax.sound.sampled.spi. It applies
+	 *        only when javax sound is used, that is when no other audio streamers (such as jmf or
+	 *        rat) are used
+	 * @param additional_encoding
+	 *        additional audio encoder/decoder (optional)
+	 * @param do_sync
+	 *        whether enforcing time synchronization to RTP source stream. If synchronization is
+	 *        explicitly performed, the departure time of each RTP packet is equal to its nominal
+	 *        time. Note that when using audio capturing, synchronization with the sample rate is
+	 *        implicitly performed by the audio capture device and frames are read at constant bit
+	 *        rate. However, an explicit re-synchronization is suggested in order to let the read()
+	 *        method be non-blocking (in the other case the UA audio performance seems decreasing
+	 * @param random_early_drop
+	 *        receiver random early drop (RED) rate. Actually it is the inverse of packet drop rate.
+	 *        It can used to prevent long play back delay. A value less or equal to 0 means that no
+	 *        packet dropping is explicitly performed at the RTP receiver
+	 * @param symmetric_rtp
+	 *        whether using symmetric_rtp
+	 * @param rtcp
+	 *        whether to use {@link RtpControl}
+	 */
+	public AudioStreamer(FlowSpec flow_spec,
+			String audiofile_in, String audiofile_out, boolean direct_convertion, Codec additional_encoding,
+			boolean do_sync, int random_early_drop, boolean symmetric_rtp, boolean rtcp) {
+		MediaSpec mediaSpec = flow_spec.getMediaSpec();
 
-	/** Creates a new audio streamer. */
-	/*public AudioStreamer(int local_port, String remote_addr, int remote_port, MediaApp.MediaDirection direction) {
-		init(local_port,remote_addr,remote_port,direction,null,null,null,-1,0,0,true,symmetric_rtp);
-	}*/
+		String codec_name = mediaSpec.getCodec();
+		int sample_rate = mediaSpec.getSampleRate();
+		int channels = mediaSpec.getChannels();
+		int payload_type = mediaSpec.getAVP();
+		int packet_size = mediaSpec.getPacketSize();
 
-
-	/** Creates a new audio streamer.
-	  * @param flow_spec the flow specification
-	  * @param direct_convertion whether using explicit external converter (i.e. direct access to an external conversion provider)
-	  *    instead of that provided by javax.sound.sampled.spi.
-	  *    It applies only when javax sound is used, that is when no other audio streamers (such as jmf or rat) are used
-	  * @param additional_encoding additional audio encoder/decoder (optional)
-	  * @param do_sync whether enforcing time synchronization to RTP source stream.
-	  *    If synchronization is explicitly performed, the departure time of each RTP packet is equal to its nominal time.
-	  *    Note that when using audio capturing, synchronization with the sample rate
-	  *    is implicitly performed by the audio capture device and frames are read at constant bit rate.
-	  *    However, an explicit re-synchronization is suggested
-	  *    in order to let the read() method be non-blocking (in the other case
-	  *    the UA audio performance seems decreasing
-	  * @param random_early_drop receiver random early drop (RED) rate.
-	  *    Actually it is the inverse of packet drop rate.
-	  *    It can used to prevent long play back delay. 
-	  *    A value less or equal to 0 means that no packet dropping is explicitly
-	  *    performed at the RTP receiver
-	  * @param symmetric_rtp whether using symmetric_rtp
-	  * @param logger a logger for recording log messages (or <i>null</i>) */
-	public AudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out, boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop, boolean symmetric_rtp) {
-		MediaSpec audio_spec=flow_spec.getMediaSpec();
-		LOG.debug("audio_spec: " + audio_spec.toString());
-		init(flow_spec.getLocalPort(),flow_spec.getRemoteAddress(),flow_spec.getRemotePort(),flow_spec.getDirection(),audiofile_in,audiofile_out,audio_spec.getCodec(),audio_spec.getAVP(),audio_spec.getSampleRate(),audio_spec.getChannels(),audio_spec.getPacketSize(),direct_convertion,additional_encoding,do_sync,random_early_drop,symmetric_rtp,false);
-	}
-
-
-	/** Creates a new audio streamer.
-	  * @param flow_spec the flow specification
-	  * @param direct_convertion whether using explicit external converter (i.e. direct access to an external conversion provider)
-	  *    instead of that provided by javax.sound.sampled.spi.
-	  *    It applies only when javax sound is used, that is when no other audio streamers (such as jmf or rat) are used
-	  * @param additional_encoding additional audio encoder/decoder (optional)
-	  * @param do_sync whether enforcing time synchronization to RTP source stream.
-	  *    If synchronization is explicitly performed, the departure time of each RTP packet is equal to its nominal time.
-	  *    Note that when using audio capturing, synchronization with the sample rate
-	  *    is implicitly performed by the audio capture device and frames are read at constant bit rate.
-	  *    However, an explicit re-synchronization is suggested
-	  *    in order to let the read() method be non-blocking (in the other case
-	  *    the UA audio performance seems decreasing
-	  * @param random_early_drop receiver random early drop (RED) rate.
-	  *    Actually it is the inverse of packet drop rate.
-	  *    It can used to prevent long play back delay. 
-	  *    A value less or equal to 0 means that no packet dropping is explicitly
-	  *    performed at the RTP receiver
-	  * @param symmetric_rtp whether using symmetric_rtp
-	  * @param rtcp whether using rtcp
-	  * @param logger a logger for recording log messages (or <i>null</i>) */
-	public AudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out, boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop, boolean symmetric_rtp, boolean rtcp) {
-		MediaSpec audio_spec=flow_spec.getMediaSpec();
-		LOG.debug("audio_spec: " + audio_spec.toString());
-		init(flow_spec.getLocalPort(),flow_spec.getRemoteAddress(),flow_spec.getRemotePort(),flow_spec.getDirection(),audiofile_in,audiofile_out,audio_spec.getCodec(),audio_spec.getAVP(),audio_spec.getSampleRate(),audio_spec.getChannels(),audio_spec.getPacketSize(),direct_convertion,additional_encoding,do_sync,random_early_drop,symmetric_rtp,rtcp);
-	}
-
-
-	/** Initializes the audio streamer. */
-	private void init(int local_port, String remote_addr, int remote_port, FlowSpec.Direction direction, String audiofile_in, String audiofile_out, String codec_name, int payload_type, int sample_rate, int channels, int packet_size, boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop, boolean symmetric_rtp, boolean rtcp) {
 		LOG.debug("initalization");
-		this.dir=direction;
+		this.dir = flow_spec.getDirection();
 		this.symmetric_rtp=symmetric_rtp;
 		// 1) in case not defined, use default values
 		if (codec_name==null) codec_name=DEFAULT_CODEC_NAME;
@@ -304,9 +300,11 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 		try {
 			// 5) udp socket
-			udp_socket=new UdpSocket(local_port);
+			udp_socket = new UdpSocket(flow_spec.getLocalPort());
 			
 			// 6) sender
+			String remote_addr = flow_spec.getRemoteAddress();
+			int remote_port = flow_spec.getRemotePort();
 			if ((dir == Direction.SEND_ONLY || dir == Direction.FULL_DUPLEX)) {
 				LOG.debug("new audio sender to "+remote_addr+":"+remote_port);
 				if (audiofile_in!=null && audiofile_in.equals(AudioStreamer.TONE)) {
@@ -315,20 +313,18 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 					ToneInputStream tone=new ToneInputStream(TONE_FREQ,TONE_AMPL,sample_rate,TONE_SAMPLE_SIZE,ToneInputStream.PCM_LINEAR_UNSIGNED,DEFAULT_BIG_ENDIAN);
 					// sender
 					rtp_sender=new RtpStreamSender(tone,true,payload_type,sample_rate,channels,packet_time,packet_size,additional_encoder,udp_socket,remote_addr,remote_port,this);
-				}
-				else
-				if (audiofile_in!=null) {
+					audio_input = false;
+				} else if (audiofile_in != null) {
 					AudioInputStream audio_input_stream=AudioFile.getAudioFileInputStream(audiofile_in,audio_format);
 					rtp_sender=new RtpStreamSender(audio_input_stream,true,payload_type,sample_rate,channels,packet_time,packet_size,additional_encoder,udp_socket,remote_addr,remote_port,this);
-				}
-				else {
+					audio_input = false;
+				} else {
 					// javax sound
 					AudioInputStream audio_input_stream=null;
 					if (!direct_convertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
 						// use standard java embedded conversion provider
 						audio_input_stream=SimpleAudioSystem.getInputStream(audio_format);          
-					}
-					else {
+					} else {
 						// use my explicit conversion provider
 						Class audio_system=Class.forName("org.zoolu.ext.sound.ConverterAudioSystem");
 						java.lang.reflect.Method get_input_stream=audio_system.getMethod("convertAudioInputStream",new Class[]{ String.class, int.class, AudioInputStream.class });
@@ -340,11 +336,13 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 					//if (sync_adj>0) sender.setSyncAdj(sync_adj);
 					audio_input=true;
 				}
+			} else {
+				audio_input = false;
 			}
 			
 			// 7) receiver
 			if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
-				LOG.debug("new audio receiver on "+local_port);
+				LOG.debug("new audio receiver on " + flow_spec.getLocalPort());
 				if (audiofile_out!=null) {
 					OutputStream output_stream=AudioFile.getAudioFileOutputStream(audiofile_out,codec,sample_rate);
 					rtp_receiver = new RtpStreamReceiver(output_stream, additional_decoder, udp_socket) {
@@ -359,15 +357,14 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 							}
 						}
 					};
-				}
-				else {
+					audio_output = false;
+				} else {
 					// javax sound
 					AudioOutputStream audio_output_stream=null;
 					if (!direct_convertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
 						// use standard java embedded conversion provider
 						audio_output_stream=SimpleAudioSystem.getOutputStream(audio_format);
-					}
-					else {
+					} else {
 						// use my explicit conversion provider
 						Class audio_system=Class.forName("org.zoolu.ext.sound.ConverterAudioSystem");
 						java.lang.reflect.Method get_output_stream=audio_system.getMethod("convertAudioOutputStream",new Class[]{ String.class, int.class, AudioOutputStream.class });
@@ -379,20 +376,29 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 					if (random_early_drop>0) rtp_receiver.setRED(random_early_drop);
 					audio_output=true;
 				}
+			} else {
+				audio_output = false;
 			}
 			// RTCP
 			if (rtcp) {
 				rtp_control=new RtpControl(null,udp_socket.getLocalPort()+1,remote_addr,remote_port+1);
 				if (rtp_sender!=null) rtp_sender.setControl(rtp_control);
+			} else {
+				rtp_control = null;
 			}
 			// SEQUENCE CHECK
-			if (rtp_receiver!=null) rtp_receiver.setSequenceCheck(SEQUENCE_CHECK);
+			if (rtp_receiver != null) {
+				rtp_receiver.setSequenceCheck(SEQUENCE_CHECK);
+			}
 			
 			// SILENCE PADDING
-			if (rtp_receiver!=null) rtp_receiver.setSilencePadding(SILENCE_PADDING);
+			if (rtp_receiver != null) {
+				rtp_receiver.setSilencePadding(SILENCE_PADDING);
+			}
 		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
+		catch (ClassNotFoundException | IOException | UnsupportedAudioFileException | NoSuchMethodException
+				| IllegalAccessException | InvocationTargetException ex) {
+			throw new RuntimeException("Media streamer initialization failed.", ex);
 		}
 		LOG.debug("DEBUG: Codec: " + codec);
 		LOG.debug("DEBUG: Frame rate: " + frame_rate + " frame/s");
@@ -447,19 +453,11 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		if (rtp_control!=null) rtp_control.halt();
 		return true;
 	}
-	
-	
-	/** Sets symmetric RTP mode. */
-	public void setSymmetricRtp(boolean symmetric_rtp) {
-		this.symmetric_rtp=symmetric_rtp;
-	}
-
 
 	/** whether symmetric RTP mode is set. */
 	public boolean isSymmetricRtp() {
 		return symmetric_rtp;
 	}
-
 
 	/** From RtpStreamReceiverListener. When the remote socket address (source) is changed. */
 	@Override
@@ -472,7 +470,6 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		}
 	}
 
-
 	/** From RtpStreamReceiverListener. When the stream receiver terminated. */
 	@Override
 	public void onRtpStreamReceiverTerminated(RtpStreamReceiver rr, Exception error) {
@@ -480,14 +477,12 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			LOG.info("Exception.", error);
 	}
 
-
 	/** From RtpStreamSenderListener. When the stream sender terminated. */
 	@Override
 	public void onRtpStreamSenderTerminated(RtpStreamSender rs, Exception error) {
 		if (error != null)
 			LOG.info("Exception.", error);
 	}
-
 
 	/** Sets the synchronization adjustment time (in milliseconds). 
 	  * It accelerates (sync_adj &lt; 0) or reduces (sync_adj &gt; 0) the sending rate respect to the nominal value.

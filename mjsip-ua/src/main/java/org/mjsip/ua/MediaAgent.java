@@ -38,10 +38,10 @@ import org.zoolu.util.Archive;
 
 
 
-/** Media agent.
-  * A media agent is used to start and stop multimedia sessions
-  * (e.g. audio and/or video), by means of proper media streamers.
-  */
+/**
+ * A {@link MediaAgent} is used to start and stop multimedia sessions (e.g. audio and/or video), by
+ * means of {@link MediaStreamer}s.
+ */
 public class MediaAgent {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MediaAgent.class);
