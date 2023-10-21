@@ -5,11 +5,13 @@ package org.mjsip.media;
 import java.io.IOException;
 
 import org.mjsip.media.FlowSpec.Direction;
+import org.mjsip.media.StreamerOptions.Builder;
 import org.mjsip.media.rx.AudioFileReceiver;
 import org.mjsip.media.rx.AudioReceiver;
 import org.mjsip.media.rx.JavaxAudioOutput;
 import org.mjsip.media.tx.AudioFileTransmitter;
 import org.mjsip.media.tx.AudioTransmitter;
+import org.mjsip.media.tx.JavaxAudioInput;
 import org.mjsip.media.tx.ToneTransmitter;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.sound.CodecType;
@@ -25,16 +27,6 @@ public class AudioApp {
 	protected static void println(String str) {
 		System.out.println(str);
 	}
-
-	
-	/** Creates a new audio streamer. */
-	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx,
-			boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop,
-			boolean symmetric_rtp, boolean rtcp) {
-		return new AudioStreamer(flow_spec, tx, rx, additional_encoding, symmetric_rtp,
-				rtcp);
-	}
-
 
 	/** Prints out a help. */
 	protected void printHelp() {
@@ -89,6 +81,7 @@ public class AudioApp {
 		int channels=1;
 		
 		boolean rtcp=false;
+		Builder options = StreamerOptions.builder();
 				
 		try {
 			for (int i=0; i<args.length; i++) {
@@ -172,12 +165,12 @@ public class AudioApp {
 				}
 				// else
 				if (args[i].startsWith("--sqn-check"))  {
-					AudioStreamer.SEQUENCE_CHECK=true;
+					options.setSequenceCheck(true);
 					continue;
 				}
 				// else
 				if (args[i].startsWith("--silence-pad"))  {
-					AudioStreamer.SILENCE_PADDING=true;
+					options.setSilencePadding(true);
 					continue;
 				}
 				// else
@@ -227,8 +220,10 @@ public class AudioApp {
 		AudioTransmitter tx;
 		if (tone_freq>0) {
 			tx = new ToneTransmitter(tone_freq, tone_ampl);
-		} else {
+		} else if (audio_in != null) {
 			tx = new AudioFileTransmitter(audio_in);
+		} else {
+			tx = new JavaxAudioInput(true, rtcp);
 		}
 
 		CodecType codec=CodecType.getByName(codec_name);
@@ -252,7 +247,7 @@ public class AudioApp {
 		AudioReceiver rx;
 		if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
 			if (audio_out == null) {
-				rx = new JavaxAudioOutput(direct_convertion, random_early_drop);
+				rx = new JavaxAudioOutput(direct_convertion);
 			} else {
 				rx = new AudioFileReceiver(audio_out);
 			}
@@ -260,12 +255,16 @@ public class AudioApp {
 			rx = null;
 		}
 
-		AudioStreamer audio_streamer = createAudioStreamer(fspec, tx, rx, direct_convertion, null, true,
-				random_early_drop, symmetric_rtp, rtcp);
+		options
+			.setRandomEarlyDrop(random_early_drop)
+			.setSymmetricRtp(symmetric_rtp)
+			.setRtp(rtcp)
+			.setSyncAdjust(sync_adj)
+			.build();
+		AudioStreamer audio_streamer = new AudioStreamer(fspec, tx, rx, options.build());
 
-		//if (random_early_drop>0) aapp.setRED(random_early_drop);
-		if (sync_adj!=0) audio_streamer.setSyncAdj(sync_adj);
 		audio_streamer.start();
+
 		println("Press 'Return' to stop.");
 		try {  System.in.read();  } catch (IOException e) {};
 		audio_streamer.halt();

@@ -6,8 +6,6 @@ package org.mjsip.media.tx;
 import java.net.UnknownHostException;
 
 import org.mjsip.media.RtpStreamSender;
-import org.mjsip.rtp.RtpControl;
-import org.mjsip.rtp.RtpPayloadFormat;
 import org.zoolu.net.SocketAddress;
 
 /**
@@ -44,21 +42,6 @@ class RtpAudioTxHandle implements AudioTXHandle {
 	@Override
 	public void setRemoteSoAddress(SocketAddress remote_soaddr) throws UnknownHostException {
 		getRtpSender().setRemoteSoAddress(remote_soaddr);
-	}
-
-	@Override
-	public void setSyncAdj(long sync_adj) {
-		getRtpSender().setSyncAdj(sync_adj);
-	}
-
-	@Override
-	public void setControl(RtpControl rtp_control) {
-		getRtpSender().setControl(rtp_control);
-	}
-
-	@Override
-	public void setRtpPayloadFormat(RtpPayloadFormat rtp_payload_format) {
-		getRtpSender().setRtpPayloadFormat(rtp_payload_format);
 	}
 
 }

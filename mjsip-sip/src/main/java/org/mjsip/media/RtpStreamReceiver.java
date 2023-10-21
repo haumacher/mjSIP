@@ -25,7 +25,7 @@ package org.mjsip.media;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.mjsip.rtp.RtpControl;
+import org.mjsip.media.rx.RtpReceiverOptions;
 import org.mjsip.rtp.RtpPacket;
 import org.mjsip.rtp.RtpPayloadFormat;
 import org.mjsip.rtp.RtpSocket;
@@ -45,7 +45,10 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	/** Whether working in debug mode. */
 	public static final boolean DEBUG = LOG.isDebugEnabled();
 
-	/** Time waited before starting playing out packets (in millisecs). All packet received in the meantime are dropped in order to reduce the effect of an eventual initial packet burst. */
+	/**
+	 * Time waited before start playing out packets (in milliseconds). All packet received in the
+	 * meantime are dropped in order to reduce the effect of an eventual initial packet burst.
+	 */
 	public static final int EARLY_DROP_TIME=200;
 
 	/** Size of the receiver buffer (including the RTP header) */
@@ -69,9 +72,6 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	/** The RtpSocket */
 	private RtpSocket rtp_socket = null;
 
-	/** Whether the socket has been created here */
-	private boolean socket_is_local_attribute = false;
-
 	/** Remote socket address */
 	private SocketAddress remote_soaddr = null;
 
@@ -83,9 +83,6 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 
 	/** Packet counter (incremented only if packet_drop_rate>0) */
 	private long packet_counter = 0;
-
-	/** RTCP. */
-	private RtpControl rtp_control = null;
 
 	/** RTP payload format */
 	private RtpPayloadFormat rtp_payload_format = null;
@@ -102,80 +99,42 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	/** Additional RTP payload decoder */
 	private Encoder additional_decoder;
 
+	/**
+	 * Constructs a RtpStreamReceiver.
+	 * 
+	 * @param options
+	 *        Additional options.
+	 * @param output_stream
+	 *        the stream sink
+	 * @param additional_decoder
+	 *        additional RTP payload decoder (optional)
+	 * @param payloadFormat
+	 *        The RtpPayloadFormat to use.
+	 * @param socket
+	 *        the local receiver UdpSocket
+	 * @param listener
+	 *        the RtpStreamReceiver listener
+	 */
+	public RtpStreamReceiver(RtpReceiverOptions options, OutputStream output_stream, Encoder additional_decoder, RtpPayloadFormat payloadFormat, UdpSocket socket, RtpStreamReceiverListener listener) {
+		this.output_stream = output_stream;
+		this.listener = listener;
+		this.additional_decoder = additional_decoder;
+		if (socket != null) {
+			rtp_socket = new RtpSocket(socket);
+		}
+		this.rtp_payload_format=payloadFormat;
+		this.random_early_drop=options.randomEarlyDrop();
+		this.silence_padding = options.silencePadding();
+		this.sequence_check = silence_padding || options.sequenceCheck();
+		this.ssrc_check = options.ssrcCheck();
 
-
-	/** Constructs a RtpStreamReceiver.
-	  * @param output_stream the stream sink
-	  * @param additional_decoder additional RTP payload decoder (optional)
-	  * @param local_port the local receiver port */
-	public RtpStreamReceiver(OutputStream output_stream, Encoder additional_decoder, int local_port) throws java.net.SocketException {
-		init(output_stream,additional_decoder,local_port,null);
 	}
-
-	/** Constructs a RtpStreamReceiver.
-	  * @param output_stream the stream sink
-	  * @param decoder RTP payload decoder (optional)
-	  * @param local_port the local receiver port
-	  * @param listener the RtpStreamReceiver listener */
-	//public RtpStreamReceiver(OutputStream output_stream, int local_port, RtpStreamReceiverListener listener)
-	//{  init(output_stream,local_port,listener);
-	//}
-
-	/** Constructs a RtpStreamReceiver.
-	  * @param output_stream the stream sink
-	  * @param additional_decoder additional RTP payload decoder (optional)
-	  * @param socket the local receiver UdpSocket */
-	public RtpStreamReceiver(OutputStream output_stream, Encoder additional_decoder, UdpSocket socket) {
-		init(output_stream,additional_decoder,socket,null);
-	}
-
-	/** Constructs a RtpStreamReceiver.
-	  * @param output_stream the stream sink
-	  * @param additional_decoder additional RTP payload decoder (optional)
-	  * @param socket the local receiver UdpSocket
-	  * @param listener the RtpStreamReceiver listener */
-	public RtpStreamReceiver(OutputStream output_stream, Encoder additional_decoder, UdpSocket socket, RtpStreamReceiverListener listener) {
-		init(output_stream,additional_decoder,socket,listener);
-	}
-
-	/** Inits the RtpStreamReceiver.
-	  * @param output_stream the stream sink
-	  * @param additional_decoder additional RTP payload decoder (optional)
-	  * @param local_port the local receiver port
-	  * @listener the RtpStreamReceiver listener */
-	private void init(OutputStream output_stream, Encoder additional_decoder, int local_port, RtpStreamReceiverListener listener) throws java.net.SocketException {
-		UdpSocket udp_socket=new UdpSocket(local_port);
-		socket_is_local_attribute=true;
-		init(output_stream,additional_decoder,udp_socket,listener);
-	}
-
-	/** Inits the RtpStreamReceiver.
-	  * @param output_stream the stream sink
-	  * @param decoder RTP payload decoder (optional)
-	  * @param socket the local receiver UdpSocket
-	  * @listener the RtpStreamReceiver listener */
-	private void init(OutputStream output_stream, Encoder decoder, UdpSocket udp_socket, RtpStreamReceiverListener listener) {
-		this.output_stream=output_stream;
-		this.listener=listener;
-		this.additional_decoder=decoder;
-		if (udp_socket!=null) rtp_socket=new RtpSocket(udp_socket);
-	}
-
-
-	/** Sets RTCP. */
-	public void setControl(RtpControl rtp_control) {
-		this.rtp_control=rtp_control;
-		if (rtp_control!=null) rtp_control.setRtpReceiver(this);
-	}
-
 
 	/** Gets the local port. */
 	public int getLocalPort() {
 		if (rtp_socket!=null) return rtp_socket.getUdpSocket().getLocalPort();
 		else return 0;
 	}
-
-
 
 	/** Gets SSRC.
 	  * @return he synchronization source (SSRC) identifier of the received RTP packets */
@@ -352,7 +311,9 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 						if (listener!=null) listener.onRemoteSoAddressChanged(this,remote_soaddr);
 					}
 				}
-				catch (java.io.InterruptedIOException e) {}
+				catch (java.io.InterruptedIOException e) {
+					// Ignore.
+				}
 			}
 		}
 		catch (Exception e) {
@@ -362,10 +323,8 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 				LOG.debug("Exception.", e);
 		}
 		
-		// close RtpSocket and local UdpSocket
-		UdpSocket udp_socket=rtp_socket.getUdpSocket();
+		// close RtpSocket
 		rtp_socket.close();
-		if (socket_is_local_attribute && udp_socket!=null) udp_socket.close();
 		
 		// free all
 		output_stream=null;
@@ -399,44 +358,6 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 		return random_early_drop;
 	}
 
-
-	/** Sets RTP payload format. */
-	public void setRtpPayloadFormat(RtpPayloadFormat rtp_payload_format) {
-		this.rtp_payload_format=rtp_payload_format;
-	}
-
-
-	/** Sets SSRC check mode.
-	  * In ssrc-check mode packets with a SSRC that differs from the one in the first  received packet are discarded */
-	public void setSsrcCheck(boolean ssrc_check) {
-		this.ssrc_check=ssrc_check;
-	}
-
-
-	/** Sets out-of-sequence-check mode.
-	  * In out-of-sequence-check mode out-of-sequence and duplicated packets are discarded */
-	public void setSequenceCheck(boolean sequence_check) {
-		this.sequence_check=sequence_check;
-		if (!sequence_check) silence_padding=false;
-	}
-
-
-	/** Sets silence padding mode.
-	  * In silence padding mode silence intervals are filled with (silence-equivalent) void data */
-	public void setSilencePadding(boolean silence_padding) {
-		this.silence_padding=silence_padding;
-		if (silence_padding) sequence_check=true;
-	}
-
-	public static int byte2int(byte b) {
-		//return (b>=0)? b : -((b^0xFF)+1);
-		//return (b>=0)? b : b+0x100; 
-		return (b+0x100)%0x100;
-	}
-
-	public static int byte2int(byte b1, byte b2) {
-		return (((b1+0x100)%0x100)<<8)+(b2+0x100)%0x100; 
-	}
 }
 
 

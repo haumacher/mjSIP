@@ -60,12 +60,6 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	/** Whether using symmetric RTP by default */
 	public static final boolean DEFAULT_SYMMETRIC_RTP=false;
 	
-	/** Whether discarding out-of-sequence and duplicated packets */
-	public static boolean SEQUENCE_CHECK=false;
-
-	/** Whether filling silence intervals with (silence-equivalent) void data */
-	public static boolean SILENCE_PADDING=false;
-
 	/** Unknown payload type */
 	public static final int UNKNOWN_PAYLOAD_TYPE=111;
 
@@ -97,7 +91,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	public static final int DEFAULT_PACKET_TIME=20;
 
 	/** Whether using symmetric_rtp */
-	private final boolean symmetric_rtp;
+	private final boolean _symmetricRtp;
 
 	/** Stream direction */
 	private final FlowSpec.Direction dir;
@@ -114,34 +108,12 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	private final RtpControl rtp_control;
 
 	/**
-	 * Creates a new audio streamer without {@link RtpControl}.
-	 * 
-	 * @param flow_spec
-	 *        the flow specification
-	 * @param additional_encoding
-	 *        additional audio encoder/decoder (optional)
-	 * @param symmetric_rtp
-	 *        whether using symmetric_rtp
-	 */
-	public AudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx, Codec additional_encoding,
-			boolean symmetric_rtp) {
-		this(flow_spec, tx, rx, additional_encoding, symmetric_rtp, false);
-	}
-
-	/**
 	 * Creates a new audio streamer.
 	 * 
 	 * @param flow_spec
 	 *        the flow specification
-	 * @param additional_encoding
-	 *        additional audio encoder/decoder (optional)
-	 * @param symmetric_rtp
-	 *        whether using symmetric_rtp
-	 * @param rtp
-	 *        whether to use {@link RtpControl}
 	 */
-	public AudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx, Codec additional_encoding,
-			boolean symmetric_rtp, boolean rtp) {
+	public AudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx, StreamerOptions options) {
 		MediaSpec mediaSpec = flow_spec.getMediaSpec();
 
 		String codec_name = mediaSpec.getCodec();
@@ -151,7 +123,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		int packet_size = mediaSpec.getPacketSize();
 
 		this.dir = flow_spec.getDirection();
-		this.symmetric_rtp=symmetric_rtp;
+		this._symmetricRtp = options.symmetricRtp();
 		// 1) in case not defined, use default values
 		if (codec_name==null) codec_name=DEFAULT_CODEC_NAME;
 		//if (payload_type<0) payload_type=DEFAULT_PAYLOAD_TYPE;
@@ -216,9 +188,10 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 		Encoder additional_encoder=null;
 		Encoder additional_decoder=null;
-		if (additional_encoding!=null) {
-			additional_encoder=additional_encoding.getEncoder();
-		    additional_decoder=additional_encoding.getDecoder();
+		Codec additionalCodec = options.additionalCodec();
+		if (additionalCodec != null) {
+			additional_encoder = additionalCodec.getEncoder();
+			additional_decoder = additionalCodec.getDecoder();
 		}	
 		
 		try {
@@ -228,51 +201,41 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			// 6) sender
 			String remote_addr = flow_spec.getRemoteAddress();
 			int remote_port = flow_spec.getRemotePort();
+
+			// RTP AMR payload format
+			AmrRtpPayloadFormat payloadFormat;
+			if (codec.equals(CodecType.AMR_NB) || codec.equals(CodecType.AMR_0475) || codec.equals(CodecType.AMR_0515)
+					|| codec.equals(CodecType.AMR_0590) || codec.equals(CodecType.AMR_0670)
+					|| codec.equals(CodecType.AMR_0740) || codec.equals(CodecType.AMR_0795)
+					|| codec.equals(CodecType.AMR_1020) || codec.equals(CodecType.AMR_1220)) {
+				payloadFormat = new AmrRtpPayloadFormat(RTP_BANDWIDTH_EFFICIENT_MODE);
+				LOG.debug("RTP format: " + codec + " in "
+						+ ((RTP_BANDWIDTH_EFFICIENT_MODE) ? "Bandwidth-Efficinet" : "Octect-Alignied") + " Mode");
+			} else {
+				payloadFormat = null;
+			}
+
+			// RTCP
+			if (options.rtp()) {
+				rtp_control = new RtpControl(null, udp_socket.getLocalPort() + 1, remote_addr, remote_port + 1);
+			} else {
+				rtp_control = null;
+			}
+
 			if (tx != null) {
-				_txHandle = tx.createSender(udp_socket, audio_format, codec, payload_type, sample_rate,
-						channels, additional_encoder, packet_time, packet_size, remote_addr, remote_port, this);
+				_txHandle = tx.createSender(options, udp_socket, audio_format, codec, payload_type, payloadFormat,
+						sample_rate, channels, additional_encoder, packet_time, packet_size, remote_addr, remote_port,
+						this, rtp_control);
 			} else {
 				_txHandle = null;
 			}
 
 			// 7) receiver
 			if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
-				_rxHandle = rx.createReceiver(udp_socket, audio_format, codec, payload_type, sample_rate, channels,
-						additional_decoder, this);
+				_rxHandle = rx.createReceiver(options, udp_socket, audio_format, codec, payload_type, payloadFormat,
+						sample_rate, channels, additional_decoder, this);
 			} else {
 				_rxHandle = null;
-			}
-
-			// RTP AMR payload format
-			if (codec.equals(CodecType.AMR_NB) || codec.equals(CodecType.AMR_0475) || codec.equals(CodecType.AMR_0515)
-					|| codec.equals(CodecType.AMR_0590) || codec.equals(CodecType.AMR_0670)
-					|| codec.equals(CodecType.AMR_0740) || codec.equals(CodecType.AMR_0795)
-					|| codec.equals(CodecType.AMR_1020) || codec.equals(CodecType.AMR_1220)) {
-				AmrRtpPayloadFormat amr_payload_format = new AmrRtpPayloadFormat(RTP_BANDWIDTH_EFFICIENT_MODE);
-				if (_txHandle != null)
-					_txHandle.setRtpPayloadFormat(amr_payload_format);
-				if (_rxHandle != null)
-					_rxHandle.setRtpPayloadFormat(amr_payload_format);
-				LOG.debug("RTP format: " + codec + " in "
-						+ ((RTP_BANDWIDTH_EFFICIENT_MODE) ? "Bandwidth-Efficinet" : "Octect-Alignied") + " Mode");
-			}
-
-			// RTCP
-			if (rtp) {
-				rtp_control=new RtpControl(null,udp_socket.getLocalPort()+1,remote_addr,remote_port+1);
-				if (_txHandle != null)
-					_txHandle.setControl(rtp_control);
-			} else {
-				rtp_control = null;
-			}
-			// SEQUENCE CHECK
-			if (_rxHandle != null) {
-				_rxHandle.setSequenceCheck(SEQUENCE_CHECK);
-			}
-			
-			// SILENCE PADDING
-			if (_rxHandle != null) {
-				_rxHandle.setSilencePadding(SILENCE_PADDING);
 			}
 		}
 		catch (IOException | UnsupportedAudioFileException ex) {
@@ -336,16 +299,11 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		return true;
 	}
 
-	/** whether symmetric RTP mode is set. */
-	public boolean isSymmetricRtp() {
-		return symmetric_rtp;
-	}
-
 	/** From RtpStreamReceiverListener. When the remote socket address (source) is changed. */
 	@Override
 	public void onRemoteSoAddressChanged(RtpStreamReceiver rr, SocketAddress remote_soaddr) {
 		try {
-			if (symmetric_rtp && _txHandle != null)
+			if (_symmetricRtp && _txHandle != null)
 				_txHandle.setRemoteSoAddress(remote_soaddr);
 		}
 		catch (Exception e) {
@@ -365,22 +323,6 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	public void onRtpStreamSenderTerminated(RtpStreamSender rs, Exception error) {
 		if (error != null)
 			LOG.info("Exception.", error);
-	}
-
-	/** Sets the synchronization adjustment time (in milliseconds). 
-	  * It accelerates (sync_adj &lt; 0) or reduces (sync_adj &gt; 0) the sending rate respect to the nominal value.
-	  * @param sync_adj the difference between the actual inter-packet sending time respect to the nominal value (in milliseconds). */
-	public void setSyncAdj(long sync_adj) {
-		if (_txHandle != null)
-			_txHandle.setSyncAdj(sync_adj);
-		LOG.debug("Inter-packet time adjustment at sender: " + sync_adj + " ms every packet");
-	}
-
-	/** Sets the receiver packet random early drop (RED) value; if greater than 0, it is the inverse of the packet drop rate.
-	  * @param random_early_drop the number of packets that separates two drops at receiver; a value of 0 means no drop. */
-	public void setRED(int random_early_drop) {
-		if (_rxHandle != null)
-			_rxHandle.setRED(random_early_drop);
 	}
 
 }

@@ -24,6 +24,7 @@ package org.mjsip.media;
 
 import java.io.InputStream;
 
+import org.mjsip.media.tx.RtpSenderOptions;
 import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPacket;
 import org.mjsip.rtp.RtpPayloadFormat;
@@ -84,9 +85,6 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	/** The RtpSocket */
 	RtpSocket rtp_socket=null;
 	
-	/** Whether the socket has been created here */
-	boolean socket_is_local_attribute=false;   
-
 	/** Remote destination UDP socket address */
 	SocketAddress remote_soaddr;
 	
@@ -111,8 +109,10 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	/** Whether it works synchronously with a local clock, or it it acts as slave of the InputStream  */
 	boolean do_sync=true;
 
-	/** Synchronization correction value, in milliseconds.
-	  * It accellarates (sync_adj<0) or reduces (sync_adj>0) the sending rate respect to the nominal value. */
+	/**
+	 * Synchronization correction value, in milliseconds. It accelerates (sync_adj<0) or reduces
+	 * (sync_adj>0) the sending rate with respect to the nominal value.
+	 */
 	long sync_adj=0;
 
 	/** Whether it is running */
@@ -145,48 +145,41 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	/** Additional RTP payload encoder */
 	Encoder additional_encoder;
 
-	
-
-	/** Constructs a RtpStreamSender.
-	  * @param input_stream the stream source
-	  * @param do_sync whether time synchronization must be performed by the RtpStreamSender,
-	  *        or it is performed by the InputStream (e.g. by the system audio input)
-	  * @param payload_type the payload type
-	  * @param sample_rate audio sample rate
-	  * @param channels number of audio channels (1 for mono, 2 for stereo)
-	  * @param packet_time the inter-packet time (in milliseconds); it is used in the calculation of the the next departure time, in case of do_sync==true,
-	  * @param payload_size the size of the payload
-	  * @param additional_encoder additional RTP payload encoder (optional)
-	  * @param dest_addr the destination address
-	  * @param dest_port the destination port */
-	public RtpStreamSender(InputStream input_stream, boolean do_sync, int payload_type, long sample_rate, int channels, long packet_time, int payload_size, Encoder additional_encoder, String dest_addr, int dest_port, RtpStreamSenderListener listener) throws java.net.SocketException, java.net.UnknownHostException {
-		//if (src_port>0) src_socket=new UdpSocket(src_port); else
-		UdpSocket src_socket=new UdpSocket(0);
-		socket_is_local_attribute=true;
-		init(input_stream,do_sync,payload_type,sample_rate,channels,packet_time,payload_size,additional_encoder,src_socket,dest_addr,dest_port,listener);
-	}                
-
-
-	/** Constructs a RtpStreamSender.
-	  * @param input_stream the stream to be sent
-	  * @param do_sync whether time synchronization must be performed by the RtpStreamSender,
-	  *        or it is performed by the InputStream (e.g. by the system audio input)
-	  * @param payload_type the payload type
-	  * @param sample_rate audio sample rate
-	  * @param channels number of audio channels (1 for mono, 2 for stereo)
-	  * @param packet_time the inter-packet time (in milliseconds); it is used in the calculation of the next departure time, in case of do_sync==true,
-	  * @param payload_size the size of the payload
-	  * @param additional_encoder additional RTP payload encoder (optional)
-	  * @param src_socket the socket used to send the RTP packet
-	  * @param dest_addr the destination address
-	  * @param dest_port the destination port */
-	public RtpStreamSender(InputStream input_stream, boolean do_sync, int payload_type, long sample_rate, int channels, long packet_time, int payload_size, Encoder additional_encoder, UdpSocket src_socket, String dest_addr, int dest_port, RtpStreamSenderListener listener) throws java.net.UnknownHostException {
-		init(input_stream,do_sync,payload_type,sample_rate,channels,packet_time,payload_size,additional_encoder,src_socket,dest_addr,dest_port,listener);
-	}                
-
-
-	/** Inits the RtpStreamSender */
-	private void init(InputStream input_stream, boolean do_sync, int payload_type, long sample_rate, int channels, long packet_time, int payload_size, Encoder additional_encoder, UdpSocket src_socket, String dest_addr, int dest_port, RtpStreamSenderListener listener) throws java.net.UnknownHostException {
+	/**
+	 * Constructs a RtpStreamSender.
+	 * 
+	 * @param options
+	 *        Additional configuration options.
+	 * @param input_stream
+	 *        the stream to be sent
+	 * @param do_sync
+	 *        whether time synchronization must be performed by the RtpStreamSender, or it is
+	 *        performed by the InputStream (e.g. by the system audio input)
+	 * @param payload_type
+	 *        the payload type
+	 * @param payloadFormat
+	 *        The {@link RtpPayloadFormat} to use.
+	 * @param sample_rate
+	 *        audio sample rate
+	 * @param channels
+	 *        number of audio channels (1 for mono, 2 for stereo)
+	 * @param packet_time
+	 *        the inter-packet time (in milliseconds); it is used in the calculation of the next
+	 *        departure time, in case of do_sync==true,
+	 * @param payload_size
+	 *        the size of the payload
+	 * @param additional_encoder
+	 *        additional RTP payload encoder (optional)
+	 * @param src_socket
+	 *        the socket used to send the RTP packet
+	 * @param dest_addr
+	 *        the destination address
+	 * @param dest_port
+	 *        the destination port
+	 * @param rtpControl
+	 *        Optional {@link RtpControl}.
+	 */
+	public RtpStreamSender(RtpSenderOptions options, InputStream input_stream, boolean do_sync, int payload_type, RtpPayloadFormat payloadFormat, long sample_rate, int channels, long packet_time, int payload_size, Encoder additional_encoder, UdpSocket src_socket, String dest_addr, int dest_port, RtpControl rtpControl, RtpStreamSenderListener listener) throws java.net.UnknownHostException {
 		this.listener=listener;
 		this.input_stream=input_stream;
 		this.p_type=payload_type;
@@ -197,16 +190,14 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		this.additional_encoder=additional_encoder;
 		this.do_sync=do_sync;
 		this.remote_soaddr=new SocketAddress(IpAddress.getByName(dest_addr),dest_port);
-		rtp_socket=new RtpSocket(src_socket,remote_soaddr);
+		this.rtp_socket = new RtpSocket(src_socket, remote_soaddr);
+		this.sync_adj = options.syncAdjust();
+		this.rtp_payload_format = payloadFormat;
+		this.rtp_control = rtpControl;
+		if (rtp_control != null) {
+			rtp_control.setRtpSender(this);
+		}
 	}          
-
-
-	/** Sets RTCP. */
-	public void setControl(RtpControl rtp_control) {
-		this.rtp_control=rtp_control;
-		if (rtp_control!=null) rtp_control.setRtpSender(this);
-	}
-
 
 	/** Gets the local port. */
 	public int getLocalPort() {
@@ -214,22 +205,28 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		else return 0;
 	}
 
-
 	/** Changes the remote destination socket address. */
-	public void setRemoteSoAddress(SocketAddress remote_soaddr) throws java.net.UnknownHostException {
+	public void setRemoteSoAddress(SocketAddress remote_soaddr) {
 		if (rtp_socket!=null) rtp_socket.setRemoteDestSoAddress(remote_soaddr);
 	}
-
 
 	/** Gets the remote destination socket address. */
 	public SocketAddress getRemoteSoAddress() {
 		return remote_soaddr;
 	}
 
+	/**
+	 * The synchronization adjustment time (in milliseconds). It accelerates (sync_adj &lt; 0) or
+	 * reduces (sync_adj &gt; 0) the sending rate with respect to the nominal value.
+	 * 
+	 * @return The difference between the actual inter-packet sending time respect to the nominal
+	 *         value (in milliseconds).
+	 */
+	public long getSyncAdj() {
+		return sync_adj;
+	}
 
-	/** Sets the synchronization adjustment time (in milliseconds). 
-	  * It accellarates (sync_adj &lt; 0) or reduces (sync_adj &gt; 0) the sending rate respect to the nominal value.
-	  * @param sync_adj the difference between the actual inter-packet sending time respect to the nominal value (in milliseconds). */
+	/** @see #getSyncAdj() */
 	public void setSyncAdj(long sync_adj) {
 		this.sync_adj=sync_adj;
 	}
@@ -240,7 +237,6 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	public long getSSRC() {
 		return ssrc;
 	}
-
 
 	/** Gets the current RTP timestamp value. */
 	@Override
@@ -365,7 +361,13 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 							if (sleep_time<min_time) sleep_time=min_time;
 						}
 						// sleep
-						if (sleep_time>0) try {  Thread.sleep(sleep_time);  } catch (Exception e) {}
+						if (sleep_time > 0) {
+							try {
+								Thread.sleep(sleep_time);
+							} catch (Exception e) {
+								// Ignore.
+							}
+						}
 					}
 				}
 				else
@@ -385,10 +387,8 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		//if (DEBUG) println("rtp time:  "+time);
 		//if (DEBUG) println("real time: "+(System.currentTimeMillis()-start_time));
 
-		// close RtpSocket and local UdpSocket
-		UdpSocket udp_socket=rtp_socket.getUdpSocket();
+		// close RtpSocket
 		rtp_socket.close();
-		if (socket_is_local_attribute && udp_socket!=null) udp_socket.close();
 		
 		// free all references
 		input_stream=null;
@@ -399,13 +399,6 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		if (listener!=null) listener.onRtpStreamSenderTerminated(this,error);
 	}
 	
-	
-	/** Sets RTP payload format. */
-	public void setRtpPayloadFormat(RtpPayloadFormat rtp_payload_format) {
-		this.rtp_payload_format=rtp_payload_format;
-	}
-
-
 	/** Gets the total number of UDP sent packets. */
 	public long getUdpPacketCounter() {
 		if (rtp_socket!=null) return rtp_socket.getUdpSocket().getSenderPacketCounter();

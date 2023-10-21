@@ -11,6 +11,8 @@ import javax.sound.sampled.AudioInputStream;
 
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.media.RtpStreamSenderListener;
+import org.mjsip.rtp.RtpControl;
+import org.mjsip.rtp.RtpPayloadFormat;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.CodecType;
@@ -21,30 +23,31 @@ import org.zoolu.util.Encoder;
 /**
  * {@link AudioTransmitter} sending audio from system mirophone input.
  */
-public class JavaxInputTransmitter implements AudioTransmitter {
+public class JavaxAudioInput implements AudioTransmitter {
 
-	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JavaxInputTransmitter.class);
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JavaxAudioInput.class);
 
-	private final boolean javaxSoundSync;
+	private final boolean _sync;
 
-	private final boolean direct_convertion;
+	private final boolean _noConvertion;
 
 	/**
-	 * Creates a {@link JavaxInputTransmitter}.
+	 * Creates a {@link JavaxAudioInput}.
 	 */
-	public JavaxInputTransmitter(boolean javaxSoundSync, boolean direct_convertion) {
+	public JavaxAudioInput(boolean sync, boolean noConvertion) {
 		super();
-		this.javaxSoundSync = javaxSoundSync;
-		this.direct_convertion = direct_convertion;
+		_sync = sync;
+		_noConvertion = noConvertion;
 	}
 
 	@Override
-	public AudioTXHandle createSender(UdpSocket udp_socket, AudioFormat audio_format, CodecType codec, int payload_type,
-			int sample_rate, int channels, Encoder additional_encoder, long packet_time, int packet_size,
-			String remote_addr, int remote_port, RtpStreamSenderListener listener) throws IOException {
+	public AudioTXHandle createSender(RtpSenderOptions options, UdpSocket udp_socket, AudioFormat audio_format,
+			CodecType codec, int payload_type,
+			RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_encoder, long packet_time,
+			int packet_size, String remote_addr, int remote_port, RtpStreamSenderListener listener, RtpControl rtpControl) throws IOException {
 
 		InputStream audioIn;
-		if (!direct_convertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
+		if (!_noConvertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
 			// use standard java embedded conversion provider
 			audioIn = SimpleAudioSystem.getInputStream(audio_format);
 		} else {
@@ -56,8 +59,10 @@ public class JavaxInputTransmitter implements AudioTransmitter {
 			audioIn = converter;
 		}
 
-		return new RtpAudioTxHandle(new RtpStreamSender(audioIn, javaxSoundSync, payload_type, sample_rate, channels, packet_time,
-				packet_size, additional_encoder, udp_socket, remote_addr, remote_port, listener)) {
+		RtpStreamSender sender = new RtpStreamSender(options, audioIn, _sync, payload_type, payloadFormat,
+				sample_rate, channels, packet_time, packet_size, additional_encoder, udp_socket, remote_addr,
+				remote_port, rtpControl, listener);
+		return new RtpAudioTxHandle(sender) {
 			@Override
 			public void start() {
 				super.start();

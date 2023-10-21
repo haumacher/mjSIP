@@ -13,9 +13,9 @@ import org.zoolu.net.SocketAddress;
 /**
  * Handle for controlling an audio transmission.
  * 
- * @see AudioTransmitter#createSender(org.zoolu.net.UdpSocket, javax.sound.sampled.AudioFormat,
- *      org.zoolu.sound.CodecType, int, int, int, org.zoolu.util.Encoder, long, int, String, int,
- *      org.mjsip.media.RtpStreamSenderListener)
+ * @see AudioTransmitter#createSender(RtpSenderOptions, org.zoolu.net.UdpSocket,
+ *      javax.sound.sampled.AudioFormat, org.zoolu.sound.CodecType, int, RtpPayloadFormat, int,
+ *      int, org.zoolu.util.Encoder, long, int, String, int, org.mjsip.media.RtpStreamSenderListener, RtpControl)
  */
 public interface AudioTXHandle {
 
@@ -35,20 +35,5 @@ public interface AudioTXHandle {
 	 * @see RtpStreamSender#setRemoteSoAddress(SocketAddress)
 	 */
 	void setRemoteSoAddress(SocketAddress remote_soaddr) throws UnknownHostException;
-
-	/**
-	 * @see RtpStreamSender#setSyncAdj(long)
-	 */
-	void setSyncAdj(long sync_adj);
-
-	/**
-	 * @see RtpStreamSender#setControl(RtpControl)
-	 */
-	void setControl(RtpControl rtp_control);
-
-	/**
-	 * @see RtpStreamSender#setRtpPayloadFormat(RtpPayloadFormat)
-	 */
-	void setRtpPayloadFormat(RtpPayloadFormat amr_payload_format);
 
 }

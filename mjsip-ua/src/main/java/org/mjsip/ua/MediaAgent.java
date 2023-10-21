@@ -33,6 +33,7 @@ import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
 import org.mjsip.media.MediaStreamer;
 import org.mjsip.media.NativeMediaStreamer;
+import org.mjsip.media.StreamerOptions;
 import org.mjsip.media.rx.AudioFileReceiver;
 import org.mjsip.media.rx.AudioReceiver;
 import org.mjsip.media.rx.JavaxAudioOutput;
@@ -192,7 +193,7 @@ public class MediaAgent {
 				Direction dir = audio_flow.getDirection();
 				if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
 					if (audio_out == null) {
-						rx = new JavaxAudioOutput(uaConfig.javaxSoundDirectConversion, uaConfig.randomEarlyDropRate);
+						rx = new JavaxAudioOutput(uaConfig.javaxSoundDirectConversion);
 					} else {
 						rx = new AudioFileReceiver(audio_out);
 					}
@@ -201,8 +202,11 @@ public class MediaAgent {
 				}
 
 				// standard javax-based audio streamer
-				audio_streamer = new AudioStreamer(audio_flow, tx, rx,
-						null, uaConfig.symmetricRtp);
+				StreamerOptions options = StreamerOptions.builder()
+					.setRandomEarlyDrop(uaConfig.randomEarlyDropRate)
+					.setSymmetricRtp(uaConfig.symmetricRtp)
+					.build();
+				audio_streamer = new AudioStreamer(audio_flow, tx, rx, options);
 			} else {
 				// alternative audio streamer (just for experimental uses)
 				try {

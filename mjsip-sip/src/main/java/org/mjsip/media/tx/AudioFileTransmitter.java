@@ -12,6 +12,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import org.mjsip.media.AudioFile;
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.media.RtpStreamSenderListener;
+import org.mjsip.rtp.RtpControl;
+import org.mjsip.rtp.RtpPayloadFormat;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.CodecType;
@@ -34,14 +36,16 @@ public class AudioFileTransmitter implements AudioTransmitter {
 	}
 
 	@Override
-	public AudioTXHandle createSender(UdpSocket udp_socket, AudioFormat audio_format, CodecType codec, int payload_type,
-			int sample_rate, int channels, Encoder additional_encoder, long packet_time, int packet_size,
-			String remote_addr, int remote_port, RtpStreamSenderListener listener) throws IOException {
+	public AudioTXHandle createSender(RtpSenderOptions options, UdpSocket udp_socket, AudioFormat audio_format,
+			CodecType codec, int payload_type,
+			RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_encoder, long packet_time,
+			int packet_size, String remote_addr, int remote_port, RtpStreamSenderListener listener, RtpControl rtpControl) throws IOException {
 		try {
 			LOG.info("Streaming audio from file " + _audioFile + " format: " + audio_format);
 			AudioInputStream audioIn = AudioFile.getAudioFileInputStream(_audioFile, audio_format);
-			return new RtpAudioTxHandle(new RtpStreamSender(audioIn, true, payload_type, sample_rate, channels, packet_time,
-					packet_size, additional_encoder, udp_socket, remote_addr, remote_port, listener));
+			RtpStreamSender sender = new RtpStreamSender(options, audioIn, true, payload_type, payloadFormat, sample_rate,
+					channels, packet_time, packet_size, additional_encoder, udp_socket, remote_addr, remote_port, rtpControl, listener);
+			return new RtpAudioTxHandle(sender);
 		} catch (UnsupportedAudioFileException ex) {
 			throw new IOException("Cannot read audio file: " + _audioFile, ex);
 		}
