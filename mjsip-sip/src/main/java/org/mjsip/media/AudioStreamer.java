@@ -238,7 +238,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			// 7) receiver
 			if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
 				_rxHandle = rx.createReceiver(udp_socket, audio_format, codec, payload_type, sample_rate, channels,
-						additional_decoder, null);
+						additional_decoder, this);
 			} else {
 				_rxHandle = null;
 			}
