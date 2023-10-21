@@ -54,8 +54,8 @@ public class ToneTransmitter implements AudioTransmitter {
 	}
 
 	@Override
-	public AudioTXHandle createSender(AudioFormat audio_format, CodecType codec, int payload_type, int sample_rate,
-			int channels, long packet_time, int packet_size, Encoder additional_encoder, UdpSocket udp_socket,
+	public AudioTXHandle createSender(UdpSocket udp_socket, AudioFormat audio_format, CodecType codec, int payload_type,
+			int sample_rate, int channels, Encoder additional_encoder, long packet_time, int packet_size,
 			String remote_addr, int remote_port, RtpStreamSenderListener listener) throws IOException {
 		LOG.info("Tone generator: " + _toneFreq + " Hz");
 		ToneInputStream audioIn = new ToneInputStream(_toneFreq, _toneAmpl, sample_rate, TONE_SAMPLE_SIZE,

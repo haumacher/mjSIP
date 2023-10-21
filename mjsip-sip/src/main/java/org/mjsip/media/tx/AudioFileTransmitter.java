@@ -12,6 +12,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import org.mjsip.media.AudioFile;
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.media.RtpStreamSenderListener;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.CodecType;
 import org.zoolu.util.Encoder;
@@ -21,25 +22,28 @@ import org.zoolu.util.Encoder;
  */
 public class AudioFileTransmitter implements AudioTransmitter {
 
-	private final String audiofile_in;
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AudioFileTransmitter.class);
+
+	private final String _audioFile;
 
 	/**
 	 * Creates a {@link AudioFileTransmitter}.
 	 */
 	public AudioFileTransmitter(String audiofile_in) {
-		this.audiofile_in = audiofile_in;
+		this._audioFile = audiofile_in;
 	}
 
 	@Override
-	public AudioTXHandle createSender(AudioFormat audio_format, CodecType codec, int payload_type, int sample_rate,
-			int channels, long packet_time, int packet_size, Encoder additional_encoder, UdpSocket udp_socket,
+	public AudioTXHandle createSender(UdpSocket udp_socket, AudioFormat audio_format, CodecType codec, int payload_type,
+			int sample_rate, int channels, Encoder additional_encoder, long packet_time, int packet_size,
 			String remote_addr, int remote_port, RtpStreamSenderListener listener) throws IOException {
 		try {
-			AudioInputStream audioIn = AudioFile.getAudioFileInputStream(audiofile_in, audio_format);
+			LOG.info("Streaming audio from file " + _audioFile + " format: " + audio_format);
+			AudioInputStream audioIn = AudioFile.getAudioFileInputStream(_audioFile, audio_format);
 			return new RtpAudioTxHandle(new RtpStreamSender(audioIn, true, payload_type, sample_rate, channels, packet_time,
 					packet_size, additional_encoder, udp_socket, remote_addr, remote_port, listener));
 		} catch (UnsupportedAudioFileException ex) {
-			throw new IOException("Cannot read audio file: " + audiofile_in, ex);
+			throw new IOException("Cannot read audio file: " + _audioFile, ex);
 		}
 	}
 

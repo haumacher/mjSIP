@@ -13,8 +13,8 @@ import org.zoolu.net.SocketAddress;
 /**
  * Handle for controlling an audio transmission.
  * 
- * @see AudioTransmitter#createSender(javax.sound.sampled.AudioFormat, org.zoolu.sound.CodecType,
- *      int, int, int, long, int, org.zoolu.util.Encoder, org.zoolu.net.UdpSocket, String, int,
+ * @see AudioTransmitter#createSender(org.zoolu.net.UdpSocket, javax.sound.sampled.AudioFormat,
+ *      org.zoolu.sound.CodecType, int, int, int, org.zoolu.util.Encoder, long, int, String, int,
  *      org.mjsip.media.RtpStreamSenderListener)
  */
 public interface AudioTXHandle {

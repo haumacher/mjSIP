@@ -23,7 +23,7 @@ public interface AudioTransmitter {
 	 * @see AudioTXHandle#start()
 	 * @see AudioTXHandle#halt()
 	 */
-	AudioTXHandle createSender(AudioFormat audio_format, CodecType codec, int payload_type, int sample_rate, int channels,
-			long packet_time, int packet_size, Encoder additional_encoder, UdpSocket udp_socket,
+	AudioTXHandle createSender(UdpSocket udp_socket, AudioFormat audio_format, CodecType codec, int payload_type, int sample_rate,
+			int channels, Encoder additional_encoder, long packet_time, int packet_size,
 			String remote_addr, int remote_port, RtpStreamSenderListener listener) throws IOException;
 }

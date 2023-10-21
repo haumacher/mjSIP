@@ -27,11 +27,15 @@ import java.util.Hashtable;
 
 import org.mjsip.media.AudioStreamer;
 import org.mjsip.media.FlowSpec;
+import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.LoopbackMediaStreamer;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
 import org.mjsip.media.MediaStreamer;
 import org.mjsip.media.NativeMediaStreamer;
+import org.mjsip.media.rx.AudioFileReceiver;
+import org.mjsip.media.rx.AudioReceiver;
+import org.mjsip.media.rx.JavaxAudioOutput;
 import org.mjsip.media.tx.AudioFileTransmitter;
 import org.mjsip.media.tx.AudioTransmitter;
 import org.mjsip.media.tx.ToneTransmitter;
@@ -184,10 +188,21 @@ public class MediaAgent {
 				String audio_out=null;
 				if (uaConfig.recvFile!=null) audio_out=uaConfig.recvFile;        
 
+				AudioReceiver rx;
+				Direction dir = audio_flow.getDirection();
+				if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
+					if (audio_out == null) {
+						rx = new JavaxAudioOutput(uaConfig.javaxSoundDirectConversion, uaConfig.randomEarlyDropRate);
+					} else {
+						rx = new AudioFileReceiver(audio_out);
+					}
+				} else {
+					rx = null;
+				}
+
 				// standard javax-based audio streamer
-				audio_streamer = new AudioStreamer(audio_flow, tx, audio_out,
-						uaConfig.javaxSoundDirectConversion, null, uaConfig.javaxSoundSync,
-						uaConfig.randomEarlyDropRate, uaConfig.symmetricRtp);
+				audio_streamer = new AudioStreamer(audio_flow, tx, rx,
+						null, uaConfig.symmetricRtp);
 			} else {
 				// alternative audio streamer (just for experimental uses)
 				try {

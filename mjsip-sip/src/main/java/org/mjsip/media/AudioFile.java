@@ -78,7 +78,6 @@ public class AudioFile {
 	  * @param target_audio_format the target audio format. If not <i>null</i>, audio conversion is performed.
 	  * Note: In case of AU file, this is the audio format assigned to raw audio */
 	 public static AudioInputStream getAudioFileInputStream(String file_name, AudioFormat target_audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
-			LOG.info("Audio input from file " + file_name);
 		if (file_name.toLowerCase().endsWith(".wav")) {
 			// WAV
 			File file=new File(file_name);
@@ -137,7 +136,6 @@ public class AudioFile {
 	  * @param file_name the file name
 	  * @param audio_format the audio format */
 	 public static OutputStream getAudioFileOutputStream(String file_name, AudioFormat audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
-			LOG.info("Writing audio to: " + file_name);
 		if (file_name.toLowerCase().endsWith(".wav")) {
 			// WAV
 			/* Wave file header:

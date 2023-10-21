@@ -5,6 +5,9 @@ package org.mjsip.media;
 import java.io.IOException;
 
 import org.mjsip.media.FlowSpec.Direction;
+import org.mjsip.media.rx.AudioFileReceiver;
+import org.mjsip.media.rx.AudioReceiver;
+import org.mjsip.media.rx.JavaxAudioOutput;
 import org.mjsip.media.tx.AudioFileTransmitter;
 import org.mjsip.media.tx.AudioTransmitter;
 import org.mjsip.media.tx.ToneTransmitter;
@@ -25,11 +28,11 @@ public class AudioApp {
 
 	
 	/** Creates a new audio streamer. */
-	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, String audiofile_out,
+	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx,
 			boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop,
 			boolean symmetric_rtp, boolean rtcp) {
-		return new AudioStreamer(flow_spec, tx, audiofile_out, direct_convertion, additional_encoding,
-				do_sync, random_early_drop, symmetric_rtp, rtcp);
+		return new AudioStreamer(flow_spec, tx, rx, additional_encoding, symmetric_rtp,
+				rtcp);
 	}
 
 
@@ -246,7 +249,18 @@ public class AudioApp {
 		MediaSpec mspec=new MediaSpec(avp,codec_name,sample_rate,channels,packet_size);      
 		FlowSpec fspec = new FlowSpec("audio", mspec, local_port, remote_ipaddr, remote_port, dir);
 
-		AudioStreamer audio_streamer = createAudioStreamer(fspec, tx, audio_out, direct_convertion, null, true,
+		AudioReceiver rx;
+		if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
+			if (audio_out == null) {
+				rx = new JavaxAudioOutput(direct_convertion, random_early_drop);
+			} else {
+				rx = new AudioFileReceiver(audio_out);
+			}
+		} else {
+			rx = null;
+		}
+
+		AudioStreamer audio_streamer = createAudioStreamer(fspec, tx, rx, direct_convertion, null, true,
 				random_early_drop, symmetric_rtp, rtcp);
 
 		//if (random_early_drop>0) aapp.setRED(random_early_drop);
