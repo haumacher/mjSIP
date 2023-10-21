@@ -64,7 +64,6 @@ public class AudioApp {
 		if (args.length==0) printHelp(); 
 
 		boolean direct_convertion=false;
-		boolean do_sync=true;
 		//int random_early_drop=20;
 		int random_early_drop=0;
 		boolean symmetric_rtp=false;
@@ -243,7 +242,7 @@ public class AudioApp {
 		MediaSpec mspec=new MediaSpec(avp,codec_name,sample_rate,channels,packet_size);      
 		FlowSpec fspec = new FlowSpec("audio", mspec, local_port, remote_ipaddr, remote_port, dir);
 
-		AudioStreamer audio_streamer = createAudioStreamer(fspec, audio_in, audio_out, direct_convertion, null, do_sync,
+		AudioStreamer audio_streamer = createAudioStreamer(fspec, audio_in, audio_out, direct_convertion, null, true,
 				random_early_drop, symmetric_rtp, rtcp);
 
 		//if (random_early_drop>0) aapp.setRED(random_early_drop);

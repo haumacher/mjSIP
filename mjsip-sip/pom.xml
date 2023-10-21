@@ -10,6 +10,13 @@
   <artifactId>mjsip-sip</artifactId>
   
   <dependencies>
+
+	<dependency>
+	  <groupId>com.googlecode.soundlibs</groupId>
+	  <artifactId>tritonus-all</artifactId>
+	  <version>0.3.7.2</version>
+	</dependency>
+
 	<dependency>
 	    <groupId>org.slf4j</groupId>
 	    <artifactId>slf4j-api</artifactId>

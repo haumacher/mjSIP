@@ -18,6 +18,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
+import org.tritonus.sampled.convert.gsm.GSMFormatConversionProvider;
+import org.tritonus.share.sampled.Encodings;
 import org.zoolu.sound.codec.amr.AmrEncoding;
 import org.zoolu.sound.codec.amr.AmrFormatConversionProvider;
 import org.zoolu.sound.codec.g711.G711Encoding;
@@ -71,7 +73,7 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 	/** Gets a new AudioInputStream of a specified format
 	  * from a specified AudioInputStream.
 	  * The format is specified by codec type and sample rate. */
-	public static AudioInputStream convertAudioInputStream(CodecType codec, float sample_rate, AudioInputStream is) throws Exception {
+	public static AudioInputStream convertAudioInputStream(CodecType codec, float sample_rate, AudioInputStream is) {
 		FormatConversionProvider converter=getFormatConversionProvider(codec);
 		AudioFormat format=getAudioFormat(codec,sample_rate,is.getFormat().getChannels());
 		System.out.println("DEBUG: ConverterAudioSystem: source format: "+is.getFormat());
@@ -103,7 +105,7 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 	/** Gets a new AudioOutputStream of a specified format
 	  * from a specified AudioOutputStream.
 	  * The format is specified by codec type and sample rate. */
-	public static AudioOutputStream convertAudioOutputStream(CodecType codec, float sample_rate, AudioOutputStream os) throws Exception {
+	public static AudioOutputStream convertAudioOutputStream(CodecType codec, float sample_rate, AudioOutputStream os) {
 		FormatConversionProvider converter=getFormatConversionProvider(codec);
 		AudioFormat format=getAudioFormat(codec,sample_rate,os.getFormat().getChannels());
 		System.out.println("DEBUG: ConverterAudioSystem: source format: "+format);
@@ -113,7 +115,7 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 
 
 	/** Gets the AudioFormat with a specified codec type, sample rate, and number of channels. */
-	private static AudioFormat getAudioFormat(CodecType codec, float sample_rate, int channels) throws Exception {
+	private static AudioFormat getAudioFormat(CodecType codec, float sample_rate, int channels) {
 		AudioFormat.Encoding encoding=null;
 		int sample_size=-1;
 		int frame_size=-1;
@@ -155,8 +157,7 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 		}
 		else
 		if (codec.equals(CodecType.GSM0610)) {
-			String encoding_class_name="org.tritonus.share.sampled.Encodings";
-			encoding=(AudioFormat.Encoding)Class.forName(encoding_class_name).getMethod("getEncoding",new Class[]{ String.class }).invoke(null,new Object[]{ "GSM0610" });
+			encoding = Encodings.getEncoding("GSM0610");
 			frame_size=33;
 			frame_rate=sample_rate/160; // = 50 frames/sec in case of sample rate = 8000 Hz
 		}
@@ -219,7 +220,7 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 
 
 	/** Gets suitable converter for a specified codec type. */
-	private static FormatConversionProvider getFormatConversionProvider(CodecType codec) throws Exception {
+	private static FormatConversionProvider getFormatConversionProvider(CodecType codec) {
 		FormatConversionProvider converter=null;
 	
 		if (codec.equals(CodecType.G711_ULAW)) converter=new G711FormatConversionProvider();
@@ -233,8 +234,7 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 		if (codec.equals(CodecType.G726_40)) converter=new G726FormatConversionProvider();
 		else
 		if (codec.equals(CodecType.GSM0610)) {
-			String converter_class_name="org.tritonus.sampled.convert.gsm.GSMFormatConversionProvider";
-			converter=(FormatConversionProvider)Class.forName(converter_class_name).getConstructor((Class[])null).newInstance((Object[])null);
+			converter = new GSMFormatConversionProvider();
 		}
 		else
 		if (codec.equals(CodecType.AMR_0475)) converter=new AmrFormatConversionProvider();

@@ -24,8 +24,8 @@ package org.mjsip.media;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -40,6 +40,7 @@ import org.zoolu.net.SocketAddress;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.AudioOutputStream;
 import org.zoolu.sound.CodecType;
+import org.zoolu.sound.ConverterAudioSystem;
 import org.zoolu.sound.SimpleAudioSystem;
 import org.zoolu.util.Encoder;
 
@@ -150,7 +151,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	 *        rat) are used
 	 * @param additional_encoding
 	 *        additional audio encoder/decoder (optional)
-	 * @param do_sync
+	 * @param javaxSoundSync
 	 *        whether enforcing time synchronization to RTP source stream. If synchronization is
 	 *        explicitly performed, the departure time of each RTP packet is equal to its nominal
 	 *        time. Note that when using audio capturing, synchronization with the sample rate is
@@ -165,8 +166,9 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	 *        whether using symmetric_rtp
 	 */
 	public AudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out, boolean direct_convertion,
-			Codec additional_encoding, boolean do_sync, int random_early_drop, boolean symmetric_rtp) {
-		this(flow_spec, audiofile_in, audiofile_out, direct_convertion, additional_encoding, do_sync, random_early_drop,
+			Codec additional_encoding, boolean javaxSoundSync, int random_early_drop, boolean symmetric_rtp) {
+		this(flow_spec, audiofile_in, audiofile_out, direct_convertion, additional_encoding, javaxSoundSync,
+				random_early_drop,
 				symmetric_rtp, false);
 	}
 
@@ -182,7 +184,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	 *        rat) are used
 	 * @param additional_encoding
 	 *        additional audio encoder/decoder (optional)
-	 * @param do_sync
+	 * @param javaxSoundSync
 	 *        whether enforcing time synchronization to RTP source stream. If synchronization is
 	 *        explicitly performed, the departure time of each RTP packet is equal to its nominal
 	 *        time. Note that when using audio capturing, synchronization with the sample rate is
@@ -200,7 +202,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	 */
 	public AudioStreamer(FlowSpec flow_spec,
 			String audiofile_in, String audiofile_out, boolean direct_convertion, Codec additional_encoding,
-			boolean do_sync, int random_early_drop, boolean symmetric_rtp, boolean rtcp) {
+			boolean javaxSoundSync, int random_early_drop, boolean symmetric_rtp, boolean rtcp) {
 		MediaSpec mediaSpec = flow_spec.getMediaSpec();
 
 		String codec_name = mediaSpec.getCodec();
@@ -236,11 +238,12 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		LOG.debug("packet rate: "+(1000/packet_time)+ "pkt/s");
 	
 		// 4) find the proper supported AudioFormat
-		LOG.debug("base audio format: "+SimpleAudioSystem.getBaseAudioFormat(sample_rate,channels).toString());
+		AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
+		LOG.debug("base audio format: "+baseFormat.toString());
 		AudioFormat audio_format=null;
 		AudioFormat.Encoding encoding=null;
 		// get the proper audio format encoding
-		AudioFormat.Encoding[] supported_encodings=AudioSystem.getTargetEncodings(SimpleAudioSystem.getBaseAudioFormat(sample_rate,channels));
+		AudioFormat.Encoding[] supported_encodings=AudioSystem.getTargetEncodings(baseFormat);
 		StringBuffer supported_list=new StringBuffer();
 		for (int i=0; i<supported_encodings.length; i++) supported_list.append(supported_encodings[i].toString()).append(", ");
 		LOG.info("Supported codecs: "+supported_list.toString());
@@ -260,8 +263,8 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		}
 		if (encoding!=null) {
 			// get the target audio format
-			LOG.debug("base audio format: " + SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels));
-			AudioFormat[] available_formats=AudioSystem.getTargetFormats(encoding,SimpleAudioSystem.getBaseAudioFormat(sample_rate,channels));
+			LOG.debug("base audio format: " + baseFormat);
+			AudioFormat[] available_formats=AudioSystem.getTargetFormats(encoding,baseFormat);
 			for (int i=0; i<available_formats.length ; i++) {
 				if (available_formats[i].getEncoding().equals(encoding)) {
 					audio_format=available_formats[i];
@@ -307,35 +310,35 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			int remote_port = flow_spec.getRemotePort();
 			if ((dir == Direction.SEND_ONLY || dir == Direction.FULL_DUPLEX)) {
 				LOG.debug("new audio sender to "+remote_addr+":"+remote_port);
+				InputStream audioIn;
 				if (audiofile_in!=null && audiofile_in.equals(AudioStreamer.TONE)) {
 					// tone generator
 					LOG.info("Tone generator: " + TONE_FREQ + " Hz");
-					ToneInputStream tone=new ToneInputStream(TONE_FREQ,TONE_AMPL,sample_rate,TONE_SAMPLE_SIZE,ToneInputStream.PCM_LINEAR_UNSIGNED,DEFAULT_BIG_ENDIAN);
-					// sender
-					rtp_sender=new RtpStreamSender(tone,true,payload_type,sample_rate,channels,packet_time,packet_size,additional_encoder,udp_socket,remote_addr,remote_port,this);
+					audioIn = new ToneInputStream(TONE_FREQ, TONE_AMPL, sample_rate, TONE_SAMPLE_SIZE,
+							ToneInputStream.PCM_LINEAR_UNSIGNED, DEFAULT_BIG_ENDIAN);
 					audio_input = false;
 				} else if (audiofile_in != null) {
-					AudioInputStream audio_input_stream=AudioFile.getAudioFileInputStream(audiofile_in,audio_format);
-					rtp_sender=new RtpStreamSender(audio_input_stream,true,payload_type,sample_rate,channels,packet_time,packet_size,additional_encoder,udp_socket,remote_addr,remote_port,this);
+					audioIn = AudioFile.getAudioFileInputStream(audiofile_in, audio_format);
 					audio_input = false;
 				} else {
-					// javax sound
-					AudioInputStream audio_input_stream=null;
 					if (!direct_convertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
 						// use standard java embedded conversion provider
-						audio_input_stream=SimpleAudioSystem.getInputStream(audio_format);          
+						audioIn = SimpleAudioSystem.getInputStream(audio_format);
 					} else {
-						// use my explicit conversion provider
-						Class audio_system=Class.forName("org.zoolu.ext.sound.ConverterAudioSystem");
-						java.lang.reflect.Method get_input_stream=audio_system.getMethod("convertAudioInputStream",new Class[]{ String.class, int.class, AudioInputStream.class });
-						audio_input_stream=(AudioInputStream)get_input_stream.invoke(null,new Object[]{ codec, new Integer(sample_rate), SimpleAudioSystem.getInputStream(SimpleAudioSystem.getBaseAudioFormat(sample_rate,channels)) });
-						LOG.info("send x-format: " + audio_input_stream.getFormat());
+						// use conversion provider
+						AudioInputStream rawInput = SimpleAudioSystem.getInputStream(baseFormat);
+						AudioInputStream converter = ConverterAudioSystem.convertAudioInputStream(codec, sample_rate,
+								rawInput);
+						LOG.info("send x-format: " + converter.getFormat());
+						audioIn = converter;
 					}
-					// sender
-					rtp_sender=new RtpStreamSender(audio_input_stream,do_sync,payload_type,sample_rate,channels,packet_time,packet_size,additional_encoder,udp_socket,remote_addr,remote_port,this);
 					//if (sync_adj>0) sender.setSyncAdj(sync_adj);
 					audio_input=true;
 				}
+
+				rtp_sender = new RtpStreamSender(audioIn, javaxSoundSync, payload_type, sample_rate,
+						channels, packet_time, packet_size, additional_encoder, udp_socket, remote_addr, remote_port,
+						this);
 			} else {
 				audio_input = false;
 			}
@@ -365,10 +368,9 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 						// use standard java embedded conversion provider
 						audio_output_stream=SimpleAudioSystem.getOutputStream(audio_format);
 					} else {
-						// use my explicit conversion provider
-						Class audio_system=Class.forName("org.zoolu.ext.sound.ConverterAudioSystem");
-						java.lang.reflect.Method get_output_stream=audio_system.getMethod("convertAudioOutputStream",new Class[]{ String.class, int.class, AudioOutputStream.class });
-						audio_output_stream=(AudioOutputStream)get_output_stream.invoke(null,new Object[]{ codec, new Integer(sample_rate), SimpleAudioSystem.getOutputStream(SimpleAudioSystem.getBaseAudioFormat(sample_rate,channels)) });
+						// use conversion provider
+						audio_output_stream = ConverterAudioSystem.convertAudioOutputStream(codec, sample_rate,
+								SimpleAudioSystem.getOutputStream(baseFormat));
 						LOG.info("recv x-format: " + audio_output_stream.getFormat());
 					}
 					// receiver
@@ -396,8 +398,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 				rtp_receiver.setSilencePadding(SILENCE_PADDING);
 			}
 		}
-		catch (ClassNotFoundException | IOException | UnsupportedAudioFileException | NoSuchMethodException
-				| IllegalAccessException | InvocationTargetException ex) {
+		catch (IOException | UnsupportedAudioFileException ex) {
 			throw new RuntimeException("Media streamer initialization failed.", ex);
 		}
 		LOG.debug("DEBUG: Codec: " + codec);
