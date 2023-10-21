@@ -32,8 +32,9 @@ import org.zoolu.net.UdpSocket;
 import org.zoolu.util.ByteUtils;
 
 
-/** RtpControl sends and receives RTP control (RTCP) packets.
-  */
+/**
+ * RtpControl sends and receives RTP control (RTCP) packets.
+ */
 public class RtpControl implements RtcpProviderListener {
 	
 	/** Debug mode */

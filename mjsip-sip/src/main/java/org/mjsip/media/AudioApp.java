@@ -5,6 +5,9 @@ package org.mjsip.media;
 import java.io.IOException;
 
 import org.mjsip.media.FlowSpec.Direction;
+import org.mjsip.media.tx.AudioFileTransmitter;
+import org.mjsip.media.tx.AudioTransmitter;
+import org.mjsip.media.tx.ToneTransmitter;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.sound.CodecType;
 
@@ -22,10 +25,10 @@ public class AudioApp {
 
 	
 	/** Creates a new audio streamer. */
-	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out,
+	protected AudioStreamer createAudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, String audiofile_out,
 			boolean direct_convertion, Codec additional_encoding, boolean do_sync, int random_early_drop,
 			boolean symmetric_rtp, boolean rtcp) {
-		return new AudioStreamer(flow_spec, audiofile_in, audiofile_out, direct_convertion, additional_encoding,
+		return new AudioStreamer(flow_spec, tx, audiofile_out, direct_convertion, additional_encoding,
 				do_sync, random_early_drop, symmetric_rtp, rtcp);
 	}
 
@@ -218,10 +221,11 @@ public class AudioApp {
 		String remote_ipaddr=(remote_soaddr!=null)? remote_soaddr.getAddress().toString() : null;
 		int remote_port=(remote_soaddr!=null)? remote_soaddr.getPort() : 0;
 		
+		AudioTransmitter tx;
 		if (tone_freq>0) {
-			audio_in=AudioStreamer.TONE;
-			AudioStreamer.TONE_FREQ=tone_freq;
-			AudioStreamer.TONE_AMPL=tone_ampl;
+			tx = new ToneTransmitter(tone_freq, tone_ampl);
+		} else {
+			tx = new AudioFileTransmitter(audio_in);
 		}
 
 		CodecType codec=CodecType.getByName(codec_name);
@@ -242,7 +246,7 @@ public class AudioApp {
 		MediaSpec mspec=new MediaSpec(avp,codec_name,sample_rate,channels,packet_size);      
 		FlowSpec fspec = new FlowSpec("audio", mspec, local_port, remote_ipaddr, remote_port, dir);
 
-		AudioStreamer audio_streamer = createAudioStreamer(fspec, audio_in, audio_out, direct_convertion, null, true,
+		AudioStreamer audio_streamer = createAudioStreamer(fspec, tx, audio_out, direct_convertion, null, true,
 				random_early_drop, symmetric_rtp, rtcp);
 
 		//if (random_early_drop>0) aapp.setRED(random_early_drop);

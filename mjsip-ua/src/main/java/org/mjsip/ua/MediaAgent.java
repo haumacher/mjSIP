@@ -32,6 +32,9 @@ import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
 import org.mjsip.media.MediaStreamer;
 import org.mjsip.media.NativeMediaStreamer;
+import org.mjsip.media.tx.AudioFileTransmitter;
+import org.mjsip.media.tx.AudioTransmitter;
+import org.mjsip.media.tx.ToneTransmitter;
 import org.slf4j.LoggerFactory;
 import org.zoolu.sound.SimpleAudioSystem;
 import org.zoolu.util.Archive;
@@ -146,9 +149,7 @@ public class MediaAgent {
 			int local_port=(uaConfig.audioMcastSoAddr!=null)? uaConfig.audioMcastSoAddr.getPort() : audio_flow.getLocalPort();
 			String[] args=new String[]{(remote_addr+"/"+remote_port)};
 			audio_streamer = new NativeMediaStreamer(uaConfig.binRat, args, local_port, remote_port);
-		}
-		else 
-		if (uaConfig.useJmfAudio) {
+		} else  if (uaConfig.useJmfAudio) {
 			// use JMF audio streamer
 			try {
 				String audio_source=(uaConfig.sendFile!=null)? Archive.getFileURL(uaConfig.sendFile).toString() : null;
@@ -163,27 +164,31 @@ public class MediaAgent {
 				LOG.error("Error trying to create the JmfMediaApp", e);
 			}
 		}
-		// else
+
 		if (audio_streamer==null) {
 			// use embedded javax-based audio streamer
 		
-			// audio input
-			String audio_in=null;
-			if (uaConfig.sendTone) audio_in=AudioStreamer.TONE;
-			else
-			if (uaConfig.sendFile!=null) audio_in=uaConfig.sendFile;
-			// audio output
-			String audio_out=null;
-			if (uaConfig.recvFile!=null) audio_out=uaConfig.recvFile;        
-
 			// javax-based audio streamer
 			if (uaConfig.javaxSoundStreamer==null) {
+				// audio input
+				AudioTransmitter tx;
+				if (uaConfig.sendTone) {
+					tx=new ToneTransmitter();
+				} else if (uaConfig.sendFile!=null) {
+					tx= new AudioFileTransmitter(uaConfig.sendFile);
+				} else {
+					tx = null;
+				}
+				
+				// audio output
+				String audio_out=null;
+				if (uaConfig.recvFile!=null) audio_out=uaConfig.recvFile;        
+
 				// standard javax-based audio streamer
-				audio_streamer = new AudioStreamer(audio_flow, audio_in, audio_out,
+				audio_streamer = new AudioStreamer(audio_flow, tx, audio_out,
 						uaConfig.javaxSoundDirectConversion, null, uaConfig.javaxSoundSync,
 						uaConfig.randomEarlyDropRate, uaConfig.symmetricRtp);
-			}
-			else {
+			} else {
 				// alternative audio streamer (just for experimental uses)
 				try {
 					Class media_streamer_class=Class.forName(uaConfig.javaxSoundStreamer);
@@ -191,8 +196,7 @@ public class MediaAgent {
 					Object[] param_values = { audio_flow };
 					java.lang.reflect.Constructor media_streamer_constructor=media_streamer_class.getConstructor(param_types);
 					audio_streamer=(MediaStreamer)media_streamer_constructor.newInstance(param_values);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					LOG.error("Error trying to create audio streamer '"+uaConfig.javaxSoundStreamer+"'", e);
 				}
 			}

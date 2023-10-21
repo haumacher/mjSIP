@@ -24,15 +24,15 @@ package org.mjsip.media;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.mjsip.media.FlowSpec.Direction;
+import org.mjsip.media.tx.AudioTransmitter;
+import org.mjsip.media.tx.AudioTXHandle;
 import org.mjsip.rtp.AmrRtpPayloadFormat;
 import org.mjsip.rtp.RtpControl;
 import org.slf4j.LoggerFactory;
@@ -98,23 +98,6 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	/** Default inter-packet time [millisecs] */
 	public static final int DEFAULT_PACKET_TIME=20;
 
-	/** By default whether using big-endian rule for byte ordering */
-	public static final boolean DEFAULT_BIG_ENDIAN=false;
-
-
-	/** Test tone */
-	public static final String TONE="TONE";
-
-	/** Test tone frequency [Hz] */
-	public static int TONE_FREQ = 100;
-
-	/** Test tone amplitude (from 0.0 to 1.0) */
-	public static double TONE_AMPL = 1.0;
-
-	/** Test tone sample size [bits] */
-	public static final int TONE_SAMPLE_SIZE = 8;
-
-
 	/** Whether using symmetric_rtp */
 	private final boolean symmetric_rtp;
 
@@ -124,14 +107,10 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	/** UDP socket */
 	private final UdpSocket udp_socket;
 
-	/** RtpStreamSender */
-	private RtpStreamSender rtp_sender;
+	private AudioTXHandle _txHandle;
 
 	/** RtpStreamReceiver */
 	private RtpStreamReceiver rtp_receiver;
-
-	/** Whether using system audio capture */
-	private final boolean audio_input;
 
 	/** Whether using system audio playout */
 	private final boolean audio_output;
@@ -165,11 +144,10 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	 * @param symmetric_rtp
 	 *        whether using symmetric_rtp
 	 */
-	public AudioStreamer(FlowSpec flow_spec, String audiofile_in, String audiofile_out, boolean direct_convertion,
+	public AudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, String audiofile_out, boolean direct_convertion,
 			Codec additional_encoding, boolean javaxSoundSync, int random_early_drop, boolean symmetric_rtp) {
-		this(flow_spec, audiofile_in, audiofile_out, direct_convertion, additional_encoding, javaxSoundSync,
-				random_early_drop,
-				symmetric_rtp, false);
+		this(flow_spec, tx, audiofile_out, direct_convertion, additional_encoding, javaxSoundSync,
+				random_early_drop, symmetric_rtp, false);
 	}
 
 	/**
@@ -197,12 +175,12 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	 *        packet dropping is explicitly performed at the RTP receiver
 	 * @param symmetric_rtp
 	 *        whether using symmetric_rtp
-	 * @param rtcp
+	 * @param rtp
 	 *        whether to use {@link RtpControl}
 	 */
 	public AudioStreamer(FlowSpec flow_spec,
-			String audiofile_in, String audiofile_out, boolean direct_convertion, Codec additional_encoding,
-			boolean javaxSoundSync, int random_early_drop, boolean symmetric_rtp, boolean rtcp) {
+			AudioTransmitter tx, String audiofile_out, boolean direct_convertion, Codec additional_encoding,
+			boolean javaxSoundSync, int random_early_drop, boolean symmetric_rtp, boolean rtp) {
 		MediaSpec mediaSpec = flow_spec.getMediaSpec();
 
 		String codec_name = mediaSpec.getCodec();
@@ -238,7 +216,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		LOG.debug("packet rate: "+(1000/packet_time)+ "pkt/s");
 	
 		// 4) find the proper supported AudioFormat
-		AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
+		final AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
 		LOG.debug("base audio format: "+baseFormat.toString());
 		AudioFormat audio_format=null;
 		AudioFormat.Encoding encoding=null;
@@ -279,15 +257,6 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		}
 		else LOG.warn("LOG.warn(pported");
 
-		// RTP AMR payload format
-		if (codec.equals(CodecType.AMR_NB) || codec.equals(CodecType.AMR_0475) || codec.equals(CodecType.AMR_0515) || codec.equals(CodecType.AMR_0590) || codec.equals(CodecType.AMR_0670) || codec.equals(CodecType.AMR_0740) || codec.equals(CodecType.AMR_0795) || codec.equals(CodecType.AMR_1020) || codec.equals(CodecType.AMR_1220)) {
-			AmrRtpPayloadFormat amr_payload_format=new AmrRtpPayloadFormat(RTP_BANDWIDTH_EFFICIENT_MODE);
-			if (rtp_sender!=null) rtp_sender.setRtpPayloadFormat(amr_payload_format);
-			if (rtp_receiver!=null) rtp_receiver.setRtpPayloadFormat(amr_payload_format);
-			LOG.debug("RTP format: " + codec + " in "
-					+ ((RTP_BANDWIDTH_EFFICIENT_MODE) ? "Bandwidth-Efficinet" : "Octect-Alignied") + " Mode");
-		}
-
 		Encoder additional_encoder=null;
 		Encoder additional_decoder=null;
 		if (additional_encoding!=null) {
@@ -308,41 +277,13 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			// 6) sender
 			String remote_addr = flow_spec.getRemoteAddress();
 			int remote_port = flow_spec.getRemotePort();
-			if ((dir == Direction.SEND_ONLY || dir == Direction.FULL_DUPLEX)) {
-				LOG.debug("new audio sender to "+remote_addr+":"+remote_port);
-				InputStream audioIn;
-				if (audiofile_in!=null && audiofile_in.equals(AudioStreamer.TONE)) {
-					// tone generator
-					LOG.info("Tone generator: " + TONE_FREQ + " Hz");
-					audioIn = new ToneInputStream(TONE_FREQ, TONE_AMPL, sample_rate, TONE_SAMPLE_SIZE,
-							ToneInputStream.PCM_LINEAR_UNSIGNED, DEFAULT_BIG_ENDIAN);
-					audio_input = false;
-				} else if (audiofile_in != null) {
-					audioIn = AudioFile.getAudioFileInputStream(audiofile_in, audio_format);
-					audio_input = false;
-				} else {
-					if (!direct_convertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
-						// use standard java embedded conversion provider
-						audioIn = SimpleAudioSystem.getInputStream(audio_format);
-					} else {
-						// use conversion provider
-						AudioInputStream rawInput = SimpleAudioSystem.getInputStream(baseFormat);
-						AudioInputStream converter = ConverterAudioSystem.convertAudioInputStream(codec, sample_rate,
-								rawInput);
-						LOG.info("send x-format: " + converter.getFormat());
-						audioIn = converter;
-					}
-					//if (sync_adj>0) sender.setSyncAdj(sync_adj);
-					audio_input=true;
-				}
-
-				rtp_sender = new RtpStreamSender(audioIn, javaxSoundSync, payload_type, sample_rate,
-						channels, packet_time, packet_size, additional_encoder, udp_socket, remote_addr, remote_port,
-						this);
+			if (tx != null) {
+				_txHandle = tx.createSender(audio_format, codec, payload_type, sample_rate, channels,
+						packet_time, packet_size, additional_encoder, udp_socket, remote_addr, remote_port, this);
 			} else {
-				audio_input = false;
+				_txHandle = null;
 			}
-			
+
 			// 7) receiver
 			if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
 				LOG.debug("new audio receiver on " + flow_spec.getLocalPort());
@@ -381,10 +322,26 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			} else {
 				audio_output = false;
 			}
+
+			// RTP AMR payload format
+			if (codec.equals(CodecType.AMR_NB) || codec.equals(CodecType.AMR_0475) || codec.equals(CodecType.AMR_0515)
+					|| codec.equals(CodecType.AMR_0590) || codec.equals(CodecType.AMR_0670)
+					|| codec.equals(CodecType.AMR_0740) || codec.equals(CodecType.AMR_0795)
+					|| codec.equals(CodecType.AMR_1020) || codec.equals(CodecType.AMR_1220)) {
+				AmrRtpPayloadFormat amr_payload_format = new AmrRtpPayloadFormat(RTP_BANDWIDTH_EFFICIENT_MODE);
+				if (_txHandle != null)
+					_txHandle.setRtpPayloadFormat(amr_payload_format);
+				if (rtp_receiver != null)
+					rtp_receiver.setRtpPayloadFormat(amr_payload_format);
+				LOG.debug("RTP format: " + codec + " in "
+						+ ((RTP_BANDWIDTH_EFFICIENT_MODE) ? "Bandwidth-Efficinet" : "Octect-Alignied") + " Mode");
+			}
+
 			// RTCP
-			if (rtcp) {
+			if (rtp) {
 				rtp_control=new RtpControl(null,udp_socket.getLocalPort()+1,remote_addr,remote_port+1);
-				if (rtp_sender!=null) rtp_sender.setControl(rtp_control);
+				if (_txHandle != null)
+					_txHandle.setControl(rtp_control);
 			} else {
 				rtp_control = null;
 			}
@@ -416,10 +373,9 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	@Override
 	public boolean start() {
 		LOG.info("starting java audio");
-		if (rtp_sender!=null) {
+		if (_txHandle != null) {
 			LOG.debug("start sending");
-			if (audio_input) SimpleAudioSystem.startAudioInputLine();
-			rtp_sender.start();
+			_txHandle.start();
 		}
 		if (rtp_receiver!=null) {
 			LOG.debug("start receiving");
@@ -434,12 +390,11 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	@Override
 	public boolean halt() {
 		LOG.info("stopping java audio");    
-		if (rtp_sender!=null) {
-			rtp_sender.halt();
-			rtp_sender=null;
+		if (_txHandle != null) {
+			_txHandle.halt();
+			_txHandle = null;
 			LOG.debug("sender halted");
 		}      
-		if (audio_input) SimpleAudioSystem.stopAudioInputLine();
 	 
 		if (rtp_receiver!=null) {
 			rtp_receiver.halt();
@@ -464,7 +419,8 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	@Override
 	public void onRemoteSoAddressChanged(RtpStreamReceiver rr, SocketAddress remote_soaddr) {
 		try {
-			if (symmetric_rtp && rtp_sender!=null) rtp_sender.setRemoteSoAddress(remote_soaddr);
+			if (symmetric_rtp && _txHandle != null)
+				_txHandle.setRemoteSoAddress(remote_soaddr);
 		}
 		catch (Exception e) {
 			LOG.info("Exception.", e);
@@ -489,7 +445,8 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	  * It accelerates (sync_adj &lt; 0) or reduces (sync_adj &gt; 0) the sending rate respect to the nominal value.
 	  * @param sync_adj the difference between the actual inter-packet sending time respect to the nominal value (in milliseconds). */
 	public void setSyncAdj(long sync_adj) {
-		if (rtp_sender!=null) rtp_sender.setSyncAdj(sync_adj);
+		if (_txHandle != null)
+			_txHandle.setSyncAdj(sync_adj);
 		LOG.debug("Inter-packet time adjustment at sender: " + sync_adj + " ms every packet");
 	}
 
