@@ -84,81 +84,71 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ***************************** attributes ****************************
 	
 	/** UserAgentProfile */
-	private UAConfig uaConfig;
+	private final UAConfig uaConfig;
 
 	/** SipProvider */
-	protected SipProvider sip_provider;
+	private final SipProvider sip_provider;
 
 	/** RegistrationClient */
-	protected RegistrationClient rc=null;
+	private RegistrationClient rc=null;
 
 	/** SipKeepAlive daemon */
-	protected SipKeepAlive keep_alive;
+	private SipKeepAlive keep_alive;
 
 	/** Call */
-	protected ExtendedCall call;
+	private ExtendedCall call;
+	
 	/** Call transfer */
-	protected ExtendedCall call_transfer;
+	private ExtendedCall call_transfer;
 
 	/** UAS */
 	//protected CallWatcher ua_server;
 
 	/** OptionsServer */
-	protected OptionsServer options_server;
+	private OptionsServer options_server;
 
 	/** NotImplementedServer */
-	protected NotImplementedServer null_server;
+	private NotImplementedServer null_server;
 
 	/** MediaAgent */
-	MediaAgent media_agent;
+	private final MediaAgent media_agent;
 	
 	/** List of active media sessions */
-	protected Vector<String> media_sessions=new Vector<>();
+	private final Vector<String> media_sessions=new Vector<>();
 
 	/** UserAgent listener */
-	protected UserAgentListener listener=null;
+	private final UserAgentListener listener;
 
 	/** Response timeout */
-	ScheduledFuture<?> response_to=null;
+	private ScheduledFuture<?> response_to=null;
 
 	/** Whether the outgoing call is already in progress */
-	boolean progress;   
+	private boolean progress;   
 	/** Whether the outgoing call is already ringing */
-	boolean ringing;
+	private boolean ringing;
 
 	/** On sound */
-	AudioClipPlayer clip_on;
+	private AudioClipPlayer clip_on;
 	/** Off sound */
-	AudioClipPlayer clip_off;
+	private AudioClipPlayer clip_off;
 	/** Ring sound */
-	AudioClipPlayer clip_ring;
+	private AudioClipPlayer clip_ring;
 	/** Progress sound */
-	AudioClipPlayer clip_progress;
+	private AudioClipPlayer clip_progress;
 
 	/** On volume gain */
-	float clip_on_volume_gain=(float)0.0; // not changed
+	private float clip_on_volume_gain=(float)0.0; // not changed
 	/** Off volume gain */
-	float clip_off_volume_gain=(float)0.0; // not changed
+	private float clip_off_volume_gain=(float)0.0; // not changed
 	/** Ring volume gain */
-	float clip_ring_volume_gain=(float)0.0; // not changed
+	private float clip_ring_volume_gain=(float)0.0; // not changed
 	/** Progress volume gain */
-	float clip_progress_volume_gain=(float)0.0; // not changed
+	private float clip_progress_volume_gain=(float)0.0; // not changed
 
 	private MediaConfig _mediaConfig;
 
-
-	// **************************** constructors ***************************
-
-	/** Creates a new UserAgent. */
+	/** Creates a {@link UserAgent}. */
 	public UserAgent(SipProvider sip_provider, UAConfig uaConfig, UserAgentListener listener) {
-		init(sip_provider,uaConfig,listener);
-	} 
-
-
-	// ************************** private methods **************************
-
-	/** Inits the UserAgent */
-	private void init(SipProvider sip_provider, UAConfig uaConfig, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
 		this.listener=listener;
 		this.uaConfig=uaConfig;
