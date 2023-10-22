@@ -66,15 +66,6 @@ public class AnsweringMachine extends MultipleUAS {
 		super(sip_provider,streamerFactory, uaConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
-		
-		if (uaConfig.sendFile != null) {
-			try {
-				AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(uaConfig.sendFile));
-				LOG.info("Announcement file format: " + audioFormat);
-			} catch (UnsupportedAudioFileException | IOException ex) {
-				LOG.error("Failed to analyze send file.", ex);
-			}
-		}
 	}
 	
 	@Override
@@ -97,13 +88,14 @@ public class AnsweringMachine extends MultipleUAS {
 		};
 	}
 
-	/** The main method. */
-	public static void main(String[] args) {
+	/** 
+	 * The main entry point. 
+	 */
+	public static void main(String[] args) throws UnsupportedAudioFileException, IOException {
 		String program = AnsweringMachine.class.getSimpleName();
 		LOG.info(program + " " + SipStack.version);
 
 		Flags flags=new Flags(program, args);
-		int portCnt=flags.getInteger("--ports", "<cnt>", 20, "number of available media ports");
 		Boolean prompt_exit = flags.getBoolean("--prompt", false, "Whether to wait for enter to exit program.");
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
@@ -112,6 +104,11 @@ public class AnsweringMachine extends MultipleUAS {
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
+		
+		if (uaConfig.sendFile != null) {
+			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(uaConfig.sendFile));
+			LOG.info("Announcement file format: " + audioFormat);
+		}
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		StreamerFactory streamerFactory = uaConfig.createStreamerFactory();
