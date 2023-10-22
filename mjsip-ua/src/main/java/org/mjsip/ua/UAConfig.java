@@ -161,10 +161,6 @@ public class UAConfig extends Configure {
 	/** Whether using symmetric_rtp */
 	public boolean symmetricRtp=false;
 
-	/** Whether using JMF for audio streaming */
-	public boolean useJmfAudio=false;
-	/** Whether using JMF for video streaming */
-	public boolean useJmfVideo=true;
 	/** Whether using RAT (Robust Audio Tool) as audio sender/receiver */
 	public boolean useRat=false;
 	/** Whether using VIC (Video Conferencing Tool) as video sender/receiver */
@@ -183,9 +179,6 @@ public class UAConfig extends Configure {
 	public boolean optionsServer=true;
 	/** Whether running an Null Server, that automatically responds to not-implemented requests. */
 	public boolean nullServer=true;
-
-	/** Alternative javax-sound-based audio streamer (currently just for tests) */
-	public String javaxSoundStreamer=null;
 
 	/** Whether using explicit external converter (i.e. direct access to an external conversion provider)
 	  * instead of that provided by javax.sound.sampled.spi.
@@ -363,8 +356,6 @@ public class UAConfig extends Configure {
 		if (attribute.equals("media_addr"))     {  mediaAddr=par.getString();  return;  } 
 		if (attribute.equals("symmetric_rtp"))  {  symmetricRtp=(par.getString().toLowerCase().startsWith("y"));  return;  } 
 
-		if (attribute.equals("use_jmf_audio"))  {  useJmfAudio=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("use_jmf_video"))  {  useJmfVideo=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("use_rat"))        {  useRat=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("bin_rat"))        {  binRat=par.getStringUnquoted();  return;  }
 		if (attribute.equals("use_vic"))        {  useVic=(par.getString().toLowerCase().startsWith("y"));  return;  }
@@ -373,7 +364,6 @@ public class UAConfig extends Configure {
 		if (attribute.equals("ua_server")) {  uaServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("options_server")) {  optionsServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("null_server")) {  nullServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("javax_sound_streamer")) {  javaxSoundStreamer=par.getString();  return;  }
 		if (attribute.equals("javax_sound_direct_convertion")) {  javaxSoundDirectConversion=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("javax_sound_sync")) {  javaxSoundSync=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("random_early_drop_rate")) {  randomEarlyDropRate=par.getInt();  return;  }

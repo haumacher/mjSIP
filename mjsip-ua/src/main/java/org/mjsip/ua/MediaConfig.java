@@ -68,18 +68,6 @@ public class MediaConfig extends Configure {
 	}
 	
 	private void normalize(UAConfig uaConfig) {
-		// BEGIN PATCH FOR JMF SUPPORT
-		if (uaConfig.audio && uaConfig.useJmfAudio) {
-			MediaDesc desc = _descByType.remove("audio");
-			_descByType.put("audio", desc.withSpecs(new MediaSpec[] {new MediaSpec(11,"L16",16000,1,320)}));
-		}
-		else
-		if (uaConfig.video && uaConfig.useJmfVideo) {
-			MediaDesc desc = _descByType.remove("video");
-			_descByType.put("video",desc.withSpecs(new MediaSpec[] {new MediaSpec(101,null,-1,1,-1)}));
-		}
-		// END PATCH FOR JMF SUPPORT
-		
 		// media descriptions
 		if (_descByType.size()==0 && uaConfig.audio) {
 			// add default auido support

@@ -76,10 +76,10 @@ public class SimpleAudioSystem {
 	/** Base system audio format (PCM 8000Hz, Linear, 16bit, Mono, Little endian) */
 	//private static final AudioFormat base_format=new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,8000.0F,16,1,2,8000.0F,false);
 
-	/** Input line (TargetDataLine) for audio capturing */
+	/** Input line for audio capturing */
 	private static TargetDataLine target_line=null;
 	
-	/** Output line (SourceDataLine) for audio playout */
+	/** Output line for audio playback */
 	private static SourceDataLine source_line;
 
 
@@ -113,7 +113,6 @@ public class SimpleAudioSystem {
 			LOG.error("Exception when trying to init audio input: "+e.getMessage(), e);
 		}
 	}
-	
 	
 	/** Gets the TargetDataLine from a given Mixer.
 	 * @throws LineUnavailableException */
