@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
-import org.mjsip.ua.MediaConfig;
 
 /**
  * {@link StreamerFactory} that dispatches based on the media type to other {@link StreamerFactory}
@@ -47,13 +46,13 @@ public class DispatchingStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec, MediaConfig mediaConfig) {
+	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
 		StreamerFactory factory = _factoryByType.get(flow_spec.getMediaType());
 		if (factory == null) {
-			return _defaultStreamerFactory.createMediaStreamer(flow_spec, mediaConfig);
+			return _defaultStreamerFactory.createMediaStreamer(flow_spec);
 		}
 		
-		return factory.createMediaStreamer(flow_spec, mediaConfig);
+		return factory.createMediaStreamer(flow_spec);
 	}
 
 }

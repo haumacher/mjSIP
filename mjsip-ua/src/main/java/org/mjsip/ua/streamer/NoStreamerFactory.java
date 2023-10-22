@@ -5,7 +5,6 @@ package org.mjsip.ua.streamer;
 
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
-import org.mjsip.ua.MediaConfig;
 
 /**
  * {@link StreamerFactory} that creates no streamers at all.
@@ -22,7 +21,7 @@ public class NoStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec, MediaConfig mediaConfig) {
+	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
 		return null;
 	}
 

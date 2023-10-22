@@ -5,7 +5,6 @@ package org.mjsip.ua.streamer;
 
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
-import org.mjsip.ua.MediaConfig;
 
 /**
  * Factory for {@link MediaStreamer}s.
@@ -17,6 +16,6 @@ public interface StreamerFactory {
 	/** 
 	 * Creates a {@link MediaStreamer} for the given flow.
 	 */
-	MediaStreamer createMediaStreamer(FlowSpec flow_spec, MediaConfig mediaConfig);
+	MediaStreamer createMediaStreamer(FlowSpec flow_spec);
 
 }

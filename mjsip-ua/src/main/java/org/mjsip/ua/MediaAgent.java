@@ -64,7 +64,7 @@ public class MediaAgent {
 	 * Creates a {@link MediaStreamer} for a certain flow.
 	 */
 	protected MediaStreamer createMediaStreamer(FlowSpec flow_spec, MediaConfig mediaConfig) {
-		return _streamerFactory.createMediaStreamer(flow_spec, mediaConfig);
+		return _streamerFactory.createMediaStreamer(flow_spec);
 	}
 
 	/** Stops a media session.  */

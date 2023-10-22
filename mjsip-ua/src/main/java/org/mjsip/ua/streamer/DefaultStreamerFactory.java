@@ -9,7 +9,6 @@ import org.mjsip.media.MediaStreamer;
 import org.mjsip.media.StreamerOptions;
 import org.mjsip.media.rx.AudioReceiver;
 import org.mjsip.media.tx.AudioTransmitter;
-import org.mjsip.ua.MediaConfig;
 
 /**
  * {@link StreamerFactory} creating an {@link AudioStreamer} based on {@link StreamerOptions},
@@ -31,7 +30,7 @@ public class DefaultStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec, MediaConfig mediaConfig) {
+	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
 		return new AudioStreamer(flow_spec, _tx, _rx, _options);
 	}
 
