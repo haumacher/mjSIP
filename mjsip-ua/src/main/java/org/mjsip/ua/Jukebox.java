@@ -33,6 +33,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.zoolu.util.Flags;
 
 
@@ -61,10 +62,10 @@ public class Jukebox extends MultipleUAS {
 	private PortPool _portPool;
 
 	/** 
-	 * Creates a new Jukebox. 
+	 * Creates a {@link Jukebox}. 
 	 */
-	public Jukebox(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
-		super(sip_provider,uaConfig);
+	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
+		super(sip_provider,streamerFactory, uaConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}
@@ -148,7 +149,7 @@ public class Jukebox extends MultipleUAS {
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,mediaConfig, portPool);
+		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig, mediaConfig, portPool);
 		
 		// promt before exit
 		if (prompt_exit) 

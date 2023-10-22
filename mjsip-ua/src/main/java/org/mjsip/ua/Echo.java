@@ -38,6 +38,7 @@ import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -62,10 +63,10 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 
 	private PortPool _portPool;
 
-	/** Creates a new Echo. */
-	public Echo(SipProvider sip_provider, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route) {
+	/** Creates a {@link Echo} service. */
+	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route) {
 		// call UAS
-		super(sip_provider,uaConfig);
+		super(sip_provider,streamerFactory, uaConfig);
 		_portPool = portPool;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS
@@ -155,7 +156,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		uaConfig.loopback=true;
 		uaConfig.sendOnly=false;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig,portPool,force_reverse_route);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig,portPool, force_reverse_route);
 
 		// promt before exit
 		if (prompt_exit) 

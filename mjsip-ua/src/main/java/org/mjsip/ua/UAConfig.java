@@ -523,9 +523,9 @@ public class UAConfig extends Configure {
 				if (useRat) {
 					factory.addFactory("audio", new NativeStreamerFactory(audioMcastSoAddr, binRat));
 				} else {
-					AudioTransmitter tx;
-
 					Direction dir = getDirection();
+
+					AudioTransmitter tx;
 					if (dir.doSend()) {
 						if (sendTone) {
 							tx=new ToneTransmitter();

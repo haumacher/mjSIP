@@ -32,6 +32,7 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 
 
@@ -49,10 +50,13 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
-	/** Creates a new MultipleUAS. */
-	public MultipleUAS(SipProvider sip_provider, UAConfig uaConfig) {
-		this.uaConfig=uaConfig;
+	private StreamerFactory _streamerFactory;
+
+	/** Creates a {@link MultipleUAS}. */
+	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig) {
 		this.sip_provider=sip_provider;
+		_streamerFactory = streamerFactory;
+		this.uaConfig=uaConfig;
 
 		// init UA profile
 		uaConfig.setUnconfiguredAttributes(sip_provider);
@@ -102,8 +106,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
 		LOG.info("received new INVITE request");
 		
-		// create new user agent
-		final UserAgent ua=new UserAgent(sip_provider,uaConfig.createStreamerFactory(), uaConfig, createCallHandler(msg));
+		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, uaConfig, createCallHandler(msg));
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);

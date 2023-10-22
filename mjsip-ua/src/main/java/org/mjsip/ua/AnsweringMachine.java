@@ -38,6 +38,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -61,8 +62,8 @@ public class AnsweringMachine extends MultipleUAS {
 	/** 
 	 * Creates an {@link AnsweringMachine}. 
 	 */
-	public AnsweringMachine(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
-		super(sip_provider,uaConfig);
+	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
+		super(sip_provider,streamerFactory, uaConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 		
@@ -113,7 +114,9 @@ public class AnsweringMachine extends MultipleUAS {
 		flags.close();
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
-		new AnsweringMachine(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), uaConfig, mediaConfig, portPool);
+		StreamerFactory streamerFactory = uaConfig.createStreamerFactory();
+		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool);
 
 		// prompt before exit
 		if (prompt_exit) 
