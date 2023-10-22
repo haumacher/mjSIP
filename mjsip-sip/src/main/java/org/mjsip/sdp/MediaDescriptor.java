@@ -73,7 +73,7 @@ public class MediaDescriptor {
 
 	/** Gets media.
 	  * @return the MediaField */
-	public MediaField getMedia() {
+	public MediaField getMediaField() {
 		return m;
 	} 
 

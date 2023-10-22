@@ -319,11 +319,11 @@ public class SipMangler {
 		Vector<MediaDescriptor> new_media_descriptors = new Vector<>(); 
 			  
 		for (MediaDescriptor md : old_media_descriptors) {
-			MediaField mf=md.getMedia();
-			if (mf.getMedia().equals(media)) {
+			MediaField mf=md.getMediaField();
+			if (mf.getMediaType().equals(media)) {
 				// masquerade the port
 				//printLog(media+" port "+mf.getPort()+" becomes "+masq_port,LogWriter.LEVEL_HIGH);        
-				mf=new MediaField(mf.getMedia(),masq_port,0,mf.getTransport(),mf.getFormats());
+				mf=new MediaField(mf.getMediaType(),masq_port,0,mf.getTransport(),mf.getFormats());
 				md=new MediaDescriptor(mf,md.getConnection(),md.getAttributes());
 			}
 			new_media_descriptors.addElement(md);

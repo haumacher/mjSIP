@@ -139,10 +139,10 @@ public class OfferAnswerModel {
 
 		Vector<MediaDescriptor> availableDescriptors = VectorUtils.copy(localDescriptors);
 		for (MediaDescriptor remote : remoteDescriptors) {
-			String mediaType = remote.getMedia().getMedia();
+			String mediaType = remote.getMediaField().getMediaType();
 			for (int j = 0; j < availableDescriptors.size(); j++) {
 				MediaDescriptor available = availableDescriptors.elementAt(j);
-				if (available.getMedia().getMedia().equals(mediaType)) {
+				if (available.getMediaField().getMediaType().equals(mediaType)) {
 					MediaDescriptor match = makeMediaDescriptorMatch(available, remote);
 					result.addElement(match);
 
@@ -162,9 +162,9 @@ public class OfferAnswerModel {
 	  * The result is calculated as answer of a media offer, according to RFC3264. */
 	public static MediaDescriptor makeMediaDescriptorMatch(MediaDescriptor local, MediaDescriptor remote) {
 		// select the proper formats 
-		MediaField localMedia = local.getMedia();
+		MediaField localMedia = local.getMediaField();
 
-		Vector<String> answerFormats = intersection(localMedia.getFormatList(), remote.getMedia().getFormatList());
+		Vector<String> answerFormats = intersection(localMedia.getFormatList(), remote.getMediaField().getFormatList());
 
 		// select the 'rtpmap' attributes
 		AttributeField[] localAttributes = local.getAttributes("rtpmap");
@@ -176,7 +176,7 @@ public class OfferAnswerModel {
 				}
 			}
 		}
-		MediaField answerMedia = new MediaField(localMedia.getMedia(), localMedia.getPort(), 0,
+		MediaField answerMedia = new MediaField(localMedia.getMediaType(), localMedia.getPort(), 0,
 				localMedia.getTransport(), answerFormats);
 		MediaDescriptor answer = new MediaDescriptor(answerMedia, null, answerAttributes);
 		

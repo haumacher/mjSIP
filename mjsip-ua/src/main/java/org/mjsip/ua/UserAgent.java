@@ -464,36 +464,50 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		
 		// select the media direction (send_only, recv_ony, fullduplex)
 		FlowSpec.Direction dir = uaConfig.getDirection();
+		String remote_address=remote_sdp.getConnection().getAddress();
 		// for each media
 		for (MediaDescriptor matchingDescriptor : matchingMedia) {
-			MediaField mediaField=matchingDescriptor.getMedia();
-			String mediaType=mediaField.getMedia();
+			MediaField mediaField=matchingDescriptor.getMediaField();
+			String mediaType=mediaField.getMediaType();
 			
 			MediaDescriptor remoteDescriptor = remote_sdp.getMediaDescriptor(mediaType);
-			remote_sdp.removeMediaDescriptor(mediaType);
-
-			// media and flow specifications
-			String transport=mediaField.getTransport();
-
-			String format=mediaField.getFormatList().elementAt(0);
-			int avp=Integer.parseInt(format);
-
-			int local_port=mediaField.getPort();
-			int remote_port=remoteDescriptor.getMedia().getPort();
-			MediaSpec media_spec = findMatchingMediaSpec(mediaType, avp);
 			
-			if (local_port!=0 && remote_port!=0 && media_spec!=null) {
-				String remote_address=remote_sdp.getConnection().getAddress();
-				FlowSpec flow_spec=new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
-				LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
-				boolean success=_mediaAgent.startMediaSession(flow_spec);           
-				if (success) {
-					media_sessions.addElement(mediaType);
-					if (listener!=null) listener.onUaMediaSessionStarted(this,mediaType,format);
-				}
-			} else {
-				LOG.info("No matching media found (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
+			// TODO: This modifies the remote descriptor while building a flow spec. This is unexpected
+			// behavior and only a workaround for matching descriptors have no unique media type. By
+			// removing all descriptors from the offer message, duplicate attempts to build a flow for a
+			// media that has no match is prevented.
+			remote_sdp.removeMediaDescriptors(mediaType);
+			
+			FlowSpec flow_spec = buildFlowSpec(mediaType, remoteDescriptor, matchingDescriptor, dir, remote_address);
+			if (flow_spec == null) {
+				continue;
 			}
+			
+			LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
+			boolean success=_mediaAgent.startMediaSession(flow_spec);           
+			if (success) {
+				media_sessions.addElement(mediaType);
+				String codec = flow_spec.getMediaSpec().getCodec();
+				if (listener!=null) listener.onUaMediaSessionStarted(this,mediaType,codec);
+			}
+		}
+	}
+
+	private FlowSpec buildFlowSpec(String mediaType, MediaDescriptor remoteDescriptor, MediaDescriptor matchingDescriptor, FlowSpec.Direction dir, String remote_address) {
+		MediaField mediaField=matchingDescriptor.getMediaField();
+		String transport=mediaField.getTransport();
+		int avp=Integer.parseInt(mediaField.getFormatList().elementAt(0));
+
+		int local_port=mediaField.getPort();
+		int remote_port=remoteDescriptor.getMediaField().getPort();
+		
+		MediaSpec media_spec = findMatchingMediaSpec(mediaType, avp);
+		
+		if (local_port!=0 && remote_port!=0 && media_spec!=null) {
+			return new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
+		} else {
+			LOG.info("No matching media found (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
+			return null;
 		}
 	}
 

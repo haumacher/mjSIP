@@ -179,8 +179,8 @@ public class MediaDesc {
 	 * Parses a raw {@link MediaDescriptor} into a {@link MediaDesc} internally used by mjSIP.
 	 */
 	public static MediaDesc parseDescriptor(MediaDescriptor descriptor) {
-		MediaField mf = descriptor.getMedia();
-		String media = mf.getMedia();
+		MediaField mf = descriptor.getMediaField();
+		String media = mf.getMediaType();
 		int port = mf.getPort();
 		String transport = mf.getTransport();
 

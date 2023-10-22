@@ -80,7 +80,7 @@ public class SdpMessage {
 	/** Zero or more session attributes */
 	Vector<AttributeField> av = new Vector<AttributeField>();
 	/** Zero or more media descriptions. */
-	Vector<MediaDescriptor> media = new Vector<>();
+	Vector<MediaDescriptor> _mediaDescriptors = new Vector<>();
 		
 
 	/** Inits the mandatory fields of the SDP message. */
@@ -105,8 +105,8 @@ public class SdpMessage {
 		k=sd.k;
 		for (int i = 0; i < sd.av.size(); i++)
 			addAttribute(sd.av.elementAt(i));
-		for (int i = 0; i < sd.media.size(); i++)
-			addMediaDescriptor(sd.media.elementAt(i));
+		for (int i = 0; i < sd._mediaDescriptors.size(); i++)
+			addMediaDescriptor(sd._mediaDescriptors.elementAt(i));
 	}
 
 	/** Creates a new SDP message specifying o, s, c, and t fields.
@@ -272,7 +272,7 @@ public class SdpMessage {
 	public SdpMessage addMedia(MediaField mf, List<AttributeField> attributes) {
 		//printlog("DEBUG: mf: "+media,5);
 		//printlog("DEBUG: attribute: "+attributes,5);
-		media.addElement(new MediaDescriptor(mf,null,attributes));
+		_mediaDescriptors.addElement(new MediaDescriptor(mf,null,attributes));
 		return this;
 	}
 
@@ -281,7 +281,7 @@ public class SdpMessage {
 	  * @return this SDP message */
 	public SdpMessage addMediaDescriptor(MediaDescriptor media_desc) {
 		//printlog("DEBUG: media desc: "+media_desc,5);
-		media.addElement(MediaDescriptor.copy(media_desc));
+		_mediaDescriptors.addElement(MediaDescriptor.copy(media_desc));
 		return this;
 	}
 
@@ -298,7 +298,7 @@ public class SdpMessage {
 
 	/** Gets all MediaDescriptors */
 	public Vector<MediaDescriptor> getMediaDescriptors() {
-		return media;
+		return _mediaDescriptors;
 	}
 
 	/**
@@ -306,11 +306,11 @@ public class SdpMessage {
 	 * 
 	 * @return this SDP message
 	 */
-	public SdpMessage removeMediaDescriptor(String media_type) {
-		for (int i = media.size() - 1; i >= 0; i--) {
-			MediaDescriptor mediaElement = media.elementAt(i);
-			if (mediaElement.getMedia().getMedia().equals(media_type)) {
-				media.removeElementAt(i);
+	public SdpMessage removeMediaDescriptors(String media_type) {
+		for (int i = _mediaDescriptors.size() - 1; i >= 0; i--) {
+			MediaDescriptor mediaElement = _mediaDescriptors.elementAt(i);
+			if (mediaElement.getMediaField().getMediaType().equals(media_type)) {
+				_mediaDescriptors.removeElementAt(i);
 			}
 		}
 		return this;
@@ -320,7 +320,7 @@ public class SdpMessage {
 	 * @return this SDP message */
 	public SdpMessage removeMediaDescriptors() {
 		//media.clear(); // not supported by J2ME..
-		media.setSize(0);
+		_mediaDescriptors.setSize(0);
 		return this;
 	}
 	
@@ -328,13 +328,13 @@ public class SdpMessage {
 	  * @param media_type the media type
 	  * @return the media descriptor */
 	public MediaDescriptor getMediaDescriptor(String media_type) {
-		for (int i=0; i<media.size(); i++) {
-			MediaDescriptor md = media.elementAt(i);
-			if (md.getMedia().getMedia().equals(media_type)) return md; 
+		for (MediaDescriptor md : _mediaDescriptors) {
+			if (md.getMediaField().getMediaType().equals(media_type)) {
+				return md;
+			}
 		}
 		return null;
 	}
-
 
 	/** Keeps only selected media types; other media are removed.
 	  * @param media_types the media types to be kept
@@ -345,7 +345,7 @@ public class SdpMessage {
 			for (int i=0; i<media_types.length; i++) {
 				MediaDescriptor md=getMediaDescriptor(media_types[i]);
 				if (md!=null) {
-					removeMediaDescriptor(media_types[i]);
+					removeMediaDescriptors(media_types[i]);
 					md_list.addElement(md);
 				}
 			}
@@ -440,7 +440,7 @@ public class SdpMessage {
 		if (z!=null) sb.append(z.toString());
 		if (k!=null) sb.append(k.toString());
 		for (int i=0; i<av.size(); i++) sb.append(av.get(i).toString());
-		for (int i=0; i<media.size(); i++) sb.append(media.elementAt(i).toString());
+		for (int i=0; i<_mediaDescriptors.size(); i++) sb.append(_mediaDescriptors.elementAt(i).toString());
 		return sb.toString();
 	}
 	

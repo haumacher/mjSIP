@@ -71,7 +71,7 @@ public class MediaField extends SdpField {
 	}
 			
 	/** Gets the media type. */
-	public String getMedia() {
+	public String getMediaType() {
 		return new Parser(value).getString();
 	}  
 

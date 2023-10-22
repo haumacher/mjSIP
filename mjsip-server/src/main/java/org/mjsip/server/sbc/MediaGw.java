@@ -113,8 +113,8 @@ public class MediaGw implements SymmetricUdpRelayListener {
 		for (int i=0; i<media_descriptors.size(); i++) {
 			//int dest_port=sdp.getMediaDescriptor(media[i]).getMedia().getPort();
 			MediaDescriptor media_descriptor=(MediaDescriptor)media_descriptors.elementAt(i);
-			MediaField media_filed=media_descriptor.getMedia();
-			media[i]=media_filed.getMedia();
+			MediaField media_filed=media_descriptor.getMediaField();
+			media[i]=media_filed.getMediaType();
 			int dest_port=media_filed.getPort();
 						
 			String key=call_id+"-"+leg+"-"+media[i];
