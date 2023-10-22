@@ -1,6 +1,8 @@
 package org.mjsip.media;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 import org.mjsip.sdp.AttributeField;
@@ -73,38 +75,48 @@ public class MediaDesc {
 
 	/** Gets the corresponding {@link MediaDescriptor} for creating SIP messages. */
 	public MediaDescriptor toMediaDescriptor() {
-		Vector<String> formats = new Vector<>();
-		Vector<AttributeField> attributes = new Vector<>();
+		List<String> formats = new ArrayList<>();
+		List<AttributeField> attributes = new ArrayList<>();
 		if (specs!=null) {
-			for (int i=0; i<specs.length; i++) {
-				MediaSpec ms=specs[i];
-				int avp=ms.getAVP();
-				String codec=ms.getCodec();
-				int sample_rate=ms.getSampleRate();
-				int channels=ms.getChannels();
-				String avpString = String.valueOf(avp);
-				formats.addElement(avpString);
-				attributes.addElement(new AttributeField("rtpmap",
-						avpString + ((codec != null && sample_rate > 0)
-								? " " + codec + "/" + sample_rate + (channels > 1 ? "/" + channels : "")
-								: "")));
+			for (MediaSpec ms : specs) {
+				String avp = String.valueOf(ms.getAVP());
+				formats.add(avp);
+
+				StringBuilder rtpmap = new StringBuilder();
+				rtpmap.append(avp);
+
+				String codec = ms.getCodec();
+				int sample_rate = ms.getSampleRate();
+				if (codec != null && sample_rate > 0) {
+					rtpmap.append(' ');
+					rtpmap.append(codec);
+					rtpmap.append('/');
+					rtpmap.append(sample_rate);
+
+					int channels = ms.getChannels();
+					if (channels > 1) {
+						rtpmap.append('/');
+						rtpmap.append(channels);
+					}
+				}
+				attributes.add(new AttributeField("rtpmap", rtpmap.toString()));
 			}
 		}
 		MediaField mediaField = new MediaField(media, port, 0, transport, formats);
-		return new MediaDescriptor(mediaField, null, attributes.toArray(new AttributeField[] {}));
+		return new MediaDescriptor(mediaField, null, attributes);
 	}
 
 	/** Gets a string representation of this object.
 	  * @return a string representing this object */
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(media).append(" ").append(port).append(" ").append(transport);
 		if (specs!=null) {
 			sb.append(" {");
 			for (int i=0; i<specs.length; i++) {
 				if (i>0) sb.append(",");
-				sb.append(" ").append(((MediaSpec)specs[i]).toString());
+				sb.append(" ").append(specs[i].toString());
 			}
 			sb.append(" }");
 		}

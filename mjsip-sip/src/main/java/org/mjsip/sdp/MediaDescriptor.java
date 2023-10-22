@@ -24,11 +24,12 @@
 package org.mjsip.sdp;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import org.mjsip.sdp.field.ConnectionField;
 import org.mjsip.sdp.field.MediaField;
-import org.zoolu.util.VectorUtils;
 
 
 /**
@@ -56,7 +57,7 @@ public class MediaDescriptor {
 	private final ConnectionField c;
 
 	/** Vector of attribute fileds ('a') */
-	private final Vector<AttributeField> av;
+	private final List<AttributeField> av;
 
 	/** Creates a new MediaDescriptor with m=<i>media</i> and c=<i>connection</i>,
 	  * with attributes 'a' equals to <i>attributes</i> (Vector of AttributeField).
@@ -64,10 +65,10 @@ public class MediaDescriptor {
 	  * @param connection the ConnectionField, or null if no ConnectionField
 	  * is present in the MediaDescriptor
 	  * @param attributes array of attributes */
-	public MediaDescriptor(MediaField media, ConnectionField connection, AttributeField[] attributes) {
+	public MediaDescriptor(MediaField media, ConnectionField connection, List<AttributeField> attributes) {
 		m=media;
 		c=connection;
-		av=VectorUtils.arrayToVector(attributes);
+		av = attributes;
 	}
 
 	/** Gets media.
@@ -84,15 +85,15 @@ public class MediaDescriptor {
 
 	/** Gets attributes.
 	  * @return an array of attributes */
-	public AttributeField[] getAttributes() {
-		return av.toArray(new AttributeField[] {});
+	public List<AttributeField> getAttributes() {
+		return av;
 	} 
 
 	/** Adds a new attribute.
 	  * @param attribute the new AttributeField
 	  * @return this MediaDescriptor */
 	public MediaDescriptor addAttribute(AttributeField attribute) {
-		av.addElement(new AttributeField(attribute));
+		av.add(new AttributeField(attribute));
 		return this;
 	} 
 
@@ -110,7 +111,7 @@ public class MediaDescriptor {
 	  * @return true if found, otherwise returns null */
 	public boolean hasAttribute(String a_name) {
 		for (int i=0; i<av.size(); i++) {
-			if (av.elementAt(i).getAttributeName().equals(a_name))
+			if (av.get(i).getAttributeName().equals(a_name))
 				return true;
 		}
 		return false;
@@ -121,7 +122,7 @@ public class MediaDescriptor {
 	  * @return the AttributeField, or null if not found */
 	public AttributeField getAttribute(String a_name) {
 		for (int i=0; i<av.size(); i++) {
-			AttributeField a = av.elementAt(i);
+			AttributeField a = av.get(i);
 			if (a.getAttributeName().equals(a_name)) return a;
 		}
 		return null;
@@ -133,7 +134,7 @@ public class MediaDescriptor {
 	public AttributeField[] getAttributes(String a_name) {
 		Vector<AttributeField> v = new Vector<>(av.size());
 		for (int i=0; i<av.size(); i++) {
-			AttributeField a = av.elementAt(i);
+			AttributeField a = av.get(i);
 			if (a.getAttributeName().equals(a_name)) v.addElement(a);
 		}
 		return v.toArray(new AttributeField[] {});
@@ -145,7 +146,7 @@ public class MediaDescriptor {
 	public String toString() {
 		String str=""; str+=m; if (c!=null) str+=c;
 		for (int i = 0; i < av.size(); i++)
-			str += av.elementAt(i);
+			str += av.get(i);
 		return str;
 	}
 
@@ -155,11 +156,11 @@ public class MediaDescriptor {
 	public static MediaDescriptor copy(MediaDescriptor other) {
 		MediaField m = new MediaField(other.m);
 		ConnectionField c = (other.c != null) ? c = new ConnectionField(other.c) : null;
-		Vector<AttributeField> av = new Vector<>();
+		List<AttributeField> av = new ArrayList<>();
 		for (int i = 0; i < other.av.size(); i++) {
-			av.addElement(new AttributeField(other.av.elementAt(i)));
+			av.add(new AttributeField(other.av.get(i)));
 		}
-		return new MediaDescriptor(m, c, av.toArray(new AttributeField[] {}));
+		return new MediaDescriptor(m, c, av);
 	}
 	
 }

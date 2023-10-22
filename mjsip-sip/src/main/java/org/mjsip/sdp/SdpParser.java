@@ -173,7 +173,7 @@ class SdpParser extends Parser {
 			av.addElement(a);
 			a=par.parseAttributeField();
 		}
-		return new MediaDescriptor(m, c, av.toArray(new AttributeField[] {}));
+		return new MediaDescriptor(m, c, av);
 	}
 
 }

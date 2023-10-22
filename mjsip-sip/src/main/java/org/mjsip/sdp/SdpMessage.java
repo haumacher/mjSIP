@@ -24,6 +24,7 @@
 package org.mjsip.sdp;
 
 
+import java.util.List;
 import java.util.Vector;
 
 import org.mjsip.sdp.field.ConnectionField;
@@ -268,7 +269,7 @@ public class SdpMessage {
 	  * @param mf the MediaField
 	  * @param attributes array of attributes
 	  * @return this SDP message */
-	public SdpMessage addMedia(MediaField mf, AttributeField[] attributes) {
+	public SdpMessage addMedia(MediaField mf, List<AttributeField> attributes) {
 		//printlog("DEBUG: mf: "+media,5);
 		//printlog("DEBUG: attribute: "+attributes,5);
 		media.addElement(new MediaDescriptor(mf,null,attributes));
@@ -287,9 +288,11 @@ public class SdpMessage {
 	/** Adds a Vector of MediaDescriptors
 	  * @param media_descs Vector if MediaDescriptor 
 	  * @return this SDP message */
-	public SdpMessage addMediaDescriptors(Vector media_descs) {
+	public SdpMessage addMediaDescriptors(Vector<MediaDescriptor> media_descs) {
 		//media.addAll(media_descs); // not supported by J2ME..
-		for (int i=0; i<media_descs.size(); i++) addMediaDescriptor((MediaDescriptor)media_descs.elementAt(i));
+		for (MediaDescriptor descriptor : media_descs) {
+			addMediaDescriptor(descriptor);
+		}
 		return this;
 	}
 

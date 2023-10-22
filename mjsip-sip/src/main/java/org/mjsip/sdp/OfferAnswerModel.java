@@ -178,8 +178,7 @@ public class OfferAnswerModel {
 		}
 		MediaField answerMedia = new MediaField(localMedia.getMedia(), localMedia.getPort(), 0,
 				localMedia.getTransport(), answerFormats);
-		MediaDescriptor answer = new MediaDescriptor(answerMedia, null,
-				answerAttributes.toArray(new AttributeField[] {}));
+		MediaDescriptor answer = new MediaDescriptor(answerMedia, null, answerAttributes);
 		
 		// select other attributes
 		//answer_md.addAttributes(SdesOfferAnswerModel.makeCryptoAttributeProduct(start_md,offer_md));     

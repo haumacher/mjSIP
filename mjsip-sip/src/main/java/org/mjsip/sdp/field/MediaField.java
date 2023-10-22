@@ -25,6 +25,7 @@ package org.mjsip.sdp.field;
 
 
 
+import java.util.List;
 import java.util.Vector;
 
 import org.mjsip.sdp.SdpField;
@@ -55,12 +56,13 @@ public class MediaField extends SdpField {
 
 	/** Creates a new MediaField.
 	  * @param formatlist a Vector of media formats (properly a Vector of Strings) */
-	public MediaField(String media, int port, int num, String transport, Vector formatlist) {
+	public MediaField(String media, int port, int num, String transport, List<String> formatlist) {
 		super('m',null);
 		value=media+" "+port;
 		if (num>0) value+="/"+num;
 		value+=" "+transport;
-		for (int i=0; i<formatlist.size(); i++) value+=" "+formatlist.elementAt(i);
+		for (int i = 0; i < formatlist.size(); i++)
+			value += " " + formatlist.get(i);
 	}
 
 	/** Creates a new SdpField. */

@@ -219,13 +219,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
-	private SdpMessage getSessionDescriptor(MediaDesc[] media_descs) {
+	private SdpMessage getSessionDescriptor(MediaDesc[] descriptors) {
 		String owner=uaConfig.user;
 		String media_addr=(uaConfig.mediaAddr!=null)? uaConfig.mediaAddr : sip_provider.getViaAddress();
 		SdpMessage sdp=new SdpMessage(owner,media_addr);
-		for (int i=0; i<media_descs.length; i++) {
-			MediaDesc md=media_descs[i];
-
+		for (MediaDesc md : descriptors) {
 			// check if audio or video have been disabled
 			if (md.getMedia().equalsIgnoreCase("audio") && !uaConfig.audio) continue;
 			if (md.getMedia().equalsIgnoreCase("video") && !uaConfig.video) continue;
@@ -488,7 +486,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				String remote_address=remote_sdp.getConnection().getAddress();
 				FlowSpec flow_spec=new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
 				LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
-				boolean success=_mediaAgent.startMediaSession(flow_spec, _mediaConfig);           
+				boolean success=_mediaAgent.startMediaSession(flow_spec);           
 				if (success) {
 					media_sessions.addElement(mediaType);
 					if (listener!=null) listener.onUaMediaSessionStarted(this,mediaType,format);

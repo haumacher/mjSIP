@@ -315,11 +315,10 @@ public class SipMangler {
 	/** Mangles the sdp media port */
 	protected static SdpMessage mangleSdpMediaPort(SdpMessage sdp, String media, int masq_port) {
 		//printLog("inside mangleSdpConnection()",LogWriter.LEVEL_MEDIUM); 
-		Vector old_media_descriptors=sdp.getMediaDescriptors();
-		Vector new_media_descriptors=new Vector(); 
+		Vector<MediaDescriptor> old_media_descriptors = sdp.getMediaDescriptors();
+		Vector<MediaDescriptor> new_media_descriptors = new Vector<>(); 
 			  
-		for (int i=0; i<old_media_descriptors.size(); i++) {
-			MediaDescriptor md=(MediaDescriptor)old_media_descriptors.elementAt(i);
+		for (MediaDescriptor md : old_media_descriptors) {
 			MediaField mf=md.getMedia();
 			if (mf.getMedia().equals(media)) {
 				// masquerade the port

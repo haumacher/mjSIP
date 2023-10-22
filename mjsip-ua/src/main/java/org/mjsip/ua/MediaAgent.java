@@ -32,7 +32,7 @@ public class MediaAgent {
 	}
 	
 	/** Starts a media session */
-	public boolean startMediaSession(FlowSpec flow_spec, MediaConfig mediaConfig) {
+	public boolean startMediaSession(FlowSpec flow_spec) {
 		LOG.info("Starting media session: " + flow_spec.getMediaSpec());
 		LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
 		
@@ -45,7 +45,7 @@ public class MediaAgent {
 		}
 		 
 		// Create a new media streamer
-		MediaStreamer media_streamer = createMediaStreamer(flow_spec, mediaConfig);
+		MediaStreamer media_streamer = createMediaStreamer(flow_spec);
 		if (media_streamer == null) {
 			LOG.warn("No media streamer found for type: " + mediaType);
 			return false;
@@ -63,7 +63,7 @@ public class MediaAgent {
 	/** 
 	 * Creates a {@link MediaStreamer} for a certain flow.
 	 */
-	protected MediaStreamer createMediaStreamer(FlowSpec flow_spec, MediaConfig mediaConfig) {
+	protected MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
 		return _streamerFactory.createMediaStreamer(flow_spec);
 	}
 
