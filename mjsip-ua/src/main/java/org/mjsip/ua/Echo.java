@@ -63,10 +63,11 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 
 	private PortPool _portPool;
 
-	/** Creates a {@link Echo} service. */
-	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route) {
-		// call UAS
-		super(sip_provider,streamerFactory, uaConfig);
+	/** 
+	 * Creates a {@link Echo} service. 
+	 */
+	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route, int hangupTime) {
+		super(sip_provider,streamerFactory, uaConfig, hangupTime);
 		_portPool = portPool;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS
@@ -147,6 +148,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
+		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
@@ -155,8 +157,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		uaConfig.video=true;
 		uaConfig.loopback=true;
 		uaConfig.sendOnly=false;
-		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig,portPool, force_reverse_route);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig.hangupTime);
 
 		// promt before exit
 		if (prompt_exit) 

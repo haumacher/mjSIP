@@ -118,8 +118,7 @@ public class UAConfig extends Configure {
 	public int refuseTime=20;
 	/** Automatic answer time in seconds; time&lt;0 corresponds to manual answer mode. */
 	public int acceptTime=-1;        
-	/** Automatic hangup time (call duartion) in seconds; time&lt;=0 corresponds to manual hangup mode. */
-	public int hangupTime=-1;
+
 	/** Automatic call transfer time in seconds; time&lt;0 corresponds to no auto transfer mode. */
 	public int transferTime=-1;
 	/** Automatic re-inviting time in seconds; time&lt;0 corresponds to no auto re-invite mode.  */
@@ -341,7 +340,6 @@ public class UAConfig extends Configure {
 		}
 		if (attribute.equals("refuse_time"))    {  refuseTime=par.getInt();  return;  }
 		if (attribute.equals("accept_time"))    {  acceptTime=par.getInt();  return;  }
-		if (attribute.equals("hangup_time"))    {  hangupTime=par.getInt();  return;  } 
 		if (attribute.equals("transfer_time"))  {  transferTime=par.getInt();  return;  } 
 		if (attribute.equals("re_invite_time")) {  reinviteTime=par.getInt();  return;  } 
 		if (attribute.equals("re_call_time"))   {  recallTime=par.getInt();  return;  } 
@@ -415,9 +413,6 @@ public class UAConfig extends Configure {
 		
 		int accept_time=flags.getInteger("-y","<secs>",-1,"auto answers after given seconds");      
 		if (accept_time>=0) this.acceptTime=accept_time;
-		
-		int hangup_time=flags.getInteger("-t","<secs>",-1,"auto hangups after given seconds (0 means manual hangup)");
-		if (hangup_time>0) this.hangupTime=hangup_time;
 		
 		int re_invite_time=flags.getInteger("-i","<secs>",-1,"re-invites after given seconds");
 		if (re_invite_time>0) this.reinviteTime=re_invite_time;

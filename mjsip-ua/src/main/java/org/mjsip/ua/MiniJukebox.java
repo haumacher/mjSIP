@@ -56,8 +56,8 @@ public class MiniJukebox extends UserAgentCli {
 	/** 
 	 * Creates a new MiniJukebox. 
 	 */
-	public MiniJukebox(SipProvider sip_provider, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
-		super(sip_provider,uaConfig, uiConfig, mediaConfig);
+	public MiniJukebox(SipProvider sip_provider, ServiceConfig serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+		super(sip_provider,serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}
 
 	/** From UserAgentListener. When a new call is incoming */
@@ -83,13 +83,13 @@ public class MiniJukebox extends UserAgentCli {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
+		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
 		uaConfig.audio=true;
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
-		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
+		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    
 	
 }

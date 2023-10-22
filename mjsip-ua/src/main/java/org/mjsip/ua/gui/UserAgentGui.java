@@ -54,6 +54,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
+import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
@@ -360,7 +361,6 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 				display.setText("CALLING "+uri);
 				ua.call(uri, _mediaConfig.mediaDescs);
 				changeStatus(UA_OUTGOING_CALL);
-				if (_uaConfig.hangupTime>0) automaticHangup(_uaConfig.hangupTime); 
 			}
 		}
 		else
@@ -492,7 +492,6 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	public void onUaCallAccepted(UserAgent ua) {
 		display.setText("ON CALL");
 		changeStatus(UA_ONCALL);
-		if (_uaConfig.hangupTime>0) automaticHangup(_uaConfig.hangupTime); 
 	}
 
 
@@ -648,11 +647,14 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
+		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
-		// else
-		if (no_gui) new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
-		else new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
+		if (no_gui) {
+			new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
+		} else {
+			new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
+		}
 	}
 	
 	/** Prints a message to standard output. */

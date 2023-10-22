@@ -64,8 +64,8 @@ public class Jukebox extends MultipleUAS {
 	/** 
 	 * Creates a {@link Jukebox}. 
 	 */
-	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
-		super(sip_provider,streamerFactory, uaConfig);
+	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, int hangupTime) {
+		super(sip_provider,streamerFactory, uaConfig, hangupTime);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}
@@ -81,10 +81,10 @@ public class Jukebox extends MultipleUAS {
 				String audio_file=MEDIA_PATH+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
 				if (audio_file!=null) {
 					if (new File(audio_file).isFile()) {
-						uaConfig.sendFile=audio_file;
+						_uaConfig.sendFile=audio_file;
 					}
 				}
-				if (uaConfig.sendFile != null) {
+				if (_uaConfig.sendFile != null) {
 					_callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
 					_callMedia.allocateMediaPorts(_portPool);
 					ua.accept(_callMedia.mediaDescs);
@@ -141,6 +141,7 @@ public class Jukebox extends MultipleUAS {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
+		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
@@ -148,8 +149,7 @@ public class Jukebox extends MultipleUAS {
 		uaConfig.audio=true;
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
-		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig, mediaConfig, portPool);
+		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
 		
 		// promt before exit
 		if (prompt_exit) 

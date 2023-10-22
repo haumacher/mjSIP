@@ -62,8 +62,8 @@ public class AnsweringMachine extends MultipleUAS {
 	/** 
 	 * Creates an {@link AnsweringMachine}. 
 	 */
-	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool) {
-		super(sip_provider,streamerFactory, uaConfig);
+	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, int hangupTime) {
+		super(sip_provider,streamerFactory, uaConfig, hangupTime);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}
@@ -103,6 +103,7 @@ public class AnsweringMachine extends MultipleUAS {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
+		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
 		if (uaConfig.sendFile != null) {
@@ -113,7 +114,7 @@ public class AnsweringMachine extends MultipleUAS {
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		StreamerFactory streamerFactory = uaConfig.createStreamerFactory();
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool);
+		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
 
 		// prompt before exit
 		if (prompt_exit) 

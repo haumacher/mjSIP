@@ -45,18 +45,27 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
 	/** UserAgentProfile */
-	protected UAConfig uaConfig;
+	protected UAConfig _uaConfig;
 			
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
 	private StreamerFactory _streamerFactory;
 
-	/** Creates a {@link MultipleUAS}. */
-	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig) {
+	private final int _hangupTime;
+
+	/**
+	 * Creates a {@link MultipleUAS}.
+	 * 
+	 * @param hangupTime
+	 *        The maximum time in milliseconds of a call. A value of <code>0</code> means unlimited
+	 *        call duration.
+	 */
+	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, int hangupTime) {
 		this.sip_provider=sip_provider;
 		_streamerFactory = streamerFactory;
-		this.uaConfig=uaConfig;
+		_uaConfig=uaConfig;
+		_hangupTime = hangupTime;
 
 		// init UA profile
 		uaConfig.setUnconfiguredAttributes(sip_provider);
@@ -106,14 +115,13 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
 		LOG.info("received new INVITE request");
 		
-		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, uaConfig, createCallHandler(msg));
+		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, _uaConfig, createCallHandler(msg));
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);
 		
-		// automatic hang-up after the maximum time
-		if (uaConfig.hangupTime>0) {
-			sip_provider.scheduler().schedule(uaConfig.hangupTime*1000, () -> ua.hangup());
+		if (_hangupTime>0) {
+			sip_provider.scheduler().schedule(_hangupTime*1000, () -> ua.hangup());
 		}
 	}
 
