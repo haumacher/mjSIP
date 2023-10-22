@@ -219,11 +219,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
-	private SdpMessage getSessionDescriptor(MediaDesc[] descriptors) {
+	private SdpMessage getSessionDescriptor() {
 		String owner=uaConfig.user;
 		String media_addr=(uaConfig.mediaAddr!=null)? uaConfig.mediaAddr : sip_provider.getViaAddress();
 		SdpMessage sdp=new SdpMessage(owner,media_addr);
-		for (MediaDesc md : descriptors) {
+		for (MediaDesc md : _callMedia) {
 			// check if audio or video have been disabled
 			if (md.getMedia().equalsIgnoreCase("audio") && !uaConfig.audio) continue;
 			if (md.getMedia().equalsIgnoreCase("video") && !uaConfig.video) continue;
@@ -333,7 +333,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		_callMedia = callMedia;
 		
 		// new call
-		SdpMessage sdp=uaConfig.noOffer? null : getSessionDescriptor(_callMedia);
+		SdpMessage sdp=uaConfig.noOffer? null : getSessionDescriptor();
 		call(callee,sdp);
 	}
 
@@ -383,7 +383,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// return if no active call
 		if (call==null) return;
 		// new sdp
-		SdpMessage local_sdp=getSessionDescriptor(_callMedia);
+		SdpMessage local_sdp=getSessionDescriptor();
 		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
 		SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
 		new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
@@ -677,7 +677,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("ACCEPTED/CALL");
 		if (uaConfig.noOffer) {
 			// new sdp
-			SdpMessage local_sdp=getSessionDescriptor(_callMedia);
+			SdpMessage local_sdp=getSessionDescriptor();
 			SdpMessage remote_sdp=new SdpMessage(sdp);
 			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
 			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
@@ -860,7 +860,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("transfer to "+refer_to.toString());
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI()),this);
-		call_transfer.call(refer_to,getSessionDescriptor(_callMedia).toString());
+		call_transfer.call(refer_to,getSessionDescriptor().toString());
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is accepted. */
