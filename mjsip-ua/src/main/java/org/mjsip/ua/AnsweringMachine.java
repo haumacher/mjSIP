@@ -85,7 +85,7 @@ public class AnsweringMachine extends MultipleUAS {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 				LOG.info("Incomming call from: " + callee.getAddress());
-				ua.accept(_mediaConfig.mediaDescs);
+				ua.accept(callMedia.mediaDescs);
 			}
 			
 			@Override

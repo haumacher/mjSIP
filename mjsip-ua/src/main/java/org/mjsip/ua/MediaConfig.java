@@ -81,16 +81,21 @@ public class MediaConfig extends Configure {
 		}
 	}
 
-	/** 
-	 * Creates a {@link MediaConfig} from existing descriptors.
+	/**
+	 * Creates a {@link MediaConfig} by copying the given descriptors.
+	 * 
+	 * <p>
+	 * The copy is not deep. Only the {@link MediaDesc} is copied, the {@link MediaSpec}s are
+	 * reused.
+	 * </p>
 	 */
-	public static MediaConfig from(MediaDesc[] media_descs) {
+	public static MediaConfig from(MediaDesc[] descriptors) {
 		MediaConfig result = new MediaConfig();
-		result.mediaDescs = copyDescriptory(media_descs);
+		result.mediaDescs = copyDescriptors(descriptors);
 		return result;
 	}
 
-	private static MediaDesc[] copyDescriptory(MediaDesc[] descriptors) {
+	private static MediaDesc[] copyDescriptors(MediaDesc[] descriptors) {
 		MediaDesc[] result = new MediaDesc[descriptors.length];
 		for (int n = 0, cnt = descriptors.length; n < cnt; n++) {
 			MediaDesc descriptor = descriptors[n];
