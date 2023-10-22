@@ -109,7 +109,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 				_callMedia = MediaConfig.from(media_descs);
 				_callMedia.allocateMediaPorts(_portPool);
 				
-				ua.accept(_callMedia);
+				ua.accept(_callMedia.mediaDescs);
 				LOG.info("incoming call accepted");
 			}
 			

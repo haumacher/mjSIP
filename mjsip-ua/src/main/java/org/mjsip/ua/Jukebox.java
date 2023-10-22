@@ -86,7 +86,7 @@ public class Jukebox extends MultipleUAS {
 				if (uaConfig.sendFile != null) {
 					_callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
 					_callMedia.allocateMediaPorts(_portPool);
-					ua.accept(_callMedia);
+					ua.accept(_callMedia.mediaDescs);
 				} else {
 					ua.hangup();
 				}

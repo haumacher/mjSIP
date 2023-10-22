@@ -328,7 +328,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(uaConfig.callTo.toString());
 			display.setText("CALLING "+uaConfig.callTo);
-			ua.call(uaConfig.callTo, _mediaConfig);
+			ua.call(uaConfig.callTo, _mediaConfig.mediaDescs);
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
@@ -354,14 +354,14 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			if (uri!=null && uri.length()>0) {
 				ua.hangup();
 				display.setText("CALLING "+uri);
-				ua.call(uri);
+				ua.call(uri, _mediaConfig.mediaDescs);
 				changeStatus(UA_OUTGOING_CALL);
 				if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
 			}
 		}
 		else
 		if (statusIs(UA_INCOMING_CALL)) {
-			ua.accept(_mediaConfig);
+			ua.accept(_mediaConfig.mediaDescs);
 			display.setText("ON CALL");
 			changeStatus(UA_ONCALL);
 		}

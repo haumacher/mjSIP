@@ -70,7 +70,7 @@ public class MiniJukebox extends UserAgentCli {
 				uaConfig.sendFile=audio_file;
 			}
 		}
-		if (uaConfig.sendFile!=null) ua.accept(_mediaConfig);      
+		if (uaConfig.sendFile!=null) ua.accept(_mediaConfig.mediaDescs);      
 		else ua.hangup();
 	}
 

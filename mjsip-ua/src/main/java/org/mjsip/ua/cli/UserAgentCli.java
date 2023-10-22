@@ -128,14 +128,14 @@ public class UserAgentCli implements UserAgentListener {
 		LOG.info("calling "+target_uri);
 		if (!uaConfig.audio && !uaConfig.video)
 			LOG.info("ONLY SIGNALING, NO MEDIA");
-		ua.call(target_uri);
+		ua.call(target_uri, _mediaConfig.mediaDescs);
 		changeStatus(UA_OUTGOING_CALL);
 	} 
 
 
 	/** Accepts an incoming call */
 	public void accept() {
-		ua.accept(_mediaConfig);
+		ua.accept(_mediaConfig.mediaDescs);
 		changeStatus(UA_ONCALL);
 		if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
 		LOG.info("press 'enter' to hangup"); 
