@@ -85,7 +85,6 @@ public class MediaAgent {
 		} else {
 			if (media.equals("audio")) media_streamer=newAudioStreamer(flow_spec);
 			else if (media.equals("video")) media_streamer=newVideoStreamer(flow_spec);
-			else if (media.equals("ptt")) media_streamer=newPttStreamer(flow_spec);
 			else {
 				LOG.warn("No media streamer found for: " + media);
 				return false;
@@ -190,23 +189,6 @@ public class MediaAgent {
 			return new NativeMediaStreamer(uaConfig.binVic, args, local_port, remote_port);
 		}
 		return null;
-	}
-
-	/** Creates a new ptt streamer. */
-	private MediaStreamer newPttStreamer(FlowSpec flow_spec) {
-		
-		MediaStreamer ptt_streamer=null;
-		try {
-			Class media_streamer_class=Class.forName("local.ext.media.push2talk.Push2TalkApp");
-			Class[] param_types = { FlowSpec.class };
-			Object[] param_values = { flow_spec };
-			java.lang.reflect.Constructor media_streamer_constructor=media_streamer_class.getConstructor(param_types);
-			ptt_streamer=(MediaStreamer)media_streamer_constructor.newInstance(param_values);
-		}
-		catch (Exception e) {
-			LOG.error("Error trying to create the Push2TalkApp", e);
-		}
-		return ptt_streamer;
 	}
 
 }
