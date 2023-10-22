@@ -99,10 +99,7 @@ public class UAConfig extends Configure {
 
 	/** Whether registering with the registrar server */
 	public boolean doRegister=false;
-	/** Whether unregistering the contact address */
-	public boolean doUnregister=false;
-	/** Whether unregistering all contacts beafore registering the contact address */
-	public boolean doUnregisterAll=false;
+
 	/** Expires time (in seconds). */
 	public int expires=3600;
 
@@ -321,8 +318,6 @@ public class UAConfig extends Configure {
 		if (attribute.equals("buddy_list_file")){  buddyListFile=par.getStringUnquoted();  return;  }      
 
 		if (attribute.equals("do_register"))    {  doRegister=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("do_unregister"))  {  doUnregister=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("do_unregister_all")) {  doUnregisterAll=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("expires"))        {  expires=par.getInt();  return;  } 
 		if (attribute.equals("keepalive_time")) {  keepaliveTime=par.getInt();  return;  } 
 
@@ -394,12 +389,6 @@ public class UAConfig extends Configure {
 		
 		Boolean no_system_audio=flags.getBoolean("--no-audio",null,"do not use system audio");
 		if (no_system_audio!=null) this.noSystemAudio=no_system_audio.booleanValue();
-		
-		Boolean unregist=flags.getBoolean("-u",null,"unregisters the contact address with the registrar server (the same as -g 0)");
-		if (unregist!=null) this.doUnregister=unregist.booleanValue();
-		
-		Boolean unregist_all=flags.getBoolean("-z",null,"unregisters ALL contact addresses");
-		if (unregist_all!=null) this.doUnregisterAll=unregist_all.booleanValue();
 		
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
 		if (regist_time>=0) {  this.doRegister=true;  this.expires=regist_time;  }

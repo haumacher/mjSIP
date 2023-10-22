@@ -56,10 +56,9 @@ public class MiniJukebox extends UserAgentCli {
 	/** 
 	 * Creates a new MiniJukebox. 
 	 */
-	public MiniJukebox(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig) {
-		super(sip_provider,uaConfig, mediaConfig);
+	public MiniJukebox(SipProvider sip_provider, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+		super(sip_provider,uaConfig, uiConfig, mediaConfig);
 	}
-
 
 	/** From UserAgentListener. When a new call is incoming */
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller) {
@@ -67,13 +66,12 @@ public class MiniJukebox extends UserAgentCli {
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {
-				uaConfig.sendFile=audio_file;
+				_uaConfig.sendFile=audio_file;
 			}
 		}
-		if (uaConfig.sendFile!=null) ua.accept(_mediaConfig.mediaDescs);      
+		if (_uaConfig.sendFile!=null) ua.accept(_mediaConfig.mediaDescs);      
 		else ua.hangup();
 	}
-
 	
 	/** The main method. */
 	public static void main(String[] args) {
@@ -84,13 +82,14 @@ public class MiniJukebox extends UserAgentCli {
 		UAConfig uaConfig = UAConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		flags.close();
 
 		uaConfig.audio=true;
 		uaConfig.video=false;
 		uaConfig.sendOnly=true;
 		if (uaConfig.hangupTime<=0) uaConfig.hangupTime=MAX_LIFE_TIME;
-		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, mediaConfig);
+		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
 	}    
 	
 }

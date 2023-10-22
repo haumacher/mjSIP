@@ -21,27 +21,28 @@ public class MA {
 		boolean unregist_all=flags.getBoolean("-z","unregisters ALL contact addresses");
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig user_profile=UAConfig.init(config_file, flags);         
+		UAConfig uaConfig=UAConfig.init(config_file, flags);         
+		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 				
 		
 		if (regist_time>0) {
-			user_profile.doRegister=true;
-			user_profile.expires=regist_time;
+			uaConfig.doRegister=true;
+			uaConfig.expires=regist_time;
 		}
-		if (unregist) user_profile.doUnregister=true;
-		if (unregist_all) user_profile.doUnregisterAll=true;
+		if (unregist) uiConfig.doUnregister=true;
+		if (unregist_all) uiConfig.doUnregisterAll=true;
 
-		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),user_profile);
-		if (user_profile.doUnregisterAll) {
+		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig);
+		if (uiConfig.doUnregisterAll) {
 			cli.unregisterall();
 		} 
-		if (user_profile.doUnregister) {
+		if (uiConfig.doUnregister) {
 			cli.unregister();
 		} 
-		if (user_profile.doRegister) {
-			cli.register(user_profile.expires);
+		if (uaConfig.doRegister) {
+			cli.register(uaConfig.expires);
 		} 
 		
 		// start sending messages

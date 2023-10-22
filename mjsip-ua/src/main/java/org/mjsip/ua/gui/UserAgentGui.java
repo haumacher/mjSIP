@@ -55,6 +55,7 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.UAConfig;
+import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.cli.UserAgentCli;
@@ -78,7 +79,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	protected UserAgent ua;
 
 	/** UserAgentProfile */
-	protected UAConfig uaConfig;
+	protected UAConfig _uaConfig;
 
 	/** Title */
 	//String user_name=app_name;
@@ -139,6 +140,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	String call_state=UA_IDLE;
 
 	private MediaConfig _mediaConfig;
+
+	private UIConfig _uiConfig;
 	
 
 	/** Changes the call state */
@@ -161,9 +164,10 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig, MediaConfig mediaConfig) {
+	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
 		this.sip_provider=sip_provider;
-		this.uaConfig=uaConfig;
+		_uaConfig=uaConfig;
+		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
 
 		initUA();
@@ -173,7 +177,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	protected void initUA() {
-		ua=new UserAgent(sip_provider,uaConfig.createStreamerFactory(),uaConfig, this);
+		ua=new UserAgent(sip_provider,_uaConfig.createStreamerFactory(),_uaConfig, this);
 		//ua.listen();
 		changeStatus(UA_IDLE);
 	}
@@ -183,8 +187,8 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		
 		// load icons
 		try {
-			icon_call=getImageIcon(uaConfig.mediaPath+"/"+CALL_GIF);
-			icon_hangup=getImageIcon(uaConfig.mediaPath+"/"+HANGUP_GIF);
+			icon_call=getImageIcon(_uaConfig.mediaPath+"/"+CALL_GIF);
+			icon_hangup=getImageIcon(_uaConfig.mediaPath+"/"+HANGUP_GIF);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -192,9 +196,9 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		}
 		
 		// load buddy list
-		if (uaConfig.buddyListFile!=null && (uaConfig.buddyListFile.startsWith("http://") || uaConfig.buddyListFile.startsWith("file:/"))) {
+		if (_uaConfig.buddyListFile!=null && (_uaConfig.buddyListFile.startsWith("http://") || _uaConfig.buddyListFile.startsWith("file:/"))) {
 			try {
-				buddy_list=new StringList(new URL(uaConfig.buddyListFile));
+				buddy_list=new StringList(new URL(_uaConfig.buddyListFile));
 			}
 			catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -202,7 +206,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 				buddy_list=new StringList((String)null);
 			}
 		}
-		else buddy_list=new StringList(uaConfig.buddyListFile);
+		else buddy_list=new StringList(_uaConfig.buddyListFile);
 		jComboBox1=new JComboBox(buddy_list.getElements());
 
 		// init frame
@@ -216,7 +220,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			this.setLocation((screenSize.width - frameSize.width)/2 - 40, (screenSize.height - frameSize.height)/2 - 40);
 			this.setResizable(false);
 	
-			this.setTitle(sip_provider.getContactAddress(uaConfig.user).toString());
+			this.setTitle(sip_provider.getContactAddress(_uaConfig.user).toString());
 			this.addWindowListener(new java.awt.event.WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) { exit(); }
@@ -295,44 +299,44 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	protected void run() {
 		
 		// Set the re-invite
-		if (uaConfig.reinviteTime>0) {
-			reInvite(uaConfig.reinviteTime);
+		if (_uaConfig.reinviteTime>0) {
+			reInvite(_uaConfig.reinviteTime);
 		}
 
 		// Set the transfer (REFER)
-		if (uaConfig.transferTo!=null && uaConfig.transferTime>0) {
-			callTransfer(uaConfig.transferTo,uaConfig.transferTime);
+		if (_uaConfig.transferTo!=null && _uaConfig.transferTime>0) {
+			callTransfer(_uaConfig.transferTo,_uaConfig.transferTime);
 		}
 
-		if (uaConfig.doUnregisterAll) {
+		if (_uiConfig.doUnregisterAll) {
 			// ########## unregisters ALL contact URIs
 			LOG.info("Unregister all contact URIs");
 			ua.unregisterall();
 		} 
 
-		if (uaConfig.doUnregister) {
+		if (_uiConfig.doUnregister) {
 			// unregisters the contact URI
 			LOG.info("Unregister the contact URI");
 			ua.unregister();
 		} 
 
-		if (uaConfig.doRegister) {
+		if (_uaConfig.doRegister) {
 			// ########## registers the contact URI with the registrar server
 			LOG.info("Starting registration");
-			ua.loopRegister(uaConfig.expires,uaConfig.expires/2,uaConfig.keepaliveTime);
+			ua.loopRegister(_uaConfig.expires,_uaConfig.expires/2,_uaConfig.keepaliveTime);
 		} 
 
-		if (uaConfig.callTo!=null) {
+		if (_uaConfig.callTo!=null) {
 			// ########## make a call with the remote URI
-			LOG.info("UAC: CALLING " + uaConfig.callTo);
+			LOG.info("UAC: CALLING " + _uaConfig.callTo);
 			jComboBox1.setSelectedItem(null);
-			comboBoxEditor1.setItem(uaConfig.callTo.toString());
-			display.setText("CALLING "+uaConfig.callTo);
-			ua.call(uaConfig.callTo, _mediaConfig.mediaDescs);
+			comboBoxEditor1.setItem(_uaConfig.callTo.toString());
+			display.setText("CALLING "+_uaConfig.callTo);
+			ua.call(_uaConfig.callTo, _mediaConfig.mediaDescs);
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
-		if (!uaConfig.audio && !uaConfig.video)
+		if (!_uaConfig.audio && !_uaConfig.video)
 			LOG.info("ONLY SIGNALING, NO MEDIA");
 	}
 
@@ -356,7 +360,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 				display.setText("CALLING "+uri);
 				ua.call(uri, _mediaConfig.mediaDescs);
 				changeStatus(UA_OUTGOING_CALL);
-				if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
+				if (_uaConfig.hangupTime>0) automaticHangup(_uaConfig.hangupTime); 
 			}
 		}
 		else
@@ -447,19 +451,19 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 		changeStatus(UA_INCOMING_CALL);
-		if (uaConfig.redirectTo!=null) {
+		if (_uaConfig.redirectTo!=null) {
 			// redirect the call
-			display.setText("CALL redirected to "+uaConfig.redirectTo);
-			ua.redirect(uaConfig.redirectTo);
+			display.setText("CALL redirected to "+_uaConfig.redirectTo);
+			ua.redirect(_uaConfig.redirectTo);
 		}         
 		else
-		if (uaConfig.acceptTime>=0) {
+		if (_uaConfig.acceptTime>=0) {
 			// automatically accept the call
 			display.setText("ON CALL");
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(caller.toString());
 			//accept();
-			automaticAccept(uaConfig.acceptTime);
+			automaticAccept(_uaConfig.acceptTime);
 		}
 		else {
 			display.setText("INCOMING CALL");
@@ -488,7 +492,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	public void onUaCallAccepted(UserAgent ua) {
 		display.setText("ON CALL");
 		changeStatus(UA_ONCALL);
-		if (uaConfig.hangupTime>0) automaticHangup(uaConfig.hangupTime); 
+		if (_uaConfig.hangupTime>0) automaticHangup(_uaConfig.hangupTime); 
 	}
 
 
@@ -543,13 +547,13 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 	/** When registration succeeded. */
 	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
-		this.setTitle(uaConfig.getUserURI().toString());
+		this.setTitle(_uaConfig.getUserURI().toString());
 	}
 
 	/** When registration failed. */
 	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		this.setTitle(sip_provider.getContactAddress(uaConfig.user).toString());
+		this.setTitle(sip_provider.getContactAddress(_uaConfig.user).toString());
 	}
 
 
@@ -643,11 +647,12 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		flags.close();
 
 		// else
-		if (no_gui) new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, mediaConfig);
-		else new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, mediaConfig);
+		if (no_gui) new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
+		else new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
 	}
 	
 	/** Prints a message to standard output. */
