@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.media.AudioClipPlayer;
 import org.mjsip.media.FlowSpec;
-import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
 import org.mjsip.sdp.MediaDescriptor;
@@ -54,6 +53,7 @@ import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 
@@ -111,7 +111,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private NotImplementedServer null_server;
 
 	/** MediaAgent */
-	private final MediaAgent media_agent;
+	private final MediaAgent _mediaAgent;
 	
 	/** List of active media sessions */
 	private final Vector<String> media_sessions=new Vector<>();
@@ -148,8 +148,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private MediaConfig _mediaConfig;
 
 	/** Creates a {@link UserAgent}. */
-	public UserAgent(SipProvider sip_provider, UAConfig uaConfig, UserAgentListener listener) {
+	public UserAgent(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
+		_mediaAgent = new MediaAgent(streamerFactory);
 		this.listener=listener;
 		this.uaConfig=uaConfig;
 		// update user profile information
@@ -186,9 +187,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 		// start "Not Implemented" server
 		if (uaConfig.nullServer) null_server=new NotImplementedServer(sip_provider);
-
-		// init media agent
-		media_agent = new MediaAgent(uaConfig);
 
 		// load sounds
 		// ################# patch to make rat working.. #################
@@ -467,10 +465,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		
 		// select the media direction (send_only, recv_ony, fullduplex)
-		FlowSpec.Direction dir=Direction.FULL_DUPLEX;
-		if (uaConfig.recvOnly) dir=Direction.RECV_ONLY;
-		else
-		if (uaConfig.sendOnly) dir=Direction.SEND_ONLY;
+		FlowSpec.Direction dir = uaConfig.getDirection();
 		// for each media
 		for (MediaDescriptor matchingDescriptor : matchingMedia) {
 			MediaField mediaField=matchingDescriptor.getMedia();
@@ -493,7 +488,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				String remote_address=remote_sdp.getConnection().getAddress();
 				FlowSpec flow_spec=new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
 				LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
-				boolean success=media_agent.startMediaSession(flow_spec, _mediaConfig);           
+				boolean success=_mediaAgent.startMediaSession(flow_spec, _mediaConfig);           
 				if (success) {
 					media_sessions.addElement(mediaType);
 					if (listener!=null) listener.onUaMediaSessionStarted(this,mediaType,format);
@@ -527,7 +522,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	protected void closeMediaSessions() {
 		for (int i=0; i<media_sessions.size(); i++) {
 			String media=media_sessions.elementAt(i);
-			media_agent.stopMediaSession(media);
+			_mediaAgent.stopMediaSession(media);
 			if (listener!=null) listener.onUaMediaSessionStopped(this,media);
 		}
 		media_sessions.removeAllElements();
@@ -574,7 +569,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// sound
 		if (clip_ring!=null) clip_ring.play();
 		// response timeout
-		if (uaConfig.refuseTime>=0) response_to=(ScheduledFuture<?>) sip_provider.scheduler().schedule((long) (uaConfig.refuseTime*1000), this::onResponseTimeout);
+		if (uaConfig.refuseTime>=0) response_to=sip_provider.scheduler().schedule(uaConfig.refuseTime*1000, this::onResponseTimeout);
 		
 		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseSdpDescriptors(sdp));
 	}

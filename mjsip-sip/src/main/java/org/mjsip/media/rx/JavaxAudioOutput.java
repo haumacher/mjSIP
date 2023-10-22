@@ -47,6 +47,9 @@ public class JavaxAudioOutput implements AudioReceiver {
 			CodecType codec,
 			int payload_type, RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_decoder, RtpStreamReceiverListener listener)
 			throws IOException, UnsupportedAudioFileException {
+
+		SimpleAudioSystem.initAudioOutputLine(sample_rate, channels);
+
 		// javax sound
 		AudioOutputStream audio_output_stream = null;
 		if (!_noConversion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {

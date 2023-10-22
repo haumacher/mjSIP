@@ -103,7 +103,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		LOG.info("received new INVITE request");
 		
 		// create new user agent
-		final UserAgent ua=new UserAgent(sip_provider,uaConfig, createCallHandler(msg));
+		final UserAgent ua=new UserAgent(sip_provider,uaConfig.createStreamerFactory(), uaConfig, createCallHandler(msg));
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);
@@ -113,7 +113,6 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 			sip_provider.scheduler().schedule(uaConfig.hangupTime*1000, () -> ua.hangup());
 		}
 	}
-
 
 	/**
 	 * Creates a handler for controlling the call started with the given invite message.

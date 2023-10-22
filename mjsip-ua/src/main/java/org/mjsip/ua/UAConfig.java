@@ -1,11 +1,25 @@
 package org.mjsip.ua;
 
 
+import org.mjsip.media.FlowSpec.Direction;
+import org.mjsip.media.StreamerOptions;
+import org.mjsip.media.rx.AudioFileReceiver;
+import org.mjsip.media.rx.AudioReceiver;
+import org.mjsip.media.rx.JavaxAudioOutput;
+import org.mjsip.media.tx.AudioFileTransmitter;
+import org.mjsip.media.tx.AudioTransmitter;
+import org.mjsip.media.tx.JavaxAudioInput;
+import org.mjsip.media.tx.ToneTransmitter;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
 import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.ua.streamer.DefaultStreamerFactory;
+import org.mjsip.ua.streamer.DispatchingStreamerFactory;
+import org.mjsip.ua.streamer.LoopbackStreamerFactory;
+import org.mjsip.ua.streamer.NativeStreamerFactory;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
@@ -482,6 +496,79 @@ public class UAConfig extends Configure {
 		
 		// use audio as default media in case of..
 		if ((recv_only!=null || send_only!=null || send_tone!=null || send_file!=null || recv_file!=null) && video==null) this.audio=true;
+	}
+
+	/** 
+	 * The flow direction.
+	 */
+	public Direction getDirection() {
+		if (recvOnly) {
+			return Direction.RECV_ONLY;
+		} else if (sendOnly) {
+			return Direction.SEND_ONLY;
+		} else {
+			return Direction.FULL_DUPLEX;
+		}
+	}
+
+	/**
+	 * Creates a {@link StreamerFactory} based on configuration options.
+	 */
+	public StreamerFactory createStreamerFactory() {
+		if (loopback) {
+			return new LoopbackStreamerFactory();
+		} else {
+			DispatchingStreamerFactory factory = new DispatchingStreamerFactory();
+			if (audio) {
+				if (useRat) {
+					factory.addFactory("audio", new NativeStreamerFactory(audioMcastSoAddr, binRat));
+				} else {
+					AudioTransmitter tx;
+
+					Direction dir = getDirection();
+					if (dir.doSend()) {
+						if (sendTone) {
+							tx=new ToneTransmitter();
+						} else if (sendFile!=null) {
+							tx= new AudioFileTransmitter(sendFile);
+						} else {
+							tx = new JavaxAudioInput(true, javaxSoundDirectConversion);
+						}
+					} else {
+						tx = null;
+					}
+
+					// audio output
+					String audio_out=null;
+					if (recvFile!=null) audio_out=recvFile;        
+					
+					AudioReceiver rx;
+					if (dir.doReceive()) {
+						if (audio_out == null) {
+							rx = new JavaxAudioOutput(javaxSoundDirectConversion);
+						} else {
+							rx = new AudioFileReceiver(audio_out);
+						}
+					} else {
+						rx = null;
+					}
+
+					// standard javax-based audio streamer
+					StreamerOptions options = StreamerOptions.builder()
+							.setRandomEarlyDrop(randomEarlyDropRate)
+							.setSymmetricRtp(symmetricRtp)
+							.build();
+					
+					factory.addFactory("audio", new DefaultStreamerFactory(options, rx, tx));
+				}
+			}
+			if (video) {
+				if (useVic) {
+					factory.addFactory("video", new NativeStreamerFactory(videoMcastSoAddr, binVic));
+				}
+			}
+			return factory;
+		}
 	}
 
 }

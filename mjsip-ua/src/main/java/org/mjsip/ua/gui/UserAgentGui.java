@@ -173,7 +173,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	protected void initUA() {
-		ua=new UserAgent(sip_provider,uaConfig,this);
+		ua=new UserAgent(sip_provider,uaConfig.createStreamerFactory(),uaConfig, this);
 		//ua.listen();
 		changeStatus(UA_IDLE);
 	}

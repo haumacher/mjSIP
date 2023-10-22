@@ -46,6 +46,8 @@ public class JavaxAudioInput implements AudioTransmitter {
 			RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_encoder, long packet_time,
 			int packet_size, String remote_addr, int remote_port, RtpStreamSenderListener listener, RtpControl rtpControl) throws IOException {
 
+		SimpleAudioSystem.initAudioInputLine(sample_rate, channels);
+
 		InputStream audioIn;
 		if (!_noConvertion || codec.equals(CodecType.G711_ULAW) || codec.equals(CodecType.G711_ALAW)) {
 			// use standard java embedded conversion provider

@@ -32,6 +32,34 @@ public class FlowSpec {
 			}
 			throw new NoSuchElementException(name());
 		}
+
+		/**
+		 * Whether to send data.
+		 */
+		public boolean doSend() {
+			switch (this) {
+			case FULL_DUPLEX:
+			case SEND_ONLY:
+				return true;
+			case RECV_ONLY:
+				return false;
+			}
+			throw new AssertionError("No such direction: " + this);
+		}
+
+		/**
+		 * Whether to receive data.
+		 */
+		public boolean doReceive() {
+			switch (this) {
+			case FULL_DUPLEX:
+			case RECV_ONLY:
+				return true;
+			case SEND_ONLY:
+				return false;
+			}
+			throw new AssertionError("No such direction: " + this);
+		}
 	}
 
 	/** Media spec */

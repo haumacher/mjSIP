@@ -29,7 +29,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.rx.AudioReceiver;
 import org.mjsip.media.rx.AudioRxHandle;
 import org.mjsip.media.tx.AudioTXHandle;
@@ -231,7 +230,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			}
 
 			// 7) receiver
-			if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
+			if (dir.doReceive()) {
 				_rxHandle = rx.createReceiver(options, udp_socket, audio_format, codec, payload_type, payloadFormat,
 						sample_rate, channels, additional_decoder, this);
 			} else {

@@ -223,6 +223,7 @@ public class AudioApp {
 		} else if (audio_in != null) {
 			tx = new AudioFileTransmitter(audio_in);
 		} else {
+			// TODO: Parameters correct?
 			tx = new JavaxAudioInput(true, rtcp);
 		}
 
@@ -245,7 +246,7 @@ public class AudioApp {
 		FlowSpec fspec = new FlowSpec("audio", mspec, local_port, remote_ipaddr, remote_port, dir);
 
 		AudioReceiver rx;
-		if (dir == Direction.RECV_ONLY || dir == Direction.FULL_DUPLEX) {
+		if (dir.doReceive()) {
 			if (audio_out == null) {
 				rx = new JavaxAudioOutput(direct_convertion);
 			} else {
