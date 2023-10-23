@@ -22,6 +22,8 @@
 package org.mjsip.ua;
 
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
@@ -112,13 +114,21 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
 		LOG.info("received new INVITE request");
 		
-		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, _uaConfig, createCallHandler(msg));
+		AutoHangup autoHangup;
+		UserAgentListener listener = createCallHandler(msg);
+		if (_hangupTime > 0) {
+			autoHangup = new AutoHangup();
+			listener = listener.andThen(autoHangup);
+		} else {
+			autoHangup = null;
+		}
+		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, _uaConfig, listener);
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);
 		
-		if (_hangupTime>0) {
-			sip_provider.scheduler().schedule(_hangupTime*1000, () -> ua.hangup());
+		if (autoHangup != null) {
+			autoHangup.start(ua);
 		}
 	}
 
@@ -144,6 +154,19 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
 		LOG.info("Registration failure: "+result);
+	}
+
+	private final class AutoHangup implements UserAgentListenerAdapter {
+		private ScheduledFuture<?> _hangupTimer;
+	
+		@Override
+		public void onUaCallClosed(UserAgent ua) {
+			if (_hangupTimer != null) _hangupTimer.cancel(false);
+		}
+	
+		public void start(UserAgent ua) {
+			_hangupTimer = sip_provider.scheduler().schedule(_hangupTime*1000, () -> ua.hangup());			
+		}
 	}
 
 }
