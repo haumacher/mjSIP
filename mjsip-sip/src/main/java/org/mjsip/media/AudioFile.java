@@ -23,7 +23,6 @@ package org.mjsip.media;
 
 
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -47,7 +45,6 @@ import org.zoolu.sound.codec.amr.AmrEncoding;
 import org.zoolu.sound.codec.amr.AmrFormatConversionProvider;
 import org.zoolu.sound.codec.g711.G711Encoding;
 import org.zoolu.sound.codec.g711.G711FormatConversionProvider;
-import org.zoolu.util.ByteUtils;
 
 
 
@@ -137,41 +134,17 @@ public class AudioFile {
 	  * @param audio_format the audio format */
 	 public static OutputStream getAudioFileOutputStream(String file_name, AudioFormat audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
 		if (file_name.toLowerCase().endsWith(".wav")) {
-			// WAV
-			/* Wave file header:
-				Offset	Value
-				0 - 3	"RIFF" (Beginning of the file)	
-				4 - 7	File size minus 8
-				8 -11	"WAVE" (WAVE format)
-				12-15	"fmt "
-				16-19	16 (Length of format data as listed above)
-				20-21	1 (Type of format: 1 PCM)
-				22-23	1 (Number of channels: 1 mono, 2 stereo)
-				24-27	44100 (Sample rate)
-				28-31	88200 (Sample rate * bits per sample * channels / 8)
-				32-33	2 (Bytes per sample * channels)
-				34-35	16 (Bits per sample)
-				36-39	"data" (Beginning of the data section)
-				40-43	Data size (Equal to file size minus 44)
-				44-  	Sample values */
-			final File file=new File(file_name);
-		    AudioInputStream audioInputStream=new AudioInputStream(new ByteArrayInputStream(new byte[0]),audio_format,0);
-		    AudioSystem.write(audioInputStream,AudioFileFormat.Type.WAVE,file);
-		    return new FileOutputStream(file,true) {
-		    	//J5:@Override
+			final File tmp = new File(file_name + ".tmp");
+			return new FileOutputStream(tmp, true) {
 		    	@Override
 				public void close() throws IOException {
-		    		super.close();  		
-		    		// finalize the WAV file
-		    		RandomAccessFile raf=new RandomAccessFile(file,"rw");
-		    		long len=raf.length();
-		    		raf.seek(4);
-		    		raf.write(ByteUtils.intToFourBytesLittleEndian(len-8));
-		    		raf.seek(16);
-		    		int csize=raf.read();
-		    		raf.seek(24+csize);
-		    		raf.write(ByteUtils.intToFourBytesLittleEndian(len-24-csize-4));
-		    		raf.close();
+					super.close();
+
+					AudioInputStream audioInputStream = new AudioInputStream(new FileInputStream(tmp), audio_format,
+							tmp.length());
+					AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(file_name));
+
+					tmp.delete();
 		    	}
 		    };
 		}
