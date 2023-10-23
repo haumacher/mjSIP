@@ -67,8 +67,8 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	/** 
 	 * Creates a {@link Echo} service. 
 	 */
-	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route, int hangupTime) {
-		super(sip_provider,streamerFactory, uaConfig, hangupTime);
+	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route, ServiceConfig serviceConfig) {
+		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
 		_portPool = portPool;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS
@@ -152,7 +152,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig.hangupTime);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig);
 
 		// promt before exit
 		if (prompt_exit) 

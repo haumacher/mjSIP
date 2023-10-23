@@ -58,8 +58,8 @@ public class Jukebox extends MultipleUAS {
 	/** 
 	 * Creates a {@link Jukebox}. 
 	 */
-	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, int hangupTime) {
-		super(sip_provider,streamerFactory, uaConfig, hangupTime);
+	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
+		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}
@@ -141,7 +141,7 @@ public class Jukebox extends MultipleUAS {
 		mediaConfig.audio=true;
 		mediaConfig.video=false;
 		uaConfig.sendOnly=true;
-		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),mediaConfig.createStreamerFactory(uaConfig),uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
+		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),mediaConfig.createStreamerFactory(uaConfig),uaConfig, mediaConfig, portPool, serviceConfig);
 		
 		// promt before exit
 		if (prompt_exit) 

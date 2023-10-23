@@ -58,16 +58,12 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 
 	/**
 	 * Creates a {@link MultipleUAS}.
-	 * 
-	 * @param hangupTime
-	 *        The maximum time in milliseconds of a call. A value of <code>0</code> means unlimited
-	 *        call duration.
 	 */
-	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, int hangupTime) {
+	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, ServiceConfig serviceConfig) {
 		this.sip_provider=sip_provider;
 		_streamerFactory = streamerFactory;
 		_uaConfig=uaConfig;
-		_hangupTime = hangupTime;
+		_hangupTime = serviceConfig.hangupTime;
 
 		// registration client
 		if (uaConfig.doRegister) {

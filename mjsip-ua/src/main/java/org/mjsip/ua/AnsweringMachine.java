@@ -62,8 +62,8 @@ public class AnsweringMachine extends MultipleUAS {
 	/** 
 	 * Creates an {@link AnsweringMachine}. 
 	 */
-	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, int hangupTime) {
-		super(sip_provider,streamerFactory, uaConfig, hangupTime);
+	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
+		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}
@@ -113,7 +113,7 @@ public class AnsweringMachine extends MultipleUAS {
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		StreamerFactory streamerFactory = mediaConfig.createStreamerFactory(uaConfig);
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
+		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig);
 	}    
 
 }

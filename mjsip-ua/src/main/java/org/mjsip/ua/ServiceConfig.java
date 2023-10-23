@@ -12,8 +12,9 @@ import org.zoolu.util.Parser;
  */
 public class ServiceConfig extends Configure {
 
-	/** Automatic hangup time (call duartion) in seconds; time&lt;=0 corresponds to manual hangup mode. */
+	/** Automatic hangup time (maximum call duartion) in seconds; time&lt;=0 means no automatic hangup. */
 	public int hangupTime=-1;
+	
 	/** 
 	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
 	 */
