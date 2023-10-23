@@ -1,5 +1,6 @@
 package org.mjsip.media;
 
+import org.zoolu.sound.CodecType;
 import org.zoolu.util.Parser;
 
 /**
@@ -74,6 +75,17 @@ public class MediaSpec {
 		sb.append(avp);
 		if (codec!=null) sb.append(" ").append(codec).append(" ").append(sample_rate).append(" ").append(packet_size).append(" ").append(channels);
 		return sb.toString();
+	}
+
+	/**
+	 * {@link CodecType} used.
+	 */
+	public CodecType getCodecType() {
+		String codecName = getCodec();
+		if (codecName == null) {
+			codecName = AudioStreamer.DEFAULT_CODEC_NAME;
+		}
+		return CodecType.getByName(codecName.toUpperCase());
 	}
 
 	/** Parses a string and gets a new MediaSpec. */

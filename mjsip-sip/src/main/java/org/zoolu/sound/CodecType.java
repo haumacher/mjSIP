@@ -165,4 +165,19 @@ public class CodecType {
 		try {  return ((CodecType)obj).name.equals(name);  }  catch (Exception e)  {  return false;  }
 	}
 
+	/**
+	 * The encoding name used by this type of codec.
+	 */
+	public String getEncoding() {
+		String result = toString();
+		if (result.equalsIgnoreCase("G711_ULAW")) {
+			return "ULAW";
+		} else if (result.equalsIgnoreCase("G711_ALAW")) {
+			return "ALAW";
+		} else if (result.equalsIgnoreCase("PCM_LINEAR")) {
+			return "PCM_SIGNED";
+		}
+		return result;
+	}
+
 }

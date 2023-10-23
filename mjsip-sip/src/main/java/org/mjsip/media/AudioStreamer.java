@@ -24,8 +24,11 @@ package org.mjsip.media;
 
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -115,75 +118,47 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	public AudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx, StreamerOptions options) {
 		MediaSpec mediaSpec = flow_spec.getMediaSpec();
 
-		String codec_name = mediaSpec.getCodec();
-		int sample_rate = mediaSpec.getSampleRate();
 		int channels = mediaSpec.getChannels();
 		int payload_type = mediaSpec.getAVP();
-		int packet_size = mediaSpec.getPacketSize();
 
 		this.dir = flow_spec.getDirection();
-		this._symmetricRtp = options.symmetricRtp();
-		// 1) in case not defined, use default values
-		if (codec_name==null) codec_name=DEFAULT_CODEC_NAME;
-		//if (payload_type<0) payload_type=DEFAULT_PAYLOAD_TYPE;
-		if (sample_rate<=0) sample_rate=DEFAULT_SAMPLE_RATE;
-		//if (packet_size<=0) packet_size=DEFAULT_PACKET_SIZE;
-		
-		// 2) codec name translation
-		codec_name=codec_name.toUpperCase();
-		CodecType codec=CodecType.getByName(codec_name);
+		_symmetricRtp = options.symmetricRtp();
 
-		// 3) payload_type, frame_size, frame_rate, packet_size, packet_time
-		int frame_size=channels*((codec!=null)? codec.getFrameSize() : DEFAULT_FRAME_SIZE);
-		int frame_rate=(codec!=null)? sample_rate/codec.getSamplesPerFrame() : DEFAULT_FRAME_RATE;
-		if (payload_type<0) payload_type=(codec!=null)? codec.getPayloadType() : UNKNOWN_PAYLOAD_TYPE;
+		int sample_rate = mediaSpec.getSampleRate();
+		if (sample_rate<=0) sample_rate=DEFAULT_SAMPLE_RATE;
+		
+		CodecType codec = mediaSpec.getCodecType();
+		if (codec == null) {
+			throw new RuntimeException("No codec found for: " + mediaSpec);
+		}
+
+		int frame_size = channels * codec.getFrameSize();
+		int frame_rate = sample_rate / codec.getSamplesPerFrame();
+		if (payload_type < 0) {
+			payload_type = codec.getPayloadType();
+		}
+
+		int packet_size = mediaSpec.getPacketSize();
 		//int packet_rate=(packet_size>0)? frame_rate*frame_size/packet_size : DEFAULT_PACKET_RATE;
-		long packet_time=(packet_size>0)? (long)(packet_size*1000/(frame_rate*frame_size/channels)) : DEFAULT_PACKET_TIME;
+		long packet_time = (packet_size > 0) ? (long) (packet_size * 1000 / (frame_rate * frame_size / channels))
+				: DEFAULT_PACKET_TIME;
 		if (packet_size <= 0) {
 			packet_size = frame_rate * frame_size * DEFAULT_PACKET_TIME / 1000;
 		}
 	
-		// 4) find the proper supported AudioFormat
 		final AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
-		AudioFormat audio_format=null;
-		AudioFormat.Encoding encoding=null;
-		// get the proper audio format encoding
-		AudioFormat.Encoding[] supported_encodings=AudioSystem.getTargetEncodings(baseFormat);
+		LOG.info("Base format: " + baseFormat);
 
-		StringBuffer supported_list=new StringBuffer();
-		for (int i = 0; i < supported_encodings.length; i++) {
-			supported_list.append(supported_encodings[i].toString()).append(", ");
+		AudioFormat.Encoding encoding = getEncoding(baseFormat, codec);
+		if (encoding == null) {
+			throw new RuntimeException("Encoding " + codec.getEncoding() + " not found for: " + baseFormat);
 		}
-		LOG.info("Supported codecs: "+supported_list.toString());
 
-		String codec_str=codec.toString();
-		if (codec_str.equalsIgnoreCase("G711_ULAW")) {
-			codec_str = "ULAW";
-		} else if (codec_str.equalsIgnoreCase("G711_ALAW")) {
-			codec_str = "ALAW";
-		} else if (codec_str.equalsIgnoreCase("PCM_LINEAR")) {
-			codec_str = "PCM_SIGNED";
+		AudioFormat targetFormat = getTargetFormat(baseFormat, encoding);
+		if (targetFormat == null) {
+			throw new RuntimeException("No target fomat with encoding " + encoding + " found for: " + baseFormat);
 		}
-		for (int i=0; i<supported_encodings.length ; i++) {
-			// printLOG.info("supported_encoding["+i+"]: "+supported_encodings[i],LogWriter.LEVEL_HIGH);
-			if (supported_encodings[i].toString().equalsIgnoreCase(codec_str))  {
-				encoding=supported_encodings[i];
-				// printLOG.info("supported_encoding["+i+"]: OK",LogWriter.LEVEL_HIGH);
-				break;
-			}
-		}
-		if (encoding!=null) {
-			// get the target audio format
-			AudioFormat[] available_formats=AudioSystem.getTargetFormats(encoding,baseFormat);
-			for (int i=0; i<available_formats.length ; i++) {
-				if (available_formats[i].getEncoding().equals(encoding)) {
-					audio_format=available_formats[i];
-					break;
-				}
-			}
-			LOG.info("target audio format: "+audio_format);
-		}
-		else LOG.warn("LOG.warn(pported");
+		LOG.info("Target format: " + targetFormat);
 
 		Encoder additional_encoder=null;
 		Encoder additional_decoder=null;
@@ -222,7 +197,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			}
 
 			if (tx != null) {
-				_txHandle = tx.createSender(options, udp_socket, audio_format, codec, payload_type, payloadFormat,
+				_txHandle = tx.createSender(options, udp_socket, targetFormat, codec, payload_type, payloadFormat,
 						sample_rate, channels, additional_encoder, packet_time, packet_size, remote_addr, remote_port,
 						this, rtp_control);
 			} else {
@@ -231,7 +206,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 
 			// 7) receiver
 			if (dir.doReceive()) {
-				_rxHandle = rx.createReceiver(options, udp_socket, audio_format, codec, payload_type, payloadFormat,
+				_rxHandle = rx.createReceiver(options, udp_socket, targetFormat, codec, payload_type, payloadFormat,
 						sample_rate, channels, additional_decoder, this);
 			} else {
 				_rxHandle = null;
@@ -242,17 +217,40 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		}
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Codec: " + codec);
-			LOG.debug("Audio base format: " + baseFormat);
-			LOG.debug("Audio format: " + audio_format);
-			LOG.debug("Sample rate: " + sample_rate + "Hz");
-			LOG.debug("Frame rate: " + frame_rate + " frame/s");
-			LOG.debug("Frame size: " + frame_size + " B");
-
-			LOG.debug("Packet time: " + packet_time + " ms");
-			LOG.debug("Packet rate: " + (1000 / packet_time) + " pkt/s");
-			LOG.debug("Packet size: " + packet_size + " B");
+			LOG.debug("Codec:         " + codec);
+			LOG.debug("Base format:   " + baseFormat);
+			LOG.debug("Target format: " + targetFormat);
+			LOG.debug("Sample rate:   " + sample_rate + "Hz");
+			LOG.debug("Frame rate:    " + frame_rate + " frame/s");
+			LOG.debug("Frame size:    " + frame_size + " B");
+			LOG.debug("Packet time:   " + packet_time + " ms");
+			LOG.debug("Packet rate:   " + (1000 / packet_time) + " pkt/s");
+			LOG.debug("Packet size:   " + packet_size + " B");
 		}
+	}
+
+	private static AudioFormat getTargetFormat(final AudioFormat baseFormat, AudioFormat.Encoding encoding) {
+		AudioFormat[] formats = AudioSystem.getTargetFormats(encoding, baseFormat);
+		for (AudioFormat format : formats) {
+			if (format.getEncoding().equals(encoding)) {
+				return format;
+			}
+		}
+		return null;
+	}
+
+	private static AudioFormat.Encoding getEncoding(final AudioFormat format, CodecType codec) {
+		String encodingName = codec.getEncoding();
+		// get the proper audio format encoding
+		AudioFormat.Encoding[] supportedEncodings = AudioSystem.getTargetEncodings(format);
+		LOG.info("Supported codecs: "
+				+ Arrays.stream(supportedEncodings).map(Object::toString).collect(Collectors.joining(", ")));
+		for (Encoding supportedEncoding : supportedEncodings) {
+			if (supportedEncoding.toString().equalsIgnoreCase(encodingName)) {
+				return supportedEncoding;
+			}
+		}
+		return null;
 	}
 
 	/** Starts media streams. */
