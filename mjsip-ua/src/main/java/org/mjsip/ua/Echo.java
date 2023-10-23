@@ -38,6 +38,7 @@ import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.streamer.LoopbackStreamerFactory;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
@@ -117,8 +118,6 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 			
 			@Override
 			public void onUaCallClosed(UserAgent ua) {
-				super.onUaCallClosed(ua);
-				
 				_callMedia.releaseMediaPorts(_portPool);
 			}
 		};
@@ -153,11 +152,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		
-		uaConfig.audio=true;
-		uaConfig.video=true;
-		uaConfig.loopback=true;
-		uaConfig.sendOnly=false;
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig.hangupTime);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig.hangupTime);
 
 		// promt before exit
 		if (prompt_exit) 

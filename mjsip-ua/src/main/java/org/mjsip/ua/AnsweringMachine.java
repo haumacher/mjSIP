@@ -106,13 +106,13 @@ public class AnsweringMachine extends MultipleUAS {
 		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
-		if (uaConfig.sendFile != null) {
-			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(uaConfig.sendFile));
+		if (mediaConfig.sendFile != null) {
+			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(mediaConfig.sendFile));
 			LOG.info("Announcement file format: " + audioFormat);
 		}
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
-		StreamerFactory streamerFactory = uaConfig.createStreamerFactory();
+		StreamerFactory streamerFactory = mediaConfig.createStreamerFactory(uaConfig);
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
 		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
 

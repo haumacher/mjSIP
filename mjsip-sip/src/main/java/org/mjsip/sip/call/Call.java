@@ -317,19 +317,17 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * in case of an established call it sends a BYE request message. */
 	public void hangup() {
 		if (dialog!=null) {
-			// try dialog.refuse(), cancel(), and bye() methods..
-			//dialog.refuse();
-			//dialog.cancel();
-			//dialog.bye();
-			if (call_state.isIdle()) dialog.cancel();
-			else
-			if (call_state.isIncoming()) dialog.refuse();
-			else
-			if (call_state.isOutgoing()) dialog.cancel();
-			else
-			if (call_state.isActive()) dialog.bye();
-			else
-			if (call_state.isClosed()) dialog.bye();
+			if (call_state.isIdle()) {
+				dialog.cancel();
+			} else if (call_state.isIncoming()) {
+				dialog.refuse();
+			} else if (call_state.isOutgoing()) {
+				dialog.cancel();
+			} else if (call_state.isActive()) {
+				dialog.bye();
+			} else if (call_state.isClosed()) {
+				dialog.bye();
+			}
 			
 			changeState(CallState.C_CLOSED);
 		}

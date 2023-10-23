@@ -4,6 +4,7 @@ package org.mjsip.ua;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.call.CallListener;
 import org.mjsip.sip.call.DTMFInfo;
 
 
@@ -17,30 +18,51 @@ public interface UserAgentListener {
 	/** When registration failed. */
 	public void onUaRegistrationFailed(UserAgent ua, String result);
 
-	/** When a new call is incoming */
+	
+	/** When an incoming call is detected */
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs);
 	
+	/** When an incoming call has been accepted. */
+	public void onUaCallIncomingAccepted(UserAgent userAgent);
+
+	/** 
+	 * When an incoming call was not accepted in time.
+	 */
+	public void onUaIncomingCallTimeout(UserAgent userAgent);
+
 	/** When an incoming call is cancelled */
 	public void onUaCallCancelled(UserAgent ua);
+	
+	/**
+	 * When an incoming call has been established. 
+	 * 
+	 * @see CallListener#onCallConfirmed(org.mjsip.sip.call.Call, String, org.mjsip.sip.message.SipMessage)
+	 */
+	public void onUaCallConfirmed(UserAgent userAgent);
 
-	/** When an ougoing call is stated to be in progress */
+	
+	/** When an outgoing call is stated to be in progress */
 	public void onUaCallProgress(UserAgent ua);
 
-	/** When an ougoing call is remotly ringing */
+	/** When an outgoing call is remotely ringing */
 	public void onUaCallRinging(UserAgent ua);
 	
-	/** When an ougoing call has been accepted */
+	/** When an outgoing call has been accepted */
 	public void onUaCallAccepted(UserAgent ua);
 	
 	/** When a call has been transferred */
 	public void onUaCallTransferred(UserAgent ua);
 
-	/** When an ougoing call has been refused or timeout */
+	/** When an outgoing call has been refused or times out */
 	public void onUaCallFailed(UserAgent ua, String reason);
 
-	/** When a call has been locally or remotly closed */
+	/** When a call has been locally or remotely closed */
 	public void onUaCallClosed(UserAgent ua);
 
+	/**
+	 * When a call is redirected to a new address. 
+	 */
+	public void onUaCallRedirected(UserAgent userAgent, NameAddress redirect_to);
 
 	/** When a new media session is started */
 	public void onUaMediaSessionStarted(UserAgent ua, String type, String codec);
@@ -56,6 +78,20 @@ public interface UserAgentListener {
 	 */
 	default void onDtmfInfo(UserAgent ua, DTMFInfo dtmf) {
 		// Hook for subclasses.
+	}
+	
+	/**
+	 * Builds a chain of {@link UserAgentListener}s
+	 *
+	 * @param other
+	 *        The listener to inform, after this listener has been called.
+	 * @return A chain that first informs this listener and then the given one.
+	 */
+	default UserAgentListener andThen(UserAgentListener other) {
+		if (other == null) {
+			return this;
+		}
+		return new UserAgentListenerChain(this, other);
 	}
 
 }

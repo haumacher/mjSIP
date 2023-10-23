@@ -53,12 +53,14 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.ClipPlayer;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
+import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Archive;
@@ -66,7 +68,7 @@ import org.zoolu.util.Flags;
 
 
 /** Simple SIP user agent GUI. */
-public class UserAgentGui extends JFrame implements UserAgentListener {
+public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgentGui.class);
 
@@ -178,11 +180,17 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 
 
 	protected void initUA() {
-		ua=new UserAgent(sip_provider,_uaConfig.createStreamerFactory(),_uaConfig, this);
+		ua=new UserAgent(sip_provider,_mediaConfig.createStreamerFactory(_uaConfig),_uaConfig, this.andThen(clipPlayer()));
 		//ua.listen();
 		changeStatus(UA_IDLE);
 	}
 
+	private UserAgentListener clipPlayer() {
+		if (!_mediaConfig.useRat && !_uaConfig.noSystemAudio) {
+			return new ClipPlayer(_uaConfig);
+		}
+		return null;
+	}
 	
 	protected void initGraphics() {
 		
@@ -337,7 +345,7 @@ public class UserAgentGui extends JFrame implements UserAgentListener {
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
-		if (!_uaConfig.audio && !_uaConfig.video)
+		if (!_mediaConfig.audio && !_mediaConfig.video)
 			LOG.info("ONLY SIGNALING, NO MEDIA");
 	}
 

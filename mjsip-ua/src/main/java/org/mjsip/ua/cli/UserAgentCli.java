@@ -30,12 +30,14 @@ import java.io.PrintStream;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.ua.ClipPlayer;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
+import org.mjsip.ua.UserAgentListenerAdapter;
 import org.slf4j.LoggerFactory;
 
 
@@ -44,7 +46,7 @@ import org.slf4j.LoggerFactory;
   * <p>It can use external audio/video tools as media applications.
   * Currently only RAT (Robust Audio Tool) and VIC are supported as external applications.
   */
-public class UserAgentCli implements UserAgentListener {
+public class UserAgentCli implements UserAgentListenerAdapter {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgentCli.class);
 	
@@ -111,18 +113,23 @@ public class UserAgentCli implements UserAgentListener {
 		_uaConfig=uaConfig;
 		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
-		ua=new UserAgent(sip_provider,uaConfig.createStreamerFactory(),uaConfig, this);      
+		
+		ua=new UserAgent(sip_provider,mediaConfig.createStreamerFactory(uaConfig),uaConfig, this.andThen(clipPlayer()));      
 		if (!uaConfig.noPrompt) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.noPrompt) stdout=System.out;
 		run();
 	}
 
+	private UserAgentListener clipPlayer() {
+		if (!_mediaConfig.useRat && !_uaConfig.noSystemAudio) {
+			return new ClipPlayer(_uaConfig);
+		}
+		return null;
+	}
 
 	/** Becomes ready for receive a new incoming call. */
 	public void readyToReceive() {
 		LOG.info("WAITING FOR INCOMING CALL");
-		if (!_uaConfig.audio && !_uaConfig.video)
-			LOG.info("ONLY SIGNALING, NO MEDIA");
 		//ua.listen();
 		changeStatus(UA_IDLE);
 		LOG.info("digit the callee's URI to make a call or press 'enter' to exit");
@@ -133,9 +140,6 @@ public class UserAgentCli implements UserAgentListener {
 	public void call(String target_uri) {
 		ua.hangup();
 		LOG.info("CALLING " + target_uri);
-		LOG.info("calling "+target_uri);
-		if (!_uaConfig.audio && !_uaConfig.video)
-			LOG.info("ONLY SIGNALING, NO MEDIA");
 		ua.call(target_uri, _mediaConfig.mediaDescs);
 		changeStatus(UA_OUTGOING_CALL);
 	} 

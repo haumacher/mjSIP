@@ -2,25 +2,11 @@ package org.mjsip.ua;
 
 
 import org.mjsip.media.FlowSpec.Direction;
-import org.mjsip.media.StreamerOptions;
-import org.mjsip.media.rx.AudioFileReceiver;
-import org.mjsip.media.rx.AudioReceiver;
-import org.mjsip.media.rx.JavaxAudioOutput;
-import org.mjsip.media.tx.AudioFileTransmitter;
-import org.mjsip.media.tx.AudioTransmitter;
-import org.mjsip.media.tx.JavaxAudioInput;
-import org.mjsip.media.tx.ToneTransmitter;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.ua.streamer.DefaultStreamerFactory;
-import org.mjsip.ua.streamer.DispatchingStreamerFactory;
-import org.mjsip.ua.streamer.LoopbackStreamerFactory;
-import org.mjsip.ua.streamer.NativeStreamerFactory;
-import org.mjsip.ua.streamer.StreamerFactory;
-import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
@@ -121,10 +107,13 @@ public class UAConfig extends Configure {
 
 	/** Automatic call transfer time in seconds; time&lt;0 corresponds to no auto transfer mode. */
 	public int transferTime=-1;
+	
 	/** Automatic re-inviting time in seconds; time&lt;0 corresponds to no auto re-invite mode.  */
 	public int reinviteTime=-1;
+	
 	/** Automatic re-call time in seconds; time&lt;0 corresponds to no auto re-call mode.  */
 	public int recallTime=-1;
+	
 	/** Number of successive automatic re-calls; it is used only if call_to!=null, re_call_time&gt;0, and re_call_count&gt;0.  */
 	public int recallCount=-1;
 
@@ -142,58 +131,28 @@ public class UAConfig extends Configure {
 	public boolean noSystemAudio=false;
 	/** Do not use prompt */
 	public boolean noPrompt=false;
-	
-	/** Whether using audio */
-	public boolean audio=true;
-	/** Whether using video */
-	public boolean video=false;
 
-	/** Whether looping the received media streams back to the sender. */
-	public boolean loopback=false;
 	/** Whether playing in receive only mode */
 	public boolean recvOnly=false;
 	/** Whether playing in send only mode */
 	public boolean sendOnly=false;
-	/** Whether playing a test tone in send only mode */
-	public boolean sendTone=false;
-	/** Audio file to be streamed */
-	public String sendFile=null;
-	/** Audio file to be recorded */
-	public String recvFile=null;
-	/** Video file to be streamed */
-	public String sendVideoFile=null;
-	/** Video file to be recorded */
-	public String recvVideoFile=null;
-
+	
 	/** Media address (use it if you want to use a media address different from the via address) */
 	public String mediaAddr=null;
 
 	/** Whether using symmetric_rtp */
 	public boolean symmetricRtp=false;
 
-	/** Whether using RAT (Robust Audio Tool) as audio sender/receiver */
-	public boolean useRat=false;
-	/** Whether using VIC (Video Conferencing Tool) as video sender/receiver */
-	public boolean useVic=false;
-	/** RAT command-line executable */
-	public String binRat="rat";
-	/** VIC command-line executable */
-	public String binVic="vic";
-
-
 	// ******************** undocumented parametes ********************
 
 	/** Whether running the UAS (User Agent Server), or acting just as UAC (User Agent Client). In the latter case only outgoing calls are supported. */
 	public boolean uaServer=true;
+
 	/** Whether running an Options Server, that automatically responds to OPTIONS requests. */
 	public boolean optionsServer=true;
+
 	/** Whether running an Null Server, that automatically responds to not-implemented requests. */
 	public boolean nullServer=true;
-
-	/** Whether using explicit external converter (i.e. direct access to an external conversion provider)
-	  * instead of that provided by javax.sound.sampled.spi.
-	  * It applies only when javax sound is used, that is when no other audio apps (such as jmf or rat) are used. */
-	public boolean javaxSoundDirectConversion=false;
 
 	/** Sender synchronization adjustment, that is the time (in milliseconds) that a frame
 	  * should be sent in advance by the RTP sender, before the nominal time.
@@ -222,14 +181,22 @@ public class UAConfig extends Configure {
 	  * performed at the RTP receiver. */
 	public int randomEarlyDropRate=20;
 
-	/** Fixed audio multicast socket address; if defined, it forces the use of this maddr+port for audio session */
-	public SocketAddress audioMcastSoAddr=null;
-	/** Fixed video multicast socket address; if defined, it forces the use of this maddr+port for video session */
-	public SocketAddress videoMcastSoAddr=null;
-
 	/** Constructs a {@link UAConfig} */
 	private UAConfig() {
 		super();
+	}
+
+	/** 
+	 * The flow direction.
+	 */
+	public Direction getDirection() {
+		if (recvOnly) {
+			return Direction.RECV_ONLY;
+		} else if (sendOnly) {
+			return Direction.SEND_ONLY;
+		} else {
+			return Direction.FULL_DUPLEX;
+		}
 	}
 
 	/** Inits the UserAgentProfile. */
@@ -239,8 +206,6 @@ public class UAConfig extends Configure {
 		if (displayName!=null && displayName.equalsIgnoreCase(Configure.NONE)) displayName=null;
 		if (user!=null && user.equalsIgnoreCase(Configure.NONE)) user=null;
 		if (authRealm!=null && authRealm.equalsIgnoreCase(Configure.NONE)) authRealm=null;
-		if (sendFile!=null && sendFile.equalsIgnoreCase(Configure.NONE)) sendFile=null;
-		if (recvFile!=null && recvFile.equalsIgnoreCase(Configure.NONE)) recvFile=null;
 
 		setUnconfiguredAttributes(null);
 	}
@@ -348,34 +313,17 @@ public class UAConfig extends Configure {
 		if (attribute.equals("no_system_audio")){  noSystemAudio=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("no_prompt"))      {  noPrompt=(par.getString().toLowerCase().startsWith("y"));  return;  }
 
-		if (attribute.equals("loopback"))       {  loopback=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("recv_only"))      {  recvOnly=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("send_only"))      {  sendOnly=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("send_tone"))      {  sendTone=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("send_file"))      {  sendFile=par.getRemainingString().trim();  return;  }
-		if (attribute.equals("recv_file"))      {  recvFile=par.getRemainingString().trim();  return;  }
-		if (attribute.equals("send_video_file")){  sendVideoFile=par.getRemainingString().trim();  return;  }
-		if (attribute.equals("recv_video_file")){  recvVideoFile=par.getRemainingString().trim();  return;  }
-
-		if (attribute.equals("audio"))          {  audio=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("video"))          {  video=(par.getString().toLowerCase().startsWith("y"));  return;  }
-
+		
 		if (attribute.equals("media_addr"))     {  mediaAddr=par.getString();  return;  } 
 		if (attribute.equals("symmetric_rtp"))  {  symmetricRtp=(par.getString().toLowerCase().startsWith("y"));  return;  } 
-
-		if (attribute.equals("use_rat"))        {  useRat=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("bin_rat"))        {  binRat=par.getStringUnquoted();  return;  }
-		if (attribute.equals("use_vic"))        {  useVic=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("bin_vic"))        {  binVic=par.getStringUnquoted();  return;  }      
 
 		if (attribute.equals("ua_server")) {  uaServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("options_server")) {  optionsServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("null_server")) {  nullServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("javax_sound_direct_convertion")) {  javaxSoundDirectConversion=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("javax_sound_sync")) {  javaxSoundSync=(par.getString().toLowerCase().startsWith("y"));  return;  }
 		if (attribute.equals("random_early_drop_rate")) {  randomEarlyDropRate=par.getInt();  return;  }
-		if (attribute.equals("audio_mcast_soaddr")) {  audioMcastSoAddr=new SocketAddress(par.getString());  return;  } 
-		if (attribute.equals("video_mcast_soaddr")) {  videoMcastSoAddr=new SocketAddress(par.getString());  return;  }
 	}
 
 	/**
@@ -423,12 +371,6 @@ public class UAConfig extends Configure {
 		int re_call_count=flags.getInteger("--re-call-count","<n>",-1,"number of successive automatic re-calls");
 		if (re_call_count>0) this.recallCount=re_call_count;
 		
-		Boolean audio=flags.getBoolean("-a",null,"audio");
-		if (audio!=null) this.audio=audio.booleanValue();
-		
-		Boolean video=flags.getBoolean("-v",null,"video");
-		if (video!=null) this.video=video.booleanValue();
-		
 		String display_name=flags.getString("--display-name","<str>",null,"display name");
 		if (display_name!=null) this.displayName=display_name;
 		
@@ -449,110 +391,16 @@ public class UAConfig extends Configure {
 		
 		String auth_passwd=flags.getString("--auth-passwd","<passwd>",null,"passwd used for authentication");
 		if (auth_passwd!=null) this.authPasswd=auth_passwd; 
-		
-		Boolean loopback=flags.getBoolean("--loopback",null,"loopback mode, received media are sent back to the remote sender");
-		if (loopback!=null) this.loopback=loopback.booleanValue();
-		
+
 		Boolean recv_only=flags.getBoolean("--recv-only",null,"receive only mode, no media is sent");
 		if (recv_only!=null) this.recvOnly=recv_only.booleanValue();
 		
 		Boolean send_only=flags.getBoolean("--send-only",null,"send only mode, no media is received");
 		if (send_only!=null) this.sendOnly=send_only.booleanValue();
 		
-		Boolean send_tone=flags.getBoolean("--send-tone",null,"send only mode, an audio test tone is generated");
-		if (send_tone!=null) this.sendTone=send_tone.booleanValue();
-		
-		String  send_file=flags.getString("--send-file","<file>",null,"audio is played from the specified file");
-		if (send_file!=null) this.sendFile=send_file;
-		
-		String  recv_file=flags.getString("--recv-file","<file>",null,"audio is recorded to the specified file");
-		if (recv_file!=null) this.recvFile=recv_file;
-		
-		String  send_video_file=flags.getString("--send-video-file","<file>",null,"video is played from the specified file");
-		if (send_video_file!=null) this.sendVideoFile=send_video_file;
-		
-		String  recv_video_file=flags.getString("--recv-video-file","<file>",null,"video is recorded to the specified file");
-		if (recv_video_file!=null) this.recvVideoFile=recv_video_file;
-		
 		// for backward compatibility
 		String from_uri=flags.getString("--from-uri","<uri>",null,"user's address-of-record (AOR)");
 		if (from_uri!=null) this.setUserURI(NameAddress.parse(from_uri));
-		
-		// use audio as default media in case of..
-		if ((recv_only!=null || send_only!=null || send_tone!=null || send_file!=null || recv_file!=null) && video==null) this.audio=true;
-	}
-
-	/** 
-	 * The flow direction.
-	 */
-	public Direction getDirection() {
-		if (recvOnly) {
-			return Direction.RECV_ONLY;
-		} else if (sendOnly) {
-			return Direction.SEND_ONLY;
-		} else {
-			return Direction.FULL_DUPLEX;
-		}
-	}
-
-	/**
-	 * Creates a {@link StreamerFactory} based on configuration options.
-	 */
-	public StreamerFactory createStreamerFactory() {
-		if (loopback) {
-			return new LoopbackStreamerFactory();
-		} else {
-			DispatchingStreamerFactory factory = new DispatchingStreamerFactory();
-			if (audio) {
-				if (useRat) {
-					factory.addFactory("audio", new NativeStreamerFactory(audioMcastSoAddr, binRat));
-				} else {
-					Direction dir = getDirection();
-
-					AudioTransmitter tx;
-					if (dir.doSend()) {
-						if (sendTone) {
-							tx=new ToneTransmitter();
-						} else if (sendFile!=null) {
-							tx= new AudioFileTransmitter(sendFile);
-						} else {
-							tx = new JavaxAudioInput(true, javaxSoundDirectConversion);
-						}
-					} else {
-						tx = null;
-					}
-
-					// audio output
-					String audio_out=null;
-					if (recvFile!=null) audio_out=recvFile;        
-					
-					AudioReceiver rx;
-					if (dir.doReceive()) {
-						if (audio_out == null) {
-							rx = new JavaxAudioOutput(javaxSoundDirectConversion);
-						} else {
-							rx = new AudioFileReceiver(audio_out);
-						}
-					} else {
-						rx = null;
-					}
-
-					// standard javax-based audio streamer
-					StreamerOptions options = StreamerOptions.builder()
-							.setRandomEarlyDrop(randomEarlyDropRate)
-							.setSymmetricRtp(symmetricRtp)
-							.build();
-					
-					factory.addFactory("audio", new DefaultStreamerFactory(options, rx, tx));
-				}
-			}
-			if (video) {
-				if (useVic) {
-					factory.addFactory("video", new NativeStreamerFactory(videoMcastSoAddr, binVic));
-				}
-			}
-			return factory;
-		}
 	}
 
 }

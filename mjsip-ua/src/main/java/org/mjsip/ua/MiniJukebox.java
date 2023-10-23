@@ -18,10 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.ua;
-
-
 
 import java.io.File;
 
@@ -34,8 +31,6 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
-
-
 
 /** Jukebox is a simple audio server.
   * It automatically responds to incoming calls and sends the audio file
@@ -66,10 +61,10 @@ public class MiniJukebox extends UserAgentCli {
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {
-				_uaConfig.sendFile=audio_file;
+				_mediaConfig.sendFile=audio_file;
 			}
 		}
-		if (_uaConfig.sendFile!=null) ua.accept(_mediaConfig.mediaDescs);      
+		if (_mediaConfig.sendFile!=null) ua.accept(_mediaConfig.mediaDescs);      
 		else ua.hangup();
 	}
 	
@@ -86,8 +81,8 @@ public class MiniJukebox extends UserAgentCli {
 		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
-		uaConfig.audio=true;
-		uaConfig.video=false;
+		mediaConfig.audio=true;
+		mediaConfig.video=false;
 		uaConfig.sendOnly=true;
 		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    

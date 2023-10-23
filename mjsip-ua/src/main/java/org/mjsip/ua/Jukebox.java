@@ -18,10 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.ua;
-
-
 
 import java.io.File;
 
@@ -36,14 +33,11 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.zoolu.util.Flags;
 
-
-
 /** Jukebox is a simple audio server.
   * It automatically responds to incoming calls and sends the audio file
   * as selected by the caller through the request-line parameter 'audiofile'.
   */
 public class Jukebox extends MultipleUAS {
-	
 
 	/** URI resource parameter */
 	public static String PARAM_RESOURCE="resource";
@@ -81,10 +75,10 @@ public class Jukebox extends MultipleUAS {
 				String audio_file=MEDIA_PATH+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
 				if (audio_file!=null) {
 					if (new File(audio_file).isFile()) {
-						_uaConfig.sendFile=audio_file;
+						_mediaConfig.sendFile=audio_file;
 					}
 				}
-				if (_uaConfig.sendFile != null) {
+				if (_mediaConfig.sendFile != null) {
 					_callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
 					_callMedia.allocateMediaPorts(_portPool);
 					ua.accept(_callMedia.mediaDescs);
@@ -97,8 +91,6 @@ public class Jukebox extends MultipleUAS {
 			
 			@Override
 			public void onUaCallClosed(UserAgent ua) {
-				super.onUaCallClosed(ua);
-				
 				if (_callMedia != null) {
 					_callMedia.releaseMediaPorts(_portPool);
 				}
@@ -146,10 +138,10 @@ public class Jukebox extends MultipleUAS {
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 
-		uaConfig.audio=true;
-		uaConfig.video=false;
+		mediaConfig.audio=true;
+		mediaConfig.video=false;
 		uaConfig.sendOnly=true;
-		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig.createStreamerFactory(),uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
+		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),mediaConfig.createStreamerFactory(uaConfig),uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
 		
 		// promt before exit
 		if (prompt_exit) 

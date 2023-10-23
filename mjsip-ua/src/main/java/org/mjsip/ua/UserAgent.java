@@ -18,15 +18,11 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.ua;
-
-
 
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
 
-import org.mjsip.media.AudioClipPlayer;
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
@@ -57,8 +53,6 @@ import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 
-
-
 /** Simple SIP call agent (signaling and media).
   * It supports both audio and video sessions, by means of embedded media applications
   * that can use the default Java sound support (javax.sound.sampled.AudioSystem)
@@ -70,16 +64,6 @@ import org.zoolu.net.SocketAddress;
 public class UserAgent extends CallListenerAdapter implements SipProviderListener, RegistrationClientListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UserAgent.class);
-
-	/** On wav file */
-	static final String CLIP_ON="on.wav";
-	/** Off wav file */
-	static final String CLIP_OFF="off.wav";
-	/** Ring wav file */
-	static final String CLIP_RING="ring.wav";
-	/** Progress wav file */
-	static final String CLIP_PROGRESS="progress.wav";
-
 
 	// ***************************** attributes ****************************
 	
@@ -127,24 +111,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Whether the outgoing call is already ringing */
 	private boolean ringing;
 
-	/** On sound */
-	private AudioClipPlayer clip_on;
-	/** Off sound */
-	private AudioClipPlayer clip_off;
-	/** Ring sound */
-	private AudioClipPlayer clip_ring;
-	/** Progress sound */
-	private AudioClipPlayer clip_progress;
-
-	/** On volume gain */
-	private float clip_on_volume_gain=(float)0.0; // not changed
-	/** Off volume gain */
-	private float clip_off_volume_gain=(float)0.0; // not changed
-	/** Ring volume gain */
-	private float clip_ring_volume_gain=(float)0.0; // not changed
-	/** Progress volume gain */
-	private float clip_progress_volume_gain=(float)0.0; // not changed
-
 	private MediaDesc[] _callMedia;
 
 	/** Creates a {@link UserAgent}. */
@@ -165,18 +131,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			LOG.debug("auth_realm: "+uaConfig.authRealm);
 			LOG.debug("auth_user: "+uaConfig.authUser);
 			LOG.debug("auth_passwd: " + (uaConfig.authPasswd != null && !uaConfig.authPasswd.isEmpty() ? "***" : "-"));
-			LOG.debug("audio: "+uaConfig.audio);
-			LOG.debug("video: "+uaConfig.video);
-			
-			// log other config parameters
-			if (LOG.isTraceEnabled()) {
-				LOG.trace("loopback: "+uaConfig.loopback);
-				LOG.trace("send_only: "+uaConfig.sendOnly);
-				LOG.trace("recv_only: "+uaConfig.recvOnly);
-				LOG.trace("send_file: "+uaConfig.sendFile);
-				LOG.trace("recv_file: "+uaConfig.recvFile);
-				LOG.trace("send_tone: "+uaConfig.sendTone);
-			}
 		}
 
 		// start listening for INVITE requests (UAS)
@@ -187,36 +141,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 		// start "Not Implemented" server
 		if (uaConfig.nullServer) null_server=new NotImplementedServer(sip_provider);
-
-		// load sounds
-		// ################# patch to make rat working.. #################
-		// in case of rat, do not load and play audio clips
-		if (!uaConfig.useRat && !uaConfig.noSystemAudio) {
-			try {
-				clip_on=getAudioClip(uaConfig.mediaPath+"/"+CLIP_ON);
-				clip_off=getAudioClip(uaConfig.mediaPath+"/"+CLIP_OFF);
-				clip_ring=getAudioClip(uaConfig.mediaPath+"/"+CLIP_RING);
-				clip_progress=getAudioClip(uaConfig.mediaPath+"/"+CLIP_PROGRESS);
-				
-				clip_ring.setLoop();
-				clip_progress.setLoop();
-				clip_on.setVolumeGain(clip_on_volume_gain);
-				clip_off.setVolumeGain(clip_off_volume_gain);
-				clip_ring.setVolumeGain(clip_ring_volume_gain);
-				clip_progress.setVolumeGain(clip_progress_volume_gain);
-			}
-			catch (Exception e) {
-				LOG.info("Exception.", e);
-			}
-		}
 	}
-
 
 	/** Inits the RegistrationClient */
 	private void initRegistrationClient() {
 		rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.registrar),uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd,this);
 	}
-
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
 	private SdpMessage getSessionDescriptor() {
@@ -224,10 +154,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		String media_addr=(uaConfig.mediaAddr!=null)? uaConfig.mediaAddr : sip_provider.getViaAddress();
 		SdpMessage sdp=new SdpMessage(owner,media_addr);
 		for (MediaDesc md : _callMedia) {
-			// check if audio or video have been disabled
-			if (md.getMedia().equalsIgnoreCase("audio") && !uaConfig.audio) continue;
-			if (md.getMedia().equalsIgnoreCase("video") && !uaConfig.video) continue;
-
 			sdp.addMediaDescriptor(md.toMediaDescriptor());
 		}
 		return sdp;
@@ -249,7 +175,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 	}
 
-
 	/** Gets a SipURI based on an input string. */
 	private SipURI completeSipURI(String str) {
 		// in case it is passed only the user field, add "@" + proxy address
@@ -266,7 +191,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (rc.isRegistering()) rc.halt();
 		rc.register(expire_time);
 	}
-
 
 	/** Periodically registers the contact address with the registrar server.
 	  * @param expire_time expiration time in seconds
@@ -291,7 +215,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 	}
 
-
 	/** Unregisters with the registrar server */
 	public void unregister() {
 		// create registration client
@@ -302,7 +225,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// unregister
 		rc.unregister();
 	}
-
 
 	/** Unregister all contacts with the registrar server */
 	public void unregisterall() {
@@ -337,7 +259,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		call(callee,sdp);
 	}
 
-
 	/** Makes a new call (acting as UAC) with specific SDP. */
 	public void call(NameAddress callee, SdpMessage sdp) {
 		call=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd),this);      
@@ -351,15 +272,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Closes an ongoing, incoming, or pending call. */
 	public void hangup() {
-		// sound
-		if (clip_progress!=null) clip_progress.stop();
-		if (clip_ring!=null) clip_ring.stop();
 		// response timeout
 		cancelResponseTimeout();
 
 		closeMediaSessions();
 		if (call!=null) call.hangup();
 		call=null;
+		
+		if (listener!=null) listener.onUaCallClosed(this);
 	}
 
 	private void cancelResponseTimeout() {
@@ -376,8 +296,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void accept(MediaDesc[] callMedia) {
 		_callMedia = callMedia;
 		
-		// sound
-		if (clip_ring!=null) clip_ring.stop();
+		if (listener!=null) listener.onUaCallIncomingAccepted(this);
+
 		// response timeout
 		cancelResponseTimeout();
 		// return if no active call
@@ -392,24 +312,21 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		call.accept(new_sdp.toString());
 	}
 
-
 	/** Redirects an incoming call. */
 	public void redirect(String redirect_to) {
 		// in case of incomplete URI (e.g. only 'user' is present), try to complete it
 		redirect(completeNameAddress(redirect_to));
 	}
 
-
 	/** Redirects an incoming call. */
 	public void redirect(NameAddress redirect_to) {
-		// sound
-		if (clip_ring!=null) clip_ring.stop();
 		// response timeout
 		cancelResponseTimeout();
 		
 		if (call!=null) call.redirect(redirect_to);
+		
+		if (listener!=null) listener.onUaCallRedirected(this, redirect_to);
 	}   
-
 
 	/** Modifies the current session. It re-invites the remote party changing the contact URI and SDP. */
 	public void modify(String body) {
@@ -419,13 +336,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 	}
 
-
 	/** Transfers the current call to a remote UA. */
 	public void transfer(String transfer_to) {
 		// in case of incomplete URI (e.g. only 'user' is present), try to complete it
 		transfer(completeNameAddress(transfer_to));
 	}
-
 
 	/** Transfers the current call to a remote UA. */
 	public void transfer(NameAddress transfer_to) {
@@ -434,7 +349,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			call.transfer(transfer_to);
 		}
 	}
-
 
 	// ********************** protected methods **********************
 
@@ -533,7 +447,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		return media_spec;
 	}
- 
 	
 	/** Closes media sessions.  */
 	protected void closeMediaSessions() {
@@ -544,7 +457,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		media_sessions.removeAllElements();
 	}
-
 
 	// ************************* RA callbacks ************************
 
@@ -560,7 +472,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (listener!=null) listener.onUaRegistrationFailed(this,result);
 	}
 
-
 	// ************************ Call callbacks ***********************
 	
 	/** From SipProviderListener. When a new SipMessage is received by the SipProvider. */
@@ -568,7 +479,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage message) {
 		new ExtendedCall(sip_provider,message,this);
 	}
-
 
 	/** From CallListener. Callback function called when arriving a new INVITE method (incoming call) */
 	@Override
@@ -583,8 +493,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("INCOMING: " + extractFrom(invite));
 		this.call=(ExtendedCall)call;
 		call.ring();
-		// sound
-		if (clip_ring!=null) clip_ring.play();
 		// response timeout
 		if (uaConfig.refuseTime>=0) response_to=sip_provider.scheduler().schedule(uaConfig.refuseTime*1000, this::onResponseTimeout);
 		
@@ -612,7 +520,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		return from;
 	}  
 
-
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	@Override
 	public void onCallModify(Call call, String sdp, SipMessage invite) {
@@ -624,7 +531,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		super.onCallModify(call,sdp,invite);
 	}
 
-
 	/** From CallListener. Callback function called when arriving a 183 Session Progress */
 	@Override
 	public void onCallProgress(Call call, SipMessage resp) {
@@ -633,13 +539,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (!progress) {
 			LOG.info("PROGRESS");
 			progress=true;
-			// sound
-			if (clip_progress!=null) clip_progress.play();
 			
 			if (listener!=null) listener.onUaCallProgress(this);
 		}
 	}
-
 
 	/** From CallListener. Callback function that may be overloaded (extended). Called when arriving a 180 Ringing */
 	@Override
@@ -649,13 +552,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (!ringing) {
 			LOG.info("RINGING");
 			ringing=true;
-			// sound
-			if (clip_progress!=null) clip_progress.play();
 			
 			if (listener!=null) listener.onUaCallRinging(this);
 		}
 	}
-
 
 	/** Callback function called when arriving a 1xx response (e.g. 183 Session Progress) that has to be confirmed */
 	@Override
@@ -685,9 +585,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			// answer with the local sdp
 			call.confirm2xxWithAnswer(new_sdp.toString());
 		}
-		// sound
-		if (clip_progress!=null) clip_progress.stop();
-		if (clip_on!=null) clip_on.play();
 		
 		if (listener!=null) listener.onUaCallAccepted(this);
 
@@ -698,19 +595,17 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 	}
 
-
 	/** From CallListener. Callback function called when arriving an ACK method (call confirmed) */
 	@Override
 	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
 		LOG.debug("onCallConfirmed()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("CONFIRMED/CALL");
-		// sound
-		if (clip_on!=null) clip_on.play();
+
+		if (listener!=null) listener.onUaCallConfirmed(this);
 		
 		startMediaSessions();
 	}
-
 
 	/** From CallListener. Callback function called when arriving a 2xx (re-invite/modify accepted) */
 	@Override
@@ -720,7 +615,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("RE-INVITE-ACCEPTED/CALL");
 	}
 
-
 	/** From CallListener. Callback function called when arriving a 4xx (re-invite/modify failure) */
 	@Override
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
@@ -729,7 +623,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("RE-INVITE-REFUSED ("+reason+")/CALL");
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
-
 
 	/** From CallListener. Callback function called when arriving a 4xx (call failure) */
 	@Override
@@ -742,13 +635,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			call_transfer=null;
 		}
 		else this.call=null;
-		// sound
-		if (clip_progress!=null) clip_progress.stop();
-		if (clip_off!=null) clip_off.play();
 		
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
-
 
 	/** From CallListener. Callback function called when arriving a 3xx (call redirection) */
 	@Override
@@ -760,7 +649,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		call.call(first_contact); 
 	}
 
-
 	/** From CallListener. Callback function called when arriving a CANCEL request */
 	@Override
 	public void onCallCancel(Call call, SipMessage cancel) {
@@ -768,15 +656,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("CANCEL");
 		this.call=null;
-		// sound
-		if (clip_ring!=null) clip_ring.stop();
-		if (clip_off!=null) clip_off.play();
 		// response timeout
 		cancelResponseTimeout();
 		
 		if (listener!=null) listener.onUaCallCancelled(this);
 	}
-
 
 	/** From CallListener. Callback function called when arriving a BYE request */
 	@Override
@@ -793,8 +677,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("CLOSE");
 		this.call=null;
 		closeMediaSessions();
-		// sound
-		if (clip_off!=null) clip_off.play();
 		
 		if (listener!=null) listener.onUaCallClosed(this);
 	}
@@ -821,8 +703,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			this.call.notify(code,reason);
 			call_transfer=null;
 		}
-		// sound
-		if (clip_off!=null) clip_off.play();
 		
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
@@ -897,21 +777,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("transfer failed");
 	}
 
-
 	// *********************** Timer callbacks ***********************
 
 	private void onResponseTimeout() {
 		LOG.info("response time expired: incoming call declined");
 		if (call!=null) call.refuse();
-		// sound
-		if (clip_ring!=null) clip_ring.stop();
-	}
-
-
-	// **************************** Static ****************************
-
-	private static AudioClipPlayer getAudioClip(String image_file) throws java.io.IOException {
-		return new AudioClipPlayer(UserAgent.class.getResource("/" + image_file), null);
+		
+		if (listener!=null) listener.onUaIncomingCallTimeout(this);
 	}
 
 }
