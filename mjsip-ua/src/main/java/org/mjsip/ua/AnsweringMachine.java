@@ -96,7 +96,6 @@ public class AnsweringMachine extends MultipleUAS {
 		LOG.info(program + " " + SipStack.version);
 
 		Flags flags=new Flags(program, args);
-		Boolean prompt_exit = flags.getBoolean("--prompt", false, "Whether to wait for enter to exit program.");
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
@@ -115,15 +114,6 @@ public class AnsweringMachine extends MultipleUAS {
 		StreamerFactory streamerFactory = mediaConfig.createStreamerFactory(uaConfig);
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
 		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig.hangupTime);
-
-		// prompt before exit
-		if (prompt_exit) 
-		try {
-			System.out.println("press 'enter' to exit");
-			(new java.io.BufferedReader(new java.io.InputStreamReader(System.in))).readLine();
-			System.exit(0);
-		}
-		catch (Exception e) {}
 	}    
 
 }
