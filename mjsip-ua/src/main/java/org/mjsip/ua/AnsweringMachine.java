@@ -99,7 +99,7 @@ public class AnsweringMachine extends MultipleUAS {
 		Boolean prompt_exit = flags.getBoolean("--prompt", false, "Whether to wait for enter to exit program.");
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
 		PortConfig portConfig = PortConfig.init(config_file, flags);

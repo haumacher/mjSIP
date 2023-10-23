@@ -650,7 +650,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		Flags flags=new Flags("local.ua.UA", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);

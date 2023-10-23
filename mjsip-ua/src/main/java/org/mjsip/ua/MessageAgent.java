@@ -58,8 +58,6 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 		this.sip_provider=sip_provider;
 		this.listener=listener;
 		this.user_profile=user_profile;
-		// init unconfigured user params
-		user_profile.setUnconfiguredAttributes(sip_provider);
 	}   
 
 	

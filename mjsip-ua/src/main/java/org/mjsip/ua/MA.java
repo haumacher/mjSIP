@@ -21,7 +21,7 @@ public class MA {
 		boolean unregist_all=flags.getBoolean("-z","unregisters ALL contact addresses");
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig=UAConfig.init(config_file, flags);         
+		UAConfig uaConfig=UAConfig.init(config_file, flags, sipConfig);         
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();

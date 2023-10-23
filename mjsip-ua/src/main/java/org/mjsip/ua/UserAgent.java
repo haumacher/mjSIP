@@ -119,8 +119,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		_mediaAgent = new MediaAgent(streamerFactory);
 		this.listener=listener;
 		this.uaConfig=uaConfig;
-		// update user profile information
-		uaConfig.setUnconfiguredAttributes(sip_provider);
 
 		// log main config parameters
 		if (LOG.isDebugEnabled()) {

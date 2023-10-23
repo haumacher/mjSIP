@@ -144,7 +144,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		Flags flags=new Flags("Echo", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
 		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         

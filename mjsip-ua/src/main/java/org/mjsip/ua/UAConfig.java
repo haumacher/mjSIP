@@ -6,7 +6,7 @@ import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
-import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.sip.provider.SipConfig;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
@@ -19,21 +19,21 @@ public class UAConfig extends Configure {
 	/** 
 	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
 	 */
-	public static UAConfig init(String file, Flags flags) {
+	public static UAConfig init(String file, Flags flags, SipConfig sipConfig) {
 		UAConfig result=new UAConfig();
 		result.loadFile(file);
 		result.updateWith(flags);
-		result.normalize();
+		result.normalize(sipConfig);
 		return result;
 	}
 
 	/** 
 	 * Constructs a {@link UAConfig} from configuration file values.
 	 */
-	public static UAConfig init(String file) {
+	public static UAConfig init(String file, SipConfig sipConfig) {
 		UAConfig result=new UAConfig();
 		result.loadFile(file);
-		result.normalize();
+		result.normalize(sipConfig);
 		return result;
 	}
 
@@ -165,16 +165,23 @@ public class UAConfig extends Configure {
 	}
 
 	/** Inits the UserAgentProfile. */
-	private void normalize() {
+	private void normalize(SipConfig sipConfig) {
 		if (proxy!=null && proxy.equalsIgnoreCase(Configure.NONE)) proxy=null;
 		if (registrar!=null && registrar.equalsIgnoreCase(Configure.NONE)) registrar=null;
 		if (displayName!=null && displayName.equalsIgnoreCase(Configure.NONE)) displayName=null;
 		if (user!=null && user.equalsIgnoreCase(Configure.NONE)) user=null;
 		if (authRealm!=null && authRealm.equalsIgnoreCase(Configure.NONE)) authRealm=null;
 
-		setUnconfiguredAttributes(null);
+		if (registrar==null && proxy!=null) registrar=proxy;
+		if (proxy==null && registrar!=null) proxy=registrar;
+		if (authRealm==null && proxy!=null) authRealm=proxy;
+		if (authRealm==null && registrar!=null) authRealm=registrar;
+		if (authUser==null && user!=null) authUser=user;
+		if (ua_address==null) {
+			ua_address=sipConfig.getViaAddr();
+			if (sipConfig.getHostPort()!=sipConfig.getDefaultPort()) ua_address+=":"+sipConfig.getHostPort();
+		}
 	}
-
 
 	// ************************ public methods ************************
 
@@ -206,24 +213,6 @@ public class UAConfig extends Configure {
 		if (user==null) user=uri.getUserName();
 		if (proxy==null) proxy=(uri.hasPort())? uri.getHost()+":"+uri.getPort() : uri.getHost();
 		if (registrar==null) registrar=proxy;
-	}
-
-	/** Sets server and authentication attributes (if not already done).
-	  * It actually sets <i>ua_address</i>, <i>registrar</i>, <i>proxy</i>, <i>auth_realm</i>,
-	  * and <i>auth_user</i> attributes.
-	  * <p>
-	  * Note: this method sets such attributes only if they haven't still been initilized.
-	  * @param sip_provider the SIP provider used for initializing these attributes */
-	public void setUnconfiguredAttributes(SipProvider sip_provider) {
-		if (registrar==null && proxy!=null) registrar=proxy;
-		if (proxy==null && registrar!=null) proxy=registrar;
-		if (authRealm==null && proxy!=null) authRealm=proxy;
-		if (authRealm==null && registrar!=null) authRealm=registrar;
-		if (authUser==null && user!=null) authUser=user;
-		if (ua_address==null && sip_provider!=null) {
-			ua_address=sip_provider.getViaAddress();
-			if (sip_provider.getPort()!=sip_provider.sipConfig().getDefaultPort()) ua_address+=":"+sip_provider.getPort();
-		}
 	}
 
 	// *********************** protected methods **********************

@@ -67,9 +67,6 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		_uaConfig=uaConfig;
 		_hangupTime = hangupTime;
 
-		// init UA profile
-		uaConfig.setUnconfiguredAttributes(sip_provider);
-
 		// registration client
 		if (uaConfig.doRegister) {
 			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.registrar),uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd,this);
