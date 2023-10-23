@@ -186,8 +186,8 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	}
 
 	private UserAgentListener clipPlayer() {
-		if (!_mediaConfig.useRat && !_uaConfig.noSystemAudio) {
-			return new ClipPlayer(_uaConfig);
+		if (!_mediaConfig.useRat && !_uiConfig.noSystemAudio) {
+			return new ClipPlayer(_uiConfig);
 		}
 		return null;
 	}
@@ -196,8 +196,8 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		
 		// load icons
 		try {
-			icon_call=getImageIcon(_uaConfig.mediaPath+"/"+CALL_GIF);
-			icon_hangup=getImageIcon(_uaConfig.mediaPath+"/"+HANGUP_GIF);
+			icon_call=getImageIcon(_uiConfig.mediaPath+"/"+CALL_GIF);
+			icon_hangup=getImageIcon(_uiConfig.mediaPath+"/"+HANGUP_GIF);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -205,9 +205,9 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		}
 		
 		// load buddy list
-		if (_uaConfig.buddyListFile!=null && (_uaConfig.buddyListFile.startsWith("http://") || _uaConfig.buddyListFile.startsWith("file:/"))) {
+		if (_uiConfig.buddyListFile!=null && (_uiConfig.buddyListFile.startsWith("http://") || _uiConfig.buddyListFile.startsWith("file:/"))) {
 			try {
-				buddy_list=new StringList(new URL(_uaConfig.buddyListFile));
+				buddy_list=new StringList(new URL(_uiConfig.buddyListFile));
 			}
 			catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -215,7 +215,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 				buddy_list=new StringList((String)null);
 			}
 		}
-		else buddy_list=new StringList(_uaConfig.buddyListFile);
+		else buddy_list=new StringList(_uiConfig.buddyListFile);
 		jComboBox1=new JComboBox(buddy_list.getElements());
 
 		// init frame
@@ -308,13 +308,13 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	protected void run() {
 		
 		// Set the re-invite
-		if (_uaConfig.reinviteTime>0) {
-			reInvite(_uaConfig.reinviteTime);
+		if (_uiConfig.reinviteTime>0) {
+			reInvite(_uiConfig.reinviteTime);
 		}
 
 		// Set the transfer (REFER)
-		if (_uaConfig.transferTo!=null && _uaConfig.transferTime>0) {
-			callTransfer(_uaConfig.transferTo,_uaConfig.transferTime);
+		if (_uiConfig.transferTo!=null && _uiConfig.transferTime>0) {
+			callTransfer(_uiConfig.transferTo,_uiConfig.transferTime);
 		}
 
 		if (_uiConfig.doUnregisterAll) {
@@ -335,13 +335,13 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			ua.loopRegister(_uaConfig.expires,_uaConfig.expires/2,_uaConfig.keepaliveTime);
 		} 
 
-		if (_uaConfig.callTo!=null) {
+		if (_uiConfig.callTo!=null) {
 			// ########## make a call with the remote URI
-			LOG.info("UAC: CALLING " + _uaConfig.callTo);
+			LOG.info("UAC: CALLING " + _uiConfig.callTo);
 			jComboBox1.setSelectedItem(null);
-			comboBoxEditor1.setItem(_uaConfig.callTo.toString());
-			display.setText("CALLING "+_uaConfig.callTo);
-			ua.call(_uaConfig.callTo, _mediaConfig.mediaDescs);
+			comboBoxEditor1.setItem(_uiConfig.callTo.toString());
+			display.setText("CALLING "+_uiConfig.callTo);
+			ua.call(_uiConfig.callTo, _mediaConfig.mediaDescs);
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
@@ -459,19 +459,19 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 		changeStatus(UA_INCOMING_CALL);
-		if (_uaConfig.redirectTo!=null) {
+		if (_uiConfig.redirectTo!=null) {
 			// redirect the call
-			display.setText("CALL redirected to "+_uaConfig.redirectTo);
-			ua.redirect(_uaConfig.redirectTo);
+			display.setText("CALL redirected to "+_uiConfig.redirectTo);
+			ua.redirect(_uiConfig.redirectTo);
 		}         
 		else
-		if (_uaConfig.acceptTime>=0) {
+		if (_uiConfig.acceptTime>=0) {
 			// automatically accept the call
 			display.setText("ON CALL");
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(caller.toString());
 			//accept();
-			automaticAccept(_uaConfig.acceptTime);
+			automaticAccept(_uiConfig.acceptTime);
 		}
 		else {
 			display.setText("INCOMING CALL");

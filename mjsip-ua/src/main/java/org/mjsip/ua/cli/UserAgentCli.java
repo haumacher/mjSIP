@@ -121,8 +121,8 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	}
 
 	private UserAgentListener clipPlayer() {
-		if (!_mediaConfig.useRat && !_uaConfig.noSystemAudio) {
-			return new ClipPlayer(_uaConfig);
+		if (!_mediaConfig.useRat && !_uiConfig.noSystemAudio) {
+			return new ClipPlayer(_uiConfig);
 		}
 		return null;
 	}
@@ -159,9 +159,9 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		LOG.info("hangup");
 		ua.hangup();
 		changeStatus(UA_IDLE);
-		if (_uaConfig.callTo!=null) {
-			if (_uaConfig.recallTime>0 && (_uaConfig.recallCount--)>0) {
-				automaticCall(_uaConfig.recallTime,_uaConfig.callTo.toString());
+		if (_uiConfig.callTo!=null) {
+			if (_uiConfig.recallTime>0 && (_uiConfig.recallCount--)>0) {
+				automaticCall(_uiConfig.recallTime,_uiConfig.callTo.toString());
 			} 
 			else exit();
 		}
@@ -174,13 +174,13 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		
 		try {
 			// Set the re-invite
-			if (_uaConfig.reinviteTime>0) {
-				reInvite(_uaConfig.reinviteTime);
+			if (_uiConfig.reinviteTime>0) {
+				reInvite(_uiConfig.reinviteTime);
 			}
 
 			// Set the transfer (REFER)
-			if (_uaConfig.transferTo!=null && _uaConfig.transferTime>0) {
-				callTransfer(_uaConfig.transferTo,_uaConfig.transferTime);
+			if (_uiConfig.transferTo!=null && _uiConfig.transferTime>0) {
+				callTransfer(_uiConfig.transferTo,_uiConfig.transferTime);
 			}
 
 			if (_uiConfig.doUnregisterAll) {
@@ -201,16 +201,16 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 				ua.loopRegister(_uaConfig.expires,_uaConfig.expires/2,_uaConfig.keepaliveTime);
 			}         
 			
-			if (_uaConfig.callTo!=null) {
+			if (_uiConfig.callTo!=null) {
 				// UAC
-				call(_uaConfig.callTo.toString()); 
+				call(_uiConfig.callTo.toString()); 
 				LOG.info("press 'enter' to cancel");
 				readLine();
 				hangup();
 			}
 			else {
 				// UAS + UAC
-				if (_uaConfig.acceptTime>=0)
+				if (_uiConfig.acceptTime>=0)
 					LOG.info("AUTO ACCEPT MODE");
 				readyToReceive();
 				while (stdin!=null) {
@@ -255,16 +255,16 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** When a new call is incoming */
 	@Override
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-		if (_uaConfig.redirectTo!=null) {
+		if (_uiConfig.redirectTo!=null) {
 			// redirect the call
-			ua.redirect(_uaConfig.redirectTo);
-			LOG.info("call redirected to "+_uaConfig.redirectTo);
+			ua.redirect(_uiConfig.redirectTo);
+			LOG.info("call redirected to "+_uiConfig.redirectTo);
 		}         
 		else
-		if (_uaConfig.acceptTime>=0) {
+		if (_uiConfig.acceptTime>=0) {
 			// automatically accept the call
 			//accept();
-			automaticAccept(_uaConfig.acceptTime);
+			automaticAccept(_uiConfig.acceptTime);
 		}
 		else          {
 			changeStatus(UA_INCOMING_CALL);
@@ -310,14 +310,14 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** When an ougoing call has been refused or timeout */
 	@Override
 	public void onUaCallFailed(UserAgent ua, String reason) {
-		if (_uaConfig.callTo!=null) exit();
+		if (_uiConfig.callTo!=null) exit();
 		else readyToReceive();
 	}
 
 	/** When a call has been locally or remotely closed */
 	@Override
 	public void onUaCallClosed(UserAgent ua) {
-		if (_uaConfig.callTo!=null) exit();
+		if (_uiConfig.callTo!=null) exit();
 		else readyToReceive();     
 	}
 

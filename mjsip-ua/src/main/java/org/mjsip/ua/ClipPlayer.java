@@ -42,11 +42,11 @@ public class ClipPlayer implements UserAgentListenerAdapter {
 	/** 
 	 * Creates a {@link ClipPlayer}.
 	 */
-	public ClipPlayer(UAConfig uaConfig) {
-		clip_on=getAudioClip(uaConfig.mediaPath+"/"+CLIP_ON);
-		clip_off=getAudioClip(uaConfig.mediaPath+"/"+CLIP_OFF);
-		clip_ring=getAudioClip(uaConfig.mediaPath+"/"+CLIP_RING);
-		clip_progress=getAudioClip(uaConfig.mediaPath+"/"+CLIP_PROGRESS);
+	public ClipPlayer(UIConfig uiConfig) {
+		clip_on=getAudioClip(uiConfig.mediaPath+"/"+CLIP_ON);
+		clip_off=getAudioClip(uiConfig.mediaPath+"/"+CLIP_OFF);
+		clip_ring=getAudioClip(uiConfig.mediaPath+"/"+CLIP_RING);
+		clip_progress=getAudioClip(uiConfig.mediaPath+"/"+CLIP_PROGRESS);
 		
 		clip_ring.setLoop();
 		clip_progress.setLoop();
