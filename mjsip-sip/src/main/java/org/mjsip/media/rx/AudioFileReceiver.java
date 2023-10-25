@@ -35,14 +35,14 @@ public class AudioFileReceiver implements AudioReceiver {
 	}
 
 	@Override
-	public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket udp_socket, AudioFormat audio_format,
+	public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket socket, AudioFormat audio_format,
 			CodecType codec,
 			int payload_type, RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_decoder, RtpStreamReceiverListener listener)
 			throws IOException, UnsupportedAudioFileException {
 		LOG.info("Storing audio stram to file " + _audioFile + " format: " + audio_format);
 		OutputStream output_stream = AudioFile.getAudioFileOutputStream(_audioFile, audio_format);
 		RtpStreamReceiver receiver = new RtpStreamReceiver(options, output_stream, additional_decoder, payloadFormat,
-				udp_socket, listener) {
+				socket, listener) {
 			@Override
 			protected void onRtpStreamReceiverTerminated(Exception error) {
 				super.onRtpStreamReceiverTerminated(error);

@@ -43,7 +43,7 @@ public class JavaxAudioOutput implements AudioReceiver {
 	}
 
 	@Override
-	public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket udp_socket, AudioFormat audio_format,
+	public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket socket, AudioFormat audio_format,
 			CodecType codec,
 			int payload_type, RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_decoder, RtpStreamReceiverListener listener)
 			throws IOException, UnsupportedAudioFileException {
@@ -63,7 +63,7 @@ public class JavaxAudioOutput implements AudioReceiver {
 			LOG.info("recv x-format: " + audio_output_stream.getFormat());
 		}
 
-		RtpStreamReceiver receiver = new RtpStreamReceiver(options, audio_output_stream, additional_decoder, payloadFormat, udp_socket, listener);
+		RtpStreamReceiver receiver = new RtpStreamReceiver(options, audio_output_stream, additional_decoder, payloadFormat, socket, listener);
 		RtpAudioRxHandler handle = new RtpAudioRxHandler(receiver) {
 			@Override
 			public void start() {

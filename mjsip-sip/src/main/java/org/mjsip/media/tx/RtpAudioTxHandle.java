@@ -11,7 +11,7 @@ import org.zoolu.net.SocketAddress;
 /**
  * {@link AudioTXHandle} implementation.
  */
-class RtpAudioTxHandle implements AudioTXHandle {
+public class RtpAudioTxHandle implements AudioTXHandle {
 
 	private RtpStreamSender _rtpSender;
 
