@@ -9,6 +9,7 @@ import javax.sound.sampled.AudioFormat;
 
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.media.RtpStreamSenderListener;
+import org.mjsip.media.ToneGenerator;
 import org.mjsip.media.ToneInputStream;
 import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPayloadFormat;
@@ -62,7 +63,7 @@ public class ToneTransmitter implements AudioTransmitter {
 			int packet_size, String remote_addr, int remote_port, RtpStreamSenderListener listener, RtpControl rtpControl) throws IOException {
 		LOG.info("Tone generator: " + _toneFreq + " Hz");
 		ToneInputStream audioIn = new ToneInputStream(_toneFreq, _toneAmpl, sample_rate, TONE_SAMPLE_SIZE,
-				ToneInputStream.PCM_LINEAR_UNSIGNED, DEFAULT_BIG_ENDIAN);
+				ToneGenerator.Encoding.PCM_LINEAR_UNSIGNED, DEFAULT_BIG_ENDIAN);
 		RtpStreamSender sender = new RtpStreamSender(options, audioIn, true, payload_type, payloadFormat,
 				sample_rate, channels, packet_time, packet_size, additional_encoder, udp_socket, remote_addr,
 				remote_port, rtpControl, listener);

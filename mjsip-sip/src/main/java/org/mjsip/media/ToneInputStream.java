@@ -21,152 +21,109 @@
 
 package org.mjsip.media;
 
-/** Generates a single tone.
-  */
+import java.io.InputStream;
+
+/**
+ * {@link InputStream} providing synthetic audio data generated from a sin wave.
+ */
 public class ToneInputStream extends java.io.InputStream {
 	
 	/** The number of bytes that are notified as available */
 	static int MAX_AVAILABLE_BYTES=65536;
 
-	/** Identifier of linear unsigned PCM */
-	public static final int PCM_LINEAR_UNSIGNED=0;
+	private final ToneGenerator _generator;
 
-	/** Identifier of linear signed PCM */
-	public static final int PCM_LINEAR_SIGNED=1;
+	private final int _sampleSize;
 
+	private final int _bitsPerSample;
 
-	/** Tone frequence */
-	int f0;
-	/** Tone ampliture in the interval [0:2^(n-1)] where n is the sample sinze in bits.  */
-	double A;
-	/** Offset to be added in case uo unsigned PCM */
-	double zero;
-	/** Sample rate [samples per seconds] */
-	int fs;
-	/** Sample size [bytes] */
-	int size;
-	/** Whether use big endian foramt */
-	boolean big_endian;
-  
-	/** B=2*Pi*f0/fs */
-	double B;
-	/** Sample sequence number */
-	double k;
 	/** Buffer containing the current sample */
-	byte[] s_buff;
-	/** Index within s_buff */
-	int s_index;
-  
-	/** Creates a new 8-bit per sample ToneInputStream */
-	/*public ToneInputStream(int frequence, double ampliture, int sample_rate, int codec) {
-		init(frequence,ampliture,sample_rate,1,codec);
-	}*/
+	private final int[] _sBuff;
 
-	/** Creates a new ToneInputStream */
-	public ToneInputStream(int frequence, double ampliture, int sample_rate, int sample_size, int codec, boolean big_endian) {
-		init(frequence,ampliture,sample_rate,sample_size,codec,big_endian);
-	}
+	/** Index within {@link #_sBuff} */
+	private int _sIndex;
 
-	/** Inits the ToneInputStream */
-	private void init(int frequence, double ampliture, int sample_rate, int sample_size, int codec, boolean big_endian) {
-		this.f0=frequence;
-		this.fs=sample_rate;
-		this.size=sample_size;
-		this.big_endian=big_endian;
-		B=(2*Math.PI*f0)/fs;
-		long range=((long)1)<<((sample_size*8)-1);
-		A=ampliture*range;
-		if (codec==PCM_LINEAR_SIGNED) zero=0.0F;
-		else zero=range/2;
-		k=0;
-		s_index=0;
-		s_buff=new byte[size];
+	/**
+	 * Buffer position where to place the least significant byte of a sample.
+	 */
+	private int _startPos;
 
-		//System.out.println("Tone: PI: "+Math.PI);
-		//System.out.println("Tone: sin(PI/6): "+Math.sin(Math.PI/6));
-		//System.out.println("Tone: s_rate: "+fs);
-		//System.out.println("Tone: s_size: "+size);
-		//System.out.println("Tone: A: "+A);
-		//System.out.println("Tone: 0: "+zero);
+	/**
+	 * Increment of buffer position while storing sample data.
+	 */
+	private int _inc;
+
+	/**
+	 * Creates a {@link ToneInputStream}
+	 * 
+	 * @param frequency
+	 *        The tone frequency in Hz.
+	 * @param amplitude
+	 *        The signal amplitude between 0.0 and 1.0.
+	 * @param sampleRate
+	 *        The number of samples per second.
+	 * @param sampleSize
+	 *        The number of bytes per sample.
+	 * @param encoding
+	 *        Value range of tone samples.
+	 * @param bigEndian
+	 *        Whether to place the most-significant byte first in the stream.
+	 */
+	public ToneInputStream(int frequency, double amplitude, int sampleRate, int sampleSize,
+			ToneGenerator.Encoding encoding, boolean bigEndian) {
+		this(new ToneGenerator(frequency, amplitude, sampleRate, sampleSize, encoding), bigEndian);
 	}
 	  
-	
+	/**
+	 * Creates a {@link ToneInputStream}.
+	 *
+	 * @param toneGenerator
+	 *        The source of samples.
+	 * @param bigEndian
+	 *        Whether to place the most-significant byte first in the stream.
+	 */
+	public ToneInputStream(ToneGenerator toneGenerator, boolean bigEndian) {
+		_generator = toneGenerator;
+
+		int sampleSize = toneGenerator.getSampleSize();
+
+		_sampleSize = sampleSize;
+		_bitsPerSample = sampleSize * 8;
+
+		_startPos = bigEndian ? sampleSize - 1 : 0;
+		_inc = bigEndian ? -1 : 1;
+		_sIndex = 0;
+		_sBuff = new int[sampleSize];
+	}
+
 	/** Returns the number of bytes that can be read (or skipped over) from this input stream without blocking by the next caller of a method for this input stream. */
 	@Override
 	public int available()  {
 		return MAX_AVAILABLE_BYTES;
 	}
 
-
-	/** Reads the next sample. */
-	private double nextSample()  {
-		return A*Math.sin(B*(k++))+zero;
-	}
-
 	/** Reads the next byte of data from the input stream. */
 	@Override
 	public int read()  {
-		if (s_index==0) {
-			// get next sample
-			long next_sample=(long)(nextSample());
-			// set the s_buff
-			for (int i=0; i<size; i++) {
-				int pos=(big_endian)? size-i-1 : i ;
-				s_buff[pos]=(byte)((next_sample/(((long)1)<<(i*8)))%256);
-			}
+		if (_sIndex == 0) {
+			produceSample();
 		}
-		int b=s_buff[s_index];
-		s_index=(++s_index)%size;
-		return b;
-	}
-
-
-	/** Reads some number of bytes from the input stream and stores them into the buffer array b. */
-	@Override
-	public int read(byte[] b)  {
-		return read(b,0,b.length);
-	}
-
-	/** Reads up to len bytes of data from the input stream into an array of bytes. */
-	@Override
-	public int read(byte[] b, int off, int len)  {
-		for (int i=off; i<off+len; i++) {
-			b[i]=(byte)read();
+		int result = _sBuff[_sIndex++];
+		if (_sIndex == _sampleSize) {
+			_sIndex = 0;
 		}
-		return len;
+		return result;
 	}
 
-	/** Skips over and discards n bytes of data from this input stream. */
-	@Override
-	public long skip(long n)  {
-		// to do..
-		return 0;
+	/**
+	 * Fills the buffer with the next sample.
+	 */
+	private void produceSample() {
+		long sample = _generator.nextSample();
+		for (int pos = _startPos, shift = 0; shift < _bitsPerSample; pos += _inc, shift += 8) {
+			_sBuff[pos] = (int) ((sample >>> shift) & 0xFF);
+		}
 	}
-
-	/** Closes this input stream and releases any system resources associated with the stream. */
-	@Override
-	public void close()  {
-		// do nothing
-	}
-
-	/** Tests if this input stream supports the mark and reset methods. */
-	@Override
-	public boolean markSupported()  {
-		return false;
-	}
-
-	/** Marks the current position in this input stream. */
-	@Override
-	public void mark(int readlimit)  {
-		
-	}
-
-	/** Repositions this stream to the position at the time the mark method was last called on this input stream. */
-	@Override
-	public void reset()  {
-		
-	}
-
 
 }
 
