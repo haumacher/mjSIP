@@ -52,6 +52,8 @@ public class AlawSilenceTrimmer extends OutputStream {
 	private long _clock;
 
 	private OutputStream _out;
+
+	private final SilenceListener _listener;
 	
 	static {
 		ALAW_SQUARE = new int[256];
@@ -77,11 +79,12 @@ public class AlawSilenceTrimmer extends OutputStream {
 	 * @param out
 	 *        The output stream to pass non-silence regions of the input signal to.
 	 */
-	public AlawSilenceTrimmer(int sampleRate, int bufferTime, int minSilenceTime, int paddingTime, double silenceDb, OutputStream out) {
+	public AlawSilenceTrimmer(int sampleRate, int bufferTime, int minSilenceTime, int paddingTime, double silenceDb, OutputStream out, SilenceListener listener) {
 		_sampleRate = sampleRate;
 		_bufferTime = bufferTime;
 		_minSilenceTime = minSilenceTime;
 		_out = out;
+		_listener = SilenceListener.nonNull(listener);
 		int bufferSize = _sampleRate * bufferTime / 1000;
 		_cnt = 0;
 		_squareSum = 0L;
@@ -114,6 +117,17 @@ public class AlawSilenceTrimmer extends OutputStream {
 		
 		_maxSilenceSum = sqrSumLimit(bufferSize, 16, silenceDb);
 	}
+	
+	/**
+	 * Switches the underlying {@link OutputStream} where non-silent audio is forwarded to.
+	 * 
+	 * @return The previously used output.
+	 */
+	public OutputStream setOut(OutputStream out) {
+		OutputStream before = _out;
+		_out = out;
+		return before;
+	}
 
 	/**
 	 * The limit of the square sum of a signal to be less than the given db value.
@@ -140,7 +154,7 @@ public class AlawSilenceTrimmer extends OutputStream {
 
 	@Override
 	public void write(int code) throws IOException {
-		int square = ALAW_SQUARE[code];
+		int square = ALAW_SQUARE[code & 0xFF];
 		_squareSum += square;
 
 		_buffer.write(code);
@@ -160,19 +174,16 @@ public class AlawSilenceTrimmer extends OutputStream {
 					}
 					_buffer.clear();
 					
-					// Trigger event.
-					System.out.println("Silence starts at: " + _clock);
+					_listener.onSilenceStarted(_clock);
 				}
 			} else {
 				// Noise was read.
 				if (_silence) {
 					// There was silence before.
 					_silence = false;
-					
-					// Trigger event.
-					System.out.println("Silence ends at: " + _clock);
+					_listener.onSilenceEnded(_clock);
 				}
-				
+
 				// Flush buffer to output.
 				forwardBuffer();
 				
