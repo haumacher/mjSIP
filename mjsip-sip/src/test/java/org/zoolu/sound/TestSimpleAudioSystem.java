@@ -32,7 +32,7 @@ public class TestSimpleAudioSystem {
 		int duration = 1;
 		Encoding encoding = ToneGenerator.Encoding.PCM_LINEAR_SIGNED;
 		try (InputStream in = new ToneInputStream(1000, 1, sampleRate, sampleSize, encoding, bigEndian)) {
-			try (OutputStream out = AudioFile.getAudioFileOutputStream("tone-linear.wav",
+			try (OutputStream out = AudioFile.getAudioFileOutputStream("./target/tone-linear.wav",
 					new AudioFormat(sampleRate, sampleSize * 8, 1, encoding.isSigned(), bigEndian))) {
 				for (int n = 0; n < sampleRate * sampleSize * duration; n++) {
 					int s = in.read();
@@ -52,7 +52,7 @@ public class TestSimpleAudioSystem {
 		ToneGenerator generator = new ToneGenerator(1000, 1, sampleRate, sampleSize, encoding);
 
 		AudioFormat format = SimpleAudioSystem.getAudioFormat(CodecType.G711_ALAW, sampleRate);
-		try (OutputStream out = AudioFile.getAudioFileOutputStream("tone-alaw.wav", format)) {
+		try (OutputStream out = AudioFile.getAudioFileOutputStream("./target/tone-alaw.wav", format)) {
 			for (int n = 0; n < sampleRate * sampleSize * duration; n++) {
 				long s = generator.nextSample();
 
@@ -62,8 +62,7 @@ public class TestSimpleAudioSystem {
 			}
 		}
 
-		decompress("tone-alaw.wav");
-		decompress("test-alaw.wav");
+		decompress("./target/tone-alaw.wav");
 	}
 
 	void decompress(String alawWavFile) throws IOException, UnsupportedAudioFileException {

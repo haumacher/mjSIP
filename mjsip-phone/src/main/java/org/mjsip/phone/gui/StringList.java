@@ -1,4 +1,4 @@
-package org.mjsip.ua.gui;
+package org.mjsip.phone.gui;
 
 
 import java.io.BufferedWriter;

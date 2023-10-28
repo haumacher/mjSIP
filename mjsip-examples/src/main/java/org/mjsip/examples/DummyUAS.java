@@ -19,7 +19,7 @@
  * Luca Veltri (luca.veltri@unipr.it)
  */
 
-package org.mjsip.ua;
+package org.mjsip.examples;
 
 
 

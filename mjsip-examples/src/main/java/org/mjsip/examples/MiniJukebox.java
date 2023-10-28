@@ -18,7 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-package org.mjsip.ua;
+package org.mjsip.examples;
 
 import java.io.File;
 
@@ -28,6 +28,11 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.MediaConfig;
+import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.UAConfig;
+import org.mjsip.ua.UIConfig;
+import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;

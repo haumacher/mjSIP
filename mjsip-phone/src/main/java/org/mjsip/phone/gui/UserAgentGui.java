@@ -19,7 +19,7 @@
  * Luca Veltri (luca.veltri@unipr.it)
  */
 
-package org.mjsip.ua.gui;
+package org.mjsip.phone.gui;
 
 
 import java.awt.BorderLayout;

@@ -1,4 +1,4 @@
-package org.mjsip.ua;
+package org.mjsip.examples;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -7,6 +7,8 @@ import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.UAConfig;
+import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.cli.MessageAgentCli;
 import org.zoolu.util.Flags;
 
