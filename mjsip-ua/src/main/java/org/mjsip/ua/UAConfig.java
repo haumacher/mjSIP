@@ -14,7 +14,7 @@ import org.zoolu.util.Parser;
 
 /** {@link UserAgent} configuration options.
   */
-public class UAConfig extends Configure implements UAOptions {
+public class UAConfig extends Configure implements UAOptions, RegistrationOptions {
 		 
 	/** 
 	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
@@ -319,7 +319,7 @@ public class UAConfig extends Configure implements UAOptions {
 		this._authPasswd = authPasswd;
 	}
 
-	/** Whether registering with the registrar server */
+	@Override
 	public boolean isRegister() {
 		return _doRegister;
 	}
@@ -329,7 +329,7 @@ public class UAConfig extends Configure implements UAOptions {
 		this._doRegister = doRegister;
 	}
 
-	/** Expires time (in seconds). */
+	@Override
 	public int getExpires() {
 		return _expires;
 	}

@@ -77,7 +77,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	 * Creates a {@link Echo} service. 
 	 */
 	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route, ServiceConfig serviceConfig) {
-		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
+		super(sip_provider,streamerFactory, uaConfig, uaConfig, serviceConfig);
 		_portPool = portPool;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS

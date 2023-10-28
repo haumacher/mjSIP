@@ -113,26 +113,30 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	private MediaDesc[] _callMedia;
 
+	private RegistrationOptions _regConfig;
+
 	/** Creates a {@link UserAgent}. */
-	public UserAgent(SipProvider sip_provider, StreamerFactory streamerFactory, UAOptions uaConfig, UserAgentListener listener) {
+	public UserAgent(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regConfig, UAOptions uaConfig, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
+		_regConfig = regConfig;
 		_mediaAgent = new MediaAgent(streamerFactory);
 		this.listener=listener;
 		this.uaConfig=uaConfig;
 
 		// start listening for INVITE requests (UAS)
-		if (uaConfig.isUaServer()) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
+		if (regConfig.isUaServer()) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
 		
 		// start OPTIONS server
-		if (uaConfig.isOptionsServer()) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
+		if (regConfig.isOptionsServer()) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
 
 		// start "Not Implemented" server
-		if (uaConfig.isNullServer()) null_server=new NotImplementedServer(sip_provider);
+		if (regConfig.isNullServer()) null_server=new NotImplementedServer(sip_provider);
 	}
 
 	/** Inits the RegistrationClient */
 	private void initRegistrationClient() {
-		rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.getRegistrar()),uaConfig.getUserURI(),uaConfig.getAuthUser(),uaConfig.getAuthRealm(),uaConfig.getAuthPasswd(),this);
+		rc = new RegistrationClient(sip_provider, new SipURI(_regConfig.getRegistrar()), _regConfig.getUserURI(),
+				_regConfig.getAuthUser(), _regConfig.getAuthRealm(), _regConfig.getAuthPasswd(),this);
 	}
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
@@ -248,7 +252,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Makes a new call (acting as UAC) with specific SDP. */
 	public void call(NameAddress callee, SdpMessage sdp) {
-		call=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI(),uaConfig.getAuthUser(),uaConfig.getAuthRealm(),uaConfig.getAuthPasswd()),this);      
+		call = new ExtendedCall(sip_provider, new SipUser(_regConfig.getUserURI(), _regConfig.getAuthUser(),
+				_regConfig.getAuthRealm(), _regConfig.getAuthPasswd()),this);      
 		if (uaConfig.getNoOffer()) call.call(callee);
 		else {
 			call.call(callee,sdp.toString());
@@ -726,7 +731,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("transfer to "+refer_to.toString());
 		call.acceptTransfer();
-		call_transfer=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI()),this);
+		call_transfer=new ExtendedCall(sip_provider,new SipUser(_regConfig.getUserURI()),this);
 		call_transfer.call(refer_to,getSessionDescriptor().toString());
 	}
 

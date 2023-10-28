@@ -68,7 +68,7 @@ public class Jukebox extends MultipleUAS {
 	 * Creates a {@link Jukebox}. 
 	 */
 	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
-		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
+		super(sip_provider,streamerFactory, uaConfig, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}

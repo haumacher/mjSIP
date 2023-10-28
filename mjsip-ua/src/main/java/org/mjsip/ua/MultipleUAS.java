@@ -56,31 +56,31 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 
 	private final int _hangupTime;
 
+	private final RegistrationOptions _clientRegOptions;
+
 	/**
 	 * Creates a {@link MultipleUAS}.
 	 */
-	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, ServiceConfig serviceConfig) {
+	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions, UAOptions uaConfig, ServiceConfig serviceConfig) {
 		this.sip_provider=sip_provider;
 		_streamerFactory = streamerFactory;
 		_uaConfig=uaConfig;
 		_hangupTime = serviceConfig.hangupTime;
+		_clientRegOptions = regOptions.noRegistration();
 
-		// registration client
-		if (uaConfig.isRegister()) {
-			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.getRegistrar()),uaConfig.getUserURI(),uaConfig.getAuthUser(),uaConfig.getAuthRealm(),uaConfig.getAuthPasswd(),this);
-			rc.loopRegister(uaConfig.getExpires(),uaConfig.getExpires()/2);
-		}
-		
-		// set strict receive-only profile, since this configuration is re-used for spawning multiple user agents when calls are received.
-		uaConfig.setUaServer(false);
-		uaConfig.setOptionsServer(false);
-		uaConfig.setNullServer(false);
-		uaConfig.setRegister(false);
+		register(regOptions);
 		
 		// start UAS     
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
-	} 
+	}
 
+	private void register(RegistrationOptions regConfig) {
+		if (regConfig.isRegister()) {
+			RegistrationClient rc = new RegistrationClient(
+					sip_provider,new SipURI(regConfig.getRegistrar()),regConfig.getUserURI(),regConfig.getAuthUser(),regConfig.getAuthRealm(),regConfig.getAuthPasswd(),this);
+			rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
+		}
+	} 
 
 	// ******************* SipProviderListener methods  ******************
 
@@ -118,7 +118,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		} else {
 			autoHangup = null;
 		}
-		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, _uaConfig, listener);
+		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, _clientRegOptions, _uaConfig, listener);
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);

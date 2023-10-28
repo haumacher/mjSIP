@@ -43,8 +43,10 @@ import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.PortConfig;
 import org.mjsip.ua.PortPool;
+import org.mjsip.ua.RegistrationOptions;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.UAConfig;
+import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
@@ -72,8 +74,8 @@ public class AnsweringMachine extends MultipleUAS {
 	/** 
 	 * Creates an {@link AnsweringMachine}. 
 	 */
-	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
-		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
+	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions, UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
+		super(sip_provider,streamerFactory, regOptions, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
 	}
@@ -123,7 +125,7 @@ public class AnsweringMachine extends MultipleUAS {
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		StreamerFactory streamerFactory = mediaConfig.createStreamerFactory(uaConfig);
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig);
+		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, uaConfig, mediaConfig, portPool, serviceConfig);
 	}    
 
 }

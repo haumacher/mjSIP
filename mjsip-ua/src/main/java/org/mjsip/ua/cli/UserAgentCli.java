@@ -114,7 +114,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
 		
-		ua=new UserAgent(sip_provider,mediaConfig.createStreamerFactory(uaConfig),uaConfig, this.andThen(clipPlayer()));      
+		ua=new UserAgent(sip_provider,mediaConfig.createStreamerFactory(uaConfig),uaConfig, uaConfig, this.andThen(clipPlayer()));      
 		if (!uaConfig.isNoPrompt()) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.isNoPrompt()) stdout=System.out;
 		run();
