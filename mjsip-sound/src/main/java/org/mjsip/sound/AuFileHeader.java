@@ -19,7 +19,7 @@
  * Luca Veltri (luca.veltri@unipr.it)
  */
 
-package org.mjsip.media;
+package org.mjsip.sound;
 
 
 import java.io.IOException;

@@ -18,7 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-package org.mjsip.media;
+package org.mjsip.sound;
 
 /**
  * Source of samples producing a tone with a constant frequency.

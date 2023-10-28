@@ -1,4 +1,4 @@
-package org.mjsip.media;
+package org.mjsip.sound;
 
 import org.zoolu.util.Encoder;
 
@@ -24,12 +24,12 @@ public class Codec {
 	
 	
 	/** Gets encoder */
-	Encoder getEncoder() {
+	public Encoder getEncoder() {
 		return encoder;
 	}
 
 	/** Gets decoder */
-	Encoder getDecoder() {
+	public Encoder getDecoder() {
 		return decoder;
 	}
 

@@ -30,7 +30,6 @@ import java.io.PrintStream;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.ua.ClipPlayer;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.UAConfig;
@@ -38,6 +37,7 @@ import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
+import org.mjsip.ua.clip.ClipPlayer;
 import org.slf4j.LoggerFactory;
 
 

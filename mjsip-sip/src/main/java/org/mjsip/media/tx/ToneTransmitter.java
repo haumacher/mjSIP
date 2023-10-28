@@ -9,10 +9,10 @@ import javax.sound.sampled.AudioFormat;
 
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.media.RtpStreamSenderListener;
-import org.mjsip.media.ToneGenerator;
-import org.mjsip.media.ToneInputStream;
 import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPayloadFormat;
+import org.mjsip.sound.ToneGenerator;
+import org.mjsip.sound.ToneInputStream;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.CodecType;

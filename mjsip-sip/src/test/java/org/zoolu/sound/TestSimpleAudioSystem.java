@@ -13,10 +13,10 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mjsip.media.AudioFile;
-import org.mjsip.media.ToneGenerator;
-import org.mjsip.media.ToneGenerator.Encoding;
-import org.mjsip.media.ToneInputStream;
+import org.mjsip.sound.AudioFile;
+import org.mjsip.sound.ToneGenerator;
+import org.mjsip.sound.ToneInputStream;
+import org.mjsip.sound.ToneGenerator.Encoding;
 import org.zoolu.sound.codec.G711;
 
 /**

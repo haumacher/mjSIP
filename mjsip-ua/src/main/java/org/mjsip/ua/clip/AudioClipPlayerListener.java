@@ -1,7 +1,4 @@
-package org.mjsip.media;
-
-
-
+package org.mjsip.ua.clip;
 
 /** Listener for AudioClipPlayer.
   * It captures onAudioClipStop() events, fired when the sound stops.  

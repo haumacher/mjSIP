@@ -6,6 +6,7 @@ package org.mjsip.media;
 import org.mjsip.media.rx.RtpReceiverOptions;
 import org.mjsip.media.tx.RtpSenderOptions;
 import org.mjsip.rtp.RtpControl;
+import org.mjsip.sound.Codec;
 
 /**
  * Options for {@link AudioStreamer}.

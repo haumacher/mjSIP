@@ -1,9 +1,14 @@
-package org.mjsip.media;
+package org.mjsip.examples;
 
 
 
 import java.io.IOException;
 
+import org.mjsip.media.AudioStreamer;
+import org.mjsip.media.FlowSpec;
+import org.mjsip.media.MediaSpec;
+import org.mjsip.media.RtpStreamSender;
+import org.mjsip.media.StreamerOptions;
 import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.StreamerOptions.Builder;
 import org.mjsip.media.rx.AudioFileReceiver;

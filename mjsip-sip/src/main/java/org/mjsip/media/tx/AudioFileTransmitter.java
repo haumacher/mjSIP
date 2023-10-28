@@ -9,11 +9,11 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import org.mjsip.media.AudioFile;
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.media.RtpStreamSenderListener;
 import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPayloadFormat;
+import org.mjsip.sound.AudioFile;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.CodecType;

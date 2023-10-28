@@ -12,7 +12,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import org.mjsip.media.AudioFile;
+import org.mjsip.sound.AudioFile;
 
 /**
  * Tool splitting an input WAV file into parts where the input is separated by regions of silence.

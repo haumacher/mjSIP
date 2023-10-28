@@ -12,8 +12,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mjsip.media.AudioFile;
-import org.mjsip.media.ToneGenerator;
+import org.mjsip.sound.AudioFile;
+import org.mjsip.sound.ToneGenerator;
 
 /**
  * Test for {@link AlawSilenceTrimmer}.

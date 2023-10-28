@@ -1,11 +1,14 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.ua;
+package org.mjsip.ua.clip;
 
-import org.mjsip.media.AudioClipPlayer;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.ua.UIConfig;
+import org.mjsip.ua.UserAgent;
+import org.mjsip.ua.UserAgentListener;
+import org.mjsip.ua.UserAgentListenerAdapter;
 
 /**
  * {@link UserAgentListener} playing sounds when certain {@link UserAgent} actions occur.
