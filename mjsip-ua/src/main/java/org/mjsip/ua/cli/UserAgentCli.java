@@ -31,7 +31,7 @@ import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.MediaConfig;
-import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
@@ -61,7 +61,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	
 	private UIConfig _uiConfig;
 	
-	protected final ServiceConfig _serviceConfig;
+	protected final ServiceOptions _serviceConfig;
 			
 	/** Standard input */
 	BufferedReader stdin=null; 
@@ -107,7 +107,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentCli(SipProvider sip_provider, ServiceConfig serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+	public UserAgentCli(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
 		this.sip_provider=sip_provider;
 		_serviceConfig = serviceConfig;
 		_uaConfig=uaConfig;
@@ -149,7 +149,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	public void accept() {
 		ua.accept(_mediaConfig.mediaDescs);
 		changeStatus(UA_ONCALL);
-		if (_serviceConfig.hangupTime>0) automaticHangup(_serviceConfig.hangupTime); 
+		if (_serviceConfig.getHangupTime()>0) automaticHangup(_serviceConfig.getHangupTime()); 
 		LOG.info("press 'enter' to hangup"); 
 	} 
 
@@ -290,7 +290,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	public void onUaCallAccepted(UserAgent ua) {
 		changeStatus(UA_ONCALL);
 		LOG.info("call accepted");
-		if (_serviceConfig.hangupTime>0) automaticHangup(_serviceConfig.hangupTime);
+		if (_serviceConfig.getHangupTime()>0) automaticHangup(_serviceConfig.getHangupTime());
 		else
 			LOG.info("press 'enter' to hangup");
 	}

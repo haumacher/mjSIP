@@ -35,6 +35,7 @@ import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.PortConfig;
 import org.mjsip.ua.PortPool;
 import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
@@ -67,7 +68,8 @@ public class Jukebox extends MultipleUAS {
 	/** 
 	 * Creates a {@link Jukebox}. 
 	 */
-	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
+	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig,
+			MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig) {
 		super(sip_provider,streamerFactory, uaConfig, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
@@ -142,7 +144,7 @@ public class Jukebox extends MultipleUAS {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
-		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);

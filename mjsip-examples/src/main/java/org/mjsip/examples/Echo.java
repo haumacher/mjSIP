@@ -43,6 +43,7 @@ import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.PortConfig;
 import org.mjsip.ua.PortPool;
 import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
@@ -76,7 +77,8 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	/** 
 	 * Creates a {@link Echo} service. 
 	 */
-	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool, boolean force_reverse_route, ServiceConfig serviceConfig) {
+	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool,
+			boolean force_reverse_route, ServiceOptions serviceConfig) {
 		super(sip_provider,streamerFactory, uaConfig, uaConfig, serviceConfig);
 		_portPool = portPool;
 		this.force_reverse_route=force_reverse_route;
@@ -156,7 +158,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
-		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
 		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);

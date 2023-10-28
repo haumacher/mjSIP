@@ -55,6 +55,7 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
@@ -655,7 +656,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
-		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
 		if (no_gui) {

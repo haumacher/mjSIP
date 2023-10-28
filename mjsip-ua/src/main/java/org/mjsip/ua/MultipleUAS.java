@@ -61,11 +61,11 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	/**
 	 * Creates a {@link MultipleUAS}.
 	 */
-	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions, UAOptions uaConfig, ServiceConfig serviceConfig) {
+	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions, UAOptions uaConfig, ServiceOptions serviceConfig) {
 		this.sip_provider=sip_provider;
 		_streamerFactory = streamerFactory;
 		_uaConfig=uaConfig;
-		_hangupTime = serviceConfig.hangupTime;
+		_hangupTime = serviceConfig.getHangupTime();
 		_clientRegOptions = regOptions.noRegistration();
 
 		register(regOptions);

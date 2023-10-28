@@ -30,6 +30,7 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
@@ -56,7 +57,7 @@ public class MiniJukebox extends UserAgentCli {
 	/** 
 	 * Creates a new MiniJukebox. 
 	 */
-	public MiniJukebox(SipProvider sip_provider, ServiceConfig serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+	public MiniJukebox(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
 		super(sip_provider,serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}
 
@@ -83,7 +84,7 @@ public class MiniJukebox extends UserAgentCli {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
-		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
 		mediaConfig.audio=true;
