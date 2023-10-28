@@ -3,6 +3,7 @@
  */
 package org.mjsip.ua.sound;
 
+import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,7 +19,7 @@ import org.mjsip.media.AudioFile;
  */
 public class WavFileSplitter implements SilenceListenerAdapter {
 	
-	private String _fileName;
+	private File _file;
 	private AlawSilenceTrimmer _trimmer;
 	private AudioFormat _format;
 	private OutputStream _out;
@@ -27,18 +28,30 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 	 * The number of the current part created.
 	 */
 	private int _part = 1;
+	private File _outputDir;
 
 	/** 
 	 * Creates a {@link WavFileSplitter}.
 	 *
-	 * @param fileName The name of the WAV input file.
+	 * @param file The WAV input file.
 	 */
-	public WavFileSplitter(String fileName) {
-		_fileName = fileName;
+	public WavFileSplitter(File file) {
+		_file = file;
+	}
+	
+	/**
+	 * Sets the output directory.
+	 */
+	public WavFileSplitter setOutputDir(File outputDir) {
+		_outputDir = outputDir;
+		return this;
 	}
 
-	private void run() throws IOException, UnsupportedAudioFileException {
-		try (AudioInputStream in = AudioFile.getAudioFileInputStream(_fileName)) {
+	/**
+	 * Starts the splitting.
+	 */
+	public void run() throws IOException, UnsupportedAudioFileException {
+		try (AudioInputStream in = AudioFile.getAudioFileInputStream(_file.getAbsolutePath())) {
 			_format = in.getFormat();
 			int sampleRate = (int) _format.getSampleRate();
 			int bufferTime = 20;
@@ -57,8 +70,10 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 	public void onSilenceEnded(long clock) {
 		try {
 			flushOut();
-			String partName = _fileName.substring(0, _fileName.length() - 4) + "-part" + _part++ + ".wav";
-			_out = AudioFile.getAudioFileOutputStream(partName, _format);
+			String fileName = _file.getName();
+			String partName = fileName.substring(0, fileName.length() - 4) + "-part" + _part++ + ".wav";
+			File output = new File(_outputDir == null ? _file.getParentFile() : _outputDir, partName);
+			_out = AudioFile.getAudioFileOutputStream(output.getAbsolutePath(), _format);
 			_trimmer.setOut(_out);
 		} catch (IOException | UnsupportedAudioFileException ex) {
 			throw new IOError(ex);
@@ -88,7 +103,7 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 	 */
 	public static void main(String[] args) throws Exception {
 		String fileName = args[0];
-		new WavFileSplitter(fileName).run();
+		new WavFileSplitter(new File(fileName)).run();
 	}
 
 }
