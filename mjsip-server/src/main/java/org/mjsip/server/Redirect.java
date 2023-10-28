@@ -28,6 +28,7 @@ import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
@@ -94,7 +95,7 @@ public class Redirect extends Registrar {
 		Flags flags=new Flags(Redirect.class.getName(), args);
 		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		flags.close();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));

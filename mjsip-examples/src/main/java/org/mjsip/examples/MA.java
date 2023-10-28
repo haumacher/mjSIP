@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
@@ -22,7 +23,7 @@ public class MA {
 		boolean unregist=flags.getBoolean("-u","unregisters the contact address with the registrar server (the same as -g 0)");
 		boolean unregist_all=flags.getBoolean("-z","unregisters ALL contact addresses");
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig=UAConfig.init(config_file, flags, sipConfig);         
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);

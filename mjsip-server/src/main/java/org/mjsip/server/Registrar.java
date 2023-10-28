@@ -36,6 +36,7 @@ import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.mjsip.time.Scheduler;
@@ -327,7 +328,7 @@ public class Registrar extends ServerEngine {
 	public static void main(String[] args) {
 		Flags flags=new Flags(Registrar.class.getName(), args);
 		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		flags.close();
 			

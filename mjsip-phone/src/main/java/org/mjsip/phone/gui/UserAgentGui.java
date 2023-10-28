@@ -48,6 +48,7 @@ import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
@@ -650,7 +651,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		println("MJSIP UserAgent "+SipStack.version);
 		Flags flags=new Flags("local.ua.UA", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);

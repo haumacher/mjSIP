@@ -31,6 +31,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
@@ -154,7 +155,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		}
 		Flags flags=new Flags("Echo", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		PortConfig portConfig = PortConfig.init(config_file, flags);

@@ -24,6 +24,7 @@ import java.io.File;
 
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
@@ -79,7 +80,7 @@ public class MiniJukebox extends UserAgentCli {
 		System.out.println("MiniJukebox"+SipStack.version);
 		Flags flags=new Flags("MiniJukebox", args);
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
