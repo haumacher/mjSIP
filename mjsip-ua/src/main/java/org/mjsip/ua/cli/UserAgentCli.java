@@ -115,8 +115,8 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		_mediaConfig = mediaConfig;
 		
 		ua=new UserAgent(sip_provider,mediaConfig.createStreamerFactory(uaConfig),uaConfig, this.andThen(clipPlayer()));      
-		if (!uaConfig.noPrompt) stdin=new BufferedReader(new InputStreamReader(System.in)); 
-		if (!uaConfig.noPrompt) stdout=System.out;
+		if (!uaConfig.isNoPrompt()) stdin=new BufferedReader(new InputStreamReader(System.in)); 
+		if (!uaConfig.isNoPrompt()) stdout=System.out;
 		run();
 	}
 
@@ -195,10 +195,10 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 				ua.unregister();
 			} 
 
-			if (_uaConfig.doRegister) {
+			if (_uaConfig.isRegister()) {
 				// ########## registers the contact URI with the registrar server
 				LOG.info("REGISTRATION");
-				ua.loopRegister(_uaConfig.expires,_uaConfig.expires/2,_uaConfig.keepaliveTime);
+				ua.loopRegister(_uaConfig.getExpires(),_uaConfig.getExpires()/2,_uaConfig.getKeepAliveTime());
 			}         
 			
 			if (_uiConfig.callTo!=null) {

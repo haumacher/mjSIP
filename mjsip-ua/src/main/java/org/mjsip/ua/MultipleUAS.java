@@ -66,16 +66,16 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		_hangupTime = serviceConfig.hangupTime;
 
 		// registration client
-		if (uaConfig.doRegister) {
-			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.registrar),uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd,this);
-			rc.loopRegister(uaConfig.expires,uaConfig.expires/2);
+		if (uaConfig.isRegister()) {
+			RegistrationClient rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.getRegistrar()),uaConfig.getUserURI(),uaConfig.getAuthUser(),uaConfig.getAuthRealm(),uaConfig.getAuthPasswd(),this);
+			rc.loopRegister(uaConfig.getExpires(),uaConfig.getExpires()/2);
 		}
 		
 		// set strict receive-only profile, since this configuration is re-used for spawning multiple user agents when calls are received.
-		uaConfig.uaServer=false;
-		uaConfig.optionsServer=false;
-		uaConfig.nullServer=false;
-		uaConfig.doRegister=false;
+		uaConfig.setUaServer(false);
+		uaConfig.setOptionsServer(false);
+		uaConfig.setNullServer(false);
+		uaConfig.setRegister(false);
 		
 		// start UAS     
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 

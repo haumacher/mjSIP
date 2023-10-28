@@ -30,8 +30,8 @@ public class MA {
 				
 		
 		if (regist_time>0) {
-			uaConfig.doRegister=true;
-			uaConfig.expires=regist_time;
+			uaConfig.setRegister(true);
+			uaConfig.setExpires(regist_time);
 		}
 		if (unregist) uiConfig.doUnregister=true;
 		if (unregist_all) uiConfig.doUnregisterAll=true;
@@ -43,8 +43,8 @@ public class MA {
 		if (uiConfig.doUnregister) {
 			cli.unregister();
 		} 
-		if (uaConfig.doRegister) {
-			cli.register(uaConfig.expires);
+		if (uaConfig.isRegister()) {
+			cli.register(uaConfig.getExpires());
 		} 
 		
 		// start sending messages

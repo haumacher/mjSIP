@@ -37,87 +37,44 @@ public class UAConfig extends Configure {
 		return result;
 	}
 
-	/** Display name for the user.
-	  * It is used in the user's AOR registered to the registrar server
-	  * and used as From URI. */
-	public String displayName=null;
+	private String _displayName=null;
 
-	/** User's name.
-	  * It is used to build the user's AOR registered to the registrar server
-	  * and used as From URI. */
-	public String user=null;
+	private String _user=null;
 
-	/** Fully qualified domain name (or address) of the proxy server.
-	  * It is part of the user's AOR registered to the registrar server
-	  * and used as From URI.
-	  * <p>
-	  * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place.
-	  * <p>
-	  * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place. */
-	public String proxy=null;
+	private String _proxy=null;
 
-	/** Fully qualified domain name (or address) of the registrar server.
-	  * It is used as recipient for REGISTER requests.
-	  * <p>
-	  * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place.
-	  * <p>
-	  * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place. */
-	public String registrar=null;
+	private String _registrar=null;
 
-	/** UA address.
-	  * It is the SIP address of the UA and is used to form the From URI if no proxy is configured. */
-	public String ua_address=null;
+	private String _uaAddress=null;
 
-	/** User's name used for server authentication. */
-	public String authUser=null;
-	/** User's realm used for server authentication. */
-	public String authRealm=null;
-	/** User's passwd used for server authentication. */
-	public String authPasswd=null;
+	private String _authUser=null;
+	private String _authRealm=null;
+	private String _authPasswd=null;
 
-	/** Whether registering with the registrar server */
-	public boolean doRegister=false;
+	private boolean _doRegister=false;
 
-	/** Expires time (in seconds). */
-	public int expires=3600;
+	private int _expires=3600;
 
-	/** Rate of keep-alive tokens (datagrams) sent toward the outbound proxy
-	  * (if present) or toward the registrar server.
-	  * Its value specifies the delta-time (in millesconds) between two
-	  * keep-alive tokens. <br>
-	  * Set keepalive_time=0 for not sending keep-alive datagrams. */
-	public long keepaliveTime=0;
+	private long _keepaliveTime=0;
 
-	/** Response time in seconds; it is the maximum time the user can wait before responding to an incoming call; after such time the call is automatically declined (refused). */
-	public int refuseTime=20;
+	private int _refuseTime=20;
 	
-	/** No offer in the invite */
-	public boolean noOffer=false;
+	private boolean _noOffer=false;
 
-	/** Do not use prompt */
-	public boolean noPrompt=false;
+	private boolean _noPrompt=false;
 
-	/** Whether playing in receive only mode */
-	public boolean recvOnly=false;
-	/** Whether playing in send only mode */
-	public boolean sendOnly=false;
+	private boolean _recvOnly=false;
+	private boolean _sendOnly=false;
 	
-	/** Media address (use it if you want to use a media address different from the via address) */
-	public String mediaAddr=null;
+	private String _mediaAddr=null;
 
-	/** Whether using symmetric_rtp */
-	public boolean symmetricRtp=false;
+	private boolean _symmetricRtp=false;
 
-	// ******************** undocumented parametes ********************
+	private boolean _uaServer=true;
 
-	/** Whether running the UAS (User Agent Server), or acting just as UAC (User Agent Client). In the latter case only outgoing calls are supported. */
-	public boolean uaServer=true;
+	private boolean _optionsServer=true;
 
-	/** Whether running an Options Server, that automatically responds to OPTIONS requests. */
-	public boolean optionsServer=true;
-
-	/** Whether running an Null Server, that automatically responds to not-implemented requests. */
-	public boolean nullServer=true;
+	private boolean _nullServer=true;
 
 	/** Sender synchronization adjustment, that is the time (in milliseconds) that a frame
 	  * should be sent in advance by the RTP sender, before the nominal time.
@@ -130,21 +87,9 @@ public class UAConfig extends Configure {
 	  * the UA audio performances seem to decrease). */
 	//public int javax_sound_sync_adj=2;
 
-	/** Whether enforcing time synchronization to RTP source stream.
-	  * If synchronization is explicitely performed, the depature time of each RTP packet is equal to its nominal time.
-	  * <p>
-	  * Note that when using audio capturing, synchronization with the sample rate
-	  * is implicitely performed by the audio capture device and frames are read at constat bit rate.
-	  * However, an explicit re-synchronization is suggested
-	  * in order to let the read() method be non-blocking (in the other case
-	  * the UA audio performance seems decreasing. */
-	public boolean javaxSoundSync=true;
+	private boolean _javaxSoundSync=true;
 
-	/** Receiver random early drop (RED) rate. Actually it is the inverse of packet drop rate.
-	  * It can used to prevent long play back delay. 
-	  * A value less or equal to 0 means that no packet dropping is explicitely
-	  * performed at the RTP receiver. */
-	public int randomEarlyDropRate=20;
+	private int _randomEarlyDropRate=20;
 
 	/** Constructs a {@link UAConfig} */
 	private UAConfig() {
@@ -155,9 +100,9 @@ public class UAConfig extends Configure {
 	 * The flow direction.
 	 */
 	public Direction getDirection() {
-		if (recvOnly) {
+		if (isRecvOnly()) {
 			return Direction.RECV_ONLY;
-		} else if (sendOnly) {
+		} else if (isSendOnly()) {
 			return Direction.SEND_ONLY;
 		} else {
 			return Direction.FULL_DUPLEX;
@@ -166,20 +111,20 @@ public class UAConfig extends Configure {
 
 	/** Inits the UserAgentProfile. */
 	private void normalize(SipConfig sipConfig) {
-		if (proxy!=null && proxy.equalsIgnoreCase(Configure.NONE)) proxy=null;
-		if (registrar!=null && registrar.equalsIgnoreCase(Configure.NONE)) registrar=null;
-		if (displayName!=null && displayName.equalsIgnoreCase(Configure.NONE)) displayName=null;
-		if (user!=null && user.equalsIgnoreCase(Configure.NONE)) user=null;
-		if (authRealm!=null && authRealm.equalsIgnoreCase(Configure.NONE)) authRealm=null;
+		if (getProxy()!=null && getProxy().equalsIgnoreCase(Configure.NONE)) setProxy(null);
+		if (getRegistrar()!=null && getRegistrar().equalsIgnoreCase(Configure.NONE)) setRegistrar(null);
+		if (getDisplayName()!=null && getDisplayName().equalsIgnoreCase(Configure.NONE)) setDisplayName(null);
+		if (getUser()!=null && getUser().equalsIgnoreCase(Configure.NONE)) setUser(null);
+		if (getAuthRealm()!=null && getAuthRealm().equalsIgnoreCase(Configure.NONE)) setAuthRealm(null);
 
-		if (registrar==null && proxy!=null) registrar=proxy;
-		if (proxy==null && registrar!=null) proxy=registrar;
-		if (authRealm==null && proxy!=null) authRealm=proxy;
-		if (authRealm==null && registrar!=null) authRealm=registrar;
-		if (authUser==null && user!=null) authUser=user;
-		if (ua_address==null) {
-			ua_address=sipConfig.getViaAddr();
-			if (sipConfig.getHostPort()!=sipConfig.getDefaultPort()) ua_address+=":"+sipConfig.getHostPort();
+		if (getRegistrar()==null && getProxy()!=null) setRegistrar(getProxy());
+		if (getProxy()==null && getRegistrar()!=null) setProxy(getRegistrar());
+		if (getAuthRealm()==null && getProxy()!=null) setAuthRealm(getProxy());
+		if (getAuthRealm()==null && getRegistrar()!=null) setAuthRealm(getRegistrar());
+		if (getAuthUser()==null && getUser()!=null) setAuthUser(getUser());
+		if (getUaAddress()==null) {
+			setUaAddress(sipConfig.getViaAddr());
+			if (sipConfig.getHostPort()!=sipConfig.getDefaultPort()) setUaAddress(getUaAddress() + ":"+sipConfig.getHostPort());
 		}
 	}
 
@@ -193,8 +138,8 @@ public class UAConfig extends Configure {
 	  * otherwhise the local UA address (obtained by the SipProvider) is used.
 	  * @return the user's name address */
 	public NameAddress getUserURI() {
-		if (proxy!=null && user!=null) return new NameAddress(displayName,new SipURI(user,proxy));
-		else return new NameAddress(displayName,new SipURI(user,ua_address));
+		if (getProxy()!=null && getUser()!=null) return new NameAddress(getDisplayName(),new SipURI(getUser(),getProxy()));
+		else return new NameAddress(getDisplayName(),new SipURI(getUser(),getUaAddress()));
 	}
 
 	/** Sets the user's AOR (Address Of Record) registered to the registrar server
@@ -209,10 +154,10 @@ public class UAConfig extends Configure {
 		if (!naddr_uri.isSipURI()) throw new UnexpectedUriSchemeException(naddr_uri.getScheme());
 		// else
 		SipURI uri=new SipURI(naddr_uri);
-		if (displayName==null) displayName=naddr.getDisplayName();
-		if (user==null) user=uri.getUserName();
-		if (proxy==null) proxy=(uri.hasPort())? uri.getHost()+":"+uri.getPort() : uri.getHost();
-		if (registrar==null) registrar=proxy;
+		if (getDisplayName()==null) setDisplayName(naddr.getDisplayName());
+		if (getUser()==null) setUser(uri.getUserName());
+		if (getProxy()==null) setProxy((uri.hasPort())? uri.getHost()+":"+uri.getPort() : uri.getHost());
+		if (getRegistrar()==null) setRegistrar(getProxy());
 	}
 
 	// *********************** protected methods **********************
@@ -223,35 +168,35 @@ public class UAConfig extends Configure {
 	  */
 	@Override
 	public void setOption(String attribute, Parser par) {
-		if (attribute.equals("display_name"))   {  displayName=par.getRemainingString().trim();  return;  }
-		if (attribute.equals("user"))           {  user=par.getString();  return;  }
-		if (attribute.equals("proxy"))          {  proxy=par.getString();  return;  }
-		if (attribute.equals("registrar"))      {  registrar=par.getString();  return;  }
+		if (attribute.equals("display_name"))   {  setDisplayName(par.getRemainingString().trim());  return;  }
+		if (attribute.equals("user"))           {  setUser(par.getString());  return;  }
+		if (attribute.equals("proxy"))          {  setProxy(par.getString());  return;  }
+		if (attribute.equals("registrar"))      {  setRegistrar(par.getString());  return;  }
 
-		if (attribute.equals("auth_user"))      {  authUser=par.getString();  return;  } 
-		if (attribute.equals("auth_realm"))     {  authRealm=par.getRemainingString().trim();  return;  }
-		if (attribute.equals("auth_passwd"))    {  authPasswd=par.getRemainingString().trim();  return;  }
+		if (attribute.equals("auth_user"))      {  setAuthUser(par.getString());  return;  } 
+		if (attribute.equals("auth_realm"))     {  setAuthRealm(par.getRemainingString().trim());  return;  }
+		if (attribute.equals("auth_passwd"))    {  setAuthPasswd(par.getRemainingString().trim());  return;  }
 
-		if (attribute.equals("do_register"))    {  doRegister=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("expires"))        {  expires=par.getInt();  return;  } 
-		if (attribute.equals("keepalive_time")) {  keepaliveTime=par.getInt();  return;  } 
+		if (attribute.equals("do_register"))    {  setRegister((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("expires"))        {  setExpires(par.getInt());  return;  } 
+		if (attribute.equals("keepalive_time")) {  setKeepAliveTime(par.getInt());  return;  } 
 
-		if (attribute.equals("refuse_time"))    {  refuseTime=par.getInt();  return;  }
+		if (attribute.equals("refuse_time"))    {  setRefuseTime(par.getInt());  return;  }
 
-		if (attribute.equals("no_offer"))       {  noOffer=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("no_prompt"))      {  noPrompt=(par.getString().toLowerCase().startsWith("y"));  return;  }
+		if (attribute.equals("no_offer"))       {  setNoOffer((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("no_prompt"))      {  setNoPrompt((par.getString().toLowerCase().startsWith("y")));  return;  }
 
-		if (attribute.equals("recv_only"))      {  recvOnly=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("send_only"))      {  sendOnly=(par.getString().toLowerCase().startsWith("y"));  return;  }
+		if (attribute.equals("recv_only"))      {  setRecvOnly((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("send_only"))      {  setSendOnly((par.getString().toLowerCase().startsWith("y")));  return;  }
 		
-		if (attribute.equals("media_addr"))     {  mediaAddr=par.getString();  return;  } 
-		if (attribute.equals("symmetric_rtp"))  {  symmetricRtp=(par.getString().toLowerCase().startsWith("y"));  return;  } 
+		if (attribute.equals("media_addr"))     {  setMediaAddr(par.getString());  return;  } 
+		if (attribute.equals("symmetric_rtp"))  {  setSymmetricRtp((par.getString().toLowerCase().startsWith("y")));  return;  } 
 
-		if (attribute.equals("ua_server")) {  uaServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("options_server")) {  optionsServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("null_server")) {  nullServer=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("javax_sound_sync")) {  javaxSoundSync=(par.getString().toLowerCase().startsWith("y"));  return;  }
-		if (attribute.equals("random_early_drop_rate")) {  randomEarlyDropRate=par.getInt();  return;  }
+		if (attribute.equals("ua_server")) {  setUaServer((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("options_server")) {  setOptionsServer((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("null_server")) {  setNullServer((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("javax_sound_sync")) {  setJavaxSoundSync((par.getString().toLowerCase().startsWith("y")));  return;  }
+		if (attribute.equals("random_early_drop_rate")) {  setRandomEarlyDropRate(par.getInt());  return;  }
 	}
 
 	/**
@@ -259,47 +204,330 @@ public class UAConfig extends Configure {
 	 */
 	protected void updateWith(Flags flags) {
 		Boolean no_prompt=flags.getBoolean("--no-prompt",null,"do not prompt");
-		if (no_prompt!=null) this.noPrompt=no_prompt.booleanValue();
+		if (no_prompt!=null) this.setNoPrompt(no_prompt.booleanValue());
 		
 		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
-		if (regist_time>=0) {  this.doRegister=true;  this.expires=regist_time;  }
+		if (regist_time>=0) {  this.setRegister(true);  this.setExpires(regist_time);  }
 		
 		long keepalive_time=flags.getLong("--keep-alive","<msecs>",-1,"send keep-alive packets each given milliseconds");
-		if (keepalive_time>=0) this.keepaliveTime=keepalive_time;
+		if (keepalive_time>=0) this.setKeepAliveTime(keepalive_time);
 		
 		Boolean no_offer=flags.getBoolean("-n",null,"no offer in invite (offer/answer in 2xx/ack)");
-		if (no_offer!=null) this.noOffer=no_offer.booleanValue();
+		if (no_offer!=null) this.setNoOffer(no_offer.booleanValue());
 		
 		String display_name=flags.getString("--display-name","<str>",null,"display name");
-		if (display_name!=null) this.displayName=display_name;
+		if (display_name!=null) this.setDisplayName(display_name);
 		
 		String user=flags.getString("--user","<user>",null,"user name");
-		if (user!=null) this.user=user;
+		if (user!=null) this.setUser(user);
 		
 		String proxy=flags.getString("--proxy","<proxy>",null,"proxy server");
-		if (proxy!=null) this.proxy=proxy;
+		if (proxy!=null) this.setProxy(proxy);
 		
 		String registrar=flags.getString("--registrar","<registrar>",null,"registrar server");
-		if (registrar!=null) this.registrar=registrar;
+		if (registrar!=null) this.setRegistrar(registrar);
 		
 		String auth_user=flags.getString("--auth-user","<user>",null,"user name used for authenticat");
-		if (auth_user!=null) this.authUser=auth_user;
+		if (auth_user!=null) this.setAuthUser(auth_user);
 		
 		String auth_realm=flags.getString("--auth-realm","<realm>",null,"realm used for authentication");
-		if (auth_realm!=null) this.authRealm=auth_realm;
+		if (auth_realm!=null) this.setAuthRealm(auth_realm);
 		
 		String auth_passwd=flags.getString("--auth-passwd","<passwd>",null,"passwd used for authentication");
-		if (auth_passwd!=null) this.authPasswd=auth_passwd; 
+		if (auth_passwd!=null) this.setAuthPasswd(auth_passwd); 
 
 		Boolean recv_only=flags.getBoolean("--recv-only",null,"receive only mode, no media is sent");
-		if (recv_only!=null) this.recvOnly=recv_only.booleanValue();
+		if (recv_only!=null) this.setRecvOnly(recv_only.booleanValue());
 		
 		Boolean send_only=flags.getBoolean("--send-only",null,"send only mode, no media is received");
-		if (send_only!=null) this.sendOnly=send_only.booleanValue();
+		if (send_only!=null) this.setSendOnly(send_only.booleanValue());
 		
 		// for backward compatibility
 		String from_uri=flags.getString("--from-uri","<uri>",null,"user's address-of-record (AOR)");
 		if (from_uri!=null) this.setUserURI(NameAddress.parse(from_uri));
+	}
+
+	/**
+	 * Display name for the user. It is used in the user's AOR registered to the registrar server
+	 * and used as From URI.
+	 */
+	public String getDisplayName() {
+		return _displayName;
+	}
+
+	/** @see #getDisplayName() */
+	public void setDisplayName(String displayName) {
+		this._displayName = displayName;
+	}
+
+	/**
+	 * User's name. It is used to build the user's AOR registered to the registrar server and used
+	 * as From URI.
+	 */
+	public String getUser() {
+		return _user;
+	}
+	
+	/** @see #getUser() */
+	public void setUser(String user) {
+		this._user = user;
+	}
+
+	/**
+	 * Fully qualified domain name (or address) of the proxy server. It is part of the user's AOR
+	 * registered to the registrar server and used as From URI.
+	 * <p>
+	 * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place.
+	 * </p>
+	 * <p>
+	 * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place.
+	 * </p>
+	 */
+	public String getProxy() {
+		return _proxy;
+	}
+
+	/** @see #getProxy() */
+	public void setProxy(String proxy) {
+		this._proxy = proxy;
+	}
+
+	/**
+	 * Fully qualified domain name (or address) of the registrar server. It is used as recipient for
+	 * REGISTER requests.
+	 * <p>
+	 * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place.
+	 * </p>
+	 * <p>
+	 * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place.
+	 * </p>
+	 */
+	public String getRegistrar() {
+		return _registrar;
+	}
+
+	/** @see #getRegistrar() */
+	public void setRegistrar(String registrar) {
+		this._registrar = registrar;
+	}
+
+	/**
+	 * UA address. It is the SIP address of the UA and is used to form the From URI if no proxy is
+	 * configured.
+	 */
+	public String getUaAddress() {
+		return _uaAddress;
+	}
+
+	/** @see #getUaAddress() */
+	public void setUaAddress(String ua_address) {
+		this._uaAddress = ua_address;
+	}
+
+	/** User's name used for server authentication. */
+	public String getAuthUser() {
+		return _authUser;
+	}
+
+	/** @see #getAuthUser() */
+	public void setAuthUser(String authUser) {
+		this._authUser = authUser;
+	}
+
+	/** User's realm used for server authentication. */
+	public String getAuthRealm() {
+		return _authRealm;
+	}
+
+	/** @see #getAuthRealm() */
+	public void setAuthRealm(String authRealm) {
+		this._authRealm = authRealm;
+	}
+
+	/** User's passwd used for server authentication. */
+	public String getAuthPasswd() {
+		return _authPasswd;
+	}
+
+	/** @see #getAuthPasswd() */
+	public void setAuthPasswd(String authPasswd) {
+		this._authPasswd = authPasswd;
+	}
+
+	/** Whether registering with the registrar server */
+	public boolean isRegister() {
+		return _doRegister;
+	}
+
+	/** @see #isRegister() */
+	public void setRegister(boolean doRegister) {
+		this._doRegister = doRegister;
+	}
+
+	/** Expires time (in seconds). */
+	public int getExpires() {
+		return _expires;
+	}
+
+	/** @see #getExpires() */
+	public void setExpires(int expires) {
+		this._expires = expires;
+	}
+
+	/**
+	 * Rate of keep-alive tokens (datagrams) sent toward the outbound proxy (if present) or toward
+	 * the registrar server. Its value specifies the delta-time (in millesconds) between two
+	 * keep-alive tokens.
+	 * <p>
+	 * Set keepalive_time=0 for not sending keep-alive datagrams.
+	 * </p>
+	 */
+	public long getKeepAliveTime() {
+		return _keepaliveTime;
+	}
+
+	/** @see #getKeepAliveTime() */
+	public void setKeepAliveTime(long keepaliveTime) {
+		_keepaliveTime = keepaliveTime;
+	}
+
+	/**
+	 * Response time in seconds; it is the maximum time the user can wait before responding to an
+	 * incoming call; after such time the call is automatically declined (refused).
+	 */
+	public int getRefuseTime() {
+		return _refuseTime;
+	}
+
+	/** @see #getRefuseTime() */
+	public void setRefuseTime(int refuseTime) {
+		_refuseTime = refuseTime;
+	}
+
+	/** No offer in the invite */
+	public boolean getNoOffer() {
+		return _noOffer;
+	}
+
+	/** @see #getNoOffer() */
+	public void setNoOffer(boolean noOffer) {
+		this._noOffer = noOffer;
+	}
+
+	/** Do not use prompt */
+	public boolean isNoPrompt() {
+		return _noPrompt;
+	}
+
+	/** @see #isNoPrompt() */
+	public void setNoPrompt(boolean noPrompt) {
+		this._noPrompt = noPrompt;
+	}
+
+	/** Whether playing in receive only mode */
+	public boolean isRecvOnly() {
+		return _recvOnly;
+	}
+
+	/** @see #isRecvOnly() */
+	public void setRecvOnly(boolean recvOnly) {
+		this._recvOnly = recvOnly;
+	}
+
+	/** Whether playing in send only mode */
+	public boolean isSendOnly() {
+		return _sendOnly;
+	}
+
+	/** @see #isSendOnly() */
+	public void setSendOnly(boolean sendOnly) {
+		this._sendOnly = sendOnly;
+	}
+
+	/** Media address (use it if you want to use a media address different from the via address) */
+	public String getMediaAddr() {
+		return _mediaAddr;
+	}
+
+	/** @see #getMediaAddr() */
+	public void setMediaAddr(String mediaAddr) {
+		_mediaAddr = mediaAddr;
+	}
+
+	/** Whether using symmetric_rtp */
+	public boolean isSymmetricRtp() {
+		return _symmetricRtp;
+	}
+
+	/** @see #isSymmetricRtp() */
+	public void setSymmetricRtp(boolean symmetricRtp) {
+		_symmetricRtp = symmetricRtp;
+	}
+
+	/**
+	 * Whether running the UAS (User Agent Server), or acting just as UAC (User Agent Client). In
+	 * the latter case only outgoing calls are supported.
+	 */
+	public boolean isUaServer() {
+		return _uaServer;
+	}
+
+	/** @see #isUaServer() */
+	public void setUaServer(boolean uaServer) {
+		_uaServer = uaServer;
+	}
+
+	/** Whether running an Options Server, that automatically responds to OPTIONS requests. */
+	public boolean isOptionsServer() {
+		return _optionsServer;
+	}
+
+	/** @see #isOptionsServer() */
+	public void setOptionsServer(boolean optionsServer) {
+		_optionsServer = optionsServer;
+	}
+
+	/** Whether running an Null Server, that automatically responds to not-implemented requests. */
+	public boolean isNullServer() {
+		return _nullServer;
+	}
+
+	/** @see #isNullServer() */
+	public void setNullServer(boolean nullServer) {
+		_nullServer = nullServer;
+	}
+
+	/**
+	 * Whether enforcing time synchronization to RTP source stream. If synchronization is
+	 * explicitly performed, the departure time of each RTP packet is equal to its nominal time.
+	 * <p>
+	 * Note that when using audio capturing, synchronization with the sample rate is implicitly
+	 * performed by the audio capture device and frames are read at constant bit rate. However, an
+	 * explicit re-synchronization is suggested in order to let the read() method be non-blocking
+	 * (in the other case the UA audio performance seems decreasing.
+	 * </p>
+	 */
+	public boolean isJavaxSoundSync() {
+		return _javaxSoundSync;
+	}
+
+	/** @see #isJavaxSoundSync() */
+	public void setJavaxSoundSync(boolean javaxSoundSync) {
+		_javaxSoundSync = javaxSoundSync;
+	}
+
+	/**
+	 * Receiver random early drop (RED) rate. Actually it is the inverse of packet drop rate. It can
+	 * used to prevent long play back delay. A value less or equal to 0 means that no packet
+	 * dropping is explicitly performed at the RTP receiver.
+	 */
+	public int getRandomEarlyDropRate() {
+		return _randomEarlyDropRate;
+	}
+
+	/** @see #getRandomEarlyDropRate() */
+	public void setRandomEarlyDropRate(int randomEarlyDropRate) {
+		_randomEarlyDropRate = randomEarlyDropRate;
 	}
 
 }

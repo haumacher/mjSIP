@@ -149,7 +149,7 @@ public class Jukebox extends MultipleUAS {
 
 		mediaConfig.audio=true;
 		mediaConfig.video=false;
-		uaConfig.sendOnly=true;
+		uaConfig.setSendOnly(true);
 		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),mediaConfig.createStreamerFactory(uaConfig),uaConfig, mediaConfig, portPool, serviceConfig);
 		
 		// promt before exit

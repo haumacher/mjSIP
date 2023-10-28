@@ -88,7 +88,7 @@ public class MiniJukebox extends UserAgentCli {
 
 		mediaConfig.audio=true;
 		mediaConfig.video=false;
-		uaConfig.sendOnly=true;
+		uaConfig.setSendOnly(true);
 		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    
 	

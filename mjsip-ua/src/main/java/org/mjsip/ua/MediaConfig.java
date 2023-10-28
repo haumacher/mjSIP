@@ -171,7 +171,7 @@ public class MediaConfig extends Configure {
 		if (recvFile!=null && recvFile.equalsIgnoreCase(Configure.NONE)) recvFile=null;
 
 		// use audio as default media in case of..
-		if ((uaConfig.recvOnly || uaConfig.sendOnly || sendTone || sendFile!=null || recvFile!=null) && !video) audio=true;
+		if ((uaConfig.isRecvOnly() || uaConfig.isSendOnly() || sendTone || sendFile!=null || recvFile!=null) && !video) audio=true;
 
 		// media descriptions
 		if (_descByType.size()==0 && audio) {
@@ -258,8 +258,8 @@ public class MediaConfig extends Configure {
 
 					// standard javax-based audio streamer
 					StreamerOptions options = StreamerOptions.builder()
-							.setRandomEarlyDrop(uaConfig.randomEarlyDropRate)
-							.setSymmetricRtp(uaConfig.symmetricRtp)
+							.setRandomEarlyDrop(uaConfig.getRandomEarlyDropRate())
+							.setSymmetricRtp(uaConfig.isSymmetricRtp())
 							.build();
 					
 					factory.addFactory("audio", new DefaultStreamerFactory(options, rx, tx));

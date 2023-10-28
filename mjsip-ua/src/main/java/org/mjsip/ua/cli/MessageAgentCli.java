@@ -54,8 +54,8 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	public MessageAgentCli(SipProvider sip_provider, UAConfig user_profile) {
 		ma=new MessageAgent(sip_provider,user_profile,this);
 		ma.receive();
-		if (user_profile.doRegister) {
-			rc=new RegistrationClient(sip_provider,new SipURI(user_profile.registrar),user_profile.getUserURI(),this);
+		if (user_profile.isRegister()) {
+			rc=new RegistrationClient(sip_provider,new SipURI(user_profile.getRegistrar()),user_profile.getUserURI(),this);
 		}
 	}
 

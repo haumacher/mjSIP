@@ -122,34 +122,34 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 		// log main config parameters
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("ua_address: "+uaConfig.ua_address);
+			LOG.debug("ua_address: "+uaConfig.getUaAddress());
 			LOG.debug("user's uri: "+uaConfig.getUserURI());
-			LOG.debug("proxy: "+uaConfig.proxy);
-			LOG.debug("registrar: "+uaConfig.registrar);
-			LOG.debug("auth_realm: "+uaConfig.authRealm);
-			LOG.debug("auth_user: "+uaConfig.authUser);
-			LOG.debug("auth_passwd: " + (uaConfig.authPasswd != null && !uaConfig.authPasswd.isEmpty() ? "***" : "-"));
+			LOG.debug("proxy: "+uaConfig.getProxy());
+			LOG.debug("registrar: "+uaConfig.getRegistrar());
+			LOG.debug("auth_realm: "+uaConfig.getAuthRealm());
+			LOG.debug("auth_user: "+uaConfig.getAuthUser());
+			LOG.debug("auth_passwd: " + (uaConfig.getAuthPasswd() != null && !uaConfig.getAuthPasswd().isEmpty() ? "***" : "-"));
 		}
 
 		// start listening for INVITE requests (UAS)
-		if (uaConfig.uaServer) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
+		if (uaConfig.isUaServer()) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
 		
 		// start OPTIONS server
-		if (uaConfig.optionsServer) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
+		if (uaConfig.isOptionsServer()) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
 
 		// start "Not Implemented" server
-		if (uaConfig.nullServer) null_server=new NotImplementedServer(sip_provider);
+		if (uaConfig.isNullServer()) null_server=new NotImplementedServer(sip_provider);
 	}
 
 	/** Inits the RegistrationClient */
 	private void initRegistrationClient() {
-		rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.registrar),uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd,this);
+		rc=new RegistrationClient(sip_provider,new SipURI(uaConfig.getRegistrar()),uaConfig.getUserURI(),uaConfig.getAuthUser(),uaConfig.getAuthRealm(),uaConfig.getAuthPasswd(),this);
 	}
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
 	private SdpMessage getSessionDescriptor() {
-		String owner=uaConfig.user;
-		String media_addr=(uaConfig.mediaAddr!=null)? uaConfig.mediaAddr : sip_provider.getViaAddress();
+		String owner=uaConfig.getUser();
+		String media_addr=(uaConfig.getMediaAddr()!=null)? uaConfig.getMediaAddr() : sip_provider.getViaAddress();
 		SdpMessage sdp=new SdpMessage(owner,media_addr);
 		for (MediaDesc md : _callMedia) {
 			sdp.addMediaDescriptor(md.toMediaDescriptor());
@@ -176,9 +176,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Gets a SipURI based on an input string. */
 	private SipURI completeSipURI(String str) {
 		// in case it is passed only the user field, add "@" + proxy address
-		if (uaConfig.proxy!=null && !str.startsWith("sip:") && !str.startsWith("sips:") && str.indexOf("@")<0 && str.indexOf(".")<0 && str.indexOf(":")<0) {
+		if (uaConfig.getProxy()!=null && !str.startsWith("sip:") && !str.startsWith("sips:") && str.indexOf("@")<0 && str.indexOf(".")<0 && str.indexOf(":")<0) {
 			// may be it is just the user name..
-			return new SipURI(str,uaConfig.proxy);
+			return new SipURI(str,uaConfig.getProxy());
 		}
 		else return new SipURI(str);
 	}
@@ -253,14 +253,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		_callMedia = callMedia;
 		
 		// new call
-		SdpMessage sdp=uaConfig.noOffer? null : getSessionDescriptor();
+		SdpMessage sdp=uaConfig.getNoOffer()? null : getSessionDescriptor();
 		call(callee,sdp);
 	}
 
 	/** Makes a new call (acting as UAC) with specific SDP. */
 	public void call(NameAddress callee, SdpMessage sdp) {
-		call=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI(),uaConfig.authUser,uaConfig.authRealm,uaConfig.authPasswd),this);      
-		if (uaConfig.noOffer) call.call(callee);
+		call=new ExtendedCall(sip_provider,new SipUser(uaConfig.getUserURI(),uaConfig.getAuthUser(),uaConfig.getAuthRealm(),uaConfig.getAuthPasswd()),this);      
+		if (uaConfig.getNoOffer()) call.call(callee);
 		else {
 			call.call(callee,sdp.toString());
 		}
@@ -492,7 +492,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		this.call=(ExtendedCall)call;
 		call.ring();
 		// response timeout
-		if (uaConfig.refuseTime>=0) response_to=sip_provider.scheduler().schedule(uaConfig.refuseTime*1000, this::onResponseTimeout);
+		if (uaConfig.getRefuseTime()>=0) response_to=sip_provider.scheduler().schedule(uaConfig.getRefuseTime()*1000, this::onResponseTimeout);
 		
 		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseSdpDescriptors(sdp));
 	}
@@ -573,7 +573,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallAccepted()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("ACCEPTED/CALL");
-		if (uaConfig.noOffer) {
+		if (uaConfig.getNoOffer()) {
 			// new sdp
 			SdpMessage local_sdp=getSessionDescriptor();
 			SdpMessage remote_sdp=new SdpMessage(sdp);

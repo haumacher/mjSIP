@@ -229,7 +229,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			this.setLocation((screenSize.width - frameSize.width)/2 - 40, (screenSize.height - frameSize.height)/2 - 40);
 			this.setResizable(false);
 	
-			this.setTitle(sip_provider.getContactAddress(_uaConfig.user).toString());
+			this.setTitle(sip_provider.getContactAddress(_uaConfig.getUser()).toString());
 			this.addWindowListener(new java.awt.event.WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) { exit(); }
@@ -329,10 +329,10 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			ua.unregister();
 		} 
 
-		if (_uaConfig.doRegister) {
+		if (_uaConfig.isRegister()) {
 			// ########## registers the contact URI with the registrar server
 			LOG.info("Starting registration");
-			ua.loopRegister(_uaConfig.expires,_uaConfig.expires/2,_uaConfig.keepaliveTime);
+			ua.loopRegister(_uaConfig.getExpires(),_uaConfig.getExpires()/2,_uaConfig.getKeepAliveTime());
 		} 
 
 		if (_uiConfig.callTo!=null) {
@@ -560,7 +560,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	/** When registration failed. */
 	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		this.setTitle(sip_provider.getContactAddress(_uaConfig.user).toString());
+		this.setTitle(sip_provider.getContactAddress(_uaConfig.getUser()).toString());
 	}
 
 
