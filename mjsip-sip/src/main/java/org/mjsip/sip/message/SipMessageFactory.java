@@ -48,7 +48,7 @@ import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.header.SubjectHeader;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.header.ViaHeader;
-import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 
 
@@ -78,7 +78,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 	/** 
 	 * Creates a {@link SipMessageFactory}.
 	 */
-	public SipMessageFactory(SipConfig sipConfig) {
+	public SipMessageFactory(SipOptions sipConfig) {
 		super(sipConfig);
 	}
 

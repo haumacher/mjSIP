@@ -44,7 +44,7 @@ import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.header.UserAgentHeader;
 import org.mjsip.sip.header.ViaHeader;
-import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 
 
@@ -68,12 +68,12 @@ public abstract class BasicSipMessageFactory {
 	/** Default (unknown) via address */
 	static String DEFAULT_VIA_ADDRESS="0.0.0.0";
 	
-	protected final SipConfig sipConfig;
+	protected final SipOptions sipConfig;
 
 	/** 
 	 * Creates a {@link BasicSipMessageFactory}.
 	 */
-	public BasicSipMessageFactory(SipConfig sipConfig) {
+	public BasicSipMessageFactory(SipOptions sipConfig) {
 		this.sipConfig = sipConfig;
 	}
  

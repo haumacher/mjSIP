@@ -33,7 +33,7 @@ import org.mjsip.sip.header.RAckHeader;
 import org.mjsip.sip.header.RSeqHeader;
 import org.mjsip.sip.header.RequireHeader;
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class ReliableProvisionalResponder {
 	/** RSeq counter */
 	long rseq_counter;
 	
-	private final SipConfig sipConfig;
+	private final SipOptions sipConfig;
 
 	private SipProvider sip_provider;
 

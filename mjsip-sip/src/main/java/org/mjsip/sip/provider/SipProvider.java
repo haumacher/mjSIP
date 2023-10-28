@@ -149,7 +149,7 @@ public class SipProvider implements SipTransportListener {
 		}
 	};
 
-	private final SipConfig _sipConfig;
+	private final SipOptions _sipConfig;
 	
 	private final Scheduler _scheduler;
 
@@ -158,7 +158,7 @@ public class SipProvider implements SipTransportListener {
 	/**
 	 * Creates a new {@link SipProvider}.
 	 */
-	public SipProvider(SipConfig sipConfig, Scheduler scheduler) {
+	public SipProvider(SipOptions sipConfig, Scheduler scheduler) {
 		this._sipConfig = sipConfig;
 		_scheduler = scheduler;
 		_sipMessageFactory = new SipMessageFactory(sipConfig);
@@ -173,9 +173,9 @@ public class SipProvider implements SipTransportListener {
 	}
 
 	/**
-	 * The {@link SipConfig} used.
+	 * The {@link SipOptions} used.
 	 */
-	public SipConfig sipConfig() {
+	public SipOptions sipConfig() {
 		return _sipConfig;
 	}
 

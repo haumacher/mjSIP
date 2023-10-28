@@ -35,11 +35,11 @@ public class MediaConfig extends Configure {
 	/** 
 	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
 	 */
-	public static MediaConfig init(String file, Flags flags, UAConfig uaConfig) {
+	public static MediaConfig init(String file, Flags flags) {
 		MediaConfig result=new MediaConfig();
 		result.loadFile(file);
 		result.initFrom(flags);
-		result.normalize(uaConfig);
+		result.normalize();
 		return result;
 	}
 
@@ -85,6 +85,35 @@ public class MediaConfig extends Configure {
 	
 	/** Temporary mapping of media type to {@link MediaDesc}. */
 	private Map<String, MediaDesc> _descByType=new HashMap<>();
+
+	private int _randomEarlyDropRate=20;
+
+	private boolean _symmetricRtp=false;
+
+	/**
+	 * Receiver random early drop (RED) rate. Actually it is the inverse of packet drop rate. It can
+	 * used to prevent long play back delay. A value less or equal to 0 means that no packet
+	 * dropping is explicitly performed at the RTP receiver.
+	 */
+	public int getRandomEarlyDropRate() {
+		return _randomEarlyDropRate;
+	}
+
+	/** @see #getRandomEarlyDropRate() */
+	public void setRandomEarlyDropRate(int randomEarlyDropRate) {
+		_randomEarlyDropRate = randomEarlyDropRate;
+	}
+
+	/** Whether using symmetric_rtp */
+	public boolean isSymmetricRtp() {
+		return _symmetricRtp;
+	}
+
+	/** @see #isSymmetricRtp() */
+	public void setSymmetricRtp(boolean symmetricRtp) {
+		_symmetricRtp = symmetricRtp;
+	}
+
 
 	/**
 	 * Sets the transport port for each medium.
@@ -134,6 +163,9 @@ public class MediaConfig extends Configure {
 		if (attribute.equals("audio_mcast_soaddr")) {  audioMcastSoAddr=new SocketAddress(par.getString());  return;  } 
 		if (attribute.equals("video_mcast_soaddr")) {  videoMcastSoAddr=new SocketAddress(par.getString());  return;  }
 
+		if (attribute.equals("random_early_drop_rate")) {  setRandomEarlyDropRate(par.getInt());  return;  }
+		if (attribute.equals("symmetric_rtp"))  {  setSymmetricRtp((par.getString().toLowerCase().startsWith("y")));  return;  } 
+
 		if (attribute.equals("media") || attribute.equals("media_desc"))    {
 			MediaDesc desc = MediaDesc.parseMediaDesc(par.getRemainingString().trim());
 			_descByType.put(desc.getMedia(), desc);  
@@ -166,12 +198,12 @@ public class MediaConfig extends Configure {
 		if (recv_video_file!=null) this.recvVideoFile=recv_video_file;
 	}
 	
-	private void normalize(UAConfig uaConfig) {
+	private void normalize() {
 		if (sendFile!=null && sendFile.equalsIgnoreCase(Configure.NONE)) sendFile=null;
 		if (recvFile!=null && recvFile.equalsIgnoreCase(Configure.NONE)) recvFile=null;
 
 		// use audio as default media in case of..
-		if ((uaConfig.isRecvOnly() || uaConfig.isSendOnly() || sendTone || sendFile!=null || recvFile!=null) && !video) audio=true;
+		if ((sendTone || sendFile!=null || recvFile!=null) && !video) audio=true;
 
 		// media descriptions
 		if (_descByType.size()==0 && audio) {
@@ -217,7 +249,7 @@ public class MediaConfig extends Configure {
 	/**
 	 * Creates a {@link StreamerFactory} based on configuration options.
 	 */
-	public StreamerFactory createStreamerFactory(UAConfig uaConfig) {
+	public StreamerFactory createStreamerFactory(UAOptions uaConfig) {
 		if (loopback) {
 			return new LoopbackStreamerFactory();
 		} else {
@@ -258,8 +290,8 @@ public class MediaConfig extends Configure {
 
 					// standard javax-based audio streamer
 					StreamerOptions options = StreamerOptions.builder()
-							.setRandomEarlyDrop(uaConfig.getRandomEarlyDropRate())
-							.setSymmetricRtp(uaConfig.isSymmetricRtp())
+							.setRandomEarlyDrop(getRandomEarlyDropRate())
+							.setSymmetricRtp(isSymmetricRtp())
 							.build();
 					
 					factory.addFactory("audio", new DefaultStreamerFactory(options, rx, tx));

@@ -140,7 +140,7 @@ public class Jukebox extends MultipleUAS {
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
 		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();

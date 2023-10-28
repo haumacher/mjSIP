@@ -54,7 +54,7 @@ public class ConnectedSipProvider extends SipProvider {
 	/**
 	 * Creates a {@link ConnectedSipProvider}.
 	 */
-	public ConnectedSipProvider(SipConfig sipConfig, Scheduler scheduler) throws IOException {
+	public ConnectedSipProvider(SipOptions sipConfig, Scheduler scheduler) throws IOException {
 		super(sipConfig, scheduler);
 		setForceRport(true);
 		connect();

@@ -46,8 +46,12 @@ public interface InviteDialogListener {
 	/** When a 1xx response is received for an INVITE request. */ 
 	public void onDlgInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg);
 
-	/** When a reliable 1xx response is received for an INVITE request.
-	  * If {@link org.mjsip.sip.provider.SipConfig#autoPrack} is false, method {@link InviteDialog#confirm1xx(SipMessage,String,byte[]) confirm1xx()} must be called for confirming the reception of the 1xx response. */ 
+	/**
+	 * When a reliable 1xx response is received for an INVITE request. If
+	 * {@link org.mjsip.sip.provider.SipOptions#isAutoPrack()} is false, method
+	 * {@link InviteDialog#confirm1xx(SipMessage,String,byte[]) confirm1xx()} must be called for
+	 * confirming the reception of the 1xx response.
+	 */
 	public void onDlgInviteReliableProvisionalResponse(InviteDialog dialog, int code, String reason, String content_type, byte[] body, SipMessage resp);
 
 	/** When a reliable 1xx response has been confirmed by the reception of a corresponding PRACK request. */

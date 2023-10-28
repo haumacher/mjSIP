@@ -68,7 +68,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ***************************** attributes ****************************
 	
 	/** UserAgentProfile */
-	private final UAConfig uaConfig;
+	private final UAOptions uaConfig;
 
 	/** SipProvider */
 	private final SipProvider sip_provider;
@@ -114,22 +114,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private MediaDesc[] _callMedia;
 
 	/** Creates a {@link UserAgent}. */
-	public UserAgent(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, UserAgentListener listener) {
+	public UserAgent(SipProvider sip_provider, StreamerFactory streamerFactory, UAOptions uaConfig, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
 		_mediaAgent = new MediaAgent(streamerFactory);
 		this.listener=listener;
 		this.uaConfig=uaConfig;
-
-		// log main config parameters
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("ua_address: "+uaConfig.getUaAddress());
-			LOG.debug("user's uri: "+uaConfig.getUserURI());
-			LOG.debug("proxy: "+uaConfig.getProxy());
-			LOG.debug("registrar: "+uaConfig.getRegistrar());
-			LOG.debug("auth_realm: "+uaConfig.getAuthRealm());
-			LOG.debug("auth_user: "+uaConfig.getAuthUser());
-			LOG.debug("auth_passwd: " + (uaConfig.getAuthPasswd() != null && !uaConfig.getAuthPasswd().isEmpty() ? "***" : "-"));
-		}
 
 		// start listening for INVITE requests (UAS)
 		if (uaConfig.isUaServer()) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);

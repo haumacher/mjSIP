@@ -26,7 +26,7 @@ package org.mjsip.server.sbc;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
-import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipTransport;
 import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 	/** 
 	 * Constructs an {@link ExtendedSipProvider}. 
 	 */ 
-	public ExtendedSipProvider(SipConfig sipConfig, Scheduler scheduler, long refresh_time, long keepalive_time) {
+	public ExtendedSipProvider(SipOptions sipConfig, Scheduler scheduler, long refresh_time, long keepalive_time) {
 		super(sipConfig, scheduler);
 		init(refresh_time,keepalive_time);
 	}

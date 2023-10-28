@@ -37,13 +37,14 @@ import org.zoolu.util.Parser;
 
 
 
-/** SIP configuration options. 
-  * <p>
-  * Options are: the default SIP port, deafult supported transport protocols,
-  * timeouts, log configuration, etc.
-  * </p>
-  */
-public class SipConfig extends Configure {
+/**
+ * SIP configuration options.
+ * <p>
+ * Options are: the default SIP port, deafult supported transport protocols, timeouts, log
+ * configuration, etc.
+ * </p>
+ */
+public class SipConfig extends Configure implements SipOptions {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipConfig.class);
 
@@ -365,12 +366,7 @@ public class SipConfig extends Configure {
 		}
 	}
 
-	/**
-	 * Default SIP port. Note that this is not the port used by the running stack, but simply the
-	 * standard default SIP port. <br>
-	 * Normally it sould be set to 5060 as defined by RFC 3261. Using a different value may cause
-	 * some problems when interacting with other unaware SIP UAs.
-	 */
+	@Override
 	public int getDefaultPort() {
 		return _defaultPort;
 	}
@@ -379,12 +375,7 @@ public class SipConfig extends Configure {
 		this._defaultPort = defaultPort;
 	}
 
-	/**
-	 * Default SIP port for TLS transport (SIPS). Note that this is not the port used by the running
-	 * stack, but simply the standard default SIPS port. <br>
-	 * Normally it sould be set to 5061 as defined by RFC 3261. Using a different value may cause
-	 * some problems when interacting with other unaware SIP UAs.
-	 */
+	@Override
 	public int getDefaultTlsPort() {
 		return _defaultTlsPort;
 	}
@@ -393,7 +384,7 @@ public class SipConfig extends Configure {
 		this._defaultTlsPort = defaultTlsPort;
 	}
 
-	/** Default supported transport protocols. */
+	@Override
 	public String[] getDefaultTransportProtocols() {
 		return _defaultTransportProtocols;
 	}
@@ -411,7 +402,7 @@ public class SipConfig extends Configure {
 		this._defaultMaxConnections = defaultMaxConnections;
 	}
 
-	/** Whether adding 'rport' parameter on via header fields of outgoing requests. */
+	@Override
 	public boolean useRport() {
 		return _useRport;
 	}
@@ -429,9 +420,7 @@ public class SipConfig extends Configure {
 		this._forceRport = forceRport;
 	}
 
-	/**
-	 * starting retransmission timeout (milliseconds); called T1 in RFC2361; they suggest T1=500ms
-	 */
+	@Override
 	public long getRetransmissionTimeout() {
 		return _retransmissionTimeout;
 	}
@@ -440,7 +429,7 @@ public class SipConfig extends Configure {
 		this._retransmissionTimeout = retransmissionTimeout;
 	}
 
-	/** maximum retransmission timeout (milliseconds); called T2 in RFC2361; they suggest T2=4sec */
+	@Override
 	public long getMaxRetransmissionTimeout() {
 		return _maxRetransmissionTimeout;
 	}
@@ -449,7 +438,7 @@ public class SipConfig extends Configure {
 		this._maxRetransmissionTimeout = maxRetransmissionTimeout;
 	}
 
-	/** transaction timeout (milliseconds); RFC2361 suggests 64*T1=32000ms */
+	@Override
 	public long getTransactionTimeout() {
 		return _transactionTimeout;
 	}
@@ -458,7 +447,7 @@ public class SipConfig extends Configure {
 		this._transactionTimeout = transaction_timeout;
 	}
 
-	/** clearing timeout (milliseconds); T4 in RFC2361; they suggest T4=5sec */
+	@Override
 	public long getClearingTimeout() {
 		return _clearingTimeout;
 	}
@@ -467,7 +456,7 @@ public class SipConfig extends Configure {
 		this._clearingTimeout = clearingTimeout;
 	}
 
-	/** default max-forwards value (RFC3261 recommends value 70) */
+	@Override
 	public int getMaxForwards() {
 		return _maxForwards;
 	}
@@ -476,7 +465,7 @@ public class SipConfig extends Configure {
 		this._maxForwards = maxForwards;
 	}
 
-	/** Whether at UAS side automatically sending (by default) a 100 Trying on INVITE. */
+	@Override
 	public boolean isAutoTrying() {
 		return _autoTrying;
 	}
@@ -485,7 +474,7 @@ public class SipConfig extends Configure {
 		_autoTrying = autoTrying;
 	}
 
-	/** Whether 1xx responses create an "early dialog" for methods that create dialog. */
+	@Override
 	public boolean isEarlyDialog() {
 		return _earlyDialog;
 	}
@@ -494,22 +483,17 @@ public class SipConfig extends Configure {
 		this._earlyDialog = earlyDialog;
 	}
 
-	/**
-	 * Whether automatically sending PRACK messsages for incoming reliable 1xx responses in an
-	 * INVITE dialog. <br>
-	 * Note that if you set <i>true</i>, the PRACK messge are sent automatically without any message
-	 * body. This may be in contrast with a possible offer/answer use of reliable 1xx response and
-	 * PRACK.
-	 */
+	@Override
 	public boolean isAutoPrack() {
 		return _autoPrack;
 	}
 
-	private void setAutoPrack(boolean autoPrack) {
+	/** @see #isAutoPrack() */
+	public void setAutoPrack(boolean autoPrack) {
 		this._autoPrack = autoPrack;
 	}
 
-	/** Default 'expires' value in seconds. RFC2361 suggests 3600s as default value. */
+	@Override
 	public int getDefaultExpires() {
 		return _defaultExpires;
 	}
@@ -518,10 +502,7 @@ public class SipConfig extends Configure {
 		this._defaultExpires = defaultExpires;
 	}
 
-	/**
-	 * UA info included in request messages in the 'User-Agent' header field. Use "NONE" if the
-	 * 'User-Agent' header filed must not be added.
-	 */
+	@Override
 	public String getUaInfo() {
 		return _uaInfo;
 	}
@@ -530,10 +511,7 @@ public class SipConfig extends Configure {
 		this._uaInfo = uaInfo;
 	}
 
-	/**
-	 * Server info included in response messages in the 'Server' header field Use "NONE" if the
-	 * 'Server' header filed must not be added.
-	 */
+	@Override
 	public String getServerInfo() {
 		return _serverInfo;
 	}
@@ -542,7 +520,7 @@ public class SipConfig extends Configure {
 		this._serverInfo = serverInfo;
 	}
 
-	/** Supported option-tags for corresponding supported extensions. */
+	@Override
 	public String[] getSupportedOptionTags() {
 		return _supportedOptionTags;
 	}
@@ -551,7 +529,7 @@ public class SipConfig extends Configure {
 		this._supportedOptionTags = supportedOptionTags;
 	}
 
-	/** Required option-tags for corresponding required extensions. */
+	@Override
 	public String[] getRequiredOptionTags() {
 		return _requiredOptionTags;
 	}
@@ -560,7 +538,7 @@ public class SipConfig extends Configure {
 		_requiredOptionTags = requiredOptionTags;
 	}
 
-	/** List of supported methods. */
+	@Override
 	public String[] getAllowedMethods() {
 		return _allowedMethods;
 	}
@@ -569,9 +547,7 @@ public class SipConfig extends Configure {
 		this._allowedMethods = allowedMethods;
 	}
 
-	/**
-	 * Minimum session interval (Min-SE header field) for supporting "Session Timers" (RFC 4028).
-	 */
+	@Override
 	public int getMinSessionInterval() {
 		return _minSessionInterval;
 	}
@@ -580,10 +556,7 @@ public class SipConfig extends Configure {
 		this._minSessionInterval = minSessionInterval;
 	}
 
-	/**
-	 * Default session interval (Session-Expires header field) for supporting "Session Timers" (RFC
-	 * 4028).
-	 */
+	@Override
 	public int getDefaultSessionInterval() {
 		return _defaultSessionInterval;
 	}
@@ -592,7 +565,7 @@ public class SipConfig extends Configure {
 		this._defaultSessionInterval = defaultSessionInterval;
 	}
 
-	/** starting registration timeout (msecs) after a registration failure due to request timeout */
+	@Override
 	public long getRegMinAttemptTimeout() {
 		return _regMinAttemptTimeout;
 	}
@@ -601,7 +574,7 @@ public class SipConfig extends Configure {
 		this._regMinAttemptTimeout = regMinAttemptTimeout;
 	}
 
-	/** maximum registration timeout (msecs) after a registration failure due to request timeout */
+	@Override
 	public long getRegMaxAttemptTimeout() {
 		return _regMaxAttemptTimeout;
 	}
@@ -610,7 +583,7 @@ public class SipConfig extends Configure {
 		this._regMaxAttemptTimeout = regMaxAttemptTimeout;
 	}
 
-	/** maximum number of consecutive registration authentication attempts before giving up */
+	@Override
 	public int getRegAuthAttempts() {
 		return _regAuthAttempts;
 	}
@@ -619,10 +592,7 @@ public class SipConfig extends Configure {
 		this._regAuthAttempts = regAuthAttempts;
 	}
 
-	/**
-	 * Whether forcing this node to stay within the dialog route as peer, by means of the insertion
-	 * of a RecordRoute header. This is a non-standard behaviour and is normally not necessary.
-	 */
+	@Override
 	public boolean isOnDialogRoute() {
 		return _onDialogRoute;
 	}
@@ -631,10 +601,7 @@ public class SipConfig extends Configure {
 		this._onDialogRoute = onDialogRoute;
 	}
 
-	/**
-	 * Via IP address or fully-qualified domanin name (FQDN). Use 'auto-configuration' for auto
-	 * detection, or let it undefined.
-	 */
+	@Override
 	public String getViaAddr() {
 		return _viaAddr;
 	}
@@ -643,7 +610,7 @@ public class SipConfig extends Configure {
 		this._viaAddr = via_addr;
 	}
 
-	/** Local SIP port */
+	@Override
 	public int getHostPort() {
 		return _hostPort;
 	}
@@ -652,10 +619,7 @@ public class SipConfig extends Configure {
 		this._hostPort = host_port;
 	}
 
-	/**
-	 * Network interface (IP address) used by SIP for selective binding. Use 'ALL-INTERFACES' or let
-	 * it undefined for binding SIP to all interfaces.
-	 */
+	@Override
 	public IpAddress getBindingIpAddr() {
 		return _bindingIpAddr;
 	}
@@ -664,7 +628,7 @@ public class SipConfig extends Configure {
 		this._bindingIpAddr = bindingIpAddr;
 	}
 
-	/** List of enabled transport protocols (the first protocol is used as default). */
+	@Override
 	public String[] getTransportProtocols() {
 		return _transportProtocols;
 	}
@@ -676,7 +640,7 @@ public class SipConfig extends Configure {
 		this._transportProtocols = transportProtocols;
 	}
 
-	/** List of transport ports, ordered as the corresponding transport_protocols. */
+	@Override
 	public int[] getTransportPorts() {
 		return _transportPorts;
 	}
@@ -685,7 +649,7 @@ public class SipConfig extends Configure {
 		this._transportPorts = transportPorts;
 	}
 
-	/** Max number of (contemporary) open connections */
+	@Override
 	public int getMaxConnections() {
 		return _maxConnections;
 	}
@@ -694,24 +658,17 @@ public class SipConfig extends Configure {
 		this._maxConnections = maxConnections;
 	}
 
-	/**
-	 * Outbound proxy URI ([sip:]host_addr[:host_port][;transport=proto]). Use 'NONE' for not using
-	 * an outbound proxy (or let it undefined).
-	 */
+	@Override
 	public SipURI getOutboundProxy() {
 		return _outboundProxy;
 	}
 
-	// TODO: Make private.
+	/** @see #getOutboundProxy() */
 	public void setOutboundProxy(SipURI outboundProxy) {
 		this._outboundProxy = outboundProxy;
 	}
 
-	/**
-	 * Tel Gatway URI ([sip:]host_addr[:host_port][;transport=proto]). URI of a default SIP
-	 * proxy/gateway that is used for sending request messages with a "tel" URI as request-uri. Use
-	 * 'NONE' for not using a tel gateway (or let it undefined).
-	 */
+	@Override
 	public SipURI getTelGateway() {
 		return _telGateway;
 	}
@@ -720,7 +677,7 @@ public class SipConfig extends Configure {
 		this._telGateway = telGateway;
 	}
 
-	/** Whether logging all packets (including non-SIP keepalive tokens). */
+	@Override
 	public boolean isLogAllPackets() {
 		return _logAllPackets;
 	}
@@ -729,10 +686,7 @@ public class SipConfig extends Configure {
 		this._logAllPackets = logAllPackets;
 	}
 
-	/**
-	 * For TLS. Whether all client and server certificates should be considered trusted. By default,
-	 * trust_all={@link #_default_tls_trust_all}.
-	 */
+	@Override
 	public boolean isTrustAll() {
 		return _trustAll;
 	}
@@ -741,11 +695,7 @@ public class SipConfig extends Configure {
 		this._trustAll = trustAll;
 	}
 
-	/**
-	 * For TLS. names of the files containing trusted certificates. The file names include the full
-	 * path starting from the current working folder. By default,
-	 * trust_all={@link SipConfig#default_tls_trusted_certs}.
-	 */
+	@Override
 	public String[] getTrustedCerts() {
 		return _trustedCerts;
 	}
@@ -754,11 +704,7 @@ public class SipConfig extends Configure {
 		this._trustedCerts = trustedCerts;
 	}
 
-	/**
-	 * For TLS. Path of the folder where trusted certificates are placed. All certificates (with
-	 * file extension ".crt") found in this folder are considered trusted. By default,
-	 * trust_folder={@link SipConfig#default_tls_trust_folder}.
-	 */
+	@Override
 	public String getTrustFolder() {
 		return _trustFolder;
 	}
@@ -767,12 +713,8 @@ public class SipConfig extends Configure {
 		this._trustFolder = trustFolder;
 	}
 
-	/**
-	 * For TLS. Absolute file name of the certificate (containing the public key) of the local node.
-	 * The file name includes the full path starting from the current working folder. By default,
-	 * trust_folder={@link SipConfig#default_tls_cert_file}.
-	 */
-	String getCertFile() {
+	@Override
+	public String getCertFile() {
 		return _certFile;
 	}
 
@@ -780,12 +722,8 @@ public class SipConfig extends Configure {
 		this._certFile = certFile;
 	}
 
-	/**
-	 * For TLS. Absolute file name of the private key of the local node. The file name includes the
-	 * full path starting from the current working folder. By default,
-	 * trust_folder={@link SipConfig#default_tls_key_file}.
-	 */
-	String getKeyFile() {
+	@Override
+	public String getKeyFile() {
 		return _keyFile;
 	}
 

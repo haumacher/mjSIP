@@ -6,7 +6,7 @@ import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
-import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
@@ -14,12 +14,12 @@ import org.zoolu.util.Parser;
 
 /** {@link UserAgent} configuration options.
   */
-public class UAConfig extends Configure {
+public class UAConfig extends Configure implements UAOptions {
 		 
 	/** 
 	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
 	 */
-	public static UAConfig init(String file, Flags flags, SipConfig sipConfig) {
+	public static UAConfig init(String file, Flags flags, SipOptions sipConfig) {
 		UAConfig result=new UAConfig();
 		result.loadFile(file);
 		result.updateWith(flags);
@@ -30,7 +30,7 @@ public class UAConfig extends Configure {
 	/** 
 	 * Constructs a {@link UAConfig} from configuration file values.
 	 */
-	public static UAConfig init(String file, SipConfig sipConfig) {
+	public static UAConfig init(String file, SipOptions sipConfig) {
 		UAConfig result=new UAConfig();
 		result.loadFile(file);
 		result.normalize(sipConfig);
@@ -68,8 +68,6 @@ public class UAConfig extends Configure {
 	
 	private String _mediaAddr=null;
 
-	private boolean _symmetricRtp=false;
-
 	private boolean _uaServer=true;
 
 	private boolean _optionsServer=true;
@@ -89,16 +87,12 @@ public class UAConfig extends Configure {
 
 	private boolean _javaxSoundSync=true;
 
-	private int _randomEarlyDropRate=20;
-
 	/** Constructs a {@link UAConfig} */
 	private UAConfig() {
 		super();
 	}
 
-	/** 
-	 * The flow direction.
-	 */
+	@Override
 	public Direction getDirection() {
 		if (isRecvOnly()) {
 			return Direction.RECV_ONLY;
@@ -110,7 +104,7 @@ public class UAConfig extends Configure {
 	}
 
 	/** Inits the UserAgentProfile. */
-	private void normalize(SipConfig sipConfig) {
+	private void normalize(SipOptions sipConfig) {
 		if (getProxy()!=null && getProxy().equalsIgnoreCase(Configure.NONE)) setProxy(null);
 		if (getRegistrar()!=null && getRegistrar().equalsIgnoreCase(Configure.NONE)) setRegistrar(null);
 		if (getDisplayName()!=null && getDisplayName().equalsIgnoreCase(Configure.NONE)) setDisplayName(null);
@@ -130,13 +124,7 @@ public class UAConfig extends Configure {
 
 	// ************************ public methods ************************
 
-	/** Gets the user's AOR (Address Of Record) registered to the registrar server
-	  * and used as From URI.
-	  * <p>
-	  * In case of <i>proxy</i> and <i>user</i> parameters have been defined
-	  * it is formed as "<i>display_name</i>" &lt;sip:<i>user</i>@<i>proxy</i>&gt;,
-	  * otherwhise the local UA address (obtained by the SipProvider) is used.
-	  * @return the user's name address */
+	@Override
 	public NameAddress getUserURI() {
 		if (getProxy()!=null && getUser()!=null) return new NameAddress(getDisplayName(),new SipURI(getUser(),getProxy()));
 		else return new NameAddress(getDisplayName(),new SipURI(getUser(),getUaAddress()));
@@ -190,13 +178,11 @@ public class UAConfig extends Configure {
 		if (attribute.equals("send_only"))      {  setSendOnly((par.getString().toLowerCase().startsWith("y")));  return;  }
 		
 		if (attribute.equals("media_addr"))     {  setMediaAddr(par.getString());  return;  } 
-		if (attribute.equals("symmetric_rtp"))  {  setSymmetricRtp((par.getString().toLowerCase().startsWith("y")));  return;  } 
 
 		if (attribute.equals("ua_server")) {  setUaServer((par.getString().toLowerCase().startsWith("y")));  return;  }
 		if (attribute.equals("options_server")) {  setOptionsServer((par.getString().toLowerCase().startsWith("y")));  return;  }
 		if (attribute.equals("null_server")) {  setNullServer((par.getString().toLowerCase().startsWith("y")));  return;  }
 		if (attribute.equals("javax_sound_sync")) {  setJavaxSoundSync((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("random_early_drop_rate")) {  setRandomEarlyDropRate(par.getInt());  return;  }
 	}
 
 	/**
@@ -260,10 +246,7 @@ public class UAConfig extends Configure {
 		this._displayName = displayName;
 	}
 
-	/**
-	 * User's name. It is used to build the user's AOR registered to the registrar server and used
-	 * as From URI.
-	 */
+	@Override
 	public String getUser() {
 		return _user;
 	}
@@ -273,16 +256,7 @@ public class UAConfig extends Configure {
 		this._user = user;
 	}
 
-	/**
-	 * Fully qualified domain name (or address) of the proxy server. It is part of the user's AOR
-	 * registered to the registrar server and used as From URI.
-	 * <p>
-	 * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place.
-	 * </p>
-	 * <p>
-	 * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place.
-	 * </p>
-	 */
+	@Override
 	public String getProxy() {
 		return _proxy;
 	}
@@ -292,16 +266,7 @@ public class UAConfig extends Configure {
 		this._proxy = proxy;
 	}
 
-	/**
-	 * Fully qualified domain name (or address) of the registrar server. It is used as recipient for
-	 * REGISTER requests.
-	 * <p>
-	 * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place.
-	 * </p>
-	 * <p>
-	 * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place.
-	 * </p>
-	 */
+	@Override
 	public String getRegistrar() {
 		return _registrar;
 	}
@@ -324,7 +289,7 @@ public class UAConfig extends Configure {
 		this._uaAddress = ua_address;
 	}
 
-	/** User's name used for server authentication. */
+	@Override
 	public String getAuthUser() {
 		return _authUser;
 	}
@@ -334,7 +299,7 @@ public class UAConfig extends Configure {
 		this._authUser = authUser;
 	}
 
-	/** User's realm used for server authentication. */
+	@Override
 	public String getAuthRealm() {
 		return _authRealm;
 	}
@@ -344,7 +309,7 @@ public class UAConfig extends Configure {
 		this._authRealm = authRealm;
 	}
 
-	/** User's passwd used for server authentication. */
+	@Override
 	public String getAuthPasswd() {
 		return _authPasswd;
 	}
@@ -391,10 +356,7 @@ public class UAConfig extends Configure {
 		_keepaliveTime = keepaliveTime;
 	}
 
-	/**
-	 * Response time in seconds; it is the maximum time the user can wait before responding to an
-	 * incoming call; after such time the call is automatically declined (refused).
-	 */
+	@Override
 	public int getRefuseTime() {
 		return _refuseTime;
 	}
@@ -404,7 +366,7 @@ public class UAConfig extends Configure {
 		_refuseTime = refuseTime;
 	}
 
-	/** No offer in the invite */
+	@Override
 	public boolean getNoOffer() {
 		return _noOffer;
 	}
@@ -444,7 +406,7 @@ public class UAConfig extends Configure {
 		this._sendOnly = sendOnly;
 	}
 
-	/** Media address (use it if you want to use a media address different from the via address) */
+	@Override
 	public String getMediaAddr() {
 		return _mediaAddr;
 	}
@@ -454,20 +416,7 @@ public class UAConfig extends Configure {
 		_mediaAddr = mediaAddr;
 	}
 
-	/** Whether using symmetric_rtp */
-	public boolean isSymmetricRtp() {
-		return _symmetricRtp;
-	}
-
-	/** @see #isSymmetricRtp() */
-	public void setSymmetricRtp(boolean symmetricRtp) {
-		_symmetricRtp = symmetricRtp;
-	}
-
-	/**
-	 * Whether running the UAS (User Agent Server), or acting just as UAC (User Agent Client). In
-	 * the latter case only outgoing calls are supported.
-	 */
+	@Override
 	public boolean isUaServer() {
 		return _uaServer;
 	}
@@ -477,7 +426,7 @@ public class UAConfig extends Configure {
 		_uaServer = uaServer;
 	}
 
-	/** Whether running an Options Server, that automatically responds to OPTIONS requests. */
+	@Override
 	public boolean isOptionsServer() {
 		return _optionsServer;
 	}
@@ -487,7 +436,7 @@ public class UAConfig extends Configure {
 		_optionsServer = optionsServer;
 	}
 
-	/** Whether running an Null Server, that automatically responds to not-implemented requests. */
+	@Override
 	public boolean isNullServer() {
 		return _nullServer;
 	}
@@ -514,20 +463,6 @@ public class UAConfig extends Configure {
 	/** @see #isJavaxSoundSync() */
 	public void setJavaxSoundSync(boolean javaxSoundSync) {
 		_javaxSoundSync = javaxSoundSync;
-	}
-
-	/**
-	 * Receiver random early drop (RED) rate. Actually it is the inverse of packet drop rate. It can
-	 * used to prevent long play back delay. A value less or equal to 0 means that no packet
-	 * dropping is explicitly performed at the RTP receiver.
-	 */
-	public int getRandomEarlyDropRate() {
-		return _randomEarlyDropRate;
-	}
-
-	/** @see #getRandomEarlyDropRate() */
-	public void setRandomEarlyDropRate(int randomEarlyDropRate) {
-		_randomEarlyDropRate = randomEarlyDropRate;
 	}
 
 }

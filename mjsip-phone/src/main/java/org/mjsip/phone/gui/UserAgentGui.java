@@ -653,7 +653,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
