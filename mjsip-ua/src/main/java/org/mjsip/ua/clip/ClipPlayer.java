@@ -5,7 +5,6 @@ package org.mjsip.ua.clip;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
@@ -45,11 +44,11 @@ public class ClipPlayer implements UserAgentListenerAdapter {
 	/** 
 	 * Creates a {@link ClipPlayer}.
 	 */
-	public ClipPlayer(UIConfig uiConfig) {
-		clip_on=getAudioClip(uiConfig.mediaPath+"/"+CLIP_ON);
-		clip_off=getAudioClip(uiConfig.mediaPath+"/"+CLIP_OFF);
-		clip_ring=getAudioClip(uiConfig.mediaPath+"/"+CLIP_RING);
-		clip_progress=getAudioClip(uiConfig.mediaPath+"/"+CLIP_PROGRESS);
+	public ClipPlayer(String mediaPath) {
+		clip_on=getAudioClip(mediaPath+"/"+CLIP_ON);
+		clip_off=getAudioClip(mediaPath+"/"+CLIP_OFF);
+		clip_ring=getAudioClip(mediaPath+"/"+CLIP_RING);
+		clip_progress=getAudioClip(mediaPath+"/"+CLIP_PROGRESS);
 		
 		clip_ring.setLoop();
 		clip_progress.setLoop();

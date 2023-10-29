@@ -15,7 +15,7 @@ import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
 
 /**
- * Definition of static media files to serve.
+ * Definition of media streams.
  */
 public class MediaConfig extends Configure implements MediaOptions {
 

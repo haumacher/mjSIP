@@ -242,7 +242,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	
 	private UserAgentListener clipPlayer() {
 		if (!_mediaConfig.isUseRat() && !_uiConfig.noSystemAudio) {
-			return new ClipPlayer(_uiConfig);
+			return new ClipPlayer(_uiConfig.mediaPath);
 		}
 		return null;
 	}

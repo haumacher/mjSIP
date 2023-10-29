@@ -38,6 +38,7 @@ public class UAConfig extends Configure implements UAOptions, RegistrationOption
 		return result;
 	}
 
+	/** @see #getDisplayName() */
 	private String _displayName=null;
 
 	private String _user=null;
@@ -89,7 +90,7 @@ public class UAConfig extends Configure implements UAOptions, RegistrationOption
 	private boolean _javaxSoundSync=true;
 
 	/** Constructs a {@link UAConfig} */
-	private UAConfig() {
+	public UAConfig() {
 		super();
 	}
 
