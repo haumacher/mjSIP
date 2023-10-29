@@ -23,13 +23,12 @@ package org.mjsip.ua.cli;
 
 
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.call.RegistrationClientListener;
+import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.MessageAgent;
 import org.mjsip.ua.MessageAgentListener;
-import org.mjsip.ua.UAConfig;
 import org.slf4j.LoggerFactory;
 
 
@@ -50,12 +49,14 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	NameAddress remote_user;
 	
 	
-	/** Creates a new MA. */
-	public MessageAgentCli(SipProvider sip_provider, UAConfig user_profile) {
-		ma=new MessageAgent(sip_provider,user_profile,this);
+	/**
+	 * Creates a new MA.
+	 */
+	public MessageAgentCli(SipProvider sip_provider, RegistrationOptions regOptions) {
+		ma = new MessageAgent(sip_provider, regOptions,this);
 		ma.receive();
-		if (user_profile.isRegister()) {
-			rc=new RegistrationClient(sip_provider,new SipURI(user_profile.getRegistrar()),user_profile.getUserURI(),this);
+		if (regOptions.isRegister()) {
+			rc = new RegistrationClient(sip_provider, regOptions,this);
 		}
 	}
 

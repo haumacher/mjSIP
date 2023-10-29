@@ -40,6 +40,7 @@ import org.mjsip.sip.call.NotImplementedServer;
 import org.mjsip.sip.call.OptionsServer;
 import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.call.RegistrationClientListener;
+import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.call.SipUser;
 import org.mjsip.sip.header.FromHeader;
 import org.mjsip.sip.message.SipMessage;
@@ -135,8 +136,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Inits the RegistrationClient */
 	private void initRegistrationClient() {
-		rc = new RegistrationClient(sip_provider, new SipURI(_regConfig.getRegistrar()), _regConfig.getUserURI(),
-				_regConfig.getAuthUser(), _regConfig.getAuthRealm(), _regConfig.getAuthPasswd(),this);
+		rc = new RegistrationClient(sip_provider, _regConfig, this);
 	}
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */

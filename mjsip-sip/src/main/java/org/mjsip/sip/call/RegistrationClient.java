@@ -58,182 +58,135 @@ public class RegistrationClient implements TransactionClientListener {
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RegistrationClient.class);
 
 	/** RegistrationClient listener */
-	protected RegistrationClientListener listener;
+	protected final RegistrationClientListener _listener;
 		
 	/** SipProvider */
-	protected SipProvider sip_provider;
+	protected final SipProvider _sipProvider;
 
 	/** URI of the registrar server */
-	protected SipURI registrar_uri;
+	protected final SipURI _registrarUri;
 
 	/** Target AOR to be registered with the registrar server (the URI in the To header field) */
-	protected NameAddress to_naddr;
+	protected final NameAddress _toNAddr;
 
 	/** URI of the user that is actually performing the registration (the URI in the From header field) */
-	protected NameAddress from_naddr;
-
-	/** User name. */
-	protected String username=null;
-
-	/** User name. */
-	protected String realm=null;
-
-	/** User's passwd. */
-	protected String passwd=null;
-
-	/** Nonce for the next authentication. */
-	protected String next_nonce=null;
-
-	/** Qop for the next authentication. */
-	protected String qop=null;
+	protected final NameAddress _fromNAddr;
 
 	/** User's contact name address. */
-	protected NameAddress contact_naddr; 
+	protected final NameAddress _contactNAddr;
+
+	/** User name. */
+	protected final String _username;
+
+	/** User name. */
+	protected final String _realm;
+
+	/** User's passwd. */
+	protected final String _passwd;
+
+	/** Nonce for the next authentication. */
+	protected String _nextNonce=null;
+
+	/** Qop for the next authentication. */
+	protected String _qop=null;
 
 	/** Expiration time. */
-	protected int expire_time;
+	protected int _expireTime;
 
 	/** Renew time. */
-	protected int renew_time;
+	protected int _renewTime;
 
-	/** Attempt timeout */
-	ScheduledFuture<?> attempt_to;
-
-	long attemptTimeout;
-
-	/** Registration timeout */
-	ScheduledFuture<?> registration_to;
+	long _attemptTimeout;
 
 	/** Whether keep on registering. */
-	boolean loop=false;
+	boolean _loop=false;
 
 	/** Whether the thread is running. */
-	boolean is_running=false;
+	boolean _running=false;
 
 	/** Number of registration attempts. */
-	int attempts=0;
+	int _attempts=0;
 	
 	/** SipKeepAlive daemon. */
 	//SipKeepAlive keep_alive=null;
 
 		
-	/** Creates a new RegistrationClient.
-	  * <p>
-	  * The From URI is equal to the To URI. The Contact URI is automatically formed with the user name from the AOR and the address:port from the SIP provider.
-	  * If a secure transport is preset (e.g. TLS), a SIPS URI is registered as contact URI.
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param listener the RegistrationClient listener */
-	public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,to_naddr,null,listener);
-	}
-	
-	
-	/** Creates a new RegistrationClient.
-	  * <p>
-	  * The Contact URI is automatically formed with the user name from the AOR and the address:port from the SIP provider.
-	  * If a secure transport is preset (e.g. TLS), a SIPS URI is registered as contact URI.
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param from_naddr the URI of the registering UA (the URI in the From header field)
-	  * @param listener the RegistrationClient listener */
-	/*public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, NameAddress from_naddr, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,from_naddr,null,listener);
-	}*/
-	
-	
-	/** Creates a new RegistrationClient.
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param from_naddr the URI of the registering UA (the URI in the From header field)
-	  * @param contact_naddr the registered contact URI
-	  * @param listener the RegistrationClient listener */
-	public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, NameAddress from_naddr, NameAddress contact_naddr, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,from_naddr,contact_naddr,listener);
-	}
-	
-	
-	/** Creates a new RegistrationClient with authentication credentials (i.e. username, realm, and passwd).
-	  * <p>
-	  * The From URI is equal to the To URI. The Contact URI is automatically formed with the user name from the AOR and the address:port from the SIP provider.
-	  * If a secure transport is preset (e.g. TLS), a SIPS URI is registered as contact URI.
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param username the username for authentication
-	  * @param realm the realm for authentication
-	  * @param passwd the password for authentication
-	  * @param listener the RegistrationClient listener */
+	/** Attempt timeout */
+	ScheduledFuture<?> _attemptTimer;
+
+	/** Registration timeout */
+	ScheduledFuture<?> _registrationTimer;
+
+	/**
+	 * Creates a new RegistrationClient with authentication credentials (i.e. username, realm, and
+	 * passwd).
+	 * <p>
+	 * The From URI is equal to the To URI. The Contact URI is automatically formed with the user
+	 * name from the AOR and the address:port from the SIP provider. If a secure transport is preset
+	 * (e.g. TLS), a SIPS URI is registered as contact URI.
+	 * 
+	 * @param sip_provider
+	 *        the SIP provider
+	 * @param registrar
+	 *        the registrar server
+	 * @param to_naddr
+	 *        the AOR of the resource that has to be registered (the URI in the To header field)
+	 * @param username
+	 *        the username for authentication
+	 * @param realm
+	 *        the realm for authentication
+	 * @param passwd
+	 *        the password for authentication
+	 * @param listener
+	 *        the RegistrationClient listener
+	 */
 	public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, String username, String realm, String passwd, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,to_naddr,null,username,realm,passwd,listener);
+		this(sip_provider, registrar, to_naddr, to_naddr, null, listener, username, realm, passwd);
 	}
 
-
-	/** Creates a new RegistrationClient with authentication credentials (i.e. username, realm, and passwd).
-	  * <p>
-	  * The Contact URI is automatically formed with the user name from the AOR and the address:port from the SIP provider.
-	  * If a secure transport is preset (e.g. TLS), a SIPS URI is registered as contact URI.
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param from_naddr the URI of the registering UA (the URI in the From header field)
-	  * @param username the username for authentication
-	  * @param realm the realm for authentication
-	  * @param passwd the password for authentication
-	  * @param listener the RegistrationClient listener */
-	/*public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, NameAddress from_naddr, String username, String realm, String passwd, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,from_naddr,null,username,realm,passwd,listener);
-	}*/
-
-
-	/** Creates a new RegistrationClient with authentication credentials (i.e. username, realm, and passwd).
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param from_naddr the URI of the registering UA (the URI in the From header field)
-	  * @param contact_naddr the registered contact URI
-	  * @param username the username for authentication
-	  * @param realm the realm for authentication
-	  * @param passwd the password for authentication
-	  * @param listener the RegistrationClient listener */
-	public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, NameAddress from_naddr, NameAddress contact_naddr, String username, String realm, String passwd, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,from_naddr,contact_naddr,username,realm,passwd,listener);
+	/**
+	 * Creates a {@link RegistrationClient}.
+	 *
+	 * @param sip_provider
+	 *        the SIP provider
+	 * @param regConfig
+	 *        The configuration options for registration.
+	 * @param listener
+	 *        the RegistrationClient listener
+	 */
+	public RegistrationClient(SipProvider sip_provider, RegistrationOptions regConfig,
+			RegistrationClientListener listener) {
+		this(sip_provider, new SipURI(regConfig.getRegistrar()), regConfig.getUserURI(), regConfig.getAuthUser(),
+				regConfig.getAuthRealm(), regConfig.getAuthPasswd(), listener);
 	}
 
-
-	/** Inits the RegistrationClient.
-	  * @param sip_provider the SIP provider
-	  * @param registrar the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param from_naddr the URI of the registering UA (the URI in the From header field)
-	  * @param contact_naddr the registered contact URI
-	  * @param username the username for authentication
-	  * @param realm the realm for authentication
-	  * @param passwd the password for authentication
-	  * @param listener the RegistrationClient listener */
-	private void init(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, NameAddress from_naddr, NameAddress contact_naddr, String username, String realm, String passwd, RegistrationClientListener listener) {
-		init(sip_provider,registrar,to_naddr,from_naddr,contact_naddr,listener);
-		// authentication
-		this.username=username;
-		this.realm=realm;
-		this.passwd=passwd;
-	}
-
-
-	/** Inits the RegistrationClient.
-	  * @param sip_provider the SIP provider
-	  * @param registrar_uri the registrar server
-	  * @param to_naddr the AOR of the resource that has to be registered (the URI in the To header field)
-	  * @param from_naddr the URI of the registering UA (the URI in the From header field)
-	  * @param contact_naddr the registered contact URI
-	  * @param listener the RegistrationClient listener */
-	private void init(SipProvider sip_provider, SipURI registrar_uri, NameAddress to_naddr, NameAddress from_naddr, NameAddress contact_naddr, RegistrationClientListener listener) {
-		this.listener=listener;
-		this.sip_provider=sip_provider;
-		this.registrar_uri=registrar_uri;
+	/**
+	 * Inits the RegistrationClient.
+	 * 
+	 * @param sip_provider
+	 *        the SIP provider
+	 * @param registrar_uri
+	 *        the registrar server
+	 * @param to_naddr
+	 *        the AOR of the resource that has to be registered (the URI in the To header field)
+	 * @param from_naddr
+	 *        the URI of the registering UA (the URI in the From header field)
+	 * @param contact_naddr
+	 *        the registered contact URI
+	 * @param listener
+	 *        the RegistrationClient listener
+	 * @param username
+	 *        the username for authentication
+	 * @param realm
+	 *        the realm for authentication
+	 * @param passwd
+	 *        the password for authentication
+	 */
+	public RegistrationClient(SipProvider sip_provider, SipURI registrar_uri, NameAddress to_naddr,
+			NameAddress from_naddr, NameAddress contact_naddr, RegistrationClientListener listener, String username, String realm, String passwd) {
+		_listener = listener;
+		_sipProvider = sip_provider;
+		_registrarUri = registrar_uri;
 		if (contact_naddr==null) {
 			GenericURI to_uri=to_naddr.getAddress();
 			String user=(to_uri.isSipURI())? new SipURI(to_uri).getUserName() : null;
@@ -245,32 +198,36 @@ public class RegistrationClient implements TransactionClientListener {
 			from_naddr=SipNameAddress.toSIPS(from_naddr);
 			registrar_uri.setSecure(true);
 		}
-		this.to_naddr=to_naddr;
-		this.from_naddr=from_naddr;
-		this.contact_naddr=contact_naddr;
+		_toNAddr = to_naddr;
+		_fromNAddr = from_naddr;
+		_contactNAddr = contact_naddr;
 
-		this.expire_time=sip_provider.sipConfig().getDefaultExpires();
-		this.renew_time=sip_provider.sipConfig().getDefaultExpires();
+		_expireTime = sip_provider.sipConfig().getDefaultExpires();
+		_renewTime = sip_provider.sipConfig().getDefaultExpires();
+
+		_username = username;
+		_realm = realm;
+		_passwd = passwd;
 	}
 
 
 	/** Gets the target AOR registered with the registrar server.
 	  * @return the AOR */
 	public NameAddress getTargetAOR() {
-		return to_naddr;
+		return _toNAddr;
 	}
 
 
 	/** Whether it is periodically registering. */
 	public boolean isRegistering() {
-		return is_running;
+		return _running;
 	}
 
 
 	/** Registers with the registrar server.
 	  * It does register with the previously set expire time.  */
 	public void register() {
-		register(expire_time);
+		register(_expireTime);
 	}
 
 
@@ -289,20 +246,20 @@ public class RegistrationClient implements TransactionClientListener {
 
 	/** Registers with the registrar server for <i>expire_time</i> seconds, with a given message body. */
 	protected void register(int expire_time, String content_type, byte[] body) {
-		attempts=0;
-		if (expire_time>0) this.expire_time=expire_time;
-		String call_id=sip_provider.pickCallId();
-		SipMessage req=sip_provider.messageFactory().createRegisterRequest(registrar_uri,to_naddr,from_naddr,contact_naddr,call_id);
+		_attempts=0;
+		if (expire_time>0) this._expireTime=expire_time;
+		String call_id=_sipProvider.pickCallId();
+		SipMessage req=_sipProvider.messageFactory().createRegisterRequest(_registrarUri,_toNAddr,_fromNAddr,_contactNAddr,call_id);
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(expire_time)));
-		if (next_nonce!=null) {
+		if (_nextNonce!=null) {
 			AuthorizationHeader ah=new AuthorizationHeader("Digest");
 			//GenericURI to_uri=to_naddr.getAddress();
-			ah.addUsernameParam(username);
-			ah.addRealmParam(realm);
-			ah.addNonceParam(next_nonce);
+			ah.addUsernameParam(_username);
+			ah.addRealmParam(_realm);
+			ah.addNonceParam(_nextNonce);
 			ah.addUriParam(req.getRequestLine().getAddress().toString());
-			ah.addQopParam(qop);
-			String response=(new DigestAuthentication(SipMethods.REGISTER,ah,null,passwd)).getResponse();
+			ah.addQopParam(_qop);
+			String response=(new DigestAuthentication(SipMethods.REGISTER,ah,null,_passwd)).getResponse();
 			ah.addResponseParam(response);
 			req.setAuthorizationHeader(ah);
 		}
@@ -311,11 +268,11 @@ public class RegistrationClient implements TransactionClientListener {
 			req.setBody(content_type,body);
 		}
 		if (expire_time > 0) {
-			LOG.info("Registering contact: " + contact_naddr + " (expiry " + expire_time + " secs)");
+			LOG.info("Registering contact: " + _contactNAddr + " (expiry " + expire_time + " secs)");
 		} else {
-			LOG.info("Unregistering contact: " + contact_naddr);
+			LOG.info("Unregistering contact: " + _contactNAddr);
 		}
-		TransactionClient t=new TransactionClient(sip_provider,req,this);
+		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
 	}
 
@@ -323,15 +280,15 @@ public class RegistrationClient implements TransactionClientListener {
 	/** Unregisters all contacts with the registrar server.
 	  * It performs an unregistration (registration with 0 secs as expiration time) using '*' as contact address. */
 	public void unregisterall() {
-		attempts=0;
-		NameAddress user=new NameAddress(to_naddr);
-		String call_id=sip_provider.pickCallId();
-		SipMessage req=sip_provider.messageFactory().createRegisterRequest(registrar_uri,to_naddr,from_naddr,(NameAddress)null,call_id);
+		_attempts=0;
+		NameAddress user=new NameAddress(_toNAddr);
+		String call_id=_sipProvider.pickCallId();
+		SipMessage req=_sipProvider.messageFactory().createRegisterRequest(_registrarUri,_toNAddr,_fromNAddr,(NameAddress)null,call_id);
 		//ContactHeader contact_star=new ContactHeader(); // contact is *
 		//req.setContactHeader(contact_star);
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(0)));
 		LOG.info("unregistering all contacts");
-		TransactionClient t=new TransactionClient(sip_provider,req,this); 
+		TransactionClient t=new TransactionClient(_sipProvider,req,this); 
 		t.request(); 
 	}
 
@@ -340,24 +297,24 @@ public class RegistrationClient implements TransactionClientListener {
 	  * @param expire_time expiration time in seconds
 	  * @param renew_time renew time in seconds */
 	public void loopRegister(int expire_time, int renew_time) {
-		this.expire_time=expire_time;
-		this.renew_time=renew_time;
+		this._expireTime=expire_time;
+		this._renewTime=renew_time;
 		cancelAttemptTimeout();
 		cancelRegistrationTimeout();
-		loop=true;
+		_loop=true;
 		register(expire_time);
 	}
 
 	private void cancelAttemptTimeout() {
-		if (attempt_to != null)
-			attempt_to.cancel(false);
-		attempt_to = null;
+		if (_attemptTimer != null)
+			_attemptTimer.cancel(false);
+		_attemptTimer = null;
 	}
 
 	private void cancelRegistrationTimeout() {
-		if (registration_to != null)
-			registration_to.cancel(false);
-		registration_to = null;
+		if (_registrationTimer != null)
+			_registrationTimer.cancel(false);
+		_registrationTimer = null;
 	}
 
 	/** Periodically registers with the registrar server.
@@ -379,7 +336,7 @@ public class RegistrationClient implements TransactionClientListener {
 
 	/** Halts the periodic registration. */
 	public void halt() {
-		if (is_running) loop=false;
+		if (_running) _loop=false;
 		//if (keep_alive!=null) keep_alive.halt();
 	}
 
@@ -397,7 +354,7 @@ public class RegistrationClient implements TransactionClientListener {
 	public void onTransSuccessResponse(TransactionClient transaction, SipMessage resp) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			if (resp.hasAuthenticationInfoHeader()) {
-				next_nonce=resp.getAuthenticationInfoHeader().getNextnonceParam();
+				_nextNonce=resp.getAuthenticationInfoHeader().getNextnonceParam();
 			}
 			StatusLine status=resp.getStatusLine();
 			String result=status.getCode()+" "+status.getReason();
@@ -413,16 +370,17 @@ public class RegistrationClient implements TransactionClientListener {
 					if (exp_i>0 && (expires==0 || exp_i<expires)) expires=exp_i;
 				}    
 			}
-			if (expires>0 && expires<renew_time) renew_time=expires;
+			if (expires>0 && expires<_renewTime) _renewTime=expires;
 			
-			LOG.info("Registration " + result + ", expires in " + expires + "s, renewing in " + renew_time + "s.");
-			if (loop) {
+			LOG.info("Registration " + result + ", expires in " + expires + "s, renewing in " + _renewTime + "s.");
+			if (_loop) {
 				cancelAttemptTimeout();
-				registration_to = sip_provider.scheduler().schedule((long) renew_time * 1000,
+				_registrationTimer = _sipProvider.scheduler().schedule((long) _renewTime * 1000,
 						this::onRegistrationTimeout);
-				LOG.trace("Scheduling next registration in " + renew_time + "s");
+				LOG.trace("Scheduling next registration in " + _renewTime + "s");
 			}
-			if (listener!=null) listener.onRegistrationSuccess(this,to_naddr,contact_naddr,expires,result);
+			if (_listener != null)
+				_listener.onRegistrationSuccess(this, _toNAddr, _contactNAddr, expires, result);
 		}
 	}
 
@@ -432,9 +390,9 @@ public class RegistrationClient implements TransactionClientListener {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			StatusLine status=resp.getStatusLine();
 			int code=status.getCode();
-			if (code==401 && attempts<sip_provider.sipConfig().getRegAuthAttempts() && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
+			if (code==401 && _attempts<_sipProvider.sipConfig().getRegAuthAttempts() && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(_realm)) {
 				// UAS authentication
-				attempts++;
+				_attempts++;
 				SipMessage req=transaction.getRequestMessage();
 				CSeqHeader csh=req.getCSeqHeader().incSequenceNumber();
 				req.setCSeqHeader(csh);
@@ -445,38 +403,39 @@ public class RegistrationClient implements TransactionClientListener {
 				WwwAuthenticateHeader wah=resp.getWwwAuthenticateHeader();
 				String qop_options=wah.getQopOptionsParam();
 				//LOG.debug("qop-options: "+qop_options);
-				qop=(qop_options!=null)? "auth" : null;
-				AuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),wah,qop,null,0,null,username,passwd)).getAuthorizationHeader();
+				_qop=(qop_options!=null)? "auth" : null;
+				AuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),wah,_qop,null,0,null,_username,_passwd)).getAuthorizationHeader();
 				req.setAuthorizationHeader(ah);
-				TransactionClient t=new TransactionClient(sip_provider,req,this);
+				TransactionClient t=new TransactionClient(_sipProvider,req,this);
 				t.request();
 			}
 			else
-			if (code==407 && attempts<sip_provider.sipConfig().getRegAuthAttempts() && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(realm)) {
+			if (code==407 && _attempts<_sipProvider.sipConfig().getRegAuthAttempts() && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(_realm)) {
 				// Proxy authentication
-				attempts++;
+				_attempts++;
 				SipMessage req=transaction.getRequestMessage();
 				req.setCSeqHeader(req.getCSeqHeader().incSequenceNumber());
 				ProxyAuthenticateHeader pah=resp.getProxyAuthenticateHeader();
 				String qop_options=pah.getQopOptionsParam();
 				//LOG.debug("qop-options: "+qop_options);
-				qop=(qop_options!=null)? "auth" : null;
-				ProxyAuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),pah,qop,null,0,null,username,passwd)).getProxyAuthorizationHeader();
+				_qop=(qop_options!=null)? "auth" : null;
+				ProxyAuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),pah,_qop,null,0,null,_username,_passwd)).getProxyAuthorizationHeader();
 				req.setProxyAuthorizationHeader(ah);
-				TransactionClient t=new TransactionClient(sip_provider,req,this);
+				TransactionClient t=new TransactionClient(_sipProvider,req,this);
 				t.request();
 			}
 			else {
 				// Registration failure
 				String result=code+" "+status.getReason();
 				LOG.info("Registration failure: "+result);
-				if (loop) {
+				if (_loop) {
 					cancelRegistrationTimeout();
-					attemptTimeout = sip_provider.sipConfig().getRegMaxAttemptTimeout();
-					attempt_to = sip_provider.scheduler().schedule(attemptTimeout, this::onAttemptTimeout);
-					LOG.trace("next attempt after "+(sip_provider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
+					_attemptTimeout = _sipProvider.sipConfig().getRegMaxAttemptTimeout();
+					_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
+					LOG.trace("next attempt after "+(_sipProvider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
 				}
-				if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,result);
+				if (_listener != null)
+					_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, result);
 			}
 		}
 	}
@@ -486,16 +445,17 @@ public class RegistrationClient implements TransactionClientListener {
 	public void onTransTimeout(TransactionClient transaction) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			LOG.info("Registration failure: No response from server");
-			if (loop) {
+			if (_loop) {
 				cancelRegistrationTimeout();
-				long inter_time_msecs = (attempt_to == null) ? sip_provider.sipConfig().getRegMinAttemptTimeout()
-						: attemptTimeout * 2;
-				if (inter_time_msecs>sip_provider.sipConfig().getRegMaxAttemptTimeout()) inter_time_msecs=sip_provider.sipConfig().getRegMaxAttemptTimeout();
-				attemptTimeout = inter_time_msecs;
-				attempt_to = sip_provider.scheduler().schedule(attemptTimeout, this::onAttemptTimeout);
+				long inter_time_msecs = (_attemptTimer == null) ? _sipProvider.sipConfig().getRegMinAttemptTimeout()
+						: _attemptTimeout * 2;
+				if (inter_time_msecs>_sipProvider.sipConfig().getRegMaxAttemptTimeout()) inter_time_msecs=_sipProvider.sipConfig().getRegMaxAttemptTimeout();
+				_attemptTimeout = inter_time_msecs;
+				_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
 				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}
-			if (listener!=null) listener.onRegistrationFailure(this,to_naddr,contact_naddr,"Timeout");
+			if (_listener != null)
+				_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, "Timeout");
 		}
 	}
 
@@ -503,17 +463,17 @@ public class RegistrationClient implements TransactionClientListener {
 	// ******************* Timer callback functions ********************
 
 	private void onAttemptTimeout() {
-		if (loop) {
+		if (_loop) {
 			register();
 		}
-		attempt_to = null;
+		_attemptTimer = null;
 	}
 
 	private void onRegistrationTimeout() {
-		if (loop) {
+		if (_loop) {
 			register();
 		}
-		registration_to = null;
+		_registrationTimer = null;
 	}
 
 	// ***************************** run() *****************************
@@ -521,17 +481,17 @@ public class RegistrationClient implements TransactionClientListener {
 	/** Run method */
 	public void run() {
 		
-		is_running=true;
+		_running=true;
 		try {
-			while (loop) {
+			while (_loop) {
 				register();
-				Thread.sleep(renew_time*1000);
+				Thread.sleep(_renewTime*1000);
 			}
 		}
 		catch (Exception e) {
 			LOG.info("Exception.", e);
 		}
-		is_running=false;
+		_running=false;
 	}
 
 	

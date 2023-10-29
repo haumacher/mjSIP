@@ -6,6 +6,7 @@ import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.address.UnexpectedUriSchemeException;
+import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.provider.SipOptions;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;

@@ -25,10 +25,10 @@ package org.mjsip.ua;
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.call.RegistrationClientListener;
+import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
@@ -76,8 +76,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 
 	private void register(RegistrationOptions regConfig) {
 		if (regConfig.isRegister()) {
-			RegistrationClient rc = new RegistrationClient(
-					sip_provider,new SipURI(regConfig.getRegistrar()),regConfig.getUserURI(),regConfig.getAuthUser(),regConfig.getAuthRealm(),regConfig.getAuthPasswd(),this);
+			RegistrationClient rc = new RegistrationClient(sip_provider, regConfig, this);
 			rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
 		}
 	} 

@@ -24,6 +24,7 @@ package org.mjsip.ua;
 
 
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
@@ -44,20 +45,20 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MessageAgent.class);
 
 	/** UserProfile */
-	protected UAConfig user_profile;
+	protected final RegistrationOptions _regOptions;
 
 	/** SipProvider */
-	protected SipProvider sip_provider;
+	protected final SipProvider sip_provider;
 
 	/** Message listener */
-	protected MessageAgentListener listener;
+	protected final MessageAgentListener listener;
 
 	
 	/** Costructs a new MessageAgent. */
-	public MessageAgent(SipProvider sip_provider, UAConfig user_profile, MessageAgentListener listener) {
+	public MessageAgent(SipProvider sip_provider, RegistrationOptions regOptions, MessageAgentListener listener) {
 		this.sip_provider=sip_provider;
 		this.listener=listener;
-		this.user_profile=user_profile;
+		this._regOptions=regOptions;
 	}   
 
 	
@@ -70,7 +71,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 	/** Sends a new message. */
 	public void send(String recipient, String subject, String content_type, byte[] content) {
 		NameAddress to_uri=NameAddress.parse(recipient);
-		NameAddress from_uri=user_profile.getUserURI();
+		NameAddress from_uri=_regOptions.getUserURI();
 		SipMessage req=sip_provider.messageFactory().createMessageRequest(to_uri,from_uri,sip_provider.pickCallId(),subject,content_type,content);
 		TransactionClient t=new TransactionClient(sip_provider,req,this);
 		t.request();

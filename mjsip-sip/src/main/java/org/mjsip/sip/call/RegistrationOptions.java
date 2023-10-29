@@ -1,14 +1,12 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.ua;
+package org.mjsip.sip.call;
 
 import org.mjsip.sip.address.NameAddress;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Options for a {@link RegistrationClient}.
  */
 public interface RegistrationOptions {
 
