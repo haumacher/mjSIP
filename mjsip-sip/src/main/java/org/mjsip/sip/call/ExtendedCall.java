@@ -25,6 +25,7 @@ package org.mjsip.sip.call;
 
 
 
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipNameAddress;
 import org.mjsip.sip.dialog.ExtendedInviteDialog;
@@ -120,7 +121,7 @@ public class ExtendedCall extends Call {
 	  * @param caller the caller address
 	  * @param sdp the session descriptor */
 	@Override
-	public void call(NameAddress callee, NameAddress caller, String sdp) {
+	public void call(NameAddress callee, NameAddress caller, SdpMessage sdp) {
 		LOG.debug("calling "+callee);
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,dialogListener);
 		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
@@ -139,7 +140,7 @@ public class ExtendedCall extends Call {
 		LOG.debug("calling "+invite.getRequestLine().getAddress());
 		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,dialogListener);
 		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
-		local_sdp=invite.getStringBody();
+		local_sdp = invite.getSdpBody();
 		if (local_sdp!=null)
 			dialog.invite(invite);
 		else dialog.inviteWithoutOffer(invite);

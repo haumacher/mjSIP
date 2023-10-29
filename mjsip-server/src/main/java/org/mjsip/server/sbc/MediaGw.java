@@ -102,22 +102,22 @@ public class MediaGw implements SymmetricUdpRelayListener {
 
 		//String[] media={ "audio" };
 		//int[] masq_port=new int[media.length];                   
-		Vector media_descriptors=sdp.getMediaDescriptors();
-		String[] media=new String[media_descriptors.size()];                   
-		int[] masq_port=new int[media_descriptors.size()];                   
+		Vector<MediaDescriptor> mediaDescriptors=sdp.getMediaDescriptors();
+		String[] mediaTypes=new String[mediaDescriptors.size()];                   
+		int[] masq_port=new int[mediaDescriptors.size()];                   
 			
 		String call_id=msg.getCallIdHeader().getCallId();
 		String leg=(msg.isRequest())? "caller" : "callee";
 
 		//for (int i=0; i<media.length; i++)
-		for (int i=0; i<media_descriptors.size(); i++) {
+		for (int i=0; i<mediaDescriptors.size(); i++) {
 			//int dest_port=sdp.getMediaDescriptor(media[i]).getMedia().getPort();
-			MediaDescriptor media_descriptor=(MediaDescriptor)media_descriptors.elementAt(i);
-			MediaField media_filed=media_descriptor.getMediaField();
-			media[i]=media_filed.getMediaType();
-			int dest_port=media_filed.getPort();
+			MediaDescriptor media_descriptor=mediaDescriptors.elementAt(i);
+			MediaField mediaField=media_descriptor.getMediaField();
+			mediaTypes[i]=mediaField.getMediaType();
+			int dest_port=mediaField.getPort();
 						
-			String key=call_id+"-"+leg+"-"+media[i];
+			String key=call_id+"-"+leg+"-"+mediaTypes[i];
 			LOG.info("media-id: "+key);
 			if (masq_table.containsKey(key)) {
 				// get masq
@@ -133,18 +133,18 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			}
 		}
 		// mangle sdp
-		for (int i=0; i<media.length; i++) LOG.info("mangle body: media="+media[i]+" masq_port="+masq_port[i]);
-		msg=SipMangler.mangleBody(msg,masq_addr,media,masq_port);
+		for (int i=0; i<mediaTypes.length; i++) LOG.info("mangle body: media="+mediaTypes[i]+" masq_port="+masq_port[i]);
+		msg=SipMangler.mangleBody(msg,masq_addr,mediaTypes,masq_port);
 
 		// creates the actual media relay (SymmetricUdpRelay) when both media legs are available
-		if (media.length>0) {
-			if(masq_table.containsKey(call_id+"-caller"+"-"+media[0]) && masq_table.containsKey(call_id+"-callee"+"-"+media[0])) {
+		if (mediaTypes.length>0) {
+			if(masq_table.containsKey(call_id+"-caller"+"-"+mediaTypes[0]) && masq_table.containsKey(call_id+"-callee"+"-"+mediaTypes[0])) {
 				LOG.info("complete call");
 				if (!call_set.contains(call_id)) {
 					LOG.info("creating new MediaGW");
-					for (int i=0; i<media.length; i++) {
-						Masquerade masq_left=(Masquerade)masq_table.get(call_id+"-caller"+"-"+media[i]);
-						Masquerade masq_right=(Masquerade)masq_table.get(call_id+"-callee"+"-"+media[i]);
+					for (int i=0; i<mediaTypes.length; i++) {
+						Masquerade masq_left=(Masquerade)masq_table.get(call_id+"-caller"+"-"+mediaTypes[i]);
+						Masquerade masq_right=(Masquerade)masq_table.get(call_id+"-callee"+"-"+mediaTypes[i]);
 						createSymmetricUdpRelay(masq_left,masq_right);
 					}
 					call_set.add(call_id);

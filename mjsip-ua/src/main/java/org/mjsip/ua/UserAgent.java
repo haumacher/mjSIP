@@ -143,7 +143,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private SdpMessage getSessionDescriptor() {
 		String owner=uaConfig.getUser();
 		String media_addr=(uaConfig.getMediaAddr()!=null)? uaConfig.getMediaAddr() : sip_provider.getViaAddress();
-		SdpMessage sdp=new SdpMessage(owner,media_addr);
+		SdpMessage sdp=SdpMessage.createSdpMessage(owner, media_addr);
 		for (MediaDesc md : _callMedia) {
 			sdp.addMediaDescriptor(md.toMediaDescriptor());
 		}
@@ -254,9 +254,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void call(NameAddress callee, SdpMessage sdp) {
 		call = new ExtendedCall(sip_provider, new SipUser(_regConfig.getUserURI(), _regConfig.getAuthUser(),
 				_regConfig.getAuthRealm(), _regConfig.getAuthPasswd()),this);      
-		if (uaConfig.getNoOffer()) call.call(callee);
-		else {
-			call.call(callee,sdp.toString());
+		if (uaConfig.getNoOffer()) {
+			call.call(callee);
+		} else {
+			call.call(callee,sdp);
 		}
 		progress=false;
 		ringing=false;
@@ -296,12 +297,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (call==null) return;
 		// new sdp
 		SdpMessage local_sdp=getSessionDescriptor();
-		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
-		SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
-		new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+		SdpMessage remote_sdp=call.getRemoteSessionDescriptor();
+		SdpMessage new_sdp=
+			new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime(), local_sdp.getMediaDescriptors());
 		new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
 		// accept
-		call.accept(new_sdp.toString());
+		call.accept(new_sdp);
 	}
 
 	/** Redirects an incoming call. */
@@ -321,10 +322,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}   
 
 	/** Modifies the current session. It re-invites the remote party changing the contact URI and SDP. */
-	public void modify(String body) {
+	public void modify(SdpMessage sdp) {
 		if (call!=null && call.getState().isActive()) {
 			LOG.info("RE-INVITING/MODIFING");
-			call.modify(body);
+			call.modify(sdp);
 		}
 	}
 
@@ -353,8 +354,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 
 		// get local and remote rtp addresses and ports
-		SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
-		SdpMessage remote_sdp=new SdpMessage(call.getRemoteSessionDescriptor());
+		SdpMessage local_sdp=call.getLocalSessionDescriptor();
+		SdpMessage remote_sdp=call.getRemoteSessionDescriptor();
 		
 		// calculate media descriptor product
 		Vector<MediaDescriptor> localMedia = local_sdp.getMediaDescriptors();
@@ -474,7 +475,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a new INVITE method (incoming call) */
 	@Override
-	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite) {
+	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage sdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
 			LOG.info("LOCALLY BUSY: INCOMING CALL REFUSED");
@@ -488,7 +489,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// response timeout
 		if (uaConfig.getRefuseTime()>=0) response_to=sip_provider.scheduler().schedule(uaConfig.getRefuseTime()*1000, this::onResponseTimeout);
 		
-		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseSdpDescriptors(sdp));
+		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(sdp.getMediaDescriptors()));
 	}
 
 	private String extractFrom(SipMessage invite) {
@@ -514,7 +515,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	@Override
-	public void onCallModify(Call call, String sdp, SipMessage invite) {
+	public void onCallModify(Call call, SdpMessage sdp, SipMessage invite) {
 		LOG.debug("onCallModify()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("RE-INVITE/MODIFY");
@@ -563,19 +564,19 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 2xx (call accepted) */
 	@Override
-	public void onCallAccepted(Call call, String sdp, SipMessage resp) {
+	public void onCallAccepted(Call call, SdpMessage sdp, SipMessage resp) {
 		LOG.debug("onCallAccepted()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("ACCEPTED/CALL");
 		if (uaConfig.getNoOffer()) {
 			// new sdp
 			SdpMessage local_sdp=getSessionDescriptor();
-			SdpMessage remote_sdp=new SdpMessage(sdp);
-			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime());
-			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+			SdpMessage remote_sdp=sdp;
+			SdpMessage new_sdp=
+				new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime(), local_sdp.getMediaDescriptors());
 			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);         
 			// answer with the local sdp
-			call.confirm2xxWithAnswer(new_sdp.toString());
+			call.confirm2xxWithAnswer(new_sdp);
 		}
 		
 		if (listener!=null) listener.onUaCallAccepted(this);
@@ -589,7 +590,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving an ACK method (call confirmed) */
 	@Override
-	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
+	public void onCallConfirmed(Call call, SdpMessage sdp, SipMessage ack) {
 		LOG.debug("onCallConfirmed()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("CONFIRMED/CALL");
@@ -601,7 +602,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 2xx (re-invite/modify accepted) */
 	@Override
-	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp) {
+	public void onCallModifyAccepted(Call call, SdpMessage sdp, SipMessage resp) {
 		LOG.debug("onCallModifyAccepted()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("RE-INVITE-ACCEPTED/CALL");
@@ -714,7 +715,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 
 	/** From ExtendedCallListener. Callback function called when arriving a new UPDATE method (update request). */
-	public void onCallUpdate(ExtendedCall call, String sdp, SipMessage update) {
+	public void onCallUpdate(ExtendedCall call, SdpMessage sdp, SipMessage update) {
 		LOG.debug("onCallUpdate()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("UPDATE");
@@ -732,7 +733,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("transfer to "+refer_to.toString());
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(_regConfig.getUserURI()),this);
-		call_transfer.call(refer_to,getSessionDescriptor().toString());
+		call_transfer.call(refer_to,getSessionDescriptor());
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is accepted. */

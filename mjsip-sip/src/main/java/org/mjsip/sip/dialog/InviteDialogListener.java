@@ -25,6 +25,7 @@ package org.mjsip.sip.dialog;
 
 
 
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.message.SipMessage;
@@ -37,10 +38,10 @@ import org.mjsip.sip.message.SipMessage;
 public interface InviteDialogListener {
 	
 	/** When an incoming INVITE is received. */ 
-	public void onDlgInvite(InviteDialog dialog, NameAddress callee, NameAddress caller, String body, SipMessage msg);
+	public void onDlgInvite(InviteDialog dialog, NameAddress callee, NameAddress caller, SdpMessage sdp, SipMessage msg);
  
 	/** When an incoming Re-INVITE is received. */ 
-	public void onDlgReInvite(InviteDialog dialog, String body, SipMessage msg);
+	public void onDlgReInvite(InviteDialog dialog, SdpMessage sdp, SipMessage msg);
 
 
 	/** When a 1xx response is received for an INVITE request. */ 
@@ -62,7 +63,7 @@ public interface InviteDialogListener {
 	
 	/** When a 2xx successful final response is received for an INVITE request.
 	  * If a body ("offer") has been included in the respose, method {@link InviteDialog#confirm2xxWithAnswer(NameAddress,String) confirm2xxWithAnswer()} must be explicitely called. */ 
-	public void onDlgInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg);
+	public void onDlgInviteSuccessResponse(InviteDialog dialog, int code, String reason, SdpMessage sdp, SipMessage msg);
 	/** When an incoming INVITE is accepted. */ 
 	//public void onDlgAccepted(InviteDialog dialog);
 
@@ -79,10 +80,10 @@ public interface InviteDialogListener {
 
 
 	/** When a 1xx response response is received for a Re-INVITE request. */ 
-	public void onDlgReInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg);
+	public void onDlgReInviteProvisionalResponse(InviteDialog dialog, int code, String reason, SdpMessage sdp, SipMessage msg);
 
 	/** When a 2xx successful final response is received for a Re-INVITE request. */ 
-	public void onDlgReInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg);
+	public void onDlgReInviteSuccessResponse(InviteDialog dialog, int code, String reason, SdpMessage sdp, SipMessage msg);
 	/** When an incoming Re-INVITE is accepted. */ 
 	//public void onDlgReInviteAccepted(InviteDialog dialog);
 
@@ -99,7 +100,7 @@ public interface InviteDialogListener {
 
 
 	/** When an incoming ACK is received for an INVITE transaction. */ 
-	public void onDlgAck(InviteDialog dialog, String body, SipMessage msg);
+	public void onDlgAck(InviteDialog dialog, SdpMessage sdp, SipMessage msg);
 	
 	/** When the INVITE handshake is successful terminated and the call is active. */ 
 	public void onDlgCall(InviteDialog dialog);
@@ -112,7 +113,7 @@ public interface InviteDialogListener {
 	public void onDlgCancel(InviteDialog dialog, SipMessage msg);
 
 	/** When an incoming UPDATE request is received within the dialog. */ 
-	public void onDlgUpdate(InviteDialog dialog, String body, SipMessage msg);
+	public void onDlgUpdate(InviteDialog dialog, SdpMessage sdp, SipMessage msg);
 
 	/** When a response is received for an UPDATE request. */ 
 	public void onDlgUpdateResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg);

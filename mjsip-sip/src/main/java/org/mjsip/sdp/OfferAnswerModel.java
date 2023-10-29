@@ -112,12 +112,9 @@ public class OfferAnswerModel {
 	  * @param offer_sdp the offered SDP (SessionDescriptor)
 	  * @return the answered SDP (SessionDescriptor) */
 	public static SdpMessage makeSessionDescriptorMatch(SdpMessage start_sdp, SdpMessage offer_sdp) {
-		SdpMessage answer_sdp=new SdpMessage(start_sdp);
-		answer_sdp.removeMediaDescriptors();
-		Vector<MediaDescriptor> answer_md_list = makeMediaDescriptorMatch(start_sdp.getMediaDescriptors(),
+		Vector<MediaDescriptor> answerDescriptors = makeMediaDescriptorMatch(start_sdp.getMediaDescriptors(),
 				offer_sdp.getMediaDescriptors());
-		answer_sdp.addMediaDescriptors(answer_md_list);
-		return answer_sdp;
+		return start_sdp.withMediaDescriptors(answerDescriptors);
 	}
 
 

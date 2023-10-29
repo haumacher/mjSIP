@@ -24,12 +24,10 @@
 package org.mjsip.sdp;
 
 
-import java.util.List;
 import java.util.Vector;
 
 import org.mjsip.sdp.field.ConnectionField;
 import org.mjsip.sdp.field.KeyField;
-import org.mjsip.sdp.field.MediaField;
 import org.mjsip.sdp.field.OriginField;
 import org.mjsip.sdp.field.SessionNameField;
 import org.mjsip.sdp.field.TimeField;
@@ -52,104 +50,101 @@ import org.mjsip.sdp.field.TimeField;
 public class SdpMessage {
 	
 	/** Protocol version */
-	SdpField v;
+	private final SdpField _version;
+
 	/** Originator and session identifier */
-	OriginField o;
+	private final OriginField _origin;
+
 	/** Session name */
-	SessionNameField s;
+	private final SessionNameField _sessionName;
+
 	/** Session information (optional) */
-	SdpField i;
+	private final SdpField _info;
+
 	/** URI of description (optional) */
-	SdpField u;
+	private final SdpField _uri;
+
 	/** Email address (optional) */
-	SdpField e;
+	private final SdpField _email;
+
 	/** Phone number (optional) */
-	SdpField p;
+	private final SdpField _phone;
+
 	/** Connection information; not required if included in all media */
-	ConnectionField c;
+	private ConnectionField _connection;
+
 	/** Zero or more bandwidth information fields */
-	SdpField[] bv=null;
+	private final SdpField[] _bandwidthInfos;
+
 	/** Time field */
 	//TimeField t;
 	/** One or more time descriptions */
-	TimeDescription[] tv;
+	private final TimeDescription[] _timeDescriptions;
+
 	/** Time zone adjustments (optional) */
-	SdpField z;
+	private final SdpField _zone;
+
 	/** Encryption key (optional) */
-	KeyField k;
+	private final KeyField _key;
+
 	/** Zero or more session attributes */
-	Vector<AttributeField> av = new Vector<AttributeField>();
+	private final Vector<AttributeField> _attributeFields = new Vector<AttributeField>();
+
 	/** Zero or more media descriptions. */
-	Vector<MediaDescriptor> _mediaDescriptors = new Vector<>();
+	private final Vector<MediaDescriptor> _mediaDescriptors = new Vector<>();
 		
-
-	/** Inits the mandatory fields of the SDP message. */
-	private void init(OriginField o, SessionNameField s, ConnectionField c, TimeDescription[] tv) {
-		this.v=new SdpField('v',"0");
-		this.o=o;
-		this.s=s;
-		this.c=c;
-		this.tv=tv;
+	/**
+	 * Creates a new SDP message specifying o, s, c, and t fields.
+	 * 
+	 * @param origin
+	 *        the origin field
+	 * @param session
+	 *        the session name field
+	 * @param connection
+	 *        the connection field
+	 * @param time
+	 *        the time field
+	 * @param media_descs
+	 *        {@link MediaDescriptor}s to offer.
+	 */
+	public SdpMessage(OriginField origin, SessionNameField session, ConnectionField connection, TimeField time,
+			Vector<MediaDescriptor> media_descs) {
+		this(origin, session, connection, new TimeDescription[] { new TimeDescription(time) });
+		addMediaDescriptors(media_descs);
 	}
 
-	/** Creates a new SDP message.
-	  * @param sd SDP message to be cloned */
-	public SdpMessage(SdpMessage sd) {
-		init(sd.o,sd.s,sd.c,sd.tv);
-		i=sd.i;
-		u=sd.u;
-		e=sd.e;
-		p=sd.p;
-		bv=sd.bv;
-		z=sd.z;
-		k=sd.k;
-		for (int i = 0; i < sd.av.size(); i++)
-			addAttribute(sd.av.elementAt(i));
-		for (int i = 0; i < sd._mediaDescriptors.size(); i++)
-			addMediaDescriptor(sd._mediaDescriptors.elementAt(i));
-	}
-
-	/** Creates a new SDP message specifying o, s, c, and t fields.
-	  * @param origin the origin field
-	  * @param session the  session name field
-	  * @param connection the connection field
-	  * @param time the time field */
-	public SdpMessage(OriginField origin, SessionNameField session, ConnectionField connection, TimeField time) {
-		init(origin,session,connection,new TimeDescription[]{new TimeDescription(time)});
-	}
-
-	/** Creates a new SDP message specifying o, s, c, and t fields.
-	  * @param origin the origin field value
-	  * @param session the session name field value
-	  * @param connection the connection field value
-	  * @param time the time field value */
-	public SdpMessage(String origin, String session, String connection, String time) {
-		init(new OriginField(origin),new SessionNameField(session),new ConnectionField(connection),new TimeDescription[]{new TimeDescription(new TimeField(time))});
-	}
-
-	/** Creates a new SDP message.
-	  * <p> with:
-	  * <br> o=<i>owner</i> 0 0 IN IP4 <i>address</i>
-	  * <br> s=-
-	  * <br> c=IN IP4 <i>address</i>
-	  * <br> t=0 0
-	  * <p>if <i>address</i>==null, '127.0.0.1' is used
-	  * @param owner the owner of the session
-	  * @param address the IPv4 address */
-	public SdpMessage(String owner, String address) {
+	private static String nonNull(String address) {
 		if (address==null) address="127.0.0.1";
-		init(new OriginField(owner,null,address),new SessionNameField(),new ConnectionField("IP4",address),new TimeDescription[]{new TimeDescription(new TimeField())});
+		return address;
 	}
 	
-	/** Creates a default SDP message.
-	  * <p> with:
-	  * <br> o=- 0 0 IN IP4 127.0.0.1
-	  * <br> s=-
-	  * <br> c=IN IP4 127.0.0.1
-	  * <br> t=0 0 */
-	public SdpMessage() {
-		String address="127.0.0.1";
-		init(new OriginField(null,null,address),new SessionNameField(),new ConnectionField("IP4",address),new TimeDescription[]{new TimeDescription(new TimeField())});
+	/**
+	 * Creates {@link SdpMessage} for the given owner without any media.
+	 */
+	public static SdpMessage createSdpMessage(String owner, String address) {
+		String nonNullAddress = nonNull(address);
+		return new SdpMessage(
+				new OriginField(owner, null, nonNullAddress), 
+				new SessionNameField(),
+				new ConnectionField("IP4", nonNullAddress),
+				new TimeDescription[] { new TimeDescription(new TimeField()) });
+	}
+
+	/** Inits the mandatory fields of the SDP message. */
+	private SdpMessage(OriginField o, SessionNameField s, ConnectionField c, TimeDescription[] tv) {
+		_version = new SdpField('v', "0");
+		_origin = o;
+		_sessionName = s;
+		_connection = c;
+		_timeDescriptions = tv;
+
+		_info = null;
+		_uri = null;
+		_email = null;
+		_phone = null;
+		_bandwidthInfos = null;
+		_zone = null;
+		_key = null;
 	}
 
 	/** Creates a new SDP message.
@@ -157,39 +152,58 @@ public class SdpMessage {
 	public SdpMessage(String sdp) {
 		SdpParser par=new SdpParser(sdp);
 		// parse mandatory fields
-		v=par.parseSdpField('v');
-		if (v==null) v=new SdpField('v',"0");
-		o=par.parseOriginField();
-		if (o==null) o=new OriginField("unknown");
-		s=par.parseSessionNameField();
-		if (s==null) s=new SessionNameField("-");
-		i=par.parseSdpField('i');
-		u=par.parseSdpField('u');
-		e=par.parseSdpField('e');
-		p=par.parseSdpField('p');
-		c=par.parseConnectionField();
-		if (c==null) c=new ConnectionField("IP4","0.0.0.0");
-		Vector bb=new Vector();
+		SdpField version = par.parseSdpField('v');
+		if (version == null)
+			version = new SdpField('v', "0");
+		_version = version;
+
+		OriginField origin = par.parseOriginField();
+		if (origin == null)
+			origin = new OriginField("unknown");
+		_origin = origin;
+
+		SessionNameField sessionName = par.parseSessionNameField();
+		if (sessionName == null)
+			sessionName = new SessionNameField("-");
+		_sessionName = sessionName;
+
+		_info = par.parseSdpField('i');
+		_uri = par.parseSdpField('u');
+		_email = par.parseSdpField('e');
+		_phone = par.parseSdpField('p');
+		_connection = par.parseConnectionField();
+		if (_connection == null)
+			_connection = new ConnectionField("IP4", "0.0.0.0");
+		Vector<SdpField> bb = new Vector<>();
 		SdpField b=par.parseSdpField('b');
 		while (b!=null) {
 			bb.add(b);
 			b=par.parseSdpField('b');
 		}
-		if (bb.size()>0) bv=(SdpField[])bb.toArray(new SdpField[0]);
-		Vector tt=new Vector();
+		if (bb.size() > 0)
+			_bandwidthInfos = bb.toArray(new SdpField[0]);
+		else {
+			_bandwidthInfos = null;
+		}
+
+		Vector<TimeDescription> tt = new Vector<>();
 		TimeField t=par.parseTimeField();
 		while (t!=null) {
 			tt.add(new TimeDescription(t));
 			t=par.parseTimeField();
 		}
-		if (tt.size()>0) tv=(TimeDescription[])tt.toArray(new TimeDescription[0]);
-		z=par.parseSdpField('z');
-		k=par.parseKeyField();
+		if (tt.size() > 0)
+			_timeDescriptions = tt.toArray(new TimeDescription[0]);
+		else {
+			_timeDescriptions = null;
+		}
+		_zone = par.parseSdpField('z');
+		_key = par.parseKeyField();
 		// parse session attributes
 		//av=new Vector();   
 		while (par.hasMore() && par.startsWith("a=")) {
 			AttributeField attribute=par.parseAttributeField();
-			addAttribute(attribute);
+			_attributeFields.addElement(new AttributeField(attribute));
 		}
 		// parse media descriptors
 		//media=new Vector();
@@ -199,83 +213,75 @@ public class SdpMessage {
 		}
 	} 
 	
-	/** Sets the origin 'o' field.
-	  * @param origin the origin field
-	  * @return this SDP message */
-	public SdpMessage setOrigin(OriginField origin) {
-		o=origin;
-		return this;
+	/**
+	 * A copy of this {@link SdpMessage} with a replaced connection field.
+	 */
+	public SdpMessage withConnection(ConnectionField connection, Vector<MediaDescriptor> descriptors) {
+		SdpMessage result = new SdpMessage(this);
+		result._connection = connection;
+		result._mediaDescriptors.setSize(0);
+		result.addMediaDescriptors(descriptors);
+		return result;
+	}
+
+	/**
+	 * A copy of this {@link SdpMessage} with replaced {@link MediaDescriptor}s.
+	 */
+	public SdpMessage withMediaDescriptors(Vector<MediaDescriptor> descriptors) {
+		SdpMessage result = new SdpMessage(this);
+		result._mediaDescriptors.setSize(0);
+		result.addMediaDescriptors(descriptors);
+		return result;
+	}
+
+	/** Creates copy of the given {@link SdpMessage}. */
+	private SdpMessage(SdpMessage sd) {
+		_version = new SdpField('v', "0");
+		_origin = sd._origin;
+		_sessionName = sd._sessionName;
+		_connection = sd._connection;
+		_timeDescriptions = sd._timeDescriptions;
+	
+		_info = sd._info;
+		_uri = sd._uri;
+		_email = sd._email;
+		_phone = sd._phone;
+		_bandwidthInfos = sd._bandwidthInfos;
+		_zone = sd._zone;
+		_key = sd._key;
+	
+		for (int i = 0; i < sd._attributeFields.size(); i++)
+			_attributeFields.addElement(new AttributeField(sd._attributeFields.elementAt(i)));
+		for (int i = 0; i < sd._mediaDescriptors.size(); i++)
+			addMediaDescriptor(sd._mediaDescriptors.elementAt(i));
 	}
 
 	/** Gets the origin 'o' field */
 	public OriginField getOrigin() {
 		//System.out.println("DEBUG: inside SessionDescriptor.getOwner(): sdp=\n"+toString());
-		return o;
+		return _origin;
 	}
  
-	/** Sets the session-name 's' field. 
-	  * @param session the SessionNameField
-	  * @return this SDP message */
-	public SdpMessage setSessionName(SessionNameField session) {
-		s=session;
-		return this;
-	}
-
 	/** Gets the session-name 's' field */
 	public SessionNameField getSessionName() {
-		return s;
-	}
-
-	/** Sets the connection-information 'c' field.
-	  * @param connection the ConnectionField
-	  * @return this SDP message */
-	public SdpMessage setConnection(ConnectionField connection) {
-		c=connection;
-		return this;
+		return _sessionName;
 	}
 
 	/** Gets the connection-information 'c' field */
 	public ConnectionField getConnection() {
-		return c;
-	}
-
-	/** Sets the time 't' field.
-	  * @param time the TimeField
-	  * @return this SDP message */
-	public SdpMessage setTime(TimeField time) {
-		tv=new TimeDescription[]{new TimeDescription(time)};
-		return this;
+		return _connection;
 	}
 
 	/** Gets the time 't' field */
 	public TimeField getTime() {
-		return tv[0].getTimeField();
+		return _timeDescriptions[0].getTimeField();
 	}
   
-	/** Sets the key 'k' field.
-	  * @param key the KeyField
-	  * @return this SDP message */
-	public SdpMessage setKey(KeyField key) {
-		k=key;
-		return this;
-	}
-
 	/** Gets the key 'k' field */
 	public KeyField getKey() {
-		return k;
+		return _key;
 	}
   
-	/** Adds a new media.
-	  * @param mf the MediaField
-	  * @param attributes array of attributes
-	  * @return this SDP message */
-	public SdpMessage addMedia(MediaField mf, List<AttributeField> attributes) {
-		//printlog("DEBUG: mf: "+media,5);
-		//printlog("DEBUG: attribute: "+attributes,5);
-		_mediaDescriptors.addElement(new MediaDescriptor(mf,null,attributes));
-		return this;
-	}
-
 	/** Adds a new MediaDescriptor
 	  * @param media_desc a MediaDescriptor
 	  * @return this SDP message */
@@ -288,7 +294,7 @@ public class SdpMessage {
 	/** Adds a Vector of MediaDescriptors
 	  * @param media_descs Vector if MediaDescriptor 
 	  * @return this SDP message */
-	public SdpMessage addMediaDescriptors(Vector<MediaDescriptor> media_descs) {
+	private SdpMessage addMediaDescriptors(Vector<MediaDescriptor> media_descs) {
 		//media.addAll(media_descs); // not supported by J2ME..
 		for (MediaDescriptor descriptor : media_descs) {
 			addMediaDescriptor(descriptor);
@@ -316,14 +322,6 @@ public class SdpMessage {
 		return this;
 	}
 
-	/** Removes all MediaDescriptors
-	 * @return this SDP message */
-	public SdpMessage removeMediaDescriptors() {
-		//media.clear(); // not supported by J2ME..
-		_mediaDescriptors.setSize(0);
-		return this;
-	}
-	
 	/** Gets the first media descriptor of a particular media.
 	  * @param media_type the media type
 	  * @return the media descriptor */
@@ -336,62 +334,18 @@ public class SdpMessage {
 		return null;
 	}
 
-	/** Keeps only selected media types; other media are removed.
-	  * @param media_types the media types to be kept
-	  * @return this SDP message */
-	public SdpMessage selectMedia(String[] media_types) {
-		if (media_types!=null) {
-			Vector md_list=new Vector();
-			for (int i=0; i<media_types.length; i++) {
-				MediaDescriptor md=getMediaDescriptor(media_types[i]);
-				if (md!=null) {
-					removeMediaDescriptors(media_types[i]);
-					md_list.addElement(md);
-				}
-			}
-			removeMediaDescriptors();
-			addMediaDescriptors(md_list);
-		}
-		return this;
-	}
-
-
-	/** Adds a Vector of session attributes.
-	  * @param attributes Vector of AttributeFields
-	  * @return this SDP message */
-	public SdpMessage addAttributes(Vector attributes) {
-		for (int i=0; i<attributes.size(); i++) addAttribute((AttributeField)attributes.elementAt(i));
-		return this;
-	}
-
-	/** Adds a new session attribute
-	  * @param attribute the new AttributeField
-	  * @return this SDP message */
-	public SdpMessage addAttribute(AttributeField attribute) {
-		av.addElement(new AttributeField(attribute));
-		return this;
-	}
-
-	/** Removes all session attributes.
-	* @return this SDP message */
-	public SdpMessage removeAttributes() {
-		//av.clear(); // not supported by J2ME..
-		av.setSize(0);
-		return this;
-	}
-
 	/** Gets a Vector of session attribute values.
 	  * @return a Vector of attribute field */
-	public Vector getAttributes() {
-		return av;
+	public Vector<AttributeField> getAttributes() {
+		return _attributeFields;
 	} 
 
 	/** Whether it has a particular session attribute
 	  * @param attribute_name the attribute name
 	  * @return true if found, otherwise returns 'null' */
 	public boolean hasAttribute(String attribute_name) {
-		for (int i=0; i<av.size(); i++) {
-			if (av.get(i).getAttributeName().equals(attribute_name))
+		for (int i = 0; i < _attributeFields.size(); i++) {
+			if (_attributeFields.get(i).getAttributeName().equals(attribute_name))
 				return true;
 		}
 		return false;
@@ -401,8 +355,8 @@ public class SdpMessage {
 	  * @param attribute_name the attribute name
 	  * @return the attribute field, or 'null' if not found */
 	public AttributeField getAttribute(String attribute_name) {
-		for (int i=0; i<av.size(); i++) {
-			AttributeField af = av.get(i);
+		for (int i = 0; i < _attributeFields.size(); i++) {
+			AttributeField af = _attributeFields.get(i);
 			if (af.getAttributeName().equals(attribute_name)) return af; 
 		}
 		return null;
@@ -411,15 +365,14 @@ public class SdpMessage {
 	/** Gets a vector of attribute values of a particular session attribute name.
 	  * @param attribute_name the attribute name
 	  * @return a vector of attributes (Vector of <code>AttributeField</code>) */
-	public Vector getAttributes(String attribute_name) {
-		Vector v=new Vector(av.size());
-		for (int i=0; i<av.size(); i++) {
-			AttributeField af = av.get(i);
+	public Vector<AttributeField> getAttributes(String attribute_name) {
+		Vector<AttributeField> v = new Vector<>(_attributeFields.size());
+		for (int i = 0; i < _attributeFields.size(); i++) {
+			AttributeField af = _attributeFields.get(i);
 			if (af.getAttributeName().equals(attribute_name)) v.addElement(af);
 		}
 		return v;
 	} 
-
 
 	/** Gets a String representation of this object.
 	 * @return the string */
@@ -427,19 +380,33 @@ public class SdpMessage {
 	public String toString() {
 		//String str=v.toString()+o.toString()+s.toString();
 		StringBuffer sb=new StringBuffer();
-		if (v!=null) sb.append(v.toString());
-		if (o!=null) sb.append(o.toString());
-		if (s!=null) sb.append(s.toString());
-		if (i!=null) sb.append(i.toString());
-		if (u!=null) sb.append(u.toString());
-		if (e!=null) sb.append(e.toString());
-		if (p!=null) sb.append(p.toString());
-		if (c!=null) sb.append(c.toString());
-		if (bv!=null) for (int i=0; i<bv.length; i++) sb.append(bv[i].toString());
-		if (tv!=null) for (int i=0; i<tv.length; i++) sb.append(tv[i].toString());
-		if (z!=null) sb.append(z.toString());
-		if (k!=null) sb.append(k.toString());
-		for (int i=0; i<av.size(); i++) sb.append(av.get(i).toString());
+		if (_version!=null) sb.append(_version.toString());
+		if (_origin != null)
+			sb.append(_origin.toString());
+		if (_sessionName != null)
+			sb.append(_sessionName.toString());
+		if (_info != null)
+			sb.append(_info.toString());
+		if (_uri != null)
+			sb.append(_uri.toString());
+		if (_email != null)
+			sb.append(_email.toString());
+		if (_phone != null)
+			sb.append(_phone.toString());
+		if (_connection != null)
+			sb.append(_connection.toString());
+		if (_bandwidthInfos != null)
+			for (int i = 0; i < _bandwidthInfos.length; i++)
+				sb.append(_bandwidthInfos[i].toString());
+		if (_timeDescriptions != null)
+			for (int i = 0; i < _timeDescriptions.length; i++)
+				sb.append(_timeDescriptions[i].toString());
+		if (_zone != null)
+			sb.append(_zone.toString());
+		if (_key != null)
+			sb.append(_key.toString());
+		for (int i = 0; i < _attributeFields.size(); i++)
+			sb.append(_attributeFields.get(i).toString());
 		for (int i=0; i<_mediaDescriptors.size(); i++) sb.append(_mediaDescriptors.elementAt(i).toString());
 		return sb.toString();
 	}

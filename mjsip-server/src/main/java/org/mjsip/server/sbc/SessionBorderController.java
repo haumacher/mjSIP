@@ -287,7 +287,7 @@ public class SessionBorderController extends Proxy {
 
 		String content_type=msg.getContentTypeHeader().getContentType();
 		if (content_type.equalsIgnoreCase("application/sdp")) {
-			SdpMessage sdp=new SdpMessage(msg.getStringBody());
+			SdpMessage sdp=msg.getSdpBody();
 			String dest_addr=sdp.getConnection().getAddress();
 			// substitute 0.0.0.0 with 127.0.0.1
 			if (dest_addr.equals("0.0.0.0")) dest_addr="127.0.0.1";

@@ -27,6 +27,7 @@ package org.mjsip.sip.dialog;
 
 import java.util.Vector;
 
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
@@ -330,13 +331,14 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param from the caller url (optionally with the display name)
 	  * @param contact the contact url (null for default contact)
 	  * @param session_descriptor SDP message body */
-	public void invite(NameAddress target, NameAddress from, NameAddress contact, String session_descriptor) {
+	public void invite(NameAddress target, NameAddress from, NameAddress contact, SdpMessage session_descriptor) {
 		LOG.debug("inside invite(callee,caller,contact,sdp)");
 		if (!statusIs(D_INIT)) return;
 		// else
 		GenericURI request_uri=target.getAddress();
 		String call_id=sip_provider.pickCallId();
-		SipMessage invite=sipMessageFactory.createInviteRequest(request_uri,target,from,contact,call_id,"application/sdp",session_descriptor.getBytes());
+		SipMessage invite = sipMessageFactory.createInviteRequest(request_uri, target, from, contact, call_id,
+				"application/sdp", session_descriptor.toString().getBytes());
 		// do invite
 		invite(invite);
 	}
@@ -404,11 +406,12 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param contact the contact uri (null for default contact)
 	  * @param session_descriptor SDP body
 	  */
-	public void reInvite(NameAddress contact, String session_descriptor) {
+	public void reInvite(NameAddress contact, SdpMessage session_descriptor) {
 		LOG.debug("inside reInvite(contact,sdp)");
 		if (!statusIs(D_CALL)) return;
 		// else
-		SipMessage invite=sipMessageFactory.createInviteRequest(this,"application/sdp",session_descriptor.getBytes());
+		SipMessage invite = sipMessageFactory.createInviteRequest(this, "application/sdp",
+				session_descriptor.toString().getBytes());
 		if (contact!=null) invite.setContactHeader(new ContactHeader(contact));
 		reInvite(invite);
 	}
@@ -430,7 +433,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	/** Re-invites the remote user with offer/answer in 2xx/ack.
 	  * It starts a new InviteTransactionClient and changes the dialog state information. */
-	public void reInviteWithoutOffer(NameAddress contact, String session_descriptor) {
+	public void reInviteWithoutOffer(NameAddress contact, SdpMessage session_descriptor) {
 		invite_offer=false;
 		reInvite(contact,session_descriptor);
 	}
@@ -454,9 +457,9 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	/** Accepts the incoming call.
 	  * This method should be called when the InviteDialog is in D_INVITED or D_ReINVITED state. */
-	public void accept(NameAddress contact, String sdp) {
+	public void accept(NameAddress contact, SdpMessage sdp) {
 		LOG.debug("inside accept(contact,sdp)");
-		respond(200,null,contact,"application/sdp",sdp.getBytes());
+		respond(200, null, contact, "application/sdp", sdp.toString().getBytes());
 	}
 
 	
@@ -625,9 +628,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	/** Sends the invite confirmation (ACK) with an "answer", when the "offer" were within the 2xx response instead of being in the request (INVITE).
 	  * @param contact the local contact address
 	  * @param session_descriptor the SDP answer */
-	public void confirm2xxWithAnswer(NameAddress contact, String session_descriptor) {
+	public void confirm2xxWithAnswer(NameAddress contact, SdpMessage session_descriptor) {
 		if (contact!=null) setLocalContact(contact);
-		SipMessage ack=sipMessageFactory.create2xxAckRequest(this,inv2xx_resp,"application/sdp",session_descriptor.getBytes());
+		SipMessage ack = sipMessageFactory.create2xxAckRequest(this, inv2xx_resp, "application/sdp",
+				session_descriptor.toString().getBytes());
 		confirm2xxWithAnswer(ack);
 	}
 
@@ -795,7 +799,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	/** Accepts an UPDATE request.
 	  * @param sdp the answered sdp (if any). */
-	public void acceptUpdate(String sdp) {
+	public void acceptUpdate(SdpMessage sdp) {
 		LOG.debug("inside acceptUpdate(req)");
 		if (update_ts!=null) {
 			SipMessage resp=sipMessageFactory.createResponse(update_ts.getRequestMessage(),200,null,null);
@@ -884,8 +888,11 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 					cancel_ts=new CancelTransactionServer(sip_provider,invite_req,this);
 					cancel_ts.listen();
 					if (listener!=null) {
-						if (statusIs(D_INVITED)) listener.onDlgInvite(this,invite_req.getToHeader().getNameAddress(),invite_req.getFromHeader().getNameAddress(),invite_req.getStringBody(),invite_req);
-						else listener.onDlgReInvite(this,invite_req.getStringBody(),invite_req);
+						if (statusIs(D_INVITED))
+							listener.onDlgInvite(this, invite_req.getToHeader().getNameAddress(),
+									invite_req.getFromHeader().getNameAddress(), invite_req.getSdpBody(), invite_req);
+						else
+							listener.onDlgReInvite(this, invite_req.getSdpBody(), invite_req);
 					}
 				}
 			}
@@ -898,7 +905,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				ack_ts.terminate();
 				// terminate the cancel transaction server
 				if (cancel_ts!=null) cancel_ts.terminate();
-				if (listener!=null) listener.onDlgAck(this,msg.getStringBody(),msg);
+				if (listener != null)
+					listener.onDlgAck(this, msg.getSdpBody(), msg);
 				if (listener!=null) listener.onDlgCall(this);
 			}
 			else  
@@ -946,7 +954,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				LOG.debug("onReceivedMessage(): is update");
 				updateDialogInfo(false,msg);
 				update_ts=new TransactionServer(sip_provider,msg,null);
-				if (listener!=null) listener.onDlgUpdate(this,msg.getStringBody(),msg);
+				if (listener != null)
+					listener.onDlgUpdate(this, msg.getSdpBody(), msg);
 			}
 			else
 			// if any other request
@@ -1074,11 +1083,13 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			else inv2xx_resp=msg;
 			
 			if (!re_inviting) {
-				if (listener!=null) listener.onDlgInviteSuccessResponse(this,code,statusline.getReason(),msg.getStringBody(),msg);
+				if (listener != null)
+					listener.onDlgInviteSuccessResponse(this, code, statusline.getReason(), msg.getSdpBody(), msg);
 				if (listener!=null) listener.onDlgCall(this);         
 			}
 			else {
-				if (listener!=null) listener.onDlgReInviteSuccessResponse(this,code,statusline.getReason(),msg.getStringBody(),msg);
+				if (listener != null)
+					listener.onDlgReInviteSuccessResponse(this, code, statusline.getReason(), msg.getSdpBody(), msg);
 			}
 			// SESSION TIMERS
 			if (msg.hasSessionExpiresHeader()) {
@@ -1146,7 +1157,9 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			SipMessage resp=processInviteMessage(req);
 			if (resp!=null) respond(resp);
 			else
-			if (listener!=null) listener.onDlgInvite(this,invite_req.getToHeader().getNameAddress(),invite_req.getFromHeader().getNameAddress(),invite_req.getStringBody(),invite_req);
+			if (listener != null)
+				listener.onDlgInvite(this, invite_req.getToHeader().getNameAddress(),
+						invite_req.getFromHeader().getNameAddress(), invite_req.getSdpBody(), invite_req);
 		}
 		else
 		// CANCEL

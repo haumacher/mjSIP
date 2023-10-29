@@ -283,68 +283,55 @@ public class SipMangler {
 	}*/
 
 
-	/** Mangles the Via address */
-	/*public static SipMessage mangleVia(SipMessage msg, String addr, int port) {
-		if (!msg.hasViaHeader()) return msg;
-		//else
-		ViaHeader via=msg.getViaHeader();
-		int rport=via.getRport();
-		String branch=via.getBranch();
-		via=new ViaHeader(addr,port);
-		via.setRport(rport);
-		via.setBranch(branch);
-		msg.removeViaHeader();
-		msg.addViaHeader(via);
-		return msg;
-	}/*
-
-
-	/** Mangles the sdp 'connection' field */
-	protected static SdpMessage mangleSdpConnection(SdpMessage sdp, String masq_addr) {
-		//printLog("inside mangleSdpConnection()",LogWriter.LEVEL_MEDIUM);       
-		// masquerade the address
-		String dest_addr=sdp.getConnection().getAddress();              
-		//printLog("address "+dest_addr+" becomes "+masq_addr,LogWriter.LEVEL_HIGH);        
-		ConnectionField conn=sdp.getConnection();
-		conn=new ConnectionField(conn.getAddressType(),masq_addr,conn.getTTL(),conn.getNum());
-		sdp.setConnection(conn);
-		return sdp;
-	}
-		
-
-	/** Mangles the sdp media port */
-	protected static SdpMessage mangleSdpMediaPort(SdpMessage sdp, String media, int masq_port) {
-		//printLog("inside mangleSdpConnection()",LogWriter.LEVEL_MEDIUM); 
-		Vector<MediaDescriptor> old_media_descriptors = sdp.getMediaDescriptors();
-		Vector<MediaDescriptor> new_media_descriptors = new Vector<>(); 
-			  
-		for (MediaDescriptor md : old_media_descriptors) {
-			MediaField mf=md.getMediaField();
-			if (mf.getMediaType().equals(media)) {
-				// masquerade the port
-				//printLog(media+" port "+mf.getPort()+" becomes "+masq_port,LogWriter.LEVEL_HIGH);        
-				mf=new MediaField(mf.getMediaType(),masq_port,0,mf.getTransport(),mf.getFormats());
-				md=new MediaDescriptor(mf,md.getConnection(),md.getAttributes());
-			}
-			new_media_descriptors.addElement(md);
-		}
-		// update the sdp with the new media descriptors
-		sdp.removeMediaDescriptors();
-		sdp.addMediaDescriptors(new_media_descriptors);
-		return sdp;
-	}
-
-
 	/** Mangles the body */
-	public static SipMessage mangleBody(SipMessage msg, String masq_addr, String[] media, int[] masq_port) {
+	public static SipMessage mangleBody(SipMessage msg, String masq_addr, String[] mediaTypes, int[] masq_port) {
 		//printLog("inside mangleBody()",LogWriter.LEVEL_MEDIUM);
-		if (!msg.hasBody()) return msg;
-		//else
-		SdpMessage sdp=new SdpMessage(msg.getStringBody());
-		sdp=mangleSdpConnection(sdp,masq_addr);       
-		for (int i=0; i<media.length; i++) sdp=mangleSdpMediaPort(sdp,media[i],masq_port[i]);
-		msg.setSdpBody(sdp.toString());
+		if (!msg.hasBody()) {
+			return msg;
+		}
+	
+		SdpMessage sdp=msg.getSdpBody();
+		ConnectionField newConn = mapConnection(sdp.getConnection(), masq_addr);
+		Vector<MediaDescriptor> newDescriptors = mapMediaDescriptors(sdp.getMediaDescriptors(), mediaTypes, masq_port);
+		
+		sdp=sdp.withConnection(newConn, newDescriptors);
+		
+		msg.setSdpBody(sdp);
 		return msg;
+	}
+
+	private static ConnectionField mapConnection(ConnectionField conn, String masq_addr) {
+		ConnectionField newConn=new ConnectionField(conn.getAddressType(),masq_addr,conn.getTTL(),conn.getNum());
+		return newConn;
+	}
+
+	private static Vector<MediaDescriptor> mapMediaDescriptors(Vector<MediaDescriptor> descriptors,
+			String[] mediaTypes, int[] masq_port) {
+		Vector<MediaDescriptor> result = new Vector<>(); 
+			  
+		for (MediaDescriptor descriptor : descriptors) {
+			MediaField mf = descriptor.getMediaField();
+			
+			MediaDescriptor newDescriptor;
+
+			createDescriptor:
+			{
+				for (int i=0; i < mediaTypes.length; i++) {
+					if (mf.getMediaType().equals(mediaTypes[i])) {
+						// Masquerade the port
+						MediaField newMedia = 
+							new MediaField(mf.getMediaType(), masq_port[i], 0, mf.getTransport(), mf.getFormats());
+						newDescriptor = new MediaDescriptor(newMedia, descriptor.getConnection(), descriptor.getAttributes());
+						break createDescriptor;
+					}
+				}
+				
+				newDescriptor = descriptor;
+			}
+
+			result.addElement(newDescriptor);
+		}
+		return result;
 	}
 
 }

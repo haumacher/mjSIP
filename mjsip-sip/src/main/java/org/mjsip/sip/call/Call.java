@@ -24,6 +24,7 @@
 package org.mjsip.sip.call;
 
 
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipNameAddress;
@@ -67,10 +68,10 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	//protected NameAddress secure_contact_naddr;
 
 	/** The local sdp */
-	protected String local_sdp;
+	protected SdpMessage local_sdp;
 
 	/** The remote sdp */
-	protected String remote_sdp;
+	protected SdpMessage remote_sdp;
 	
 	/** The call listener */
 	private final CallListener listener;
@@ -147,19 +148,19 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** Gets the current local session descriptor.
 	  * @return the session descriptor */
-	public String getLocalSessionDescriptor() {
+	public SdpMessage getLocalSessionDescriptor() {
 		return local_sdp;
 	}
 	
 	/** Sets a new local session descriptor.
 	  * @param sdp the session descriptor */
-	public void setLocalSessionDescriptor(String sdp) {
+	public void setLocalSessionDescriptor(SdpMessage sdp) {
 		local_sdp=sdp;
 	}
 
 	/** Gets the current remote session descriptor.
 	  * @return the session descriptor */
-	public String getRemoteSessionDescriptor() {
+	public SdpMessage getRemoteSessionDescriptor() {
 		return remote_sdp;
 	}
 	
@@ -177,7 +178,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Starts a new call, inviting a remote user (<i>callee</i>).
 	  * @param callee the callee address
 	  * @param sdp the session descriptor */
-	public void call(NameAddress callee, String sdp) {
+	public void call(NameAddress callee, SdpMessage sdp) {
 		call(callee,null,sdp);
 	}
 
@@ -185,7 +186,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param callee the callee address
 	  * @param caller the caller address
 	  * @param sdp the session descriptor */
-	public void call(NameAddress callee, NameAddress caller, String sdp) {
+	public void call(NameAddress callee, NameAddress caller, SdpMessage sdp) {
 		LOG.debug("calling "+callee);
 		dialog=new InviteDialog(sip_provider,dialogListener);
 		if (caller==null) caller=from_naddr;
@@ -201,7 +202,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	public void call(SipMessage invite) {
 		LOG.debug("calling "+invite.getRequestLine().getAddress());
 		dialog=new InviteDialog(sip_provider,dialogListener);
-		local_sdp=invite.getStringBody();
+		local_sdp = invite.getSdpBody();
 		if (local_sdp!=null) dialog.invite(invite);
 		else dialog.inviteWithoutOffer(invite);
 		changeState(CallState.C_OUTGOING);
@@ -210,7 +211,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Confirms the 2xx with an answer.
 	  * The <i>offer</i> was in the 2xx response message, and the <i>answer</i> is sent in the ACK message.
 	  * @param sdp the session descriptor answer */
-	public void confirm2xxWithAnswer(String sdp) {
+	public void confirm2xxWithAnswer(SdpMessage sdp) {
 		local_sdp=sdp;
 		dialog.confirm2xxWithAnswer(contact_naddr,sdp);
 	}
@@ -259,7 +260,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** Accepts the incoming call.
 	  * @param sdp the session descriptor answer */
-	public void accept(String sdp) {
+	public void accept(SdpMessage sdp) {
 		local_sdp=sdp;
 		if (dialog!=null) {
 			NameAddress callee_contact=getContactAddress(dialog.isSecure());
@@ -293,13 +294,13 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** Modifies the current call.
 	  * @param sdp the new session descriptor offer */
-	public void modify(String sdp) {
+	public void modify(SdpMessage sdp) {
 		local_sdp=sdp;
 		if (dialog!=null) dialog.reInvite(dialog.getLocalContact(),local_sdp);
 	}
 
 	/** Accepts an update request. */
-	public void acceptUpdate(String sdp) {
+	public void acceptUpdate(SdpMessage sdp) {
 		local_sdp=sdp;
 		dialog.acceptUpdate(local_sdp);
 	}
@@ -347,19 +348,22 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	// ************************ Callback methods ***********************
 
 	/** When an incoming INVITE is received. */ 
-	private void processDlgInvite(InviteDialog d, NameAddress callee, NameAddress caller, String sdp, SipMessage msg) {
+	private void processDlgInvite(InviteDialog d, NameAddress callee, NameAddress caller, SdpMessage sdp,
+			SipMessage msg) {
 		if (dialog!=null && d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// else
 		this.dialog=d;
 		changeState(CallState.C_INCOMING);
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null)
+			remote_sdp = sdp;
 		listener.onCallInvite(this, callee, caller, sdp, msg);
 	}
 
 	/** When an incoming Re-INVITE is received. */ 
-	private void processDlgReInvite(InviteDialog d, String sdp, SipMessage msg) {
+	private void processDlgReInvite(InviteDialog d, SdpMessage sdp, SipMessage msg) {
 		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null)
+			remote_sdp = sdp;
 		listener.onCallModify(this, sdp, msg);
 	}
 
@@ -393,9 +397,14 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		// TODO
 	}
 
-	/** When a 2xx successful final response is received for an INVITE request.
-	  * If a body ("offer") has been included in the respose, method {@link InviteDialog#confirm2xxWithAnswer(NameAddress,String) confirm2xxWithAnswer()} must be explicitely called. */ 
-	private void processDlgInviteSuccessResponse(InviteDialog d, int code, String reason, String sdp, SipMessage msg) {
+	/**
+	 * When a 2xx successful final response is received for an INVITE request. If a body ("offer")
+	 * has been included in the respose, method
+	 * {@link InviteDialog#confirm2xxWithAnswer(NameAddress,SdpMessage) confirm2xxWithAnswer()} must
+	 * be explicitely called.
+	 */
+	private void processDlgInviteSuccessResponse(InviteDialog d, int code, String reason, SdpMessage sdp,
+			SipMessage msg) {
 		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
 		// check if the call has been already cancelled or closed
 		if (call_state.isClosed()) {
@@ -405,7 +414,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		} 
 		// else
 		changeState(CallState.C_ACTIVE);
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null)
+			remote_sdp = sdp;
 		listener.onCallAccepted(this, sdp, msg);
 	}
 	
@@ -431,15 +441,17 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	}
 
 	/** When a 1xx response response is received for a Re-INVITE transaction. */ 
-	private void processDlgReInviteProvisionalResponse(InviteDialog d, int code, String reason, String sdp, SipMessage msg) {
+	private void processDlgReInviteProvisionalResponse(InviteDialog d, int code, String reason, SdpMessage sdp, SipMessage msg) {
 		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null)
+			remote_sdp = sdp;
 	}
 
 	/** When a 2xx successful final response is received for a Re-INVITE transaction */ 
-	private void processDlgReInviteSuccessResponse(InviteDialog d, int code, String reason, String sdp, SipMessage msg) {
+	private void processDlgReInviteSuccessResponse(InviteDialog d, int code, String reason, SdpMessage sdp, SipMessage msg) {
 		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null)
+			remote_sdp = sdp;
 		listener.onCallModifyAccepted(this, sdp, msg);
 	}
 
@@ -463,9 +475,10 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	}
 
 	/** When an incoming ACK is received for an INVITE transaction. */ 
-	private void processDlgAck(InviteDialog d, String sdp, SipMessage msg) {
+	private void processDlgAck(InviteDialog d, SdpMessage sdp, SipMessage msg) {
 		if (d!=dialog) {  LOG.info("NOT the current dialog");  return;  }
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null)
+			remote_sdp = sdp;
 		listener.onCallConfirmed(this, sdp, msg);
 	}
 	
@@ -486,9 +499,11 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	}
 
 	/** When an incoming UPDATE request is received within the dialog. */ 
-	private void processDlgUpdate(InviteDialog dialog, String sdp, SipMessage msg) {
+	private void processDlgUpdate(InviteDialog dialog, SdpMessage sdp, SipMessage msg) {
 		if (this.dialog!=dialog) {  LOG.info("NOT the current dialog");  return;  }
-		if (sdp!=null && sdp.length()!=0) remote_sdp=sdp;
+		if (sdp != null) {
+			remote_sdp = sdp;
+		}
 		listener.onCallUpdate(this, sdp, msg);
 	}
 
@@ -538,20 +553,20 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		}
 
 		@Override
-		public void onDlgInvite(InviteDialog dialog, NameAddress callee, NameAddress caller, String body, SipMessage msg) {
-			_call.processDlgInvite(dialog, callee, caller, body, msg);
+		public void onDlgInvite(InviteDialog dialog, NameAddress callee, NameAddress caller, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgInvite(dialog, callee, caller, sdp, msg);
 		}
 		@Override
-		public void onDlgReInvite(InviteDialog dialog, String body, SipMessage msg) {
-			_call.processDlgReInvite(dialog, body, msg);
+		public void onDlgReInvite(InviteDialog dialog, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgReInvite(dialog, sdp, msg);
 		}
 		@Override
 		public void onDlgInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
 			_call.processDlgInviteProvisionalResponse(dialog, code, reason, body, msg);
 		}
 		@Override
-		public void onDlgInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			_call.processDlgInviteSuccessResponse(dialog, code, reason, body, msg);
+		public void onDlgInviteSuccessResponse(InviteDialog dialog, int code, String reason, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgInviteSuccessResponse(dialog, code, reason, sdp, msg);
 		}
 		@Override
 		public void onDlgInviteRedirectResponse(InviteDialog dialog, int code, String reason, MultipleHeader contacts, SipMessage msg) {
@@ -566,8 +581,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 			_call.processDlgInviteTimeout(dialog);
 		}
 		@Override
-		public void onDlgReInviteProvisionalResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			_call.processDlgReInviteProvisionalResponse(dialog, code, reason, body, msg);
+		public void onDlgReInviteProvisionalResponse(InviteDialog dialog, int code, String reason, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgReInviteProvisionalResponse(dialog, code, reason, sdp, msg);
 		}
 		@Override
 		public void onDlgInviteReliableProvisionalResponse(InviteDialog dialog, int code, String reason, String content_type, byte[] body, SipMessage resp) {
@@ -582,8 +597,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 			_call.processDlgInviteReliableProvisionalResponseTimeout(dialog, code, resp);
 		}
 		@Override
-		public void onDlgReInviteSuccessResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {
-			_call.processDlgReInviteSuccessResponse(dialog, code, reason, body, msg);
+		public void onDlgReInviteSuccessResponse(InviteDialog dialog, int code, String reason, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgReInviteSuccessResponse(dialog, code, reason, sdp, msg);
 		}
 		@Override
 		public void onDlgReInviteFailureResponse(InviteDialog dialog, int code, String reason, SipMessage msg) {
@@ -594,8 +609,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 			_call.processDlgReInviteTimeout(dialog);
 		}
 		@Override
-		public void onDlgAck(InviteDialog dialog, String body, SipMessage msg) {
-			_call.processDlgAck(dialog, body, msg);
+		public void onDlgAck(InviteDialog dialog, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgAck(dialog, sdp, msg);
 		}
 		@Override
 		public void onDlgCall(InviteDialog dialog) {
@@ -610,8 +625,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 			_call.processDlgCancel(dialog, msg);
 		}
 		@Override
-		public void onDlgUpdate(InviteDialog dialog, String body, SipMessage msg) {
-			_call.processDlgUpdate(dialog, body, msg);
+		public void onDlgUpdate(InviteDialog dialog, SdpMessage sdp, SipMessage msg) {
+			_call.processDlgUpdate(dialog, sdp, msg);
 		}
 		@Override
 		public void onDlgUpdateResponse(InviteDialog dialog, int code, String reason, String body, SipMessage msg) {

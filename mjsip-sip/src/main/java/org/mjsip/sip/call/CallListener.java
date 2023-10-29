@@ -27,6 +27,7 @@ package org.mjsip.sip.call;
 
 import java.util.Vector;
 
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
 
@@ -43,7 +44,7 @@ import org.mjsip.sip.message.SipMessage;
 public interface CallListener {
 	
 	/** Callback function called when arriving a new INVITE method (incoming call) */
-	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite);
+	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage sdp, SipMessage invite);
 
 	/** Callback function called when arriving a 183 Session Progress */
 	public void onCallProgress(Call call, SipMessage resp);
@@ -58,7 +59,7 @@ public interface CallListener {
 	public void onCallProgressConfirmed(Call call, SipMessage resp, SipMessage prack);
 
 	/** Callback function called when arriving a 2xx (call accepted) */
-	public void onCallAccepted(Call call, String sdp, SipMessage resp);
+	public void onCallAccepted(Call call, SdpMessage sdp, SipMessage resp);
 
 	/** Callback function called when arriving a 4xx (call failure) */
 	public void onCallRefused(Call call, String reason, SipMessage resp);
@@ -67,7 +68,7 @@ public interface CallListener {
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp);
 
 	/** Callback function called when arriving an ACK method (call confirmed) */
-	public void onCallConfirmed(Call call, String sdp, SipMessage ack);
+	public void onCallConfirmed(Call call, SdpMessage sdp, SipMessage ack);
 
 	/** Callback function called when the invite expires */
 	public void onCallTimeout(Call call);
@@ -76,10 +77,10 @@ public interface CallListener {
 	public void onCallInfo(Call call, String info_package, String content_type, byte[] body, SipMessage msg);
 
 	/** Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
-	public void onCallModify(Call call, String sdp, SipMessage invite);
+	public void onCallModify(Call call, SdpMessage sdp, SipMessage invite);
 
 	/** Callback function called when arriving a 2xx (re-invite/modify accepted) */
-	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp);
+	public void onCallModifyAccepted(Call call, SdpMessage sdp, SipMessage resp);
 
 	/** Callback function called when arriving a 4xx (re-invite/modify failure) */
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp);
@@ -94,7 +95,7 @@ public interface CallListener {
 	public void onCallCancel(Call call, SipMessage cancel);
 
 	/** Callback function called when arriving a new UPDATE method (update request). */
-	public void onCallUpdate(Call call, String sdp, SipMessage update);
+	public void onCallUpdate(Call call, SdpMessage sdp, SipMessage update);
 
 	/** Callback function called when arriving a 2xx for an UPDATE request */
 	public void onCallUpdateAccepted(Call call, String sdp, SipMessage resp);

@@ -27,6 +27,7 @@ package org.mjsip.sip.message;
 
 import java.util.Vector;
 
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.header.ContentDispositionHeader;
 import org.mjsip.sip.header.ContentLengthHeader;
 import org.mjsip.sip.header.ContentTypeHeader;
@@ -727,9 +728,12 @@ public abstract class BasicSipMessage {
 		this.body=null;
 	}
 	/** Sets sdp body. */
-	public void setSdpBody(String body)  {
-		if (body!=null) setBody("application/sdp",body.getBytes());
-		else setBody(null,null);
+	public void setSdpBody(SdpMessage body) {
+		if (body != null) {
+			setBody("application/sdp", body.toString().getBytes());
+		} else {
+			setBody(null, null);
+		}
 	}
 
 	/**
@@ -750,6 +754,13 @@ public abstract class BasicSipMessage {
 	 */
 	public String getStringBody() {
 		return body == null ? null : new String(body);
+	}
+
+	/**
+	 * The body as parsed {@link SdpMessage}
+	 */
+	public SdpMessage getSdpBody() {
+		return body == null ? null : new SdpMessage(new String(body));
 	}  
 
 	//**************************** Specific Headers ****************************/

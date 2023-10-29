@@ -48,7 +48,7 @@ import org.mjsip.sip.message.SipMessage;
  * You can extend this class overriding only methods corresponding to events you want to handle.
  * </p>
  * <p>
- * {@link #onCallInvite(Call, NameAddress, NameAddress, String, SipMessage)} is the only non-empty
+ * {@link #onCallInvite(Call, NameAddress, NameAddress, SdpMessage, SipMessage)} is the only non-empty
  * method. It signals the receiver the ring status (by using method Call.ring()), adapts the sdp
  * body and accepts the call (by using method Call.accept(sdp)).
  * </p>
@@ -67,17 +67,17 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	/** Accepts an incoming call.
 	  * Callback function called when arriving a new INVITE method (incoming call) */
 	@Override
-	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, String sdp, SipMessage invite) {
+	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage sdp, SipMessage invite) {
 		call.ring();
 		// accept immediatly
-		String local_session;
-		if (sdp!=null && sdp.length()>0) {
-			SdpMessage remote_sdp=new SdpMessage(sdp);     
-			SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
-			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
-			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+		SdpMessage local_session;
+		if (sdp != null) {
+			SdpMessage remote_sdp = sdp;
+			SdpMessage local_sdp = call.getLocalSessionDescriptor();
+			SdpMessage new_sdp = new SdpMessage(local_sdp.getOrigin(), remote_sdp.getSessionName(),
+					local_sdp.getConnection(), local_sdp.getTime(), local_sdp.getMediaDescriptors());
 			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
-			local_session=new_sdp.toString();
+			local_session = new_sdp;
 		} else {
 			local_session = call.getLocalSessionDescriptor();
 		}
@@ -87,15 +87,15 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	/** Changes the call when remotly requested.
 	  * Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	@Override
-	public void onCallModify(Call call, String sdp, SipMessage invite) {
-		String local_session;
-		if (sdp!=null && sdp.length()>0) {
-			SdpMessage remote_sdp=new SdpMessage(sdp);
-			SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
-			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
-			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+	public void onCallModify(Call call, SdpMessage sdp, SipMessage invite) {
+		SdpMessage local_session;
+		if (sdp != null) {
+			SdpMessage remote_sdp = sdp;
+			SdpMessage local_sdp = call.getLocalSessionDescriptor();
+			SdpMessage new_sdp = new SdpMessage(local_sdp.getOrigin(), remote_sdp.getSessionName(),
+					local_sdp.getConnection(), local_sdp.getTime(), local_sdp.getMediaDescriptors());
 			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
-			local_session=new_sdp.toString();
+			local_session = new_sdp;
 		} else {
 			local_session = call.getLocalSessionDescriptor();
 		}
@@ -129,7 +129,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	/** Does nothing.
 	  * Callback function called when arriving a 2xx (call accepted) */
 	@Override
-	public void onCallAccepted(Call call, String sdp, SipMessage resp) {
+	public void onCallAccepted(Call call, SdpMessage sdp, SipMessage resp) {
 		// Hook for subclasses.
 	}
 
@@ -151,7 +151,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	/** Does nothing.
 	  * Callback function called when arriving an ACK method (call confirmed) */
 	@Override
-	public void onCallConfirmed(Call call, String sdp, SipMessage ack) {
+	public void onCallConfirmed(Call call, SdpMessage sdp, SipMessage ack) {
 		// Hook for subclasses.
 	}
 
@@ -198,7 +198,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 	/** Does nothing.
 	  * Callback function called when arriving a 2xx (re-invite/modify accepted) */
 	@Override
-	public void onCallModifyAccepted(Call call, String sdp, SipMessage resp) {
+	public void onCallModifyAccepted(Call call, SdpMessage sdp, SipMessage resp) {
 		// Hook for subclasses.
 	}
 
@@ -239,15 +239,15 @@ public class CallListenerAdapter implements ExtendedCallListener {
 
 	/** From ExtendedCallListener. Callback function called when arriving a new UPDATE method (update request). */
 	@Override
-	public void onCallUpdate(Call call, String sdp, SipMessage update) {
-		String local_session;
-		if (sdp!=null && sdp.length()>0) {
-			SdpMessage remote_sdp=new SdpMessage(sdp);
-			SdpMessage local_sdp=new SdpMessage(call.getLocalSessionDescriptor());
-			SdpMessage new_sdp=new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
-			new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+	public void onCallUpdate(Call call, SdpMessage sdp, SipMessage update) {
+		SdpMessage local_session;
+		if (sdp != null) {
+			SdpMessage remote_sdp = sdp;
+			SdpMessage local_sdp = call.getLocalSessionDescriptor();
+			SdpMessage new_sdp = new SdpMessage(local_sdp.getOrigin(), remote_sdp.getSessionName(),
+					local_sdp.getConnection(), local_sdp.getTime(), local_sdp.getMediaDescriptors());
 			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
-			local_session=new_sdp.toString();
+			local_session = new_sdp;
 		}
 		else local_session=call.getLocalSessionDescriptor();
 		// accept immediatly

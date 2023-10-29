@@ -3,6 +3,7 @@ package org.mjsip.ua;
 
 
 import org.mjsip.media.MediaDesc;
+import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.call.CallListener;
 import org.mjsip.sip.call.DTMFInfo;
@@ -36,7 +37,7 @@ public interface UserAgentListener {
 	/**
 	 * When an incoming call has been established. 
 	 * 
-	 * @see CallListener#onCallConfirmed(org.mjsip.sip.call.Call, String, org.mjsip.sip.message.SipMessage)
+	 * @see CallListener#onCallConfirmed(org.mjsip.sip.call.Call, SdpMessage, org.mjsip.sip.message.SipMessage)
 	 */
 	public void onUaCallConfirmed(UserAgent userAgent);
 
