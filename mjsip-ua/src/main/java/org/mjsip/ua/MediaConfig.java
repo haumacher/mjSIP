@@ -125,7 +125,7 @@ public class MediaConfig extends Configure implements MediaOptions {
 
 		if (attribute.equals("media") || attribute.equals("media_desc"))    {
 			MediaDesc desc = MediaDesc.parseMediaDesc(par.getRemainingString().trim());
-			_descByType.put(desc.getMedia(), desc);  
+			_descByType.put(desc.getMediaType(), desc);  
 		}
 	}
 	
@@ -157,10 +157,10 @@ public class MediaConfig extends Configure implements MediaOptions {
 		setMediaDescs(new MediaDesc[_descByType.size()]);
 		for (MediaDesc md : _descByType.values()) {
 			// Remove audio or video descriptors, if audio or video has been disabled.
-			if (md.getMedia().equalsIgnoreCase("audio") && !isAudio()) continue;
-			if (md.getMedia().equalsIgnoreCase("video") && !isVideo()) continue;
+			if (md.getMediaType().equalsIgnoreCase("audio") && !isAudio()) continue;
+			if (md.getMediaType().equalsIgnoreCase("video") && !isVideo()) continue;
 			
-			getMediaDescs()[i++]=new MediaDesc(md.getMedia(),md.getPort(),md.getTransport(),md.getMediaSpecs());
+			getMediaDescs()[i++]=new MediaDesc(md.getMediaType(),md.getPort(),md.getTransport(),md.getMediaSpecs());
 		}
 	}
 

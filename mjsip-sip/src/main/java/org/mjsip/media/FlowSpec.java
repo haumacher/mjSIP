@@ -107,7 +107,7 @@ public class FlowSpec {
 	/**
 	 * The type of media being transported.
 	 * 
-	 * @see MediaDesc#getMedia()
+	 * @see MediaDesc#getMediaType()
 	 */
 	public String getMediaType() {
 		return _mediaType;

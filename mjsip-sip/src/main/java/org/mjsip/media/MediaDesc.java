@@ -21,16 +21,16 @@ public class MediaDesc {
 	private static final char[] DELIMITER = { '/' };
 
 	/** Media type (e.g. audio, video, message, etc.) */
-	private final String media;
+	private final String _mediaType;
 
 	/** Port */
-	private int port;
+	private int _port;
 
 	/** Transport */
-	private final String transport;
+	private final String _transport;
 	
 	/** Vector of media specifications (as Vector<MediaSpec>) */
-	private final MediaSpec[] specs;
+	private final MediaSpec[] _specs;
 
 	/** Creates a new MediaDesc.
 	  * @param media media type
@@ -38,47 +38,47 @@ public class MediaDesc {
 	  * @param transport transport protocol
 	  * @param specs array of media specifications */
 	public MediaDesc(String media, int port, String transport, MediaSpec[] specs) {
-		this.media=media;
-		this.port=port;
-		this.transport=transport;
-		this.specs=specs;
+		_mediaType = media;
+		_port = port;
+		_transport = transport;
+		_specs = specs;
 	}
 
 	/**
 	 * The media type (e.g. audio, video, message, etc.).
 	 */
-	public String getMedia() {
-		return media;
+	public String getMediaType() {
+		return _mediaType;
 	}
 
 	/**
 	 * The port of the stream.
 	 */
 	public int getPort() {
-		return port;
+		return _port;
 	}
 
 	/** @see #getPort() */
 	public void setPort(int port) {
-		this.port=port;
+		this._port = port;
 	}
 
 	/** The transport protocol. */
 	public String getTransport() {
-		return transport;
+		return _transport;
 	}
 
 	/** The supported media encodings. */
 	public MediaSpec[] getMediaSpecs() {
-		return specs;
+		return _specs;
 	}
 
 	/** Gets the corresponding {@link MediaDescriptor} for creating SIP messages. */
 	public MediaDescriptor toMediaDescriptor() {
 		List<String> formats = new ArrayList<>();
 		List<AttributeField> attributes = new ArrayList<>();
-		if (specs!=null) {
-			for (MediaSpec ms : specs) {
+		if (_specs != null) {
+			for (MediaSpec ms : _specs) {
 				String avp = String.valueOf(ms.getAVP());
 				formats.add(avp);
 
@@ -102,7 +102,7 @@ public class MediaDesc {
 				attributes.add(new AttributeField("rtpmap", rtpmap.toString()));
 			}
 		}
-		MediaField mediaField = new MediaField(media, port, 0, transport, formats);
+		MediaField mediaField = new MediaField(_mediaType, _port, 0, _transport, formats);
 		return new MediaDescriptor(mediaField, null, attributes);
 	}
 
@@ -111,12 +111,12 @@ public class MediaDesc {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(media).append(" ").append(port).append(" ").append(transport);
-		if (specs!=null) {
+		sb.append(_mediaType).append(" ").append(_port).append(" ").append(_transport);
+		if (_specs != null) {
 			sb.append(" {");
-			for (int i=0; i<specs.length; i++) {
+			for (int i = 0; i < _specs.length; i++) {
 				if (i>0) sb.append(",");
-				sb.append(" ").append(specs[i].toString());
+				sb.append(" ").append(_specs[i].toString());
 			}
 			sb.append(" }");
 		}
@@ -180,19 +180,19 @@ public class MediaDesc {
 	 */
 	public static MediaDesc parseDescriptor(MediaDescriptor descriptor) {
 		MediaField mf = descriptor.getMediaField();
-		String media = mf.getMediaType();
+		String mediaType = mf.getMediaType();
 		int port = mf.getPort();
 		String transport = mf.getTransport();
 
 		AttributeField[] rtpmap = descriptor.getAttributes("rtpmap");
-		Vector<MediaSpec> specs = new Vector<>(rtpmap.length);
+		List<MediaSpec> specs = new ArrayList<>(rtpmap.length);
 		for (AttributeField field : rtpmap) {
-			specs.addElement(parseMediaSpec(media, field.getAttributeValue()));
+			specs.add(parseMediaSpec(field.getAttributeValue()));
 		}
-		return new MediaDesc(media, port, transport, specs.toArray(new MediaSpec[] {}));
+		return new MediaDesc(mediaType, port, transport, specs.toArray(new MediaSpec[] {}));
 	}
 
-	private static MediaSpec parseMediaSpec(String media, String source) {
+	private static MediaSpec parseMediaSpec(String source) {
 		Parser parser = new Parser(source);
 
 		int avp = parser.getInt();
@@ -214,7 +214,7 @@ public class MediaDesc {
 	 * A copy of this {@link MediaDesc} with alternative {@link #getMediaSpecs()}.
 	 */
 	public MediaDesc withSpecs(MediaSpec[] newSpecs) {
-		return new MediaDesc(getMedia(), getPort(), getTransport(), newSpecs);
+		return new MediaDesc(getMediaType(), getPort(), getTransport(), newSpecs);
 	}
 
 }
