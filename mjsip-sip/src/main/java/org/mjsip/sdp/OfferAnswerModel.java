@@ -104,19 +104,23 @@ public class OfferAnswerModel {
 		return new_sdp;
 	}*/
 	
-
-	/** Calculates a SDP product of a starting SDP and an offered SDP.
-	  * <p>
-	  * The product is calculated as answer of a SDP offer, according to RFC3264.
-	  * @param start_sdp the starting SDP (SessionDescriptor)
-	  * @param offer_sdp the offered SDP (SessionDescriptor)
-	  * @return the answered SDP (SessionDescriptor) */
-	public static SdpMessage makeSessionDescriptorMatch(SdpMessage start_sdp, SdpMessage offer_sdp) {
-		Vector<MediaDescriptor> answerDescriptors = makeMediaDescriptorMatch(start_sdp.getMediaDescriptors(),
-				offer_sdp.getMediaDescriptors());
-		return start_sdp.withMediaDescriptors(answerDescriptors);
+	/**
+	 * Calculates a SDP product of a starting SDP and an offered SDP.
+	 * <p>
+	 * The product is calculated as answer of a SDP offer, according to RFC3264.
+	 * 
+	 * @param localSdp
+	 *        the starting SDP (SessionDescriptor)
+	 * @param remoteSdp
+	 *        the offered SDP (SessionDescriptor)
+	 * @return the answered SDP (SessionDescriptor)
+	 */
+	public static SdpMessage matchSdp(SdpMessage localSdp, SdpMessage remoteSdp) {
+		Vector<MediaDescriptor> matchingDescriptors = matchMedia(localSdp.getMediaDescriptors(), remoteSdp.getMediaDescriptors());
+	
+		return new SdpMessage(localSdp.getOrigin(), remoteSdp.getSessionName(), localSdp.getConnection(),
+				localSdp.getTime(), matchingDescriptors);
 	}
-
 
 	/**
 	 * Calculates a MediaDescriptor list product of a starting MediaDescriptor list and an offered
@@ -130,7 +134,7 @@ public class OfferAnswerModel {
 	 *        the offered MediaDescriptor list (as Vector of MediaDescriptors)
 	 * @return the answered MediaDescriptor list (as Vector of MediaDescriptors)
 	 */
-	public static Vector<MediaDescriptor> makeMediaDescriptorMatch(Vector<MediaDescriptor> localDescriptors,
+	public static Vector<MediaDescriptor> matchMedia(Vector<MediaDescriptor> localDescriptors,
 			Vector<MediaDescriptor> remoteDescriptors) {
 		Vector<MediaDescriptor> result = new Vector<>();
 
@@ -140,7 +144,7 @@ public class OfferAnswerModel {
 			for (int j = 0; j < availableDescriptors.size(); j++) {
 				MediaDescriptor available = availableDescriptors.elementAt(j);
 				if (available.getMediaField().getMediaType().equals(mediaType)) {
-					MediaDescriptor match = makeMediaDescriptorMatch(available, remote);
+					MediaDescriptor match = matchDescriptor(available, remote);
 					result.addElement(match);
 
 					// remove this media from the base list (actually from the aux copy), and break
@@ -152,12 +156,11 @@ public class OfferAnswerModel {
 		return result;
 	}   
 
-
 	/** Calculates a MediaDescriptor product of a given MediaDescriptor and an offered
 	  * MediaDescriptor.
 	  * <p>
 	  * The result is calculated as answer of a media offer, according to RFC3264. */
-	public static MediaDescriptor makeMediaDescriptorMatch(MediaDescriptor local, MediaDescriptor remote) {
+	public static MediaDescriptor matchDescriptor(MediaDescriptor local, MediaDescriptor remote) {
 		// select the proper formats 
 		MediaField localMedia = local.getMediaField();
 

@@ -151,6 +151,18 @@ public class MediaDescriptor {
 	}
 
 	/**
+	 * Looks up the {@link MediaDescriptor} with the given media type from the given list.
+	 */
+	public static MediaDescriptor withType(Vector<MediaDescriptor> mediaDescriptors, String mediaType) {
+		for (MediaDescriptor md : mediaDescriptors) {
+			if (md.getMediaField().getMediaType().equals(mediaType)) {
+				return md;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Creates a deep copy of the given {@link MediaDescriptor}.
 	 */
 	public static MediaDescriptor copy(MediaDescriptor other) {

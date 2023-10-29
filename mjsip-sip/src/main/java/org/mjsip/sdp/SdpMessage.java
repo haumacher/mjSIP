@@ -307,31 +307,11 @@ public class SdpMessage {
 		return _mediaDescriptors;
 	}
 
-	/**
-	 * Removes all {@link MediaDescriptor} matching the given media type.
-	 * 
-	 * @return this SDP message
-	 */
-	public SdpMessage removeMediaDescriptors(String media_type) {
-		for (int i = _mediaDescriptors.size() - 1; i >= 0; i--) {
-			MediaDescriptor mediaElement = _mediaDescriptors.elementAt(i);
-			if (mediaElement.getMediaField().getMediaType().equals(media_type)) {
-				_mediaDescriptors.removeElementAt(i);
-			}
-		}
-		return this;
-	}
-
 	/** Gets the first media descriptor of a particular media.
 	  * @param media_type the media type
 	  * @return the media descriptor */
 	public MediaDescriptor getMediaDescriptor(String media_type) {
-		for (MediaDescriptor md : _mediaDescriptors) {
-			if (md.getMediaField().getMediaType().equals(media_type)) {
-				return md;
-			}
-		}
-		return null;
+		return MediaDescriptor.withType(_mediaDescriptors, media_type);
 	}
 
 	/** Gets a Vector of session attribute values.

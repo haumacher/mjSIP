@@ -53,6 +53,7 @@ import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
+import org.zoolu.util.VectorUtils;
 
 /** Simple SIP call agent (signaling and media).
   * It supports both audio and video sessions, by means of embedded media applications
@@ -295,14 +296,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		cancelResponseTimeout();
 		// return if no active call
 		if (call==null) return;
+		
 		// new sdp
-		SdpMessage local_sdp=getSessionDescriptor();
-		SdpMessage remote_sdp=call.getRemoteSessionDescriptor();
-		SdpMessage new_sdp=
-			new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime(), local_sdp.getMediaDescriptors());
-		new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);
+		SdpMessage newSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), call.getRemoteSessionDescriptor());
 		// accept
-		call.accept(new_sdp);
+		call.accept(newSdp);
 	}
 
 	/** Redirects an incoming call. */
@@ -354,13 +352,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 
 		// get local and remote rtp addresses and ports
-		SdpMessage local_sdp=call.getLocalSessionDescriptor();
-		SdpMessage remote_sdp=call.getRemoteSessionDescriptor();
+		SdpMessage localSdp=call.getLocalSessionDescriptor();
+		SdpMessage remoteSdp=call.getRemoteSessionDescriptor();
 		
 		// calculate media descriptor product
-		Vector<MediaDescriptor> localMedia = local_sdp.getMediaDescriptors();
-		Vector<MediaDescriptor> remoteMedia = remote_sdp.getMediaDescriptors();
-		Vector<MediaDescriptor> matchingMedia = OfferAnswerModel.makeMediaDescriptorMatch(localMedia,remoteMedia);
+		Vector<MediaDescriptor> localMedia = localSdp.getMediaDescriptors();
+		Vector<MediaDescriptor> remoteMedia = remoteSdp.getMediaDescriptors();
+		Vector<MediaDescriptor> matchingMedia = OfferAnswerModel.matchMedia(localMedia,remoteMedia);
 		
 		if (LOG.isDebugEnabled()) {
 			for (MediaDescriptor desc : localMedia) {
@@ -376,19 +374,15 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		
 		// select the media direction (send_only, recv_ony, fullduplex)
 		FlowSpec.Direction dir = uaConfig.getDirection();
-		String remote_address=remote_sdp.getConnection().getAddress();
+		String remote_address=remoteSdp.getConnection().getAddress();
 		// for each media
+		
+		Vector<MediaDescriptor> remoteCopy = VectorUtils.copy(remoteMedia);
 		for (MediaDescriptor matchingDescriptor : matchingMedia) {
-			MediaField mediaField=matchingDescriptor.getMediaField();
-			String mediaType=mediaField.getMediaType();
+			String mediaType=matchingDescriptor.getMediaField().getMediaType();
 			
-			MediaDescriptor remoteDescriptor = remote_sdp.getMediaDescriptor(mediaType);
-			
-			// TODO: This modifies the remote descriptor while building a flow spec. This is unexpected
-			// behavior and only a workaround for matching descriptors have no unique media type. By
-			// removing all descriptors from the offer message, duplicate attempts to build a flow for a
-			// media that has no match is prevented.
-			remote_sdp.removeMediaDescriptors(mediaType);
+			MediaDescriptor remoteDescriptor = MediaDescriptor.withType(remoteCopy, mediaType);
+			remoteCopy.remove(remoteDescriptor);
 			
 			FlowSpec flow_spec = buildFlowSpec(mediaType, remoteDescriptor, matchingDescriptor, dir, remote_address);
 			if (flow_spec == null) {
@@ -475,7 +469,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a new INVITE method (incoming call) */
 	@Override
-	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage sdp, SipMessage invite) {
+	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
 			LOG.info("LOCALLY BUSY: INCOMING CALL REFUSED");
@@ -489,7 +483,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		// response timeout
 		if (uaConfig.getRefuseTime()>=0) response_to=sip_provider.scheduler().schedule(uaConfig.getRefuseTime()*1000, this::onResponseTimeout);
 		
-		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(sdp.getMediaDescriptors()));
+		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(remoteSdp.getMediaDescriptors()));
 	}
 
 	private String extractFrom(SipMessage invite) {
@@ -515,13 +509,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	@Override
-	public void onCallModify(Call call, SdpMessage sdp, SipMessage invite) {
+	public void onCallModify(Call call, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallModify()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("RE-INVITE/MODIFY");
 		// to be implemented.
 		// currently it simply accepts the session changes (see method onCallModify() in CallListenerAdapter)
-		super.onCallModify(call,sdp,invite);
+		super.onCallModify(call,remoteSdp,invite);
 	}
 
 	/** From CallListener. Callback function called when arriving a 183 Session Progress */
@@ -564,19 +558,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From CallListener. Callback function called when arriving a 2xx (call accepted) */
 	@Override
-	public void onCallAccepted(Call call, SdpMessage sdp, SipMessage resp) {
+	public void onCallAccepted(Call call, SdpMessage remoteSdp, SipMessage resp) {
 		LOG.debug("onCallAccepted()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("ACCEPTED/CALL");
 		if (uaConfig.getNoOffer()) {
-			// new sdp
-			SdpMessage local_sdp=getSessionDescriptor();
-			SdpMessage remote_sdp=sdp;
-			SdpMessage new_sdp=
-				new SdpMessage(local_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),remote_sdp.getTime(), local_sdp.getMediaDescriptors());
-			new_sdp=OfferAnswerModel.makeSessionDescriptorMatch(new_sdp,remote_sdp);         
-			// answer with the local sdp
-			call.confirm2xxWithAnswer(new_sdp);
+			SdpMessage answerSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), remoteSdp);         
+			call.confirm2xxWithAnswer(answerSdp);
 		}
 		
 		if (listener!=null) listener.onUaCallAccepted(this);
