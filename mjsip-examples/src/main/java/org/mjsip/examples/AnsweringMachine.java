@@ -81,7 +81,7 @@ public class AnsweringMachine extends MultipleUAS {
 
 	@Override
 	protected UserAgentListener createCallHandler(SipMessage msg) {
-		MediaConfig callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
+		MediaConfig callMedia = MediaConfig.from(_mediaConfig.getMediaDescs());
 		callMedia.allocateMediaPorts(_portPool);
 
 		return new UserAgentListenerAdapter() {
@@ -89,7 +89,7 @@ public class AnsweringMachine extends MultipleUAS {
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller,
 					MediaDesc[] media_descs) {
 				LOG.info("Incomming call from: " + callee.getAddress());
-				ua.accept(callMedia.mediaDescs);
+				ua.accept(callMedia.getMediaDescs());
 			}
 
 			@Override
@@ -113,18 +113,18 @@ public class AnsweringMachine extends MultipleUAS {
 		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
+		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
 		PortOptions portConfig = PortConfig.init(config_file, flags);
 		ServiceOptions serviceConfig = ServiceConfig.init(config_file, flags);
 		flags.close();
 
-		if (mediaConfig.sendFile != null) {
-			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(mediaConfig.sendFile));
+		if (mediaConfig.getSendFile() != null) {
+			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(mediaConfig.getSendFile()));
 			LOG.info("Announcement file format: " + audioFormat);
 		}
 
 		PortPool portPool = new PortPool(portConfig.getMediaPort(), portConfig.getPortCount());
-		StreamerFactory streamerFactory = mediaConfig.createStreamerFactory(uaConfig);
+		StreamerFactory streamerFactory = ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig);
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
 		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, uaConfig, mediaConfig, portPool, serviceConfig);
 	}

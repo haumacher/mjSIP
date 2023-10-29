@@ -29,13 +29,11 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
-import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
-import org.mjsip.ua.cli.UserAgentCli;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -58,7 +56,7 @@ public class MiniJukebox extends UserAgentCli {
 	/** 
 	 * Creates a new MiniJukebox. 
 	 */
-	public MiniJukebox(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+	public MiniJukebox(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, ExampleMediaConfig mediaConfig) {
 		super(sip_provider,serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}
 
@@ -68,10 +66,10 @@ public class MiniJukebox extends UserAgentCli {
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {
-				_mediaConfig.sendFile=audio_file;
+				_mediaConfig.setSendFile(audio_file);
 			}
 		}
-		if (_mediaConfig.sendFile!=null) ua.accept(_mediaConfig.mediaDescs);      
+		if (_mediaConfig.getSendFile()!=null) ua.accept(_mediaConfig.getMediaDescs());      
 		else ua.hangup();
 	}
 	
@@ -83,13 +81,13 @@ public class MiniJukebox extends UserAgentCli {
 		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
+		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
-		mediaConfig.audio=true;
-		mediaConfig.video=false;
+		mediaConfig.setAudio(true);
+		mediaConfig.setVideo(false);
 		uaConfig.setSendOnly(true);
 		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    

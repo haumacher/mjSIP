@@ -63,7 +63,7 @@ public class Jukebox extends MultipleUAS {
 	/** Media file path */
 	public static String MEDIA_PATH=".";
 
-	private MediaConfig _mediaConfig;
+	private ExampleMediaConfig _mediaConfig;
 
 	private PortPool _portPool;
 
@@ -71,7 +71,7 @@ public class Jukebox extends MultipleUAS {
 	 * Creates a {@link Jukebox}. 
 	 */
 	public Jukebox(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig,
-			MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig) {
+			ExampleMediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig) {
 		super(sip_provider,streamerFactory, uaConfig, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
 		_portPool = portPool;
@@ -88,13 +88,13 @@ public class Jukebox extends MultipleUAS {
 				String audio_file=MEDIA_PATH+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
 				if (audio_file!=null) {
 					if (new File(audio_file).isFile()) {
-						_mediaConfig.sendFile=audio_file;
+						_mediaConfig.setSendFile(audio_file);
 					}
 				}
-				if (_mediaConfig.sendFile != null) {
-					_callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
+				if (_mediaConfig.getSendFile() != null) {
+					_callMedia = MediaConfig.from(_mediaConfig.getMediaDescs());
 					_callMedia.allocateMediaPorts(_portPool);
-					ua.accept(_callMedia.mediaDescs);
+					ua.accept(_callMedia.getMediaDescs());
 				} else {
 					ua.hangup();
 				}
@@ -144,17 +144,17 @@ public class Jukebox extends MultipleUAS {
 		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
+		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
 		PortOptions portConfig = PortConfig.init(config_file, flags);
 		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
 		PortPool portPool = new PortPool(portConfig.getMediaPort(), portConfig.getPortCount());
 
-		mediaConfig.audio=true;
-		mediaConfig.video=false;
+		mediaConfig.setAudio(true);
+		mediaConfig.setVideo(false);
 		uaConfig.setSendOnly(true);
-		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),mediaConfig.createStreamerFactory(uaConfig),uaConfig, mediaConfig, portPool, serviceConfig);
+		new Jukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig),uaConfig, mediaConfig, portPool, serviceConfig);
 		
 		// promt before exit
 		if (prompt_exit) 

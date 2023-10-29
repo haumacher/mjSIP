@@ -19,7 +19,7 @@
  * Luca Veltri (luca.veltri@unipr.it)
  */
 
-package org.mjsip.ua.cli;
+package org.mjsip.examples;
 
 
 import org.mjsip.sip.address.NameAddress;

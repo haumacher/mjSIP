@@ -44,7 +44,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 
+import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.MediaDesc;
+import org.mjsip.media.StreamerOptions;
+import org.mjsip.media.rx.AudioReceiver;
+import org.mjsip.media.rx.JavaxAudioOutput;
+import org.mjsip.media.tx.AudioTransmitter;
+import org.mjsip.media.tx.JavaxAudioInput;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipConfig;
@@ -55,15 +61,20 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
+import org.mjsip.ua.MediaOptions;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
+import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
-import org.mjsip.ua.cli.UserAgentCli;
 import org.mjsip.ua.clip.ClipPlayer;
+import org.mjsip.ua.streamer.DefaultStreamerFactory;
+import org.mjsip.ua.streamer.DispatchingStreamerFactory;
+import org.mjsip.ua.streamer.NativeStreamerFactory;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Archive;
 import org.zoolu.util.Flags;
@@ -144,7 +155,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	/** Call state: <P>UA_IDLE=0, <BR>UA_INCOMING_CALL=1, <BR>UA_OUTGOING_CALL=2, <BR>UA_ONCALL=3 */
 	String call_state=UA_IDLE;
 
-	private MediaConfig _mediaConfig;
+	private MediaOptions _mediaConfig;
 
 	private UIConfig _uiConfig;
 	
@@ -169,7 +180,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig, UIConfig uiConfig, MediaOptions mediaConfig) {
 		this.sip_provider=sip_provider;
 		_uaConfig=uaConfig;
 		_uiConfig = uiConfig;
@@ -182,13 +193,55 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 
 
 	protected void initUA() {
-		ua=new UserAgent(sip_provider,_mediaConfig.createStreamerFactory(_uaConfig),_uaConfig, _uaConfig, this.andThen(clipPlayer()));
+		ua=new UserAgent(sip_provider, createStreamerFactory(_mediaConfig, _uaConfig),_uaConfig, _uaConfig, this.andThen(clipPlayer()));
 		//ua.listen();
 		changeStatus(UA_IDLE);
 	}
 
+	/**
+	 * Creates a {@link StreamerFactory} based on configuration options.
+	 */
+	public StreamerFactory createStreamerFactory(MediaOptions mediaConfig, UAOptions uaConfig) {
+		DispatchingStreamerFactory factory = new DispatchingStreamerFactory();
+		if (mediaConfig.isAudio()) {
+			if (mediaConfig.isUseRat()) {
+				factory.addFactory("audio", new NativeStreamerFactory(mediaConfig.getAudioMcastSoAddr(), mediaConfig.getBinRat()));
+			} else {
+				Direction dir = uaConfig.getDirection();
+
+				AudioTransmitter tx;
+				if (dir.doSend()) {
+					tx = new JavaxAudioInput(true, mediaConfig.isJavaxSoundDirectConversion());
+				} else {
+					tx = null;
+				}
+
+				AudioReceiver rx;
+				if (dir.doReceive()) {
+					rx = new JavaxAudioOutput(mediaConfig.isJavaxSoundDirectConversion());
+				} else {
+					rx = null;
+				}
+
+				// standard javax-based audio streamer
+				StreamerOptions options = StreamerOptions.builder()
+						.setRandomEarlyDrop(mediaConfig.getRandomEarlyDropRate())
+						.setSymmetricRtp(mediaConfig.isSymmetricRtp())
+						.build();
+				
+				factory.addFactory("audio", new DefaultStreamerFactory(options, rx, tx));
+			}
+		}
+		if (mediaConfig.isVideo()) {
+			if (mediaConfig.isUseVic()) {
+				factory.addFactory("video", new NativeStreamerFactory(mediaConfig.getVideoMcastSoAddr(), mediaConfig.getBinVic()));
+			}
+		}
+		return factory;
+	}
+	
 	private UserAgentListener clipPlayer() {
-		if (!_mediaConfig.useRat && !_uiConfig.noSystemAudio) {
+		if (!_mediaConfig.isUseRat() && !_uiConfig.noSystemAudio) {
 			return new ClipPlayer(_uiConfig);
 		}
 		return null;
@@ -343,11 +396,11 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(_uiConfig.callTo.toString());
 			display.setText("CALLING "+_uiConfig.callTo);
-			ua.call(_uiConfig.callTo, _mediaConfig.mediaDescs);
+			ua.call(_uiConfig.callTo, _mediaConfig.getMediaDescs());
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
-		if (!_mediaConfig.audio && !_mediaConfig.video)
+		if (!_mediaConfig.isAudio() && !_mediaConfig.isVideo())
 			LOG.info("ONLY SIGNALING, NO MEDIA");
 	}
 
@@ -369,13 +422,13 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			if (uri!=null && uri.length()>0) {
 				ua.hangup();
 				display.setText("CALLING "+uri);
-				ua.call(uri, _mediaConfig.mediaDescs);
+				ua.call(uri, _mediaConfig.getMediaDescs());
 				changeStatus(UA_OUTGOING_CALL);
 			}
 		}
 		else
 		if (statusIs(UA_INCOMING_CALL)) {
-			ua.accept(_mediaConfig.mediaDescs);
+			ua.accept(_mediaConfig.getMediaDescs());
 			display.setText("ON CALL");
 			changeStatus(UA_ONCALL);
 		}
@@ -653,18 +706,13 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
 		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
-		boolean no_gui=flags.getBoolean("--no-gui",false,"do not use graphical user interface");
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
+		MediaOptions mediaConfig = MediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
 		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
-		if (no_gui) {
-			new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
-		} else {
-			new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
-		}
+		new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
 	}
 	
 	/** Prints a message to standard output. */

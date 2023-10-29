@@ -19,7 +19,7 @@
  * Luca Veltri (luca.veltri@unipr.it)
  */
 
-package org.mjsip.ua.cli;
+package org.mjsip.examples;
 
 
 import java.io.BufferedReader;
@@ -29,8 +29,13 @@ import java.io.PrintStream;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.ua.MediaConfig;
+import org.mjsip.sip.provider.SipStack;
+import org.mjsip.time.Scheduler;
+import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
@@ -39,6 +44,7 @@ import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.clip.ClipPlayer;
 import org.slf4j.LoggerFactory;
+import org.zoolu.util.Flags;
 
 
 /** Simple command-line-based SIP user agent (UA).
@@ -84,7 +90,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** Call state: <P>UA_IDLE=0, <BR>UA_INCOMING_CALL=1, <BR>UA_OUTGOING_CALL=2, <BR>UA_ONCALL=3 */
 	String call_state=UA_IDLE;
 
-	protected final MediaConfig _mediaConfig;
+	protected final ExampleMediaConfig _mediaConfig;
 	
 
 	/** Changes the call state */
@@ -107,21 +113,21 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentCli(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, MediaConfig mediaConfig) {
+	public UserAgentCli(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, ExampleMediaConfig mediaConfig) {
 		this.sip_provider=sip_provider;
 		_serviceConfig = serviceConfig;
 		_uaConfig=uaConfig;
 		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
 		
-		ua=new UserAgent(sip_provider,mediaConfig.createStreamerFactory(uaConfig),uaConfig, uaConfig, this.andThen(clipPlayer()));      
+		ua=new UserAgent(sip_provider,ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig),uaConfig, uaConfig, this.andThen(clipPlayer()));      
 		if (!uaConfig.isNoPrompt()) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.isNoPrompt()) stdout=System.out;
 		run();
 	}
 
 	private UserAgentListener clipPlayer() {
-		if (!_mediaConfig.useRat && !_uiConfig.noSystemAudio) {
+		if (!_mediaConfig.isUseRat() && !_uiConfig.noSystemAudio) {
 			return new ClipPlayer(_uiConfig);
 		}
 		return null;
@@ -140,14 +146,14 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	public void call(String target_uri) {
 		ua.hangup();
 		LOG.info("CALLING " + target_uri);
-		ua.call(target_uri, _mediaConfig.mediaDescs);
+		ua.call(target_uri, _mediaConfig.getMediaDescs());
 		changeStatus(UA_OUTGOING_CALL);
 	} 
 
 
 	/** Accepts an incoming call */
 	public void accept() {
-		ua.accept(_mediaConfig.mediaDescs);
+		ua.accept(_mediaConfig.getMediaDescs());
 		changeStatus(UA_ONCALL);
 		if (_serviceConfig.getHangupTime()>0) automaticHangup(_serviceConfig.getHangupTime()); 
 		LOG.info("press 'enter' to hangup"); 
@@ -435,4 +441,25 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		return null;
 	}
 
+	/** The main method. */
+	public static void main(String[] args) {
+		println("MJSIP UserAgent "+SipStack.version);
+		Flags flags=new Flags("local.ua.UA", args);
+		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
+		SipOptions sipConfig = SipConfig.init(config_file, flags);
+		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
+		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
+		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
+		UIConfig uiConfig=UIConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
+		flags.close();
+
+		new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
+	}
+
+	/** Prints a message to standard output. */
+	protected static void println(String str) {
+		System.out.println(str);
+	}
+	
 }

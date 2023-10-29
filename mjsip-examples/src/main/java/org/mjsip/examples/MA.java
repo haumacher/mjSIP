@@ -10,7 +10,6 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
-import org.mjsip.ua.cli.MessageAgentCli;
 import org.zoolu.util.Flags;
 
 public class MA {
