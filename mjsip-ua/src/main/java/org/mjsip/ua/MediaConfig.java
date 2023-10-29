@@ -17,6 +17,7 @@ import org.mjsip.media.tx.AudioFileTransmitter;
 import org.mjsip.media.tx.AudioTransmitter;
 import org.mjsip.media.tx.JavaxAudioInput;
 import org.mjsip.media.tx.ToneTransmitter;
+import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.DefaultStreamerFactory;
 import org.mjsip.ua.streamer.DispatchingStreamerFactory;
 import org.mjsip.ua.streamer.LoopbackStreamerFactory;

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.ua;
+package org.mjsip.ua.pool;
 
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;

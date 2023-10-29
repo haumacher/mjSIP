@@ -5,8 +5,8 @@ package org.mjsip.up;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mjsip.ua.PortPool;
-import org.mjsip.ua.PortPool.Exhausted;
+import org.mjsip.ua.pool.PortPool;
+import org.mjsip.ua.pool.PortPool.Exhausted;
 
 /**
  * Test case for {@link PortPool}

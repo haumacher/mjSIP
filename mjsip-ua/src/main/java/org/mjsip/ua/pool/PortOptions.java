@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.ua;
+package org.mjsip.ua.pool;
 
 /**
  * Options for the {@link PortPool}.

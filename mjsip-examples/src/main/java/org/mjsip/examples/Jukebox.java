@@ -33,15 +33,15 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
-import org.mjsip.ua.PortConfig;
-import org.mjsip.ua.PortOptions;
-import org.mjsip.ua.PortPool;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
+import org.mjsip.ua.pool.PortConfig;
+import org.mjsip.ua.pool.PortOptions;
+import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.zoolu.util.Flags;
 
