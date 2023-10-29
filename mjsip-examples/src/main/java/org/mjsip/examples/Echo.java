@@ -42,6 +42,7 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.PortConfig;
+import org.mjsip.ua.PortOptions;
 import org.mjsip.ua.PortPool;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
@@ -158,11 +159,11 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		PortConfig portConfig = PortConfig.init(config_file, flags);
+		PortOptions portConfig = PortConfig.init(config_file, flags);
 		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
-		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
+		PortPool portPool = new PortPool(portConfig.getMediaPort(), portConfig.getPortCount());
 		
 		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig);
 

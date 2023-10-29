@@ -10,17 +10,17 @@ import org.zoolu.util.Parser;
 /**
  * Configuration options for specifying a port range to serve RTP streams.
  */
-public class PortConfig extends Configure {
+public class PortConfig extends Configure implements PortOptions {
 	
-	public int mediaPort = 50000;
+	private int _mediaPort = 50000;
 	
-	public int portCount = 100;
+	private int _portCount = 100;
 
 	@Override
 	public void setOption(String attribute, Parser par) {
 		switch (attribute) {
-		case "media_port": mediaPort = par.getInt(); break;
-		case "port_count": portCount = par.getInt(); break;
+		case "media_port": setMediaPort(par.getInt()); break;
+		case "port_count": setPortCount(par.getInt()); break;
 		}
 	}
 
@@ -33,6 +33,26 @@ public class PortConfig extends Configure {
 		flags.getInteger("media_port", "<first port>", 50000, "The first port used for RTP media streams.");
 		flags.getInteger("port_count", "<cnt>", 100, "The number of ports used for RTP media streaming.");
 		return result;
+	}
+
+	@Override
+	public int getMediaPort() {
+		return _mediaPort;
+	}
+
+	/** @see #getMediaPort() */
+	public void setMediaPort(int mediaPort) {
+		_mediaPort = mediaPort;
+	}
+
+	@Override
+	public int getPortCount() {
+		return _portCount;
+	}
+
+	/** @see #getPortCount() */
+	public void setPortCount(int portCount) {
+		_portCount = portCount;
 	}
 
 }

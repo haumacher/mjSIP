@@ -34,6 +34,7 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.PortConfig;
+import org.mjsip.ua.PortOptions;
 import org.mjsip.ua.PortPool;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
@@ -144,11 +145,11 @@ public class Jukebox extends MultipleUAS {
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
-		PortConfig portConfig = PortConfig.init(config_file, flags);
+		PortOptions portConfig = PortConfig.init(config_file, flags);
 		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
-		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
+		PortPool portPool = new PortPool(portConfig.getMediaPort(), portConfig.getPortCount());
 
 		mediaConfig.audio=true;
 		mediaConfig.video=false;
