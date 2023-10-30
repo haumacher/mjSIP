@@ -45,6 +45,17 @@ public class MediaDesc {
 	}
 
 	/**
+	 * Creates a copy of this description.
+	 * 
+	 * <p>
+	 * The copy is not deep. The final {@link MediaSpec}s are reused.
+	 * </p>
+	 */
+	public MediaDesc copy() {
+		return new MediaDesc(_mediaType, _port, _transport, _specs);
+	}
+
+	/**
 	 * The media type (e.g. audio, video, message, etc.).
 	 */
 	public String getMediaType() {
@@ -215,6 +226,19 @@ public class MediaDesc {
 	 */
 	public MediaDesc withSpecs(MediaSpec[] newSpecs) {
 		return new MediaDesc(getMediaType(), getPort(), getTransport(), newSpecs);
+	}
+
+	/**
+	 * Creates a copy of the given descriptor array.
+	 * 
+	 * @see #copy()
+	 */
+	public static MediaDesc[] copy(MediaDesc[] media) {
+		MediaDesc[] copy = new MediaDesc[media.length];
+		for (int n = 0, cnt = media.length; n < cnt; n++) {
+			copy[n] = media[n].copy();
+		}
+		return copy;
 	}
 
 }

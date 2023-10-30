@@ -55,4 +55,11 @@ public class PortConfig extends Configure implements PortOptions {
 		_portCount = portCount;
 	}
 
+	/** 
+	 * Creates a {@link PortPool} with this configuration.
+	 */
+	public PortPool createPool() {
+		return new PortPool(getMediaPort(), getPortCount());
+	}
+
 }

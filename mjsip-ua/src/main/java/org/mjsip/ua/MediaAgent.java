@@ -3,82 +3,71 @@
  */
 package org.mjsip.ua;
 
-import java.util.HashMap;
-
 import org.mjsip.media.FlowSpec;
+import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaStreamer;
+import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
-import org.slf4j.LoggerFactory;
 
 /**
- * Management of {@link MediaStreamer}s during a session on behalf of a {@link UserAgent}.
+ * Media-definition of a call with corresponding {@link StreamerFactory} that can create
+ * corresponding {@link MediaStreamer} implementations.
  */
 public class MediaAgent {
 
-	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MediaAgent.class);
+	private final MediaDesc[] _media;
 	
-	/** Active media streamers, as table of: (String)media-->(MediaStreamer)media_streamer */
-	private HashMap<String, MediaStreamer> media_streamers = new HashMap<>();
-
-	private StreamerFactory _streamerFactory;
+	private final StreamerFactory _streamerFactory;
 
 	/**
 	 * Creates a {@link MediaAgent}.
 	 *
-	 * @param streamerFactory The {@link StreamerFactory} to create streamer implementations with.
+	 * @param media
+	 *        See {@link #getCallMedia()}.
+	 * @param streamerFactory
+	 *        The {@link StreamerFactory} to create streamer implementations with.
 	 */
-	public MediaAgent(StreamerFactory streamerFactory) {
+	public MediaAgent(MediaDesc[] media, StreamerFactory streamerFactory) {
+		_media = MediaDesc.copy(media);
 		_streamerFactory = streamerFactory;
 	}
-	
-	/** Starts a media session */
-	public boolean startMediaSession(FlowSpec flow_spec) {
-		LOG.info("Starting media session: " + flow_spec.getMediaSpec());
-		LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
-		
-		String mediaType=flow_spec.getMediaType();
-		
-		// stop previous media streamer (just in case something was wrong..)
-		MediaStreamer existing = media_streamers.remove(mediaType);
-		if (existing != null) {
-			existing.halt();
-		}
-		 
-		// Create a new media streamer
-		MediaStreamer media_streamer = createMediaStreamer(flow_spec);
-		if (media_streamer == null) {
-			LOG.warn("No media streamer found for type: " + mediaType);
-			return false;
-		}
-		
-		// Start the new stream.
-		if (media_streamer.start()) {
-			media_streamers.put(mediaType, media_streamer);
-			return true;
-		} else {
-			return false;
+
+	/**
+	 * Sets the transport port for each medium.
+	 * 
+	 * @param portPool
+	 *        The pool to take free ports from.
+	 */
+	public void allocateMediaPorts(PortPool portPool) {
+		for (int i=0; i<_media.length; i++) {
+			MediaDesc md=_media[i];
+			md.setPort(portPool.allocate());
 		}
 	}
 
 	/** 
-	 * Creates a {@link MediaStreamer} for a certain flow.
+	 * Description of media offered by this {@link MediaAgent}.
 	 */
-	protected MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
+	public MediaDesc[] getCallMedia() {
+		return _media;
+	}
+
+	/** Starts a media session */
+	public MediaStreamer startMediaSession(FlowSpec flow_spec) {
 		return _streamerFactory.createMediaStreamer(flow_spec);
 	}
 
-	/** Stops a media session.  */
-	public void stopMediaSession(String media) {
-		LOG.info("stop("+media+")");
-
-		if (media_streamers.containsKey(media)) {
-			media_streamers.get(media).halt();
-			media_streamers.remove(media);
-		}
-		else {
-			LOG.warn("No running "+media+" streamer has been found.");
+	/**
+	 * Releases ports previously allocated using {@link #allocateMediaPorts(PortPool)}.
+	 * 
+	 * @param portPool The pool to put ports back to.
+	 */
+	public void releaseMediaPorts(PortPool portPool) {
+		for (int i=0; i<_media.length; i++) {
+			MediaDesc md=_media[i];
+			portPool.release(md.getPort());
+			md.setPort(0);
 		}
 	}
-
 
 }

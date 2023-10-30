@@ -34,6 +34,8 @@ import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
 import org.mjsip.ua.UserAgent;
+import org.mjsip.ua.pool.PortConfig;
+import org.mjsip.ua.pool.PortPool;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -56,8 +58,8 @@ public class MiniJukebox extends UserAgentCli {
 	/** 
 	 * Creates a new MiniJukebox. 
 	 */
-	public MiniJukebox(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, ExampleMediaConfig mediaConfig) {
-		super(sip_provider,serviceConfig, uaConfig, uiConfig, mediaConfig);
+	public MiniJukebox(SipProvider sip_provider, PortPool portPool, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, ExampleMediaConfig mediaConfig) {
+		super(sip_provider,portPool, serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}
 
 	/** From UserAgentListener. When a new call is incoming */
@@ -69,7 +71,7 @@ public class MiniJukebox extends UserAgentCli {
 				_mediaConfig.setSendFile(audio_file);
 			}
 		}
-		if (_mediaConfig.getSendFile()!=null) ua.accept(_mediaConfig.getMediaDescs());      
+		if (_mediaConfig.getSendFile()!=null) ua.accept(mediaAgent());      
 		else ua.hangup();
 	}
 	
@@ -83,13 +85,14 @@ public class MiniJukebox extends UserAgentCli {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
-		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);  
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
 
 		mediaConfig.setAudio(true);
 		mediaConfig.setVideo(false);
 		uaConfig.setSendOnly(true);
-		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
+		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),portConfig.createPool(),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    
 	
 }

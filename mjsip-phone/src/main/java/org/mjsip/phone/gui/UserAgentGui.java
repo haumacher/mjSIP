@@ -60,6 +60,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MediaOptions;
 import org.mjsip.ua.ServiceConfig;
@@ -71,6 +72,8 @@ import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.clip.ClipPlayer;
+import org.mjsip.ua.pool.PortConfig;
+import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.DefaultStreamerFactory;
 import org.mjsip.ua.streamer.DispatchingStreamerFactory;
 import org.mjsip.ua.streamer.NativeStreamerFactory;
@@ -158,6 +161,8 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	private MediaOptions _mediaConfig;
 
 	private UIConfig _uiConfig;
+
+	private StreamerFactory _streamerFactory;
 	
 
 	/** Changes the call state */
@@ -179,23 +184,21 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 
 	// *************************** Public methods **************************
 
-	/** Creates a new UA. */
-	public UserAgentGui(SipProvider sip_provider, UAConfig uaConfig, UIConfig uiConfig, MediaOptions mediaConfig) {
+	/** Creates a new UA. 
+	 * @param portPool */
+	public UserAgentGui(SipProvider sip_provider, PortPool portPool, UAConfig uaConfig, UIConfig uiConfig, MediaOptions mediaConfig) {
 		this.sip_provider=sip_provider;
 		_uaConfig=uaConfig;
 		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
 
-		initUA();
-		initGraphics();                  
-		run();   
-	}
-
-
-	protected void initUA() {
-		ua=new UserAgent(sip_provider, createStreamerFactory(_mediaConfig, _uaConfig),_uaConfig, _uaConfig, this.andThen(clipPlayer()));
+		ua=new UserAgent(sip_provider, portPool,_uaConfig, _uaConfig, this.andThen(clipPlayer()));
+		_streamerFactory = createStreamerFactory(_mediaConfig, _uaConfig);
 		//ua.listen();
 		changeStatus(UA_IDLE);
+
+		initGraphics();                  
+		run();   
 	}
 
 	/**
@@ -396,7 +399,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(_uiConfig.callTo.toString());
 			display.setText("CALLING "+_uiConfig.callTo);
-			ua.call(_uiConfig.callTo, _mediaConfig.getMediaDescs());
+			ua.call(_uiConfig.callTo, mediaAgent());
 			changeStatus(UA_OUTGOING_CALL);       
 		} 
 
@@ -404,6 +407,9 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			LOG.info("ONLY SIGNALING, NO MEDIA");
 	}
 
+	private MediaAgent mediaAgent() {
+		return new MediaAgent(_mediaConfig.getMediaDescs(), _streamerFactory);
+	}
 
 	/** Exits. */
 	protected void exit() {
@@ -422,13 +428,13 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			if (uri!=null && uri.length()>0) {
 				ua.hangup();
 				display.setText("CALLING "+uri);
-				ua.call(uri, _mediaConfig.getMediaDescs());
+				ua.call(uri, mediaAgent());
 				changeStatus(UA_OUTGOING_CALL);
 			}
 		}
 		else
 		if (statusIs(UA_INCOMING_CALL)) {
-			ua.accept(_mediaConfig.getMediaDescs());
+			ua.accept(mediaAgent());
 			display.setText("ON CALL");
 			changeStatus(UA_ONCALL);
 		}
@@ -709,10 +715,11 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		MediaOptions mediaConfig = MediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
-		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
 
-		new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig, uiConfig, mediaConfig);
+		new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), portConfig.createPool(), uaConfig, uiConfig, mediaConfig);
 	}
 	
 	/** Prints a message to standard output. */

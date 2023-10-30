@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.call;
-
-
 
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
@@ -35,8 +32,6 @@ import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
-
-
 
 /** Class ExtendedCall implements a SIP call.
   * <p>
@@ -53,7 +48,6 @@ public class ExtendedCall extends Call {
 
 	/** Last received refer request. */
 	SipMessage refer=null;
-
   
 	/** User name. */
 	String username=null;
@@ -132,45 +126,26 @@ public class ExtendedCall extends Call {
 		else dialog.inviteWithoutOffer(callee,caller,caller_contact);
 		changeState(CallState.C_OUTGOING);
 	} 
-
-	/** Starts a new call, with the given <i>INVITE</i> request.
-	  * @param invite the INVITE request message */
-	@Override
-	public void call(SipMessage invite) {
-		LOG.debug("calling "+invite.getRequestLine().getAddress());
-		if (username!=null) dialog=new ExtendedInviteDialog(sip_provider,username,realm,passwd,dialogListener);
-		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
-		local_sdp = invite.getSdpBody();
-		if (local_sdp!=null)
-			dialog.invite(invite);
-		else dialog.inviteWithoutOffer(invite);
-		changeState(CallState.C_OUTGOING);
-	} 
-	
 	
 	/** Requests a call transfer. */
 	public void transfer(NameAddress transfer_to) {
 		((ExtendedInviteDialog)dialog).refer(transfer_to);
 	}
 
-
 	/** Requests an attended call transfer, replacing an existing call */
 	public void attendedTransfer(NameAddress transfer_to, Call replaced_call) {
 		((ExtendedInviteDialog)dialog).refer(transfer_to,from_naddr,replaced_call.dialog);
 	}
-
 
 	/** Accepts a call transfer request. */
 	public void acceptTransfer() {
 		((ExtendedInviteDialog)dialog).acceptRefer(refer);
 	}
 
-
 	/** Refuses a call transfer request. */
 	public void refuseTransfer() {
 		((ExtendedInviteDialog)dialog).refuseRefer(refer);
 	}
-
 
 	/** Notifies about the satus of an other call (the given response belongs to). */
 	public void notify(SipMessage resp) {
@@ -182,12 +157,10 @@ public class ExtendedCall extends Call {
 		}
 	}
 
-
 	/** Notifies about the satus of an other call. */
 	public void notify(int code, String reason) {
 		((ExtendedInviteDialog)dialog).notify(code,reason);
 	}
-
 
 	// ************************ Callback methods ***********************
 
@@ -252,7 +225,6 @@ public class ExtendedCall extends Call {
 	private void processDlgAltResponse(org.mjsip.sip.dialog.InviteDialog d, String method, int code, String reason, String body, SipMessage msg) {
 		
 	}
-
 	
 	// ************************* Inner classes *************************
 

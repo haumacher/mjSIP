@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
-import org.mjsip.ua.pool.PortPool;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
@@ -75,33 +74,6 @@ public class MediaConfig extends Configure implements MediaOptions {
 		_symmetricRtp = symmetricRtp;
 	}
 
-
-	/**
-	 * Sets the transport port for each medium.
-	 * 
-	 * @param portPool
-	 *        The pool to take free ports from.
-	 */
-	public void allocateMediaPorts(PortPool portPool) {
-		for (int i=0; i<getMediaDescs().length; i++) {
-			MediaDesc md=getMediaDescs()[i];
-			md.setPort(portPool.allocate());
-		}
-	}
-
-	/**
-	 * Releases ports previously allocated using {@link #allocateMediaPorts(PortPool)}.
-	 * 
-	 * @param portPool The pool to put ports back to.
-	 */
-	public void releaseMediaPorts(PortPool portPool) {
-		for (int i=0; i<getMediaDescs().length; i++) {
-			MediaDesc md=getMediaDescs()[i];
-			portPool.release(md.getPort());
-			md.setPort(0);
-		}
-	}
-	
 	@Override
 	public void setOption(String attribute, Parser par) {
 		if (attribute.equals("audio"))          {  setAudio((par.getString().toLowerCase().startsWith("y")));  return;  }

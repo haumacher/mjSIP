@@ -38,6 +38,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.ServiceConfig;
@@ -48,7 +49,6 @@ import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.pool.PortConfig;
-import org.mjsip.ua.pool.PortOptions;
 import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
@@ -65,37 +65,35 @@ public class AnsweringMachine extends MultipleUAS {
 	/** Media file to play when answering the call. */
 	public static String DEFAULT_ANNOUNCEMENT_FILE = "./announcement-8000hz-mono-a-law.wav";
 
-	private MediaConfig _mediaConfig;
+	private final MediaConfig _mediaConfig;
 
-	private PortPool _portPool;
+	private final StreamerFactory _streamerFactory;
+
+	private final PortPool _portPool;
+
 
 	/**
 	 * Creates an {@link AnsweringMachine}.
+	 * @param streamerFactory 
 	 */
-	public AnsweringMachine(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions,
-			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig) {
-		super(sip_provider, streamerFactory, regOptions, uaConfig, serviceConfig);
+	public AnsweringMachine(SipProvider sip_provider, RegistrationOptions regOptions,
+			UAOptions uaConfig, MediaConfig mediaConfig, StreamerFactory streamerFactory, PortPool portPool, ServiceOptions serviceConfig) {
+		super(sip_provider, portPool, regOptions, uaConfig, serviceConfig);
 		_mediaConfig = mediaConfig;
+		_streamerFactory = streamerFactory;
 		_portPool = portPool;
 	}
 
 	@Override
 	protected UserAgentListener createCallHandler(SipMessage msg) {
 		MediaConfig callMedia = MediaConfig.from(_mediaConfig.getMediaDescs());
-		callMedia.allocateMediaPorts(_portPool);
 
 		return new UserAgentListenerAdapter() {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller,
 					MediaDesc[] media_descs) {
 				LOG.info("Incomming call from: " + callee.getAddress());
-				ua.accept(callMedia.getMediaDescs());
-			}
-
-			@Override
-			public void onUaCallClosed(UserAgent ua) {
-				LOG.info("Call closed.");
-				callMedia.releaseMediaPorts(_portPool);
+				ua.accept(new MediaAgent(callMedia.getMediaDescs(), _streamerFactory));
 			}
 		};
 	}
@@ -114,7 +112,7 @@ public class AnsweringMachine extends MultipleUAS {
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
-		PortOptions portConfig = PortConfig.init(config_file, flags);
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		ServiceOptions serviceConfig = ServiceConfig.init(config_file, flags);
 		flags.close();
 
@@ -123,10 +121,9 @@ public class AnsweringMachine extends MultipleUAS {
 			LOG.info("Announcement file format: " + audioFormat);
 		}
 
-		PortPool portPool = new PortPool(portConfig.getMediaPort(), portConfig.getPortCount());
 		StreamerFactory streamerFactory = ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig);
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnsweringMachine(sipProvider, streamerFactory, uaConfig, uaConfig, mediaConfig, portPool, serviceConfig);
+		new AnsweringMachine(sipProvider, uaConfig, uaConfig, mediaConfig, streamerFactory, portConfig.createPool(), serviceConfig);
 	}
 
 }

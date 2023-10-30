@@ -34,7 +34,7 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.ua.streamer.StreamerFactory;
+import org.mjsip.ua.pool.PortPool;
 import org.slf4j.LoggerFactory;
 
 
@@ -52,8 +52,8 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
-	private StreamerFactory _streamerFactory;
-
+	private final PortPool _portPool;
+	
 	private final int _hangupTime;
 
 	private final RegistrationOptions _clientRegOptions;
@@ -61,9 +61,9 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	/**
 	 * Creates a {@link MultipleUAS}.
 	 */
-	public MultipleUAS(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions, UAOptions uaConfig, ServiceOptions serviceConfig) {
+	public MultipleUAS(SipProvider sip_provider, PortPool portPool, RegistrationOptions regOptions, UAOptions uaConfig, ServiceOptions serviceConfig) {
 		this.sip_provider=sip_provider;
-		_streamerFactory = streamerFactory;
+		_portPool = portPool;
 		_uaConfig=uaConfig;
 		_hangupTime = serviceConfig.getHangupTime();
 		_clientRegOptions = regOptions.noRegistration();
@@ -117,7 +117,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		} else {
 			autoHangup = null;
 		}
-		final UserAgent ua=new UserAgent(sip_provider,_streamerFactory, _clientRegOptions, _uaConfig, listener);
+		final UserAgent ua=new UserAgent(sip_provider, _portPool, _clientRegOptions, _uaConfig, listener);
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);

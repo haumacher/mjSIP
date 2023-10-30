@@ -18,10 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sound;
-
-
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +34,6 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
-import org.slf4j.LoggerFactory;
 import org.zoolu.sound.CodecType;
 import org.zoolu.sound.SimpleAudioSystem;
 import org.zoolu.sound.codec.AMR;
@@ -46,15 +42,11 @@ import org.zoolu.sound.codec.amr.AmrFormatConversionProvider;
 import org.zoolu.sound.codec.g711.G711Encoding;
 import org.zoolu.sound.codec.g711.G711FormatConversionProvider;
 
-
-
 /** Methods for reading from and writing to audio files.
  * <p>
  * Current supported audio formats are: WAV, AU, AMR, RAW (raw data).
  */
 public class AudioFile {
-
-	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AudioFile.class);
 
 	/** Gets audio input stream from a file.
 	  * No audio format conversion is applied. 
@@ -76,17 +68,15 @@ public class AudioFile {
 	  * Note: In case of AU file, this is the audio format assigned to raw audio */
 	 public static AudioInputStream getAudioFileInputStream(String file_name, AudioFormat target_audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
 		if (file_name.toLowerCase().endsWith(".wav")) {
-			// WAV
 			File file=new File(file_name);
-			LOG.info("File audio format: " + AudioSystem.getAudioFileFormat(file));
-			// get AudioInputStream
 			AudioInputStream audio_input_stream=AudioSystem.getAudioInputStream(file);
-			LOG.info("current available bytes=" + audio_input_stream.available());
-			// apply audio conversion through AudioSystem
-			if (target_audio_format!=null) audio_input_stream=AudioSystem.getAudioInputStream(target_audio_format,audio_input_stream);
+
+			// Apply audio conversion through AudioSystem
+			if (target_audio_format!=null) {
+				audio_input_stream=AudioSystem.getAudioInputStream(target_audio_format,audio_input_stream);
+			}
 			return audio_input_stream;
-		}
-		else {
+		} else {
 			InputStream file_input_stream=new FileInputStream(new File(file_name));
 			// source audio format
 			AudioFormat source_audio_format=null;

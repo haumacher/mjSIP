@@ -20,12 +20,16 @@
  */
 package org.mjsip.ua;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
+import org.mjsip.media.MediaStreamer;
 import org.mjsip.sdp.MediaDescriptor;
 import org.mjsip.sdp.OfferAnswerModel;
 import org.mjsip.sdp.SdpMessage;
@@ -50,7 +54,7 @@ import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.ua.streamer.StreamerFactory;
+import org.mjsip.ua.pool.PortPool;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.VectorUtils;
@@ -75,6 +79,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** SipProvider */
 	private final SipProvider sip_provider;
 
+	private final PortPool _portPool;
+
 	/** RegistrationClient */
 	private RegistrationClient rc=null;
 
@@ -96,12 +102,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** NotImplementedServer */
 	private NotImplementedServer null_server;
 
-	/** MediaAgent */
-	private final MediaAgent _mediaAgent;
+	/** {@link MediaAgent} managing media of the current call. */
+	private MediaAgent _mediaAgent;
 	
-	/** List of active media sessions */
-	private final Vector<String> media_sessions=new Vector<>();
-
+	/** Active media streamers, as table of: (String)media-->(MediaStreamer)media_streamer */
+	private Map<String, MediaStreamer> _mediaSessions = new HashMap<>();
+	
 	/** UserAgent listener */
 	private final UserAgentListener listener;
 
@@ -113,15 +119,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Whether the outgoing call is already ringing */
 	private boolean ringing;
 
-	private MediaDesc[] _callMedia;
-
 	private RegistrationOptions _regConfig;
 
-	/** Creates a {@link UserAgent}. */
-	public UserAgent(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regConfig, UAOptions uaConfig, UserAgentListener listener) {
+	/** Creates a {@link UserAgent}.*/
+	public UserAgent(SipProvider sip_provider, PortPool portPool, RegistrationOptions regConfig, UAOptions uaConfig, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
+		_portPool = portPool;
 		_regConfig = regConfig;
-		_mediaAgent = new MediaAgent(streamerFactory);
 		this.listener=listener;
 		this.uaConfig=uaConfig;
 
@@ -145,7 +149,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		String owner=uaConfig.getUser();
 		String media_addr=(uaConfig.getMediaAddr()!=null)? uaConfig.getMediaAddr() : sip_provider.getViaAddress();
 		SdpMessage sdp=SdpMessage.createSdpMessage(owner, media_addr);
-		for (MediaDesc md : _callMedia) {
+		for (MediaDesc md : _mediaAgent.getCallMedia()) {
 			sdp.addMediaDescriptor(md.toMediaDescriptor());
 		}
 		return sdp;
@@ -230,21 +234,19 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** Makes a new call (acting as UAC) with specific media description (Vector of MediaDesc). */
-	public void call(String callee, MediaDesc[] callMedia) {
+	public void call(String callee, MediaAgent mediaAgent) {
 		// in case of incomplete URI (e.g. only 'user' is present), try to complete it
-		call(completeNameAddress(callee),callMedia);
+		call(completeNameAddress(callee),mediaAgent);
 	}
 
 	/**
 	 * Makes a new call (acting as UAC) with specific media descriptions.
 	 * 
-	 * @param callMedia
-	 *        The media descriptors to start the call with. Note: The {@link StreamerFactory} of
-	 *        this agent must be able to create streamers for all media.
+	 * @param mediaAgent
+	 *        The {@link MediaAgent} start the call with
 	 */
-	public void call(NameAddress callee, MediaDesc[] callMedia) {
-		// new media description
-		_callMedia = callMedia;
+	public void call(NameAddress callee, MediaAgent mediaAgent) {
+		setupMedia(mediaAgent);
 		
 		// new call
 		SdpMessage sdp=uaConfig.getNoOffer()? null : getSessionDescriptor();
@@ -283,12 +285,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/**
 	 * Accepts an incoming call with specific media description (Vector of MediaDesc).
 	 * 
-	 * @param callMedia
-	 *        The media descriptors to accept the call with. Note: The {@link StreamerFactory} of
-	 *        this agent must be able to create streamers for all media.
+	 * @param mediaAgent
+	 *        The {@link MediaAgent} to accept the call with.
 	 */
-	public void accept(MediaDesc[] callMedia) {
-		_callMedia = callMedia;
+	public void accept(MediaAgent mediaAgent) {
+		setupMedia(mediaAgent);
 		
 		if (listener!=null) listener.onUaCallIncomingAccepted(this);
 
@@ -301,6 +302,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		SdpMessage newSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), call.getRemoteSessionDescriptor());
 		// accept
 		call.accept(newSdp);
+	}
+
+	private void setupMedia(MediaAgent mediaAgent) {
+		mediaAgent.allocateMediaPorts(_portPool);
+		_mediaAgent = mediaAgent;
 	}
 
 	/** Redirects an incoming call. */
@@ -346,7 +352,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Starts media sessions (audio and/or video). */
 	protected void startMediaSessions() {
 		// exit if the media application is already running  
-		if (media_sessions.size()>0) {
+		if (_mediaSessions.size()>0) {
 			LOG.debug("media sessions already active");
 			return;
 		}
@@ -388,11 +394,27 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			if (flow_spec == null) {
 				continue;
 			}
+
+			// stop previous media streamer (just in case something was wrong..)
+			MediaStreamer existing = _mediaSessions.remove(mediaType);
+			if (existing != null) {
+				existing.halt();
+			}
 			
 			LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
-			boolean success=_mediaAgent.startMediaSession(flow_spec);           
-			if (success) {
-				media_sessions.addElement(mediaType);
+			LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
+			
+			MediaStreamer streamer = _mediaAgent.startMediaSession(flow_spec);
+			
+			if (streamer == null) {
+				LOG.warn("No media streamer found for type: " + mediaType);
+				continue;
+			}
+			 
+			// Start the new stream.
+			if (streamer.start()) {
+				_mediaSessions.put(mediaType, streamer);
+				
 				String codec = flow_spec.getMediaSpec().getCodec();
 				if (listener!=null) listener.onUaMediaSessionStarted(this,mediaType,codec);
 			}
@@ -421,7 +443,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		MediaSpec media_spec=null;
 		
 		findMediaSpec:
-		for (MediaDesc descriptors : _callMedia) {
+		for (MediaDesc descriptors : _mediaAgent.getCallMedia()) {
 			if (descriptors.getMediaType().equalsIgnoreCase(mediaType)) {
 				MediaSpec[] specs=descriptors.getMediaSpecs();
 				for (MediaSpec spec : specs) {
@@ -437,12 +459,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	
 	/** Closes media sessions.  */
 	protected void closeMediaSessions() {
-		for (int i=0; i<media_sessions.size(); i++) {
-			String media=media_sessions.elementAt(i);
-			_mediaAgent.stopMediaSession(media);
-			if (listener!=null) listener.onUaMediaSessionStopped(this,media);
+		for (Entry<String, MediaStreamer> entry : _mediaSessions.entrySet()) {
+			entry.getValue().halt();
+			
+			if (listener!=null) listener.onUaMediaSessionStopped(this,entry.getKey());
 		}
-		media_sessions.removeAllElements();
+		_mediaSessions.clear();
+		_mediaAgent.releaseMediaPorts(_portPool);
+		_mediaAgent = null;
 	}
 
 	// ************************* RA callbacks ************************

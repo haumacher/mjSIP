@@ -172,7 +172,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Starts a new call, inviting a remote user (<i>callee</i>).
 	  * @param callee the callee */
 	public void call(NameAddress callee) {
-		call(callee,null,null);
+		call(callee, null);
 	}
 
 	/** Starts a new call, inviting a remote user (<i>callee</i>).
@@ -194,17 +194,6 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		if (sdp!=null) local_sdp=sdp;
 		if (local_sdp!=null) dialog.invite(callee,caller,caller_contact,local_sdp);
 		else dialog.inviteWithoutOffer(callee,caller,caller_contact);
-		changeState(CallState.C_OUTGOING);
-	}
-
-	/** Starts a new call, with the given <i>INVITE</i> request.
-	  * @param invite the INVITE request message */
-	public void call(SipMessage invite) {
-		LOG.debug("calling "+invite.getRequestLine().getAddress());
-		dialog=new InviteDialog(sip_provider,dialogListener);
-		local_sdp = invite.getSdpBody();
-		if (local_sdp!=null) dialog.invite(invite);
-		else dialog.inviteWithoutOffer(invite);
 		changeState(CallState.C_OUTGOING);
 	}
 

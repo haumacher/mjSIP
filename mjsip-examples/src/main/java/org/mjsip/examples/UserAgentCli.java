@@ -35,6 +35,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
@@ -43,6 +44,9 @@ import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.clip.ClipPlayer;
+import org.mjsip.ua.pool.PortConfig;
+import org.mjsip.ua.pool.PortPool;
+import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
 
@@ -91,6 +95,8 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	String call_state=UA_IDLE;
 
 	protected final ExampleMediaConfig _mediaConfig;
+
+	private StreamerFactory _streamerFactory;
 	
 
 	/** Changes the call state */
@@ -113,14 +119,15 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	// *************************** Public methods **************************
 
 	/** Creates a new UA. */
-	public UserAgentCli(SipProvider sip_provider, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, ExampleMediaConfig mediaConfig) {
+	public UserAgentCli(SipProvider sip_provider, PortPool portPool, ServiceOptions serviceConfig, UAConfig uaConfig, UIConfig uiConfig, ExampleMediaConfig mediaConfig) {
 		this.sip_provider=sip_provider;
 		_serviceConfig = serviceConfig;
 		_uaConfig=uaConfig;
 		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
+		_streamerFactory = ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig);
 		
-		ua=new UserAgent(sip_provider,ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig),uaConfig, uaConfig, this.andThen(clipPlayer()));      
+		ua=new UserAgent(sip_provider,portPool,uaConfig, uaConfig, this.andThen(clipPlayer()));      
 		if (!uaConfig.isNoPrompt()) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.isNoPrompt()) stdout=System.out;
 		run();
@@ -146,19 +153,21 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	public void call(String target_uri) {
 		ua.hangup();
 		LOG.info("CALLING " + target_uri);
-		ua.call(target_uri, _mediaConfig.getMediaDescs());
+		ua.call(target_uri, mediaAgent());
 		changeStatus(UA_OUTGOING_CALL);
-	} 
-
+	}
 
 	/** Accepts an incoming call */
 	public void accept() {
-		ua.accept(_mediaConfig.getMediaDescs());
+		ua.accept(mediaAgent());
 		changeStatus(UA_ONCALL);
 		if (_serviceConfig.getHangupTime()>0) automaticHangup(_serviceConfig.getHangupTime()); 
 		LOG.info("press 'enter' to hangup"); 
 	} 
 
+	protected MediaAgent mediaAgent() {
+		return new MediaAgent(_mediaConfig.getMediaDescs(), _streamerFactory);
+	} 
 
 	/** Terminates a call */
 	public void hangup() {
@@ -451,10 +460,11 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
 		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
 		UIConfig uiConfig=UIConfig.init(config_file, flags);         
-		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);      
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		flags.close();
 
-		new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),serviceConfig, uaConfig, uiConfig, mediaConfig);
+		new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), portConfig.createPool(), serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}
 
 	/** Prints a message to standard output. */

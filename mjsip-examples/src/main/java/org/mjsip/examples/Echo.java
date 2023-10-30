@@ -39,7 +39,7 @@ import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
-import org.mjsip.ua.MediaConfig;
+import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
@@ -48,7 +48,6 @@ import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.pool.PortConfig;
-import org.mjsip.ua.pool.PortOptions;
 import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.LoopbackStreamerFactory;
 import org.mjsip.ua.streamer.StreamerFactory;
@@ -74,15 +73,15 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	/** Whether forcing reverse route */
 	boolean force_reverse_route;
 
-	private PortPool _portPool;
+	private final StreamerFactory _streamerFactory;
 
 	/** 
 	 * Creates a {@link Echo} service. 
 	 */
 	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool,
 			boolean force_reverse_route, ServiceOptions serviceConfig) {
-		super(sip_provider,streamerFactory, uaConfig, uaConfig, serviceConfig);
-		_portPool = portPool;
+		super(sip_provider,portPool, uaConfig, uaConfig, serviceConfig);
+		_streamerFactory = streamerFactory;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.MESSAGE),this); 
@@ -118,20 +117,10 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	@Override
 	protected UserAgentListener createCallHandler(SipMessage msg) {
 		return new UserAgentListenerAdapter() {
-			MediaConfig _callMedia;
-
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-				_callMedia = MediaConfig.from(media_descs);
-				_callMedia.allocateMediaPorts(_portPool);
-				
-				ua.accept(_callMedia.getMediaDescs());
+				ua.accept(new MediaAgent(media_descs, _streamerFactory));
 				LOG.info("incoming call accepted");
-			}
-			
-			@Override
-			public void onUaCallClosed(UserAgent ua) {
-				_callMedia.releaseMediaPorts(_portPool);
 			}
 		};
 	}
@@ -159,13 +148,11 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 		SipOptions sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		PortOptions portConfig = PortConfig.init(config_file, flags);
+		PortConfig portConfig = PortConfig.init(config_file, flags);
 		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 		
-		PortPool portPool = new PortPool(portConfig.getMediaPort(), portConfig.getPortCount());
-		
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portPool, force_reverse_route, serviceConfig);
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portConfig.createPool(), force_reverse_route, serviceConfig);
 
 		// promt before exit
 		if (prompt_exit) 
