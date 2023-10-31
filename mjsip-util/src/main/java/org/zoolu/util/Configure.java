@@ -47,7 +47,7 @@ public abstract class Configure {
 	}
 
 	/** Loads Configure attributes from the specified <i>file</i> */
-	protected void loadFile(String file) {
+	public void loadFile(String file) {
 		if (file==null) {
 			return;
 		}
@@ -62,7 +62,7 @@ public abstract class Configure {
 	}
 
 	/** Loads Configure attributes from the specified URL <i>url</i> */
-	protected void loadFile(URL url) {
+	public void loadFile(URL url) {
 		if (url==null) {
 			return;
 		}
@@ -77,16 +77,22 @@ public abstract class Configure {
 	}
 
 	/** Reads Configure attributes from the specified Reader <i>rd</i> */
-	protected void readFrom(Reader rd) throws java.io.IOException {
+	public void readFrom(Reader rd) throws java.io.IOException {
 		BufferedReader in=new BufferedReader(rd);           
 		while (true) {
 			String line=null;
 			try { line=in.readLine(); } catch (Exception e) { e.printStackTrace(); System.exit(0); }
 			if (line==null) break;
-		
-			if (!line.startsWith("#")) {
-				parseLine(line);
+
+			line = line.trim();
+			if (line.isEmpty()) {
+				continue;
 			}
+			if (line.startsWith("#")) {
+				continue;
+			}
+			
+			parseLine(line);
 		} 
 		in.close();
 	}

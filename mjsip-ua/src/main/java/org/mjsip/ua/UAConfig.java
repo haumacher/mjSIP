@@ -1,79 +1,78 @@
 package org.mjsip.ua;
 
 
+import org.kohsuke.args4j.Option;
+import org.mjsip.config.YesNoHandler;
 import org.mjsip.media.FlowSpec.Direction;
-import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
-import org.mjsip.sip.address.UnexpectedUriSchemeException;
 import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.provider.SipOptions;
 import org.zoolu.util.Configure;
-import org.zoolu.util.Flags;
-import org.zoolu.util.Parser;
 
 
 /** {@link UserAgent} configuration options.
   */
-public class UAConfig extends Configure implements UAOptions, RegistrationOptions {
-		 
-	/** 
-	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
-	 */
-	public static UAConfig init(String file, Flags flags, SipOptions sipConfig) {
-		UAConfig result=new UAConfig();
-		result.loadFile(file);
-		result.updateWith(flags);
-		result.normalize(sipConfig);
-		return result;
-	}
+public class UAConfig implements UAOptions, RegistrationOptions {
 
-	/** 
-	 * Constructs a {@link UAConfig} from configuration file values.
-	 */
-	public static UAConfig init(String file, SipOptions sipConfig) {
-		UAConfig result=new UAConfig();
-		result.loadFile(file);
-		result.normalize(sipConfig);
-		return result;
-	}
-
-	/** @see #getDisplayName() */
+	@Option(name = "--display-name", metaVar = "<name>", usage = "The display name of the user.")
 	private String _displayName=null;
 
+	@Option(name = "--user", metaVar = "<nam>", usage = "The user ID to register at the registrar.")
 	private String _user=null;
 
+	@Option(name = "--proxy", usage = "Proxy server to use.")
 	private String _proxy=null;
 
+	@Option(name = "--registrar", usage = "Registrar server.")
 	private String _registrar=null;
 
+	@Option(name = "--address")
 	private String _uaAddress=null;
 
+	@Option(name = "--auth-user", usage = "User name used for authentication.")
 	private String _authUser=null;
+
+	@Option(name = "--auth-realm", usage = "Realm used for authentication.")
 	private String _authRealm=null;
+
+	@Option(name = "--auth-passwd", usage = "Password used for authentication.")
 	private String _authPasswd=null;
 
+	@Option(name = "--do-register", handler = YesNoHandler.class)
 	private boolean _doRegister=false;
 
+	@Option(name = "--expires", usage = "Registers the contact address with the registrar server for a gven duration in seconds.")
 	private int _expires=3600;
 
+	@Option(name = "--keep-alive", usage = "Send keep-alive packets each given milliseconds.")
 	private long _keepaliveTime=0;
 
+	@Option(name = "--refuse-after")
 	private int _refuseTime=20;
 	
+	@Option(name = "--no-offer", handler = YesNoHandler.class, usage = "Send no offer in response to invite (offer/answer in 2xx/ack).")
 	private boolean _noOffer=false;
 
+	@Option(name = "--no-prompt", handler = YesNoHandler.class, usage = "Do not prompt.")
 	private boolean _noPrompt=false;
 
+	@Option(name = "--receive-only", handler = YesNoHandler.class, usage = "Receive only mode, no media is sent.")
 	private boolean _recvOnly=false;
+	
+	@Option(name = "--send-only", handler = YesNoHandler.class, usage = "Send only mode, no media is received.")
 	private boolean _sendOnly=false;
 	
+	@Option(name = "--media-address")
 	private String _mediaAddr=null;
 
+	@Option(name = "--accept-invite", handler = YesNoHandler.class)
 	private boolean _uaServer=true;
 
+	@Option(name = "--options-server", handler = YesNoHandler.class)
 	private boolean _optionsServer=true;
 
+	@Option(name = "--null-server", handler = YesNoHandler.class)
 	private boolean _nullServer=true;
 
 	/** Sender synchronization adjustment, that is the time (in milliseconds) that a frame
@@ -87,6 +86,7 @@ public class UAConfig extends Configure implements UAOptions, RegistrationOption
 	  * the UA audio performances seem to decrease). */
 	//public int javax_sound_sync_adj=2;
 
+	@Option(name = "--sound-sync")
 	private boolean _javaxSoundSync=true;
 
 	/** Constructs a {@link UAConfig} */
@@ -106,7 +106,7 @@ public class UAConfig extends Configure implements UAOptions, RegistrationOption
 	}
 
 	/** Inits the UserAgentProfile. */
-	private void normalize(SipOptions sipConfig) {
+	public void normalize(SipOptions sipConfig) {
 		if (getProxy()!=null && getProxy().equalsIgnoreCase(Configure.NONE)) setProxy(null);
 		if (getRegistrar()!=null && getRegistrar().equalsIgnoreCase(Configure.NONE)) setRegistrar(null);
 		if (getDisplayName()!=null && getDisplayName().equalsIgnoreCase(Configure.NONE)) setDisplayName(null);
@@ -130,109 +130,6 @@ public class UAConfig extends Configure implements UAOptions, RegistrationOption
 	public NameAddress getUserURI() {
 		if (getProxy()!=null && getUser()!=null) return new NameAddress(getDisplayName(),new SipURI(getUser(),getProxy()));
 		else return new NameAddress(getDisplayName(),new SipURI(getUser(),getUaAddress()));
-	}
-
-	/** Sets the user's AOR (Address Of Record) registered to the registrar server
-	  * and used as From URI.
-	  * <p>
-	  * It actually sets the <i>display_name</i>, <i>user</i>, and <i>proxy</i> parameters.
-	  * <p>
-	  * If <i>registrar</i> is not defined, the <i>proxy</i> value is used in its place.
-	  * @param naddr the user's name address formed by the user's display name (optional) and URI */
-	public void setUserURI(NameAddress naddr) {
-		GenericURI naddr_uri=naddr.getAddress();
-		if (!naddr_uri.isSipURI()) throw new UnexpectedUriSchemeException(naddr_uri.getScheme());
-		// else
-		SipURI uri=new SipURI(naddr_uri);
-		if (getDisplayName()==null) setDisplayName(naddr.getDisplayName());
-		if (getUser()==null) setUser(uri.getUserName());
-		if (getProxy()==null) setProxy((uri.hasPort())? uri.getHost()+":"+uri.getPort() : uri.getHost());
-		if (getRegistrar()==null) setRegistrar(getProxy());
-	}
-
-	// *********************** protected methods **********************
-
-	/** Parses a single line (loaded from the config file)
-	 * @param attribute The name of the option.
-	 * @param par The {@link Parser} delivering the option value.
-	  */
-	@Override
-	public void setOption(String attribute, Parser par) {
-		if (attribute.equals("display_name"))   {  setDisplayName(par.getRemainingString().trim());  return;  }
-		if (attribute.equals("user"))           {  setUser(par.getString());  return;  }
-		if (attribute.equals("proxy"))          {  setProxy(par.getString());  return;  }
-		if (attribute.equals("registrar"))      {  setRegistrar(par.getString());  return;  }
-
-		if (attribute.equals("auth_user"))      {  setAuthUser(par.getString());  return;  } 
-		if (attribute.equals("auth_realm"))     {  setAuthRealm(par.getRemainingString().trim());  return;  }
-		if (attribute.equals("auth_passwd"))    {  setAuthPasswd(par.getRemainingString().trim());  return;  }
-
-		if (attribute.equals("do_register"))    {  setRegister((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("expires"))        {  setExpires(par.getInt());  return;  } 
-		if (attribute.equals("keepalive_time")) {  setKeepAliveTime(par.getInt());  return;  } 
-
-		if (attribute.equals("refuse_time"))    {  setRefuseTime(par.getInt());  return;  }
-
-		if (attribute.equals("no_offer"))       {  setNoOffer((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("no_prompt"))      {  setNoPrompt((par.getString().toLowerCase().startsWith("y")));  return;  }
-
-		if (attribute.equals("recv_only"))      {  setRecvOnly((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("send_only"))      {  setSendOnly((par.getString().toLowerCase().startsWith("y")));  return;  }
-		
-		if (attribute.equals("media_addr"))     {  setMediaAddr(par.getString());  return;  } 
-
-		if (attribute.equals("ua_server")) {  setUaServer((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("options_server")) {  setOptionsServer((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("null_server")) {  setNullServer((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("javax_sound_sync")) {  setJavaxSoundSync((par.getString().toLowerCase().startsWith("y")));  return;  }
-	}
-
-	/**
-	 * Adds settings read from command line arguments.
-	 */
-	protected void updateWith(Flags flags) {
-		Boolean no_prompt=flags.getBoolean("--no-prompt",null,"do not prompt");
-		if (no_prompt!=null) this.setNoPrompt(no_prompt.booleanValue());
-		
-		int regist_time=flags.getInteger("-g","<time>",-1,"registers the contact address with the registrar server for a gven duration, in seconds");
-		if (regist_time>=0) {  this.setRegister(true);  this.setExpires(regist_time);  }
-		
-		long keepalive_time=flags.getLong("--keep-alive","<msecs>",-1,"send keep-alive packets each given milliseconds");
-		if (keepalive_time>=0) this.setKeepAliveTime(keepalive_time);
-		
-		Boolean no_offer=flags.getBoolean("-n",null,"no offer in invite (offer/answer in 2xx/ack)");
-		if (no_offer!=null) this.setNoOffer(no_offer.booleanValue());
-		
-		String display_name=flags.getString("--display-name","<str>",null,"display name");
-		if (display_name!=null) this.setDisplayName(display_name);
-		
-		String user=flags.getString("--user","<user>",null,"user name");
-		if (user!=null) this.setUser(user);
-		
-		String proxy=flags.getString("--proxy","<proxy>",null,"proxy server");
-		if (proxy!=null) this.setProxy(proxy);
-		
-		String registrar=flags.getString("--registrar","<registrar>",null,"registrar server");
-		if (registrar!=null) this.setRegistrar(registrar);
-		
-		String auth_user=flags.getString("--auth-user","<user>",null,"user name used for authenticat");
-		if (auth_user!=null) this.setAuthUser(auth_user);
-		
-		String auth_realm=flags.getString("--auth-realm","<realm>",null,"realm used for authentication");
-		if (auth_realm!=null) this.setAuthRealm(auth_realm);
-		
-		String auth_passwd=flags.getString("--auth-passwd","<passwd>",null,"passwd used for authentication");
-		if (auth_passwd!=null) this.setAuthPasswd(auth_passwd); 
-
-		Boolean recv_only=flags.getBoolean("--recv-only",null,"receive only mode, no media is sent");
-		if (recv_only!=null) this.setRecvOnly(recv_only.booleanValue());
-		
-		Boolean send_only=flags.getBoolean("--send-only",null,"send only mode, no media is received");
-		if (send_only!=null) this.setSendOnly(send_only.booleanValue());
-		
-		// for backward compatibility
-		String from_uri=flags.getString("--from-uri","<uri>",null,"user's address-of-record (AOR)");
-		if (from_uri!=null) this.setUserURI(NameAddress.parse(from_uri));
 	}
 
 	/**

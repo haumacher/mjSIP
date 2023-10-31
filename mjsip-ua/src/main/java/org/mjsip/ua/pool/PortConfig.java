@@ -3,37 +3,18 @@
  */
 package org.mjsip.ua.pool;
 
-import org.zoolu.util.Configure;
-import org.zoolu.util.Flags;
-import org.zoolu.util.Parser;
+import org.kohsuke.args4j.Option;
 
 /**
  * Configuration options for specifying a port range to serve RTP streams.
  */
-public class PortConfig extends Configure implements PortOptions {
+public class PortConfig implements PortOptions {
 	
+	@Option(name = "--media-port", usage = "The first port used for RTP media streams.")
 	private int _mediaPort = 50000;
 	
+	@Option(name = "--port-count", usage = "The number of ports used for RTP media streaming.")
 	private int _portCount = 100;
-
-	@Override
-	public void setOption(String attribute, Parser par) {
-		switch (attribute) {
-		case "media_port": setMediaPort(par.getInt()); break;
-		case "port_count": setPortCount(par.getInt()); break;
-		}
-	}
-
-	/** 
-	 * Creates a {@link PortConfig} from configuration.
-	 */
-	public static PortConfig init(String config_file, Flags flags) {
-		PortConfig result = new PortConfig();
-		result.loadFile(config_file);
-		flags.getInteger("media_port", "<first port>", 50000, "The first port used for RTP media streams.");
-		flags.getInteger("port_count", "<cnt>", 100, "The number of ports used for RTP media streaming.");
-		return result;
-	}
 
 	@Override
 	public int getMediaPort() {

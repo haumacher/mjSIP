@@ -22,19 +22,18 @@
 package org.mjsip.server;
 
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.mjsip.config.MetaConfig;
+import org.mjsip.config.OptionParser;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.RequestLine;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipConfig;
-import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.InviteTransactionServer;
 import org.mjsip.sip.transaction.Transaction;
@@ -44,7 +43,6 @@ import org.mjsip.sip.transaction.TransactionServer;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Flags;
 
 
 /** StatefulProxy server. 
@@ -357,28 +355,17 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 	/** The main method. */
 	public static void main(String[] args) {
-		Flags flags=new Flags(StatefulProxy.class.getName(), args);
-		boolean prompt_exit=flags.getBoolean("-h","prints this message");
-		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
+		SipConfig sipConfig = new SipConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
 		
-		SipOptions sipConfig = SipConfig.init(config_file, flags);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		flags.close();
+		sipConfig.normalize();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(config_file);
+		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
 		
 		StatefulProxy sproxy=new StatefulProxy(sip_provider,server_profile);   
-		
-		// promt before exit
-		if (prompt_exit) 
-		try {
-			System.out.println("press 'enter' to exit");
-			BufferedReader in=new BufferedReader(new InputStreamReader(System.in)); 
-			in.readLine();
-			System.exit(0);
-		}
-		catch (Exception e) {}
 	}
 	
 }

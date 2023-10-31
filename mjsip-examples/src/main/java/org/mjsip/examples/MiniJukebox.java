@@ -22,9 +22,9 @@ package org.mjsip.examples;
 
 import java.io.File;
 
+import org.mjsip.config.OptionParser;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
-import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
@@ -37,7 +37,6 @@ import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.pool.PortConfig;
 import org.mjsip.ua.pool.PortPool;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Flags;
 
 /** Jukebox is a simple audio server.
   * It automatically responds to incoming calls and sends the audio file
@@ -78,20 +77,25 @@ public class MiniJukebox extends UserAgentCli {
 	/** The main method. */
 	public static void main(String[] args) {
 		System.out.println("MiniJukebox"+SipStack.version);
-		Flags flags=new Flags("MiniJukebox", args);
-		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
-		SipOptions sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
-		UIConfig uiConfig=UIConfig.init(config_file, flags);         
-		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);  
-		PortConfig portConfig = PortConfig.init(config_file, flags);
-		flags.close();
+		
+		SipConfig sipConfig = new SipConfig();
+		UAConfig uaConfig = new UAConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		ExampleMediaConfig mediaConfig = new ExampleMediaConfig();
+		PortConfig portConfig = new PortConfig();
+		UIConfig uiConfig = new UIConfig();
+		ServiceConfig serviceConfig = new ServiceConfig();
+
+		OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, uiConfig, serviceConfig);
+		
+		sipConfig.normalize();
+		uaConfig.normalize(sipConfig);
+		mediaConfig.normalize();
 
 		mediaConfig.setAudio(true);
 		mediaConfig.setVideo(false);
 		uaConfig.setSendOnly(true);
+		
 		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),portConfig.createPool(),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    
 	

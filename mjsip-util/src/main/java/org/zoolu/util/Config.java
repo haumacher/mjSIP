@@ -3,9 +3,12 @@
  */
 package org.zoolu.util;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * A buffer of key value pairs.
@@ -42,6 +45,13 @@ public class Config extends Configure {
 		for (Entry<String, String> entry : _options.entrySet()) {
 			other.setOption(entry.getKey(), new Parser(entry.getValue()));
 		}
+	}
+
+	/**
+	 * Converts the parsed options to an arguments list.
+	 */
+	public Collection<String> toArguments() {
+		return _options.entrySet().stream().flatMap(e -> Arrays.asList("--" + e.getKey().replace('_', '-'), e.getValue()).stream()).collect(Collectors.toList());
 	}
 
 }

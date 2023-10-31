@@ -28,12 +28,12 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
-import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
@@ -52,7 +52,6 @@ import org.mjsip.ua.pool.PortConfig;
 import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Flags;
 
 /**
  * {@link AnsweringMachine} is a VOIP server that automatically accepts incoming calls, sends an
@@ -86,14 +85,12 @@ public class AnsweringMachine extends MultipleUAS {
 
 	@Override
 	protected UserAgentListener createCallHandler(SipMessage msg) {
-		MediaConfig callMedia = MediaConfig.from(_mediaConfig.getMediaDescs());
-
 		return new UserAgentListenerAdapter() {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller,
 					MediaDesc[] media_descs) {
 				LOG.info("Incomming call from: " + callee.getAddress());
-				ua.accept(new MediaAgent(callMedia.getMediaDescs(), _streamerFactory));
+				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), _streamerFactory));
 			}
 		};
 	}
@@ -102,19 +99,20 @@ public class AnsweringMachine extends MultipleUAS {
 	 * The main entry point.
 	 */
 	public static void main(String[] args) throws UnsupportedAudioFileException, IOException {
-		String program = AnsweringMachine.class.getSimpleName();
-		LOG.info(program + " " + SipStack.version);
+		LOG.info(AnsweringMachine.class.getSimpleName() + " " + SipStack.version);
 
-		Flags flags = new Flags(program, args);
-		String config_file = flags.getString("-f", "<file>", System.getProperty("user.home") + "/.mjsip-ua",
-				"loads configuration from the given file");
-		SipOptions sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		ExampleMediaConfig mediaConfig = ExampleMediaConfig.init(config_file, flags);
-		PortConfig portConfig = PortConfig.init(config_file, flags);
-		ServiceOptions serviceConfig = ServiceConfig.init(config_file, flags);
-		flags.close();
+		SipConfig sipConfig = new SipConfig();
+		UAConfig uaConfig = new UAConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		ExampleMediaConfig mediaConfig = new ExampleMediaConfig();
+		PortConfig portConfig = new PortConfig();
+		ServiceConfig serviceConfig = new ServiceConfig();
+
+		OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, serviceConfig);
+		
+		sipConfig.normalize();
+		uaConfig.normalize(sipConfig);
+		mediaConfig.normalize();
 
 		if (mediaConfig.getSendFile() != null) {
 			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(mediaConfig.getSendFile()));

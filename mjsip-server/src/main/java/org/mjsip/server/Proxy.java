@@ -22,10 +22,10 @@
 package org.mjsip.server;
 
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Vector;
 
+import org.mjsip.config.MetaConfig;
+import org.mjsip.config.OptionParser;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
@@ -37,7 +37,6 @@ import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
-import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
@@ -372,26 +371,18 @@ public class Proxy extends Registrar {
 	/** The main method. */
 	public static void main(String[] args) {
 		Flags flags=new Flags(Proxy.class.getName(), args);
-		boolean prompt_exit=flags.getBoolean("-h","prints this message");
-		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		SipOptions sipConfig = SipConfig.init(config_file, flags);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		flags.close();
+		
+		SipConfig sipConfig = new SipConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		
+		sipConfig.normalize();
 					
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(config_file);
+		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
 
 		new Proxy(sip_provider,server_profile);
-		
-		// promt before exit
-		if (prompt_exit) 
-		try {
-			System.out.println("press 'enter' to exit");
-			BufferedReader in=new BufferedReader(new InputStreamReader(System.in)); 
-			in.readLine();
-			System.exit(0);
-		}
-		catch (Exception e) {}
 	}
   
 }

@@ -23,6 +23,8 @@ package org.mjsip.examples;
 
 
 
+import org.kohsuke.args4j.Option;
+import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
@@ -31,7 +33,6 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
-import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
@@ -52,7 +53,6 @@ import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.LoopbackStreamerFactory;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Flags;
 
 
 
@@ -124,44 +124,43 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 			}
 		};
 	}
+	
+	public static class Config {
+		@Option(name = "--rroute", usage = "Force reverse route.")
+		boolean forceReverseRoute;
+		
+		@Option(name = "--prompt", usage = "Prompt before exit.")
+		boolean prompt;
+	}
 
 	/** The main method. */
 	public static void main(String[] args) {
 		System.out.println("Echo "+SipStack.version);
 
-		boolean force_reverse_route=false;
-		boolean prompt_exit=false;
-
-		for (int i=0; i<args.length; i++) {
-			if (args[i].equals("--rroute")) {
-				force_reverse_route=true;
-				args[i]="--skip";
-			}
-			else
-			if (args[i].equals("--prompt")) {
-				prompt_exit=true;
-				args[i]="--skip";
-			}
-		}
-		Flags flags=new Flags("Echo", args);
-		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-ua" ,"loads configuration from the given file");
-		SipOptions sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		PortConfig portConfig = PortConfig.init(config_file, flags);
-		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
-		flags.close();
+		SipConfig sipConfig = new SipConfig();
+		UAConfig uaConfig = new UAConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		PortConfig portConfig = new PortConfig();
+		ServiceConfig serviceConfig = new ServiceConfig();
 		
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portConfig.createPool(), force_reverse_route, serviceConfig);
+		Config config = new Config();
 
-		// promt before exit
-		if (prompt_exit) 
-		try {
-			System.out.println("press 'enter' to exit");
-			(new java.io.BufferedReader(new java.io.InputStreamReader(System.in))).readLine();
-			System.exit(0);
+		OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, uaConfig, schedulerConfig, portConfig, serviceConfig, config);
+		
+		sipConfig.normalize();
+		uaConfig.normalize(sipConfig);
+		
+		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portConfig.createPool(), config.forceReverseRoute, serviceConfig);
+
+		// Prompt before exit
+		if (config.prompt) {
+			try {
+				System.out.println("press 'enter' to exit");
+				(new java.io.BufferedReader(new java.io.InputStreamReader(System.in))).readLine();
+				System.exit(0);
+			}
+			catch (Exception e) {}
 		}
-		catch (Exception e) {}
 	}    
 
 }

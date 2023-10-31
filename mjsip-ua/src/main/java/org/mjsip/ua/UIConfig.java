@@ -3,7 +3,10 @@
  */
 package org.mjsip.ua;
 
+import org.kohsuke.args4j.Option;
+import org.mjsip.config.YesNoHandler;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.config.NameAddressHandler;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
@@ -14,46 +17,60 @@ import org.zoolu.util.Parser;
 public class UIConfig extends Configure {
 
 	/** Whether unregistering the contact address */
+	@Option(name = "--do-unregister", handler = YesNoHandler.class)
 	public boolean doUnregister=false;
+	
 	/** Whether unregistering all contacts beafore registering the contact address */
+	@Option(name = "--do-unregister-all", handler = YesNoHandler.class)
 	public boolean doUnregisterAll=false;
 
 	/** Do not use system audio  */
+	@Option(name = "--no-system-audio", handler = YesNoHandler.class)
 	public boolean noSystemAudio=false;
 
 	/** Absolute path (or complete URI) of the buddy list file where the buddy list is and loaded from (and saved to).
 	  * By default, the file "buddy.lst" is used. */
+	@Option(name = "--buddy-list-file")
 	public String buddyListFile="buddy.lst";
 
 	/** Relative path of UA media resources (gif, wav, etc.) within the UA jar file or within the resources folder. 
 	  * By default, the folder "media/org/mjsip/ua" is used. */
+	@Option(name = "--media-path")
 	public String mediaPath="media/org/mjsip/ua";
 
 	/** Automatic answer time in seconds; time&lt;0 corresponds to manual answer mode. */
+	@Option(name = "--accept-time")
 	public int acceptTime=-1;        
 
 	/** Automatic call transfer time in seconds; time&lt;0 corresponds to no auto transfer mode. */
+	@Option(name = "--transfer-time")
 	public int transferTime=-1;
 	
 	/** Automatic re-inviting time in seconds; time&lt;0 corresponds to no auto re-invite mode.  */
+	@Option(name = "--reinvite-time")
 	public int reinviteTime=-1;
 	
 	/** Automatic re-call time in seconds; time&lt;0 corresponds to no auto re-call mode.  */
+	@Option(name = "--recall-time")
 	public int recallTime=-1;
 	
 	/** Number of successive automatic re-calls; it is used only if call_to!=null, re_call_time&gt;0, and re_call_count&gt;0.  */
+	@Option(name = "--recall-count")
 	public int recallCount=-1;
 	
 	/** Automatic call a remote user secified by the 'call_to' value.
 	 * Use value 'NONE' for manual calls (or let it undefined).  */
+	@Option(name = "--call-to", handler = NameAddressHandler.class)
 	public NameAddress callTo=null;
 	
 	/** Redirect incoming call to the secified URI.
 	  * Use value 'NONE' for not redirecting incoming calls (or let it undefined). */
+	@Option(name = "--redirect-to", handler = NameAddressHandler.class)
 	public NameAddress redirectTo=null;
 
 	/** Transfer calls to the secified URI.
 	  * Use value 'NONE' for not transferring calls (or let it undefined). */
+	@Option(name = "--transfer-to", handler = NameAddressHandler.class)
 	public NameAddress transferTo=null;
 
 	/** 

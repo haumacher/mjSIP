@@ -26,6 +26,8 @@ package org.mjsip.server.sbc;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.mjsip.config.MetaConfig;
+import org.mjsip.config.OptionParser;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.server.Proxy;
 import org.mjsip.server.ServerProfile;
@@ -46,7 +48,6 @@ import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Config;
-import org.zoolu.util.Flags;
 import org.zoolu.util.Parser;
 
 
@@ -357,22 +358,15 @@ public class SessionBorderController extends Proxy {
 
 	/** The main method. */
 	public static void main(String[] args) {
-		Flags flags=new Flags(SessionBorderController.class.getName(), args);
-		boolean memory_debugging=flags.getBoolean("-d",null);
-		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		Config config = new Config(config_file);
+		SipConfig sipConfig = new SipConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
 		
-		String ports=flags.getString("-m","<first_port> <last_port>",null, "interval of media ports");
-		if (ports != null) {
-			config.setOption(SessionBorderControllerProfile.MEDIA_PORTS, ports);
-		}
+		sipConfig.normalize();
 		
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		flags.close();
-		
-		ServerProfile server_profile=new ServerProfile(config_file);
-		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(config);
+		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
+		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(new Config(metaConfig.configFile));
 
 		// remove outbound proxy in case of the presence of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {

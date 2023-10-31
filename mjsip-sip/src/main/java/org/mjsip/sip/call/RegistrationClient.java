@@ -101,9 +101,6 @@ public class RegistrationClient implements TransactionClientListener {
 	/** Whether keep on registering. */
 	boolean _loop=false;
 
-	/** Whether the thread is running. */
-	boolean _running=false;
-
 	/** Number of registration attempts. */
 	int _attempts=0;
 	
@@ -217,13 +214,6 @@ public class RegistrationClient implements TransactionClientListener {
 		return _toNAddr;
 	}
 
-
-	/** Whether it is periodically registering. */
-	public boolean isRegistering() {
-		return _running;
-	}
-
-
 	/** Registers with the registrar server.
 	  * It does register with the previously set expire time.  */
 	public void register() {
@@ -306,15 +296,17 @@ public class RegistrationClient implements TransactionClientListener {
 	}
 
 	private void cancelAttemptTimeout() {
-		if (_attemptTimer != null)
+		if (_attemptTimer != null) {
 			_attemptTimer.cancel(false);
-		_attemptTimer = null;
+			_attemptTimer = null;
+		}
 	}
 
 	private void cancelRegistrationTimeout() {
-		if (_registrationTimer != null)
+		if (_registrationTimer != null) {
 			_registrationTimer.cancel(false);
-		_registrationTimer = null;
+			_registrationTimer = null;
+		}
 	}
 
 	/** Periodically registers with the registrar server.
@@ -336,10 +328,11 @@ public class RegistrationClient implements TransactionClientListener {
 
 	/** Halts the periodic registration. */
 	public void halt() {
-		if (_running) _loop=false;
+		_loop = false;
+		cancelAttemptTimeout();
+		cancelRegistrationTimeout();
 		//if (keep_alive!=null) keep_alive.halt();
 	}
-
 	
 	// **************** Transaction callback functions *****************
 
@@ -474,24 +467,6 @@ public class RegistrationClient implements TransactionClientListener {
 			register();
 		}
 		_registrationTimer = null;
-	}
-
-	// ***************************** run() *****************************
-
-	/** Run method */
-	public void run() {
-		
-		_running=true;
-		try {
-			while (_loop) {
-				register();
-				Thread.sleep(_renewTime*1000);
-			}
-		}
-		catch (Exception e) {
-			LOG.info("Exception.", e);
-		}
-		_running=false;
 	}
 
 	

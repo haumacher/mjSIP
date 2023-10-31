@@ -6,52 +6,61 @@ package org.mjsip.ua;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.kohsuke.args4j.Option;
+import org.mjsip.config.YesNoHandler;
 import org.mjsip.media.MediaDesc;
-import org.mjsip.media.MediaSpec;
+import org.mjsip.sip.config.MediaDescHandler;
+import org.mjsip.sip.config.SocketAddressHandler;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Configure;
-import org.zoolu.util.Flags;
-import org.zoolu.util.Parser;
 
 /**
  * Definition of media streams.
  */
-public class MediaConfig extends Configure implements MediaOptions {
+public class MediaConfig implements MediaOptions {
 
-	/** 
-	 * Constructs a {@link UAConfig} from the given configuration file and program arguments.
-	 */
-	public static MediaConfig init(String file, Flags flags) {
-		MediaConfig result=new MediaConfig();
-		result.loadFile(file);
-		result.initFrom(flags);
-		result.normalize();
-		return result;
-	}
-
+	@Option(name = "--audio", handler = YesNoHandler.class)
 	private boolean _audio=true;
+
+	@Option(name = "--video", handler = YesNoHandler.class)
 	private boolean _video=false;
 
+	@Option(name = "--send-video-file", usage = "Video is streamed from the specified file.")
 	private String _sendVideoFile=null;
+	
+	@Option(name = "--recv-video-file", usage = "Received video is recorded to the specified file.")
 	private String _recvVideoFile=null;
 
+	@Option(name = "--sound-conversion", handler = YesNoHandler.class)
 	private boolean _javaxSoundDirectConversion=false;
 
+	@Option(name = "--use-rat", handler = YesNoHandler.class)
 	private boolean _useRat=false;
+	
+	@Option(name = "--use-vic", handler = YesNoHandler.class)
 	private boolean _useVic=false;
+	
+	@Option(name = "--rat-cmd")
 	private String _binRat="rat";
+	
+	@Option(name = "--vic-cmd")
 	private String _binVic="vic";
 	
+	@Option(name = "--audio-mcast-addr", handler = SocketAddressHandler.class)
 	private SocketAddress _audioMcastSoAddr=null;
+	
+	@Option(name = "--video-mcast-addr", handler = SocketAddressHandler.class)
 	private SocketAddress _videoMcastSoAddr=null;
 
+	@Option(name = "--media", handler = MediaDescHandler.class)
 	private MediaDesc[] _mediaDescs=new MediaDesc[]{};
 	
 	/** Temporary mapping of media type to {@link MediaDesc}. */
 	private Map<String, MediaDesc> _descByType=new HashMap<>();
 
+	@Option(name = "--random-early-drop")
 	private int _randomEarlyDropRate=20;
 
+	@Option(name = "--symmetric-rtp", handler = YesNoHandler.class)
 	private boolean _symmetricRtp=false;
 
 	@Override
@@ -73,52 +82,8 @@ public class MediaConfig extends Configure implements MediaOptions {
 	public void setSymmetricRtp(boolean symmetricRtp) {
 		_symmetricRtp = symmetricRtp;
 	}
-
-	@Override
-	public void setOption(String attribute, Parser par) {
-		if (attribute.equals("audio"))          {  setAudio((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("video"))          {  setVideo((par.getString().toLowerCase().startsWith("y")));  return;  }
-
-		if (attribute.equals("send_video_file")){  setSendVideoFile(par.getRemainingString().trim());  return;  }
-		if (attribute.equals("recv_video_file")){  setRecvVideoFile(par.getRemainingString().trim());  return;  }
-
-		if (attribute.equals("javax_sound_direct_convertion")) {  setJavaxSoundDirectConversion((par.getString().toLowerCase().startsWith("y")));  return;  }
-		
-		if (attribute.equals("use_rat"))        {  setUseRat((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("bin_rat"))        {  setBinRat(par.getStringUnquoted());  return;  }
-		if (attribute.equals("use_vic"))        {  setUseVic((par.getString().toLowerCase().startsWith("y")));  return;  }
-		if (attribute.equals("bin_vic"))        {  setBinVic(par.getStringUnquoted());  return;  }      
-
-		if (attribute.equals("audio_mcast_soaddr")) {  setAudioMcastSoAddr(new SocketAddress(par.getString()));  return;  } 
-		if (attribute.equals("video_mcast_soaddr")) {  setVideoMcastSoAddr(new SocketAddress(par.getString()));  return;  }
-
-		if (attribute.equals("random_early_drop_rate")) {  setRandomEarlyDropRate(par.getInt());  return;  }
-		if (attribute.equals("symmetric_rtp"))  {  setSymmetricRtp((par.getString().toLowerCase().startsWith("y")));  return;  } 
-
-		if (attribute.equals("media") || attribute.equals("media_desc"))    {
-			MediaDesc desc = MediaDesc.parseMediaDesc(par.getRemainingString().trim());
-			_descByType.put(desc.getMediaType(), desc);  
-		}
-	}
 	
-	/**
-	 * Reads command-line arguments.
-	 */
-	public void initFrom(Flags flags) {
-		Boolean audio=flags.getBoolean("-a",null,"audio");
-		if (audio!=null) this.setAudio(audio.booleanValue());
-		
-		Boolean video=flags.getBoolean("-v",null,"video");
-		if (video!=null) this.setVideo(video.booleanValue());
-		
-		String  send_video_file=flags.getString("--send-video-file","<file>",null,"video is played from the specified file");
-		if (send_video_file!=null) this.setSendVideoFile(send_video_file);
-		
-		String  recv_video_file=flags.getString("--recv-video-file","<file>",null,"video is recorded to the specified file");
-		if (recv_video_file!=null) this.setRecvVideoFile(recv_video_file);
-	}
-	
-	protected void normalize() {
+	public void normalize() {
 		// media descriptions
 		if (_descByType.size()==0 && isAudio()) {
 			// add default auido support
@@ -135,30 +100,6 @@ public class MediaConfig extends Configure implements MediaOptions {
 			getMediaDescs()[i++]=new MediaDesc(md.getMediaType(),md.getPort(),md.getTransport(),md.getMediaSpecs());
 		}
 	}
-
-	/**
-	 * Creates a {@link MediaConfig} by copying the given descriptors.
-	 * 
-	 * <p>
-	 * The copy is not deep. Only the {@link MediaDesc} is copied, the {@link MediaSpec}s are
-	 * reused.
-	 * </p>
-	 */
-	public static MediaConfig from(MediaDesc[] descriptors) {
-		MediaConfig result = new MediaConfig();
-		result.setMediaDescs(copyDescriptors(descriptors));
-		return result;
-	}
-
-	private static MediaDesc[] copyDescriptors(MediaDesc[] descriptors) {
-		MediaDesc[] result = new MediaDesc[descriptors.length];
-		for (int n = 0, cnt = descriptors.length; n < cnt; n++) {
-			MediaDesc descriptor = descriptors[n];
-			MediaSpec[] specs = descriptor.getMediaSpecs();
-			result[n] = descriptor.withSpecs(specs);
-		}
-		return result;
-	}	
 
 	@Override
 	public boolean isAudio() {

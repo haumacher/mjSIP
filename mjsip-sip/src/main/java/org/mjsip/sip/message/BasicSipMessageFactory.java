@@ -94,7 +94,7 @@ public abstract class BasicSipMessageFactory {
 		SipMessage req=new SipMessage();
 		//mandatory headers first (To, From, Via, Max-Forwards, Call-ID, CSeq):
 		req.setRequestLine(new RequestLine(method,request_uri));
-		ViaHeader via=new ViaHeader(sipConfig.getDefaultTransportProtocols()[0],DEFAULT_VIA_ADDRESS,0);
+		ViaHeader via = new ViaHeader(sipConfig.getTransportProtocols()[0], DEFAULT_VIA_ADDRESS, 0);
 		//if (rport) via.setRport();
 		//if (branch==null) branch=SipProvider.pickBranch();
 		String branch=SipProvider.pickBranch();

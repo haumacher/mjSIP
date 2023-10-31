@@ -29,13 +29,14 @@ import org.zoolu.net.UdpSocket;
 
 
 
-/** UdpKeepAlive keeps up the connection toward a target node
-  * (e.g. toward the serving proxy, gateway, or remote UAS).
-  * It periodically sends keep-alive tokens in order to refresh NAT timeouts
-  * (for the UDP session).
-  * <p>
-  * It can be used for both signaling (SIP) or data plane (RTP/UDP). 
-  */
+/**
+ * UdpKeepAlive keeps up the connection toward a target node (e.g. toward the serving proxy,
+ * gateway, or remote UAS). It periodically sends keep-alive tokens in order to refresh NAT timeouts
+ * (for the UDP session).
+ * <p>
+ * It can be used for both signaling (SIP) or plain data (RTP/UDP).
+ * </p>
+ */
 public class UdpKeepAlive extends Thread {
 	
 	/** Default udp keep-alive token */
@@ -57,7 +58,7 @@ public class UdpKeepAlive extends Thread {
 	protected long expire=0; 
 
 	/** Whether it is running */
-	protected boolean stop=false;
+	protected transient boolean stop = false;
 
 
 	/** Creates a new UdpKeepAlive daemon */

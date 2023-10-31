@@ -184,7 +184,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Register with the registrar server
 	  * @param expire_time expiration time in seconds */
 	public void register(int expire_time) {
-		if (rc.isRegistering()) rc.halt();
 		rc.register(expire_time);
 	}
 
@@ -194,11 +193,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	  * @param keepalive_time keep-alive packet rate (inter-arrival time) in milliseconds */
 	public void loopRegister(int expire_time, int renew_time, long keepalive_time) {
 		// create registration client
-		if (rc==null) initRegistrationClient();
-		// stop previous operation
-		if (rc.isRegistering()) rc.halt();
+		if (rc==null) {
+			initRegistrationClient();
+		}
+		
 		// start registering
 		rc.loopRegister(expire_time,renew_time);
+
 		// keep-alive
 		if (keepalive_time>0) {
 			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : new SipURI(rc.getTargetAOR().getAddress());
@@ -213,13 +214,15 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Unregisters with the registrar server */
 	public void unregister() {
-		// create registration client
-		if (rc==null) initRegistrationClient();
 		// stop registering
 		if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
-		if (rc.isRegistering()) rc.halt();
+
 		// unregister
-		rc.unregister();
+		if (rc!=null) {
+			rc.unregister();
+			rc.halt();
+			rc = null;
+		}
 	}
 
 	/** Unregister all contacts with the registrar server */
@@ -228,7 +231,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (rc==null) initRegistrationClient();
 		// stop registering
 		if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
-		if (rc.isRegistering()) rc.halt();
 		// unregister
 		rc.unregisterall();
 	}

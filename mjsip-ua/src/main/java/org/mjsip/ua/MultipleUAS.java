@@ -58,6 +58,8 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 
 	private final RegistrationOptions _clientRegOptions;
 
+	private RegistrationClient _rc;
+
 	/**
 	 * Creates a {@link MultipleUAS}.
 	 */
@@ -74,12 +76,31 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
 	}
 
-	private void register(RegistrationOptions regConfig) {
-		if (regConfig.isRegister()) {
-			RegistrationClient rc = new RegistrationClient(sip_provider, regConfig, this);
-			rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
+	/**
+	 * Registers at the registrar.
+	 */
+	public void register(RegistrationOptions regConfig) {
+		_rc = new RegistrationClient(sip_provider, regConfig, this);
+		_rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
+	}
+
+	/**
+	 * Cancels registration.
+	 */
+	public void unregister() {
+		if (_rc != null) {
+			_rc.unregister();
+			_rc.halt();
+			_rc = null;
 		}
-	} 
+	}
+	
+	/**
+	 * Unregisters from the SIP provider.
+	 */
+	public void halt() {
+		sip_provider.removeSelectiveListener(new MethodId(SipMethods.INVITE));
+	}
 
 	// ******************* SipProviderListener methods  ******************
 
@@ -107,7 +128,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	 * @see #createCallHandler(SipMessage)
 	 */
 	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
-		LOG.info("received new INVITE request");
+		LOG.info("Received new INVITE request: " + msg);
 		
 		AutoHangup autoHangup;
 		UserAgentListener listener = createCallHandler(msg);
@@ -117,6 +138,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 		} else {
 			autoHangup = null;
 		}
+		
 		final UserAgent ua=new UserAgent(sip_provider, _portPool, _clientRegOptions, _uaConfig, listener);
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method

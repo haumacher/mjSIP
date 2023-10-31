@@ -74,9 +74,6 @@ public interface SipOptions {
 	 */
 	int getDefaultTlsPort();
 
-	/** Default supported transport protocols. */
-	String[] getDefaultTransportProtocols();
-
 	/** Default max-forwards value (RFC3261 recommends value 70) */
 	int getMaxForwards();
 

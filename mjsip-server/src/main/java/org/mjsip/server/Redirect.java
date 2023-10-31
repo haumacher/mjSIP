@@ -24,11 +24,12 @@ package org.mjsip.server;
 
 import java.util.Vector;
 
+import org.mjsip.config.MetaConfig;
+import org.mjsip.config.OptionParser;
 import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
-import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
@@ -93,13 +94,16 @@ public class Redirect extends Registrar {
 	/** The main method. */
 	public static void main(String[] args) {
 		Flags flags=new Flags(Redirect.class.getName(), args);
-		String config_file=flags.getString("-f","<file>",null,"loads configuration from the given file");
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		SipOptions sipConfig = SipConfig.init(config_file, flags);
-		flags.close();
+		
+		SipConfig sipConfig = new SipConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		
+		sipConfig.normalize();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(config_file);
+		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
 
 		new Redirect(sip_provider,server_profile);      
 	}

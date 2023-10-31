@@ -23,8 +23,9 @@ package org.mjsip.examples;
 
 
 
+import org.kohsuke.args4j.Option;
+import org.mjsip.config.OptionParser;
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
@@ -47,14 +48,11 @@ public class DummyUAS implements SipProviderListener {
 	private SipProvider sip_provider;
 
 
-	/** Costructs a new DummyUAS. */
-	public DummyUAS(int port, int code, String reason) {
+	/** Constructs a new DummyUAS. */
+	public DummyUAS(SipProvider sipProvider, int code, String reason) {
+		this.sip_provider = sipProvider;
 		this.code=code;
 		this.reason=reason;
-		SipConfig sipConfig = SipConfig.init(null);
-		sipConfig.update(null, port);
-		sip_provider = new SipProvider(sipConfig, new Scheduler(SchedulerConfig.init()));
-		sip_provider.addSelectiveListener(MethodId.ANY,this);
 	}
 
 
@@ -69,48 +67,30 @@ public class DummyUAS implements SipProviderListener {
 		}
 	}
 
-
-	// ******************************* MAIN *******************************
-
+	public static class Config {
+		
+		@Option(name = "-c", usage = "Response code.")
+		int code = 403;
+		
+		@Option(name = "-r", usage = "Response reason.")
+		String reason;
+		
+	}
+	
 	/** The main method. */
 	public static void main(String[] args) {
-		int port=5060;
-		int code=403;
-		String reason=null;
+		SipConfig sipConfig = new SipConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
 		
-		try {
-			
-			for (int i=0; i<args.length; i++) {
-				
-				if (args[i].equals("-p") && args.length>(i+1)) {
-					port=Integer.parseInt(args[++i]);
-					continue;
-				}
-				if (args[i].equals("-c") && args.length>(i+1)) {
-					code=Integer.parseInt(args[++i]);
-					continue;
-				}
-				if (args[i].equals("-r") && args.length>(i+1)) {
-					reason=args[++i];
-					continue;
-				}
-				
-				// else, do:
-				if (!args[i].equals("-h"))
-					System.out.println("unrecognized param '"+args[i]+"'\n");
-				
-				System.out.println("usage:\n   java DummyUAS [options]");
-				System.out.println("   options:");
-				System.out.println("   -h           this help");
-				System.out.println("   -p <port>    sip port");
-				System.out.println("   -c <code>    response code");
-				System.out.println("   -r <reason>  response reason");
-				System.exit(0);
-			}
-							
-			new DummyUAS(port,code,reason);
-		}
-		catch (Exception e)  {  e.printStackTrace(); System.exit(0);  }
+		Config config = new Config();
+
+		OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig, config);
+		
+		sipConfig.normalize();
+		
+		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		
+		new DummyUAS(sipProvider, config.code, config.reason);
 	}    
 	
 }

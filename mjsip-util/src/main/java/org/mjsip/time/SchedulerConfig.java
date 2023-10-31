@@ -3,31 +3,21 @@
  */
 package org.mjsip.time;
 
-import org.zoolu.util.Configure;
-import org.zoolu.util.Parser;
+import org.kohsuke.args4j.Option;
+import org.mjsip.config.YesNoHandler;
 
 /**
  * Configuration options for the {@link Scheduler}.
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
-public class SchedulerConfig extends Configure {
+public class SchedulerConfig {
 
+	@Option(name = "--thread-pool-size")
 	private int _threadPoolSize = 3;
 
+	@Option(name = "--use-daemon-treads", handler = YesNoHandler.class)
 	private boolean _daemonThreads = true;
-
-	@Override
-	public void setOption(String attribute, Parser par) {
-		switch (attribute) {
-		case "thread_pool_size":
-			_threadPoolSize = par.getInt();
-			break;
-		case "timer_daemon_mode":
-			_daemonThreads = par.getString().toLowerCase().startsWith("y");
-			break;
-		}
-	}
 
 	/**
 	 * The core pool size of the scheduler's thread pool.
@@ -41,22 +31,6 @@ public class SchedulerConfig extends Configure {
 	 */
 	public boolean useDaemonThreads() {
 		return _daemonThreads;
-	}
-
-	/**
-	 * Creates a {@link SchedulerConfig}
-	 */
-	public static SchedulerConfig init() {
-		return new SchedulerConfig();
-	}
-
-	/**
-	 * Creates a {@link SchedulerConfig}
-	 */
-	public static SchedulerConfig init(String config_file) {
-		SchedulerConfig result = init();
-		result.loadFile(config_file);
-		return result;
 	}
 
 }
