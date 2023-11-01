@@ -380,7 +380,7 @@ public class Proxy extends Registrar {
 		sipConfig.normalize();
 					
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
+		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 
 		new Proxy(sip_provider,server_profile);
 	}

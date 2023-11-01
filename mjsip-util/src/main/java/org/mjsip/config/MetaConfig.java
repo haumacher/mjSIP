@@ -3,6 +3,8 @@
  */
 package org.mjsip.config;
 
+import java.io.File;
+
 import org.kohsuke.args4j.Option;
 
 /**
@@ -16,7 +18,14 @@ public class MetaConfig {
 	/**
 	 * The configuration file to read.
 	 */
-	@Option(name = "-f", aliases = "--config-file", metaVar = "<file>", usage = "File with configuration options.")
+	@Option(name = "-f", aliases = "--config-file", metaVar = "<file>", usage = "File with configuration options, 'none' to prevent reading from the default location.")
 	public String configFile;
+
+	/** 
+	 * The configuration file passed through the command line options.
+	 */
+	public File getConfigFile() {
+		return configFile == null || configFile.isBlank() || "none".equals(configFile) ? null : new File(configFile);
+	}
 
 }

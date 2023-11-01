@@ -2,6 +2,7 @@ package org.mjsip.server.sbc;
 
 
 
+import java.io.File;
 import java.util.Vector;
 
 import org.zoolu.util.Configure;
@@ -66,7 +67,7 @@ public class GwProfile extends Configure {
 	// ************************** costructors *************************
 	
 	/** Costructs a new GwProfile */
-	public GwProfile(String file) {
+	public GwProfile(File file) {
 		loadFile(file);
 		media_ports=new Vector();
 		for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i)); 

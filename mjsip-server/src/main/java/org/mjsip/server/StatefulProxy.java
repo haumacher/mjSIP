@@ -363,7 +363,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		sipConfig.normalize();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
+		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 		
 		StatefulProxy sproxy=new StatefulProxy(sip_provider,server_profile);   
 	}

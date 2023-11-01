@@ -25,6 +25,7 @@ package org.zoolu.util;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -47,11 +48,11 @@ public abstract class Configure {
 	}
 
 	/** Loads Configure attributes from the specified <i>file</i> */
-	public void loadFile(String file) {
+	public void loadFile(File file) {
 		if (file==null) {
 			return;
 		}
-		//else
+
 		try {
 			readFrom(new FileReader(file));
 		}

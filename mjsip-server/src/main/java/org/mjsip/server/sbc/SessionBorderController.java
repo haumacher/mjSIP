@@ -365,8 +365,8 @@ public class SessionBorderController extends Proxy {
 		
 		sipConfig.normalize();
 		
-		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
-		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(new ConfigFile(metaConfig.configFile));
+		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
+		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(new ConfigFile(metaConfig.getConfigFile()));
 
 		// remove outbound proxy in case of the presence of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {

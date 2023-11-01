@@ -3,6 +3,7 @@
  */
 package org.zoolu.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -22,7 +23,7 @@ public class ConfigFile extends Configure {
 	/** 
 	 * Creates a {@link ConfigFile}.
 	 */
-	public ConfigFile(String file) {
+	public ConfigFile(File file) {
 		loadFile(file);
 	}
 

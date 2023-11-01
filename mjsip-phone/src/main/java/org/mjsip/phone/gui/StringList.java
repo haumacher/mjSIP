@@ -2,6 +2,7 @@ package org.mjsip.phone.gui;
 
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -24,16 +25,16 @@ final class StringList extends Configure {
 	Vector list;
 
 	/** File name */
-	String file_name=null;
+	File file=null;
 
 	/** File URL */
 	URL file_url=null;
 
 
 	/** Costructs a new StringList from the specified <i>file</i> */
-	public StringList(String file) {
+	public StringList(File file) {
 		list=new Vector();
-		file_name=file;
+		this.file=file;
 		load();
 	}
 	
@@ -48,7 +49,7 @@ final class StringList extends Configure {
 
 	/** Loads list */
 	public void load() {
-		if (file_name!=null) loadFile(file_name);
+		if (file!=null) loadFile(file);
 		else
 		if (file_url!=null) loadFile(file_url);
 	}
@@ -56,11 +57,11 @@ final class StringList extends Configure {
 	
 	/** Saves list */
 	public void save() {
-		if (file_name!=null) saveFile(file_name);
+		if (file!=null) saveFile(file);
 	}
 
 	/** Saves Configure attributes on the specified <i>file</i> */
-	protected void saveFile(String file) {
+	protected void saveFile(File file) {
 		if (file==null) return;
 		//else
 		try {

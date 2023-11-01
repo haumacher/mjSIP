@@ -3,6 +3,8 @@
  */
 package org.mjsip.config;
 
+import java.io.File;
+
 import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -28,10 +30,27 @@ public class OptionParser {
 		try {
 			parser.parseArgument(args);
 			
-			String fileName = (metaConfig.configFile != null) ? metaConfig.configFile
-					: defaultConfigFile != null ? System.getProperty("user.home") + "/" + defaultConfigFile : null;
-			if (fileName != null) {
-				ConfigFile configFile = new ConfigFile(fileName);
+			String argFile = metaConfig.configFile;
+			
+			File file;
+			if (argFile != null && !argFile.isBlank()) {
+				if ("none".equals(argFile.toLowerCase())) {
+					file = null;
+				} else {
+					file = new File(argFile);
+				}
+			} else if (defaultConfigFile != null) {
+				String fileName = System.getProperty("user.home") + "/" + defaultConfigFile;
+				file = new File(fileName);
+				if (!file.exists()) {
+					file = null;
+				}
+			} else {
+				file = null;
+			}
+			
+			if (file!= null) {
+				ConfigFile configFile = new ConfigFile(file);
 				parser.parseArgument(configFile.toArguments());
 				
 				// Parse arguments again to make sure they have more precedence.

@@ -1,6 +1,7 @@
 package org.mjsip.server;
 
 
+import java.io.File;
 import java.util.Vector;
 
 import org.mjsip.sip.provider.SipConfig;
@@ -103,7 +104,7 @@ public class ServerProfile extends Configure {
 	// ************************** costructors *************************
 
 	/** Costructs a new ServerProfile */
-	public ServerProfile(String file) {
+	public ServerProfile(File file) {
 		// load configuration
 		loadFile(file);
 		// post-load manipulation

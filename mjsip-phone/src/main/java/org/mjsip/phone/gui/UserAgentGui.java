@@ -30,6 +30,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -267,10 +268,10 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			catch (MalformedURLException e) {
 				e.printStackTrace();
 				LOG.info("Exception.", e);
-				buddy_list=new StringList((String)null);
+				buddy_list=new StringList((File)null);
 			}
 		}
-		else buddy_list=new StringList(_uiConfig.buddyListFile);
+		else buddy_list=new StringList(new File(_uiConfig.buddyListFile));
 		jComboBox1=new JComboBox(buddy_list.getElements());
 
 		// init frame

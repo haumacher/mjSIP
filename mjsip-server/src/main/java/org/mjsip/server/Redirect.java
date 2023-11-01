@@ -103,7 +103,7 @@ public class Redirect extends Registrar {
 		sipConfig.normalize();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
+		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 
 		new Redirect(sip_provider,server_profile);      
 	}
