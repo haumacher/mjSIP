@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
-public class Config extends Configure {
+public class ConfigFile extends Configure {
 	
 	private final Map<String, String> _options = new LinkedHashMap<>();
 
 	/** 
-	 * Creates a {@link Config}.
+	 * Creates a {@link ConfigFile}.
 	 */
-	public Config(String file) {
+	public ConfigFile(String file) {
 		loadFile(file);
 	}
 

@@ -4,7 +4,7 @@ package org.mjsip.server.sbc;
 import java.util.Vector;
 
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Config;
+import org.zoolu.util.ConfigFile;
 import org.zoolu.util.Configure;
 import org.zoolu.util.Parser;
 
@@ -76,7 +76,7 @@ public class SessionBorderControllerProfile extends Configure {
 	// ************************** costructors *************************
 	
 	/** Constructs a new SessionBorderControllerProfile */
-	public SessionBorderControllerProfile(Config config) {
+	public SessionBorderControllerProfile(ConfigFile config) {
 		config.configure(this);
 		media_ports=new Vector();
 		for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i)); 

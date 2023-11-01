@@ -7,10 +7,10 @@ import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.ParserProperties;
-import org.zoolu.util.Config;
+import org.zoolu.util.ConfigFile;
 
 /**
- * Utility for parsing command line options to multiple beans using arg4j.
+ * Utility for parsing command line options to multiple beans using args4j.
  */
 public class OptionParser {
 
@@ -31,7 +31,7 @@ public class OptionParser {
 			String fileName = (metaConfig.configFile != null) ? metaConfig.configFile
 					: defaultConfigFile != null ? System.getProperty("user.home") + "/" + defaultConfigFile : null;
 			if (fileName != null) {
-				Config configFile = new Config(fileName);
+				ConfigFile configFile = new ConfigFile(fileName);
 				parser.parseArgument(configFile.toArguments());
 				
 				// Parse arguments again to make sure they have more precedence.

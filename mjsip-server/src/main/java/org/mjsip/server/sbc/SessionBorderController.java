@@ -47,7 +47,7 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.Config;
+import org.zoolu.util.ConfigFile;
 import org.zoolu.util.Parser;
 
 
@@ -366,7 +366,7 @@ public class SessionBorderController extends Proxy {
 		sipConfig.normalize();
 		
 		ServerProfile server_profile=new ServerProfile(metaConfig.configFile);
-		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(new Config(metaConfig.configFile));
+		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(new ConfigFile(metaConfig.configFile));
 
 		// remove outbound proxy in case of the presence of a backend proxy
 		if (sbc_profile.backend_proxy!=null) {
