@@ -354,13 +354,13 @@ public class SessionBorderController extends Proxy {
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
 		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile();
 		PortConfig portConfig = new PortConfig();
+		ServerProfile server_profile=new ServerProfile();
 
-		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-sbc", sipConfig, schedulerConfig, sbc_profile, portConfig);
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-sbc", sipConfig, schedulerConfig, sbc_profile, portConfig, server_profile);
 		
 		sipConfig.normalize();
+		server_profile.normalize();
 		
-		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
-
 		// remove outbound proxy in case of the presence of a backend proxy
 		if (sbc_profile.backendProxy!=null) {
 			sipConfig.setOutboundProxy(null);

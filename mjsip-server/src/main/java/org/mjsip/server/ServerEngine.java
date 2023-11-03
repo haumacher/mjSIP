@@ -127,13 +127,13 @@ public abstract class ServerEngine implements SipProviderListener {
 		LOG.info("Domains="+getLocalDomains());
 
 		// LOCATION SERVICE
-		String location_service_class=profile.location_service;
+		String location_service_class=profile.locationService;
 		for (int i=0; i<LOCATION_SERVICES.length; i++)
-			if (LOCATION_SERVICES[i].equalsIgnoreCase(profile.location_service)) {  location_service_class=LOCATION_SERVICE_CLASSES[i];  break;  }
+			if (LOCATION_SERVICES[i].equalsIgnoreCase(profile.locationService)) {  location_service_class=LOCATION_SERVICE_CLASSES[i];  break;  }
 		try {
 			Class myclass=Class.forName(location_service_class);
 			Class[] parameter_types={ Class.forName("java.lang.String") };
-			Object[] parameters={ profile.location_db };
+			Object[] parameters={ profile.locationDb };
 			try  {
 				java.lang.reflect.Constructor constructor=myclass.getConstructor(parameter_types);
 				location_service=(LocationService)constructor.newInstance(parameters);
@@ -147,9 +147,9 @@ public abstract class ServerEngine implements SipProviderListener {
 			LOG.info("Error trying to use location service '" + location_service_class + "': use default class.", e);
 		}
 		// use default location service
-		if (location_service==null) location_service=new LocationServiceImpl(profile.location_db);   
+		if (location_service==null) location_service=new LocationServiceImpl(profile.locationDb);   
 		// do clean all?
-		if (profile.clean_location_db)  {
+		if (profile.cleanLocationDb)  {
 			for (Enumeration u=location_service.getUsers(); u.hasMoreElements(); ) {
 				String user=(String)u.nextElement();
 				for (Enumeration c=location_service.getUserContactURIs(user); c.hasMoreElements(); ) {
@@ -158,7 +158,7 @@ public abstract class ServerEngine implements SipProviderListener {
 				}
 			}
 			location_service.sync();
-			LOG.debug("LocationService \""+profile.location_db+"\": cleaned\r\n");
+			LOG.debug("LocationService \""+profile.locationDb+"\": cleaned\r\n");
 		}
 		else {
 			// remove all expired contacts
@@ -174,20 +174,20 @@ public abstract class ServerEngine implements SipProviderListener {
 			}
 			if (changed) location_service.sync();
 		}  
-		LOG.debug("LocationService ("+profile.authentication_service+"): size="+location_service.size()+"\r\n"+location_service.toString());
-		LOG.debug("LocationService ("+profile.authentication_service+"): size="+location_service.size()+"\r\n"+location_service.toString());
+		LOG.debug("LocationService ("+profile.authenticationService+"): size="+location_service.size()+"\r\n"+location_service.toString());
+		LOG.debug("LocationService ("+profile.authenticationService+"): size="+location_service.size()+"\r\n"+location_service.toString());
 
 		// AUTHENTICATION SERVICE
-		if (server_profile.do_authentication || server_profile.do_proxy_authentication) {
+		if (server_profile.doAuthentication || server_profile.doProxyAuthentication) {
 			// first, init the proper authentication service
-			String realm=(server_profile.authentication_realm!=null)? server_profile.authentication_realm : sip_provider.getViaAddress();
-			String authentication_service_class=profile.authentication_service;
+			String realm=(server_profile.authenticationRealm!=null)? server_profile.authenticationRealm : sip_provider.getViaAddress();
+			String authentication_service_class=profile.authenticationService;
 			for (int i=0; i<AUTHENTICATION_SERVICES.length; i++)
-				if (AUTHENTICATION_SERVICES[i].equalsIgnoreCase(profile.authentication_service)) {  authentication_service_class=AUTHENTICATION_SERVICE_CLASSES[i];  break;  }
+				if (AUTHENTICATION_SERVICES[i].equalsIgnoreCase(profile.authenticationService)) {  authentication_service_class=AUTHENTICATION_SERVICE_CLASSES[i];  break;  }
 			try {
 				Class myclass=Class.forName(authentication_service_class);
 				Class[] parameter_types={ Class.forName("java.lang.String") };
-				Object[] parameters={ profile.authentication_db };
+				Object[] parameters={ profile.authenticationDb };
 				try  {
 					java.lang.reflect.Constructor constructor=myclass.getConstructor(parameter_types);
 					authentication_service=(AuthenticationService)constructor.newInstance(parameters);
@@ -202,13 +202,13 @@ public abstract class ServerEngine implements SipProviderListener {
 						+ "': use default class.", e);
 			}
 			// use default authentication service
-			if (authentication_service==null) authentication_service=new AuthenticationServiceImpl(server_profile.authentication_db);
-			LOG.debug("AuthenticationService ("+profile.authentication_service+"): size="+authentication_service.size()+"\r\n"+authentication_service.toString());
+			if (authentication_service==null) authentication_service=new AuthenticationServiceImpl(server_profile.authenticationDb);
+			LOG.debug("AuthenticationService ("+profile.authenticationService+"): size="+authentication_service.size()+"\r\n"+authentication_service.toString());
 			
 			// now, init the proper authentication server
-			String authentication_server_class=profile.authentication_scheme;
+			String authentication_server_class=profile.authenticationScheme;
 			for (int i=0; i<AUTHENTICATION_SCHEMES.length; i++)
-				if (AUTHENTICATION_SCHEMES[i].equalsIgnoreCase(profile.authentication_scheme)) {  authentication_server_class=AUTHENTICATION_SERVER_CLASSES[i];  break;  }
+				if (AUTHENTICATION_SCHEMES[i].equalsIgnoreCase(profile.authenticationScheme)) {  authentication_server_class=AUTHENTICATION_SERVER_CLASSES[i];  break;  }
 			try {
 				Class myclass=Class.forName(authentication_server_class);
 				Class[] parameter_types={ Class.forName("java.lang.String"), Class.forName("local.server.AuthenticationService"), Class.forName("org.zoolu.util.LogWriter") };
@@ -229,8 +229,8 @@ public abstract class ServerEngine implements SipProviderListener {
 			// use default authentication service
 			if (as == null)
 				as = new AuthenticationServerImpl(sip_provider, realm, authentication_service);
-			LOG.debug("AuthenticationServer: scheme: "+profile.authentication_scheme);
-			LOG.debug("AuthenticationServer: realm: "+profile.authentication_realm);
+			LOG.debug("AuthenticationServer: scheme: "+profile.authenticationScheme);
+			LOG.debug("AuthenticationServer: realm: "+profile.authenticationRealm);
 		}
 		else as=null;
 
@@ -316,7 +316,7 @@ public abstract class ServerEngine implements SipProviderListener {
 			if (is_for_this_domain && (target.isSipURI() && !SipURI.createSipURI(target).hasUserName())) {
 				LOG.trace("the recipient is this server");
 				// check message authentication (server authentication)
-				if (server_profile.do_authentication && !msg.isAck() && !msg.isCancel()) {
+				if (server_profile.doAuthentication && !msg.isAck() && !msg.isCancel()) {
 					err_resp=as.authenticateRequest(msg);  
 					if (err_resp!=null) {
 						//sip_provider.sendMessage(err_resp);
@@ -332,7 +332,7 @@ public abstract class ServerEngine implements SipProviderListener {
 				LOG.trace("the recipient is NOT this server");
 				// check message authentication (proxy authentication)
 				boolean is_spiral=(msg.getRemotePort()==sip_provider.getPort() && (msg.getRemoteAddress().startsWith("127.") || msg.getRemoteAddress().equals(sip_provider.getViaAddress())));
-				if (server_profile.do_proxy_authentication && is_from_this_domain && !is_spiral && !msg.isAck() && !msg.isCancel()) {
+				if (server_profile.doProxyAuthentication && is_from_this_domain && !is_spiral && !msg.isAck() && !msg.isCancel()) {
 					err_resp=as.authenticateProxyRequest(msg);
 					if (err_resp!=null) {
 						//sip_provider.sendMessage(err_resp);
@@ -379,13 +379,13 @@ public abstract class ServerEngine implements SipProviderListener {
 	  * and <i>port</i> (if &gt;0) matches the local server port. */
 	protected boolean isResponsibleFor(String domain, int port) {
 		// check port
-		if (!server_profile.domain_port_any && port>0 && port!=sip_provider.getPort()) return false;
+		if (!server_profile.domainPortAny && port>0 && port!=sip_provider.getPort()) return false;
 		// check host address
 		if (domain.equals(sip_provider.getViaAddress())) return true;
 		// check domain name
 		boolean result=false;
-		for (int i=0; i<server_profile.domain_names.length; i++) {
-			if (server_profile.domain_names[i].equals(domain)) { result=true; break; }
+		for (int i=0; i<server_profile.domainNames.length; i++) {
+			if (server_profile.domainNames[i].equals(domain)) { result=true; break; }
 		}
 		return result;
 	}
@@ -434,12 +434,12 @@ public abstract class ServerEngine implements SipProviderListener {
 
 	/** Gets a String of the list of local domain names. */
 	protected String getLocalDomains() {
-		if (server_profile.domain_names.length>0) {
+		if (server_profile.domainNames.length>0) {
 			String str="";
-			for (int i=0; i<server_profile.domain_names.length-1; i++) {
-				str+=server_profile.domain_names[i]+", ";
+			for (int i=0; i<server_profile.domainNames.length-1; i++) {
+				str+=server_profile.domainNames[i]+", ";
 			}
-			return str+server_profile.domain_names[server_profile.domain_names.length-1];
+			return str+server_profile.domainNames[server_profile.domainNames.length-1];
 		}
 		else return "";
 	}
@@ -466,7 +466,7 @@ public abstract class ServerEngine implements SipProviderListener {
 		// the original request-uri, but the request-uri has been already replaced
 		// and forgotten when processing the message for calculating the branch..
 		// telepathy? ;)
-		if (err_code==0 && server_profile.loop_detection) {
+		if (err_code==0 && server_profile.loopDetection) {
 			String loop_tag=pickLoopTag(msg);
 			// add temporary Loop-Tag header field
 			msg.setHeader(new Header(Loop_Tag,loop_tag));

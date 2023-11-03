@@ -130,7 +130,7 @@ public class Proxy extends Registrar {
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 	
-		if (!server_profile.is_open_proxy) {
+		if (!server_profile.isOpenProxy) {
 			// check whether the caller or callee is a local user 
 			if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress())) {
 				LOG.info("both caller and callee are not registered with the local server: proxy denied.");
@@ -186,11 +186,11 @@ public class Proxy extends Registrar {
 			}
 		}
 		// add Record-Route?
-		if (server_profile.on_route && msg.isInvite()/* && !is_on_route*/) {
+		if (server_profile.onRoute && msg.isInvite()/* && !is_on_route*/) {
 			SipURI rr_uri;
 			if (sip_provider.getPort()==sip_provider.sipConfig().getDefaultPort()) rr_uri=SipURI.parseSipURI(sip_provider.getViaAddress());
 			else rr_uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
-			if (server_profile.loose_route) rr_uri.addLr();
+			if (server_profile.looseRoute) rr_uri.addLr();
 			RecordRouteHeader rrh=new RecordRouteHeader(new NameAddress(rr_uri));
 			msg.addRecordRouteHeader(rrh);
 		}
@@ -218,7 +218,7 @@ public class Proxy extends Registrar {
 		ViaHeader via=new ViaHeader(proto,sip_provider.getViaAddress(),sip_provider.getPort());
 		if (sip_provider.isRportSet()) via.setRport();
 		String branch=sip_provider.pickBranch(msg);
-		if (server_profile.loop_detection) {
+		if (server_profile.loopDetection) {
 			String loop_tag=msg.getHeader(Loop_Tag).getValue();
 			if (loop_tag!=null) {
 				msg.removeHeader(Loop_Tag);
@@ -273,8 +273,8 @@ public class Proxy extends Registrar {
 	protected SipURI getAuthDomainBasedProxyingTarget(GenericURI request_uri) {
 		LOG.trace("inside getAuthDomainBasedProxyingTarget(uri)");
 		// authenticated rules
-		for (int i=0; i<server_profile.authenticated_domain_proxying_rules.length; i++) {
-			ProxyingRule rule=(ProxyingRule)server_profile.authenticated_domain_proxying_rules[i];
+		for (int i=0; i<server_profile.authenticatedDomainProxyingRules.length; i++) {
+			ProxyingRule rule=(ProxyingRule)server_profile.authenticatedDomainProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
 				LOG.debug("domain-based authenticated forwarding: "+rule.toString()+": YES");
@@ -291,8 +291,8 @@ public class Proxy extends Registrar {
 	protected SipURI getDomainBasedProxyingTarget(GenericURI request_uri) {
 		LOG.trace("inside getDomainBasedForwardingTarget(uri)");
 		// non-authenticated rules
-		for (int i=0; i<server_profile.domain_proxying_rules.length; i++) {
-			ProxyingRule rule=(ProxyingRule)server_profile.domain_proxying_rules[i];
+		for (int i=0; i<server_profile.domainProxyingRules.length; i++) {
+			ProxyingRule rule=(ProxyingRule)server_profile.domainProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
 				LOG.debug("domain-based forwarding: "+rule.toString()+": YES");
@@ -315,9 +315,9 @@ public class Proxy extends Registrar {
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else
 		// authenticated rules
-		LOG.trace("authenticated prefix-based rules: "+server_profile.authenticated_phone_proxying_rules.length);
-		for (int i=0; i<server_profile.authenticated_phone_proxying_rules.length; i++) {
-			ProxyingRule rule=(ProxyingRule)server_profile.authenticated_phone_proxying_rules[i];
+		LOG.trace("authenticated prefix-based rules: "+server_profile.authenticatedPhoneProxyingRules.length);
+		for (int i=0; i<server_profile.authenticatedPhoneProxyingRules.length; i++) {
+			ProxyingRule rule=(ProxyingRule)server_profile.authenticatedPhoneProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
 				LOG.debug("prefix-based authenticated forwarding: "+rule.toString()+": YES");
@@ -340,9 +340,9 @@ public class Proxy extends Registrar {
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else
 		// non-authenticated rules
-		LOG.trace("prefix-based rules: "+server_profile.phone_proxying_rules.length);
-		for (int i=0; i<server_profile.phone_proxying_rules.length; i++) {
-			ProxyingRule rule=(ProxyingRule)server_profile.phone_proxying_rules[i];
+		LOG.trace("prefix-based rules: "+server_profile.phoneProxyingRules.length);
+		for (int i=0; i<server_profile.phoneProxyingRules.length; i++) {
+			ProxyingRule rule=(ProxyingRule)server_profile.phoneProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
 				LOG.debug("prefix-based forwarding: "+rule.toString()+": YES");
@@ -374,13 +374,14 @@ public class Proxy extends Registrar {
 		
 		SipConfig sipConfig = new SipConfig();
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		ServerProfile server_profile=new ServerProfile();
 
-		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-proxy", sipConfig, schedulerConfig, server_profile);
 		
 		sipConfig.normalize();
+		server_profile.normalize();
 					
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 
 		new Proxy(sip_provider,server_profile);
 	}

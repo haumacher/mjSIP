@@ -97,13 +97,14 @@ public class Redirect extends Registrar {
 		
 		SipConfig sipConfig = new SipConfig();
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		ServerProfile server_profile=new ServerProfile();
 
-		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-redirect", sipConfig, schedulerConfig, server_profile);
 		
 		sipConfig.normalize();
+		server_profile.normalize();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 
 		new Redirect(sip_provider,server_profile);      
 	}

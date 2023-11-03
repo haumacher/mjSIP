@@ -1,6 +1,8 @@
 package org.mjsip.server.sbc;
 
 import org.kohsuke.args4j.Option;
+import org.mjsip.config.YesNoHandler;
+import org.mjsip.sip.config.SocketAddressHandler;
 import org.zoolu.net.SocketAddress;
 
 /**
@@ -23,7 +25,7 @@ public class SessionBorderControllerProfile {
 	// /** Whether sending keepalive datagram only to UAs that explicitely request it through 'keep-alive' parameter. */
 	// public boolean keepalive_selective=false;
 
-	@Option(name = "--keepalive-aggressive", usage = "Whether sending keep-alive datagrams to all user agents (also to non-registered ones).")
+	@Option(name = "--keepalive-aggressive", usage = "Whether sending keep-alive datagrams to all user agents (also to non-registered ones).", handler = YesNoHandler.class)
 	public boolean keepaliveAggressive=false;
 
 	// /** Whether implementing symmetric RTP for NAT traversal. */
@@ -32,10 +34,10 @@ public class SessionBorderControllerProfile {
 	@Option(name = "--interpacket-time", usage = "Minimum inter-packet departure time.")
 	public long interpacketTime=0; 
 
-	@Option(name = "--do-interception", usage = "Whether to intercept media traffic.")
+	@Option(name = "--do-interception", usage = "Whether to intercept media traffic.", handler = YesNoHandler.class)
 	public boolean doInterception=false;
 
-	@Option(name = "--do-activeInterception", usage = "Whether to inject new media flows.")
+	@Option(name = "--do-activeInterception", usage = "Whether to inject new media flows.", handler = YesNoHandler.class)
 	public boolean doActiveInterception=false;
 
 	@Option(name = "--sink-addr", usage = "Sink address for media traffic interception.")
@@ -49,7 +51,7 @@ public class SessionBorderControllerProfile {
 
 	@Option(name = "--backend-proxy", usage = "Backend proxy where all requests not coming from it are passed to. "
 			+ "It can be specified as FQDN or host_addr[:host_port]. "
-			+ "Use 'NONE' for not using a backend proxy (or let it undefined).")
+			+ "Use 'NONE' for not using a backend proxy (or let it undefined).", handler = SocketAddressHandler.class)
 	public SocketAddress backendProxy=null;
 
 }

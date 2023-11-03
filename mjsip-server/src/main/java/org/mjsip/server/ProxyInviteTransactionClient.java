@@ -48,10 +48,10 @@ public class ProxyInviteTransactionClient extends InviteTransactionClient {
 
  
 	/** Creates a new ProxyInviteTransactionClient */
-	public ProxyInviteTransactionClient(SipProvider sip_provider, SipMessage req, TransactionClientListener listener) {
+	public ProxyInviteTransactionClient(SipProvider sip_provider, SipMessage req, long proxyTransactionTimeout, TransactionClientListener listener) {
 		super(sip_provider,req,listener);
 		transaction_listener=listener;
-		proxy_transaction_to=sip_provider.scheduler().schedule((long) ServerProfile.proxy_transaction_timeout, this::onProxyTransactionTimeout);
+		proxy_transaction_to=sip_provider.scheduler().schedule(proxyTransactionTimeout, this::onProxyTransactionTimeout);
 	}
 	
 	private void onProxyTransactionTimeout() {

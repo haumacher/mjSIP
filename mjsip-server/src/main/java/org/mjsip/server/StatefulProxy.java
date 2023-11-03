@@ -156,7 +156,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			updateProxyingRequest(request);         
 
 			TransactionClient tc;
-			if (msg.isInvite()) tc=new ProxyInviteTransactionClient(sip_provider_client,request,this);
+			if (msg.isInvite()) tc=new ProxyInviteTransactionClient(sip_provider_client,request,server_profile.proxyTransactionTimeout, this);
 			else tc=new TransactionClient(sip_provider_client,request,this);
 			//printLog("DEBUG: processLocalRequest()\r\n"+tc.getRequestMessage().toString(),LogWriter.LEVEL_LOWER);
 			state.addClient(ts,tc);
@@ -180,7 +180,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		if (msg.isInvite()) ts=new InviteTransactionServer(sip_provider_server,msg,null);
 		else ts=new TransactionServer(sip_provider_server,msg,null);
 
-		if (!server_profile.is_open_proxy) {
+		if (!server_profile.isOpenProxy) {
 			// check whether the caller or callee is a local user 
 			if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress())) {
 				LOG.info("both caller and callee are not registered with the local server: proxy denied.");
@@ -209,7 +209,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		updateProxyingRequest(msg);         
 
 		TransactionClient tc;
-		if (msg.isInvite()) tc=new ProxyInviteTransactionClient(sip_provider_client,msg,this);
+		if (msg.isInvite()) tc=new ProxyInviteTransactionClient(sip_provider_client,msg,server_profile.proxyTransactionTimeout, this);
 		else tc=new TransactionClient(sip_provider_client,msg,this);
 		state.addClient(ts,tc);
 		tc.request(); 
@@ -357,13 +357,14 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	public static void main(String[] args) {
 		SipConfig sipConfig = new SipConfig();
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		ServerProfile server_profile=new ServerProfile();
 
-		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-proxy", sipConfig, schedulerConfig, server_profile);
 		
 		sipConfig.normalize();
+		server_profile.normalize();
 						
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 		
 		StatefulProxy sproxy=new StatefulProxy(sip_provider,server_profile);   
 	}

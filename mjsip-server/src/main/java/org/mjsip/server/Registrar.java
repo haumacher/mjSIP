@@ -69,7 +69,7 @@ public class Registrar extends ServerEngine {
 	public void processRequestToLocalServer(SipMessage msg) {
 		
 		LOG.debug("inside processRequestToLocalServer(msg)");
-		if (server_profile.is_registrar && msg.isRegister()) {
+		if (server_profile.isRegistrar && msg.isRegister()) {
 			TransactionServer t=new TransactionServer(sip_provider,msg,null);
 	
 			/*if (server_profile.do_authentication) {
@@ -84,7 +84,7 @@ public class Registrar extends ServerEngine {
 			SipMessage resp=updateRegistration(msg);
 			if (resp==null) return;
 			
-			if (server_profile.do_authentication) {
+			if (server_profile.doAuthentication) {
 				// add Authentication-Info header field
 				resp.setAuthenticationInfoHeader(as.getAuthenticationInfoHeader());
 			}
@@ -219,7 +219,7 @@ public class Registrar extends ServerEngine {
 
 		// known user?
 		if (!location_service.hasUser(user)) {
-			if (server_profile.register_new_users) {
+			if (server_profile.registerNewUsers) {
 				location_service.addUser(user);
 				LOG.info("new user '"+user+"' added");
 			} 
@@ -328,13 +328,14 @@ public class Registrar extends ServerEngine {
 	public static void main(String[] args) {
 		SipConfig sipConfig = new SipConfig();
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		ServerProfile server_profile=new ServerProfile();
 
-		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-registrar", sipConfig, schedulerConfig, server_profile);
 		
 		sipConfig.normalize();
+		server_profile.normalize();
 			
 		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
 		
 		new Registrar(sip_provider,server_profile);
 	}
