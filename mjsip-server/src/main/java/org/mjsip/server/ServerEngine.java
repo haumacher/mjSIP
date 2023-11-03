@@ -313,7 +313,7 @@ public abstract class ServerEngine implements SipProviderListener {
 			boolean is_from_this_domain=isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress());
 			LOG.trace("is from local doamin? "+((is_from_this_domain)?"yes":"no"));
 
-			if (is_for_this_domain && (target.isSipURI() && !(new SipURI(target)).hasUserName())) {
+			if (is_for_this_domain && (target.isSipURI() && !SipURI.createSipURI(target).hasUserName())) {
 				LOG.trace("the recipient is this server");
 				// check message authentication (server authentication)
 				if (server_profile.do_authentication && !msg.isAck() && !msg.isCancel()) {
@@ -394,7 +394,7 @@ public abstract class ServerEngine implements SipProviderListener {
 	protected boolean isResponsibleFor(SipMessage req) {
 		GenericURI target=req.getRequestLine().getAddress();
 		if (target.isSipURI()) {
-			SipURI sip_uri=new SipURI(target);
+			SipURI sip_uri=SipURI.createSipURI(target);
 			return isResponsibleFor(sip_uri.getHost(),sip_uri.getPort());
 		}
 		else return false;
@@ -404,7 +404,7 @@ public abstract class ServerEngine implements SipProviderListener {
 	protected boolean isResponsibleFor(GenericURI uri) {
 		if (!uri.isSipURI()) return false;
 		// else
-		SipURI sip_uri=new SipURI(uri);
+		SipURI sip_uri=SipURI.createSipURI(uri);
 		//return isResponsibleFor(sip_uri.getHost(),sip_uri.getPort());
 		String hostaddr=sip_uri.getHost();
 		int hostport=sip_uri.getPort();

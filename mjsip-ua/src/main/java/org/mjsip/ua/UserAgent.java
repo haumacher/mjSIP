@@ -178,7 +178,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			// may be it is just the user name..
 			return new SipURI(str,uaConfig.getProxy());
 		}
-		else return new SipURI(str);
+		else return SipURI.parseSipURI(str);
 	}
 
 	/** Register with the registrar server
@@ -202,7 +202,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 		// keep-alive
 		if (keepalive_time>0) {
-			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : new SipURI(rc.getTargetAOR().getAddress());
+			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : SipURI.createSipURI(rc.getTargetAOR().getAddress());
 			String target_host=target_uri.getHost();
 			int target_port=target_uri.getPort();
 			if (target_port<0) target_port=sip_provider.sipConfig().getDefaultPort();

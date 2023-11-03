@@ -20,22 +20,30 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.address;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Vector;
 
-
-import org.zoolu.util.Parser;
-
-
-
-/** Class <i>SipURI</i> implements SIP and SIPS URIs.
-  * <P> A SIP URI is a string of the form of:
-  * <BR><BLOCKQUOTE><PRE>&nbsp;&nbsp; sip:[user@]hostname[:port][;parameters] </PRE></BLOCKQUOTE>
-  * <P> If <i>port</i> number is ommitted, -1 is returned
-  */
+/**
+ * SIP and SIPS URIs.
+ * 
+ * <p>
+ * A SIP URI is a string of the form of:
+ * </p>
+ * 
+ * <pre>
+ * sip:[user@]hostname[:port][;parameters]
+ * </pre>
+ * 
+ * <p>
+ * If <i>port</i> number is ommitted, -1 is returned
+ * </p>
+ */
 public class SipURI extends GenericURI {
-	
 
 	/** Transport param name */
 	public static final String PARAM_TRANSPORT="transport"; 
@@ -46,110 +54,104 @@ public class SipURI extends GenericURI {
 	/** TTL param name */
 	public static final String PARAM_TTL="ttl"; 
 
-
-
 	/** Scheme of SIP URI */
 	protected static final String SIP_COLON="sip:";
 
 	/** Scheme of SIPS URI */
 	protected static final String SIPS_COLON="sips:";
 
-
-
 	/** Whether has SIPS scheme */
-	protected boolean secure=false;
+	private boolean _secure = false;
 
+	private String _user;
 
+	private String _host;
 
-	/** Creates a new SipURI. */
-	public SipURI(GenericURI uri) {
-		super(uri);
-		String scheme=getScheme();
-		if (scheme.equals(SCHEME_SIPS)) secure=true;
-		else
-		if (!scheme.equals(SCHEME_SIP)) throw new UnexpectedUriSchemeException(scheme);
-	}
+	private int _port;
 
+	private Map<String, String> _params;
 
-	/** Creates a new SipURI.
-	  * @param uri the [user@]hostname[:port][;parameters] or the complete SIP or SIPS URI including SIP or SIPS scheme. */
-	public SipURI(String uri) {
-		super(uri);
-		if (uri.startsWith(SIPS_COLON)) secure=true;
-		else
-		if(!uri.startsWith(SIP_COLON)) this.uri=SIP_COLON+uri;
+	private String _password;
+
+	private Map<String, String> _headers;
+
+	private void checkScheme() {
+		if (!getScheme().equals(SCHEME_SIP) && !getScheme().equals(SCHEME_SIPS)) {
+			throw new UnexpectedUriSchemeException(getScheme());
+		}
 	}
 
 	/** Creates a new SipURI. */
 	public SipURI(String username, String hostname) {
-		super((String)null);
-		init(username,hostname,-1,false);
+		this(username, hostname, -1);
 	}
 
 	/** Creates a new SipURI. */
 	public SipURI(String hostname, int portnumber) {
-		super((String)null);
-		init(null,hostname,portnumber,false);
+		this(null, hostname, portnumber);
 	}
 
 	/** Creates a new SipURI. */
 	public SipURI(String username, String hostname, int portnumber) {
-		super((String)null);
-		init(username,hostname,portnumber,false);
+		this(username, null, hostname, portnumber, false, Collections.emptyMap(), Collections.emptyMap());
 	}
 
-
-	/** Creates a new SipURI. */
-	public SipURI(String username, String hostname, int portnumber, boolean secure) {
-		super((String)null);
-		init(username,hostname,portnumber,secure);
+	/**
+	 * Creates a new SipURI.
+	 * 
+	 * @param headers
+	 */
+	public SipURI(String user, String password, String host, int port, boolean secure, Map<String, String> params,
+			Map<String, String> headers) {
+		_user = user;
+		_password = password;
+		_secure = secure;
+		_host = host;
+		_port = port;
+		_params = params;
+		_headers = headers;
 	}
 
-
-	/** Inits the SipURI. */
-	private void init(String username, String hostname, int portnumber, boolean secure) {
-		StringBuffer sb=new StringBuffer((secure)? SIPS_COLON : SIP_COLON);
-		if (username!=null) sb.append(username).append('@');
-		sb.append(hostname);
-		if (portnumber>0) sb.append(":"+portnumber);
-		uri=sb.toString();
+	/**
+	 * Converts the given URI to a {@link SipURI}.
+	 */
+	public static SipURI createSipURI(GenericURI uri) {
+		return parseSipURI(uri.toString());
 	}
 
+	/**
+	 * Parses a {@link SipURI} in the format
+	 * <code>sip[s]:user:password@host:port;uri-parameters?headers</code>.
+	 */
+	public static SipURI parseSipURI(String uri) {
+		return new SipURIParser(uri).parse();
+	}
+
+	@Override
+	public String getScheme() {
+		return _secure ? SCHEME_SIPS : SCHEME_SIP;
+	}
 
 	/** Gets user name of SipURI (Returns null if user name does not exist). */
 	public String getUserName() {
-		int begin=getScheme().length()+1; // skip "sip:"
-		int end=uri.indexOf('@',begin);
-		if (end<0) return null;
-		else return uri.substring(begin,end);
+		return _user;
+	}
+
+	/**
+	 * The optional {@link #getUserName() user's} password.
+	 */
+	public String getPassword() {
+		return _password;
 	}
 
 	/** Gets host of SipURI. */
 	public String getHost() {
-		char[] host_terminators={':',';','?'};
-		Parser par=new Parser(uri);
-		int begin=par.indexOf('@'); // skip "sip:user@"
-		if (begin<0) begin=getScheme().length()+1; // skip "sip:"
-			else begin++; // skip "@"
-		par.setPos(begin);
-		int end=par.indexOf(host_terminators);
-		if (end<0) return uri.substring(begin);
-			else return uri.substring(begin,end);
+		return _host;
 	}
 
 	/** Gets port of SipURI; returns -1 if port is not specidfied. */
 	public int getPort() {
-		char[] port_terminators={';','?'};
-		Parser par=new Parser(uri,getScheme().length()+1); // skip "sip:"
-		int begin=par.indexOf(':');
-		if (begin<0) return -1;
-		else {
-			begin++;
-			par.setPos(begin);
-			int end=par.indexOf(port_terminators);
-			if (end<0) return Integer.parseInt(uri.substring(begin));
-			else return Integer.parseInt(uri.substring(begin,end));
-		}
+		return _port;
 	}
 
 	/** Gets boolean value to indicate if SipURI has user name. */
@@ -164,17 +166,13 @@ public class SipURI extends GenericURI {
 
 	/** Whether is SIPS. */
 	public boolean isSecure() {
-		return secure;
+		return _secure;
 	}
 
 	/** Sets scheme to SIPS. */
 	public void setSecure(boolean secure)  {
-		if (this.secure!=secure) {
-			this.secure=secure;
-			uri=SCHEME_SIPS+uri.substring(uri.indexOf(':'));
-		}
+		this._secure = secure;
 	}
-
 
 	/** Gets the value of transport parameter.
 	  * @return null if no transport parameter is present. */
@@ -208,6 +206,54 @@ public class SipURI extends GenericURI {
 		addParameter(PARAM_MADDR,maddr);
 	}
 
+	@Override
+	public boolean hasParameters() {
+		return !_params.isEmpty();
+	}
+
+	@Override
+	public Vector getParameterNames() {
+		return new Vector<>(_params.keySet());
+	}
+
+	@Override
+	public String getParameter(String name) {
+		return _params.get(name);
+	}
+
+	@Override
+	public boolean hasParameter(String name) {
+		return _params.keySet().contains(name);
+	}
+
+	@Override
+	public void addParameter(String name) {
+		_params.put(name, null);
+	}
+
+	@Override
+	public void addParameter(String name, String value) {
+		_params.put(name, value);
+	}
+
+	@Override
+	public void removeParameter(String name) {
+		_params.remove(name);
+	}
+
+	@Override
+	public void removeParameters() {
+		_params.clear();
+	}
+
+	public String getHeader(String name) {
+		return _headers.get(name);
+	}
+
+	public boolean hasHeader(String name) {
+		return _headers.keySet().contains(name);
+	}
+
 	/** Gets the value of ttl parameter.
 	  * @return 1 if no ttl parameter is present. */
 	public int getTtl()  {
@@ -222,6 +268,78 @@ public class SipURI extends GenericURI {
 	/** Adds ttl parameter. */
 	public void addTtl(int ttl)  {
 		addParameter(PARAM_TTL,Integer.toString(ttl));
+	}
+
+	@Override
+	public Object clone() {
+		return copy();
+	}
+
+	/**
+	 * Creates a copy of this URI.
+	 */
+	public SipURI copy() {
+		return new SipURI(_user, _password, _host, _port, _secure, new LinkedHashMap<>(_params),
+				new LinkedHashMap<>(_headers));
+	}
+
+	@Override
+	public boolean isSipURI() {
+		return true;
+	}
+
+	@Override
+	public boolean isTelURI() {
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+
+		sb.append((_secure) ? SIPS_COLON : SIP_COLON);
+
+		appendSpecific(sb);
+
+		return sb.toString();
+	}
+
+	@Override
+	public String getSpecificPart() {
+		StringBuffer sb = new StringBuffer();
+
+		appendSpecific(sb);
+
+		return sb.toString();
+	}
+
+	private void appendSpecific(StringBuffer sb) {
+		if (_user != null) {
+			sb.append(_user);
+
+			if (_password != null) {
+				sb.append(':');
+				sb.append(_password);
+			}
+			sb.append('@');
+		}
+
+		sb.append(_host);
+
+		if (_port > 0) {
+			sb.append(":");
+			sb.append(_port);
+		}
+
+		for (Entry<String, String> param : _params.entrySet()) {
+			sb.append(';');
+			sb.append(param.getKey());
+			String value = param.getValue();
+			if (value != null) {
+				sb.append('=');
+				sb.append(value);
+			}
+		}
 	}
 
 }

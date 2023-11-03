@@ -26,6 +26,7 @@ package org.mjsip.sip.header;
 
 
 import org.mjsip.sip.address.GenericURI;
+import org.mjsip.sip.address.GenericURIImpl;
 
 
 
@@ -44,7 +45,7 @@ public class RequestLine {
 	/** Creates a new RequestLine <i>request</i> with <i>sipurl</i> as recipient. */
 	public RequestLine(String request, String str_uri) {
 		method=request;
-		this.uri=new GenericURI(str_uri);
+		this.uri = new GenericURIImpl(str_uri);
 	}
 
 	/** Creates a new RequestLine <i>request</i> with <i>sipurl</i> as recipient. */

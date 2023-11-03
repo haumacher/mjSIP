@@ -355,14 +355,14 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 		if (sip_provider.sipConfig().isOnDialogRoute()) {
 			if (route!=null && route.size()>0) {
 				GenericURI uri=((NameAddress)route.elementAt(0)).getAddress();
-				SipURI sip_uri=(uri.isSipURI())? new SipURI(uri) : null; 
+				SipURI sip_uri=(uri.isSipURI())? SipURI.createSipURI(uri) : null; 
 				if (sip_uri!=null && sip_uri.getHost().equals(via_addr) && sip_uri.getPort()==host_port) {
 					route.removeElementAt(0);
 				}
 			}
 			if (route!=null && route.size()>0) {
 				GenericURI uri=((NameAddress)route.elementAt(route.size()-1)).getAddress();
-				SipURI sip_uri=(uri.isSipURI())? new SipURI(uri) : null; 
+				SipURI sip_uri=(uri.isSipURI())? SipURI.createSipURI(uri) : null; 
 				if (sip_uri!=null && sip_uri.getHost().equals(via_addr) && sip_uri.getPort()==host_port) {
 					route.removeElementAt(route.size()-1);
 				}
@@ -371,7 +371,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 		// update secure
 		if (!secure && msg.isRequest()) {
 			GenericURI request_uri=msg.getRequestLine().getAddress();
-			if (request_uri.isSipURI() && new SipURI(request_uri).isSecure() && msg.getViaHeader().getProtocol().equalsIgnoreCase("tls")) {
+			if (request_uri.isSipURI() && SipURI.createSipURI(request_uri).isSecure() && msg.getViaHeader().getProtocol().equalsIgnoreCase("tls")) {
 				secure=true;
 			}
 		}

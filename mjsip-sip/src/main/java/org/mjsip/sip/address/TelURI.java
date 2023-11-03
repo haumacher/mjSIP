@@ -35,7 +35,7 @@ import org.zoolu.util.Parser;
   * not describe the steps necessary to reach a particular number and
   * does not imply dialling semantics.
   */
-public class TelURI extends GenericURI {
+public class TelURI extends GenericURIImpl {
 	
 
 	/** ISDN subaddress parameter */
@@ -56,9 +56,7 @@ public class TelURI extends GenericURI {
 
 	/** Creates a new TelURI. */
 	public TelURI(GenericURI u) {
-		super(u);
-		String scheme=getScheme();
-		if (!scheme.equals(SCHEME_TEL)) throw new UnexpectedUriSchemeException(scheme);
+		this(u.toString());
 	}
 
 

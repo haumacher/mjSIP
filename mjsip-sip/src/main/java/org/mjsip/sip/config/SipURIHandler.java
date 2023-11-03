@@ -26,7 +26,7 @@ public class SipURIHandler extends OptionHandler<SipURI> {
 	@Override
 	public int parseArguments(Parameters params) throws CmdLineException {
 		String value = params.getParameter(0);
-		setter.addValue(new SipURI(value));
+		setter.addValue(SipURI.parseSipURI(value));
 		return 1;
 	}
 

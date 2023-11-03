@@ -149,7 +149,7 @@ public class Registrar extends ServerEngine {
 			LOG.info("request-URI is not a SIP URI");
 			return targets;
 		}
-		SipURI sip_uri=new SipURI(request_uri);
+		SipURI sip_uri=SipURI.createSipURI(request_uri);
 		String username=sip_uri.getUserName();
 		if (username==null) {
 			LOG.info("no username found");
@@ -183,7 +183,7 @@ public class Registrar extends ServerEngine {
 		// for SIPS request-uri remove non-SIPS targets
 		if (request_uri.equals(GenericURI.SCHEME_SIPS)) {
 			for (int i=0; i<targets.size(); i++) {
-				SipURI uri=new SipURI((String)targets.elementAt(i));
+				SipURI uri=SipURI.parseSipURI((String)targets.elementAt(i));
 				if (!uri.isSecure()) {
 					LOG.info(uri.toString()+" has not SIPS scheme: skipped");
 					targets.removeElementAt(i--);
@@ -203,7 +203,7 @@ public class Registrar extends ServerEngine {
 			int result=400;
 			return sip_provider.messageFactory().createResponse(msg,result,null,null);  
 		}         
-		SipURI dest_sip_uri=new SipURI(th.getNameAddress().getAddress());
+		SipURI dest_sip_uri=SipURI.createSipURI(th.getNameAddress().getAddress());
 		String user=dest_sip_uri.getUserName()+"@"+dest_sip_uri.getHost();
 
 		int exp_secs=server_profile.expires;

@@ -148,7 +148,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 		LOG.debug("message will be forwarded to "+targets.size()+" user's contact(s)"); 
 		for (int i=0; i<targets.size(); i++)  {
-			SipURI target_uri=new SipURI((String)(targets.elementAt(i)));
+			SipURI target_uri=SipURI.parseSipURI((String)(targets.elementAt(i)));
 			SipMessage request=new SipMessage(msg);
 			request.removeRequestLine();
 			request.setRequestLine(new RequestLine(msg.getRequestLine().getMethod(),target_uri));

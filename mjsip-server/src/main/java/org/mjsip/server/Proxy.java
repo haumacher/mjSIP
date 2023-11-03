@@ -114,7 +114,7 @@ public class Proxy extends Registrar {
 		
 		LOG.debug("message will be forwarded to "+targets.size()+" user's contact(s)"); 
 		for (int i=0; i<targets.size(); i++)  {
-			SipURI target_uri=new SipURI((String)(targets.elementAt(i)));
+			SipURI target_uri=SipURI.parseSipURI((String)(targets.elementAt(i)));
 			SipMessage request=new SipMessage(msg);
 			request.removeRequestLine();
 			request.setRequestLine(new RequestLine(msg.getRequestLine().getMethod(),target_uri));
@@ -176,7 +176,7 @@ public class Proxy extends Registrar {
 			MultipleHeader mr=msg.getRoutes();
 			GenericURI route=(new RouteHeader(mr.getTop())).getNameAddress().getAddress();
 			if (route.isSipURI()) {
-				SipURI sip_route=new SipURI(route);
+				SipURI sip_route=SipURI.createSipURI(route);
 				if (isResponsibleFor(sip_route.getHost(),sip_route.getPort())) {
 					mr.removeTop();
 					if (mr.size()>0) msg.setRoutes(mr);
@@ -188,7 +188,7 @@ public class Proxy extends Registrar {
 		// add Record-Route?
 		if (server_profile.on_route && msg.isInvite()/* && !is_on_route*/) {
 			SipURI rr_uri;
-			if (sip_provider.getPort()==sip_provider.sipConfig().getDefaultPort()) rr_uri=new SipURI(sip_provider.getViaAddress());
+			if (sip_provider.getPort()==sip_provider.sipConfig().getDefaultPort()) rr_uri=SipURI.parseSipURI(sip_provider.getViaAddress());
 			else rr_uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
 			if (server_profile.loose_route) rr_uri.addLr();
 			RecordRouteHeader rrh=new RecordRouteHeader(new NameAddress(rr_uri));
@@ -199,14 +199,14 @@ public class Proxy extends Registrar {
 		if (msg.hasRouteHeader()) {
 			GenericURI route=msg.getRouteHeader().getNameAddress().getAddress();
 			if (route.isSipURI()) {
-				SipURI sip_route=new SipURI(route);
+				SipURI sip_route=SipURI.createSipURI(route);
 				if (sip_route.hasTransport()) proto=sip_route.getTransport();
 			}
 		}
 		else {
 			GenericURI request_uri=msg.getRequestLine().getAddress();
 			if (request_uri.isSipURI()) {
-				SipURI request_sip_uri=new SipURI(request_uri);
+				SipURI request_sip_uri=SipURI.createSipURI(request_uri);
 				if (request_sip_uri.hasTransport()) proto=request_sip_uri.getTransport();
 				else
 				if (request_sip_uri.isSecure()) proto=SipProvider.PROTO_TLS;
@@ -310,7 +310,7 @@ public class Proxy extends Registrar {
 		LOG.trace("inside getAuthPrefixBasedProxyingTarget(uri)");
 		if (!request_uri.isSipURI())  return null;
 		// else
-		SipURI sip_uri=new SipURI(request_uri);
+		SipURI sip_uri=SipURI.createSipURI(request_uri);
 		String username=sip_uri.getUserName();
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else
@@ -335,7 +335,7 @@ public class Proxy extends Registrar {
 		LOG.trace("inside getPrefixBasedProxyingTarget(uri)");
 		if (!request_uri.isSipURI())  return null;
 		// else
-		SipURI sip_uri=new SipURI(request_uri);
+		SipURI sip_uri=SipURI.createSipURI(request_uri);
 		String username=sip_uri.getUserName();
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else

@@ -329,7 +329,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		if (contact_naddr!=null) return contact_naddr;
 		// else
 		GenericURI uri=from_naddr.getAddress();
-		String user=(uri.isSipURI())? new SipURI(uri).getUserName() : null;
+		String user=(uri.isSipURI())? SipURI.createSipURI(uri).getUserName() : null;
 		return sip_provider.getContactAddress(user,secure);
 	}
 

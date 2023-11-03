@@ -128,8 +128,11 @@ public class UAConfig implements UAOptions, RegistrationOptions {
 
 	@Override
 	public NameAddress getUserURI() {
-		if (getProxy()!=null && getUser()!=null) return new NameAddress(getDisplayName(),new SipURI(getUser(),getProxy()));
-		else return new NameAddress(getDisplayName(),new SipURI(getUser(),getUaAddress()));
+		if (getProxy()!=null && getUser()!=null) {
+			return new NameAddress(getDisplayName(),new SipURI(getUser(),getProxy()));
+		} else {
+			return new NameAddress(getDisplayName(),new SipURI(getUser(),getUaAddress()));
+		}
 	}
 
 	/**

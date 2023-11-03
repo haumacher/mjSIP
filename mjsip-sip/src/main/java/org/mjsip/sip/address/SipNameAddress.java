@@ -36,7 +36,7 @@ public class SipNameAddress {
 	  * @return true if the NameAddress contains a SIPS URI, false otherwise */
 	public static boolean isSIPS(NameAddress naddr) {
 		GenericURI uri=naddr.getAddress();
-		return (uri.isSipURI() && new SipURI(uri).isSecure());
+		return (uri.isSipURI() && SipURI.createSipURI(uri).isSecure());
 	}
 
 
@@ -47,7 +47,7 @@ public class SipNameAddress {
 		GenericURI uri=naddr.getAddress();
 		if (!uri.isSipURI()) return naddr;
 		// else
-		SipURI sip_uri=new SipURI(uri);
+		SipURI sip_uri=SipURI.createSipURI(uri);
 		if (sip_uri.isSecure()) return naddr;
 		// else
 		sip_uri.setSecure(true);
@@ -62,7 +62,7 @@ public class SipNameAddress {
 		GenericURI uri=naddr.getAddress();
 		if (!uri.isSipURI()) return naddr;
 		// else
-		SipURI sip_uri=new SipURI(uri);
+		SipURI sip_uri=SipURI.createSipURI(uri);
 		if (!sip_uri.isSecure()) return naddr;
 		// else
 		sip_uri.setSecure(false);

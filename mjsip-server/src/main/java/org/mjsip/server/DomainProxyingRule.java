@@ -55,7 +55,7 @@ class DomainProxyingRule implements ProxyingRule {
 	public SipURI getNexthop(GenericURI uri) {
 		if (!uri.isSipURI()) return null;
 		// else
-		SipURI sip_uri=new SipURI(uri);
+		SipURI sip_uri=SipURI.createSipURI(uri);
 		String host=sip_uri.getHost();
 		if ((host.equalsIgnoreCase(domain))) {
 			return new SipURI(sip_uri.getUserName(),nexthop.getAddress().toString(),nexthop.getPort());

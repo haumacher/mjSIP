@@ -278,7 +278,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		if (registrar==null) {
 			GenericURI to_uri=to.getAddress();
 			if (to_uri.isSipURI()) {
-				SipURI sip_uri=new SipURI(to_uri);
+				SipURI sip_uri=SipURI.createSipURI(to_uri);
 				registrar=new SipURI(sip_uri.getHost(),sip_uri.getPort());
 			}
 			else throw new UnexpectedUriSchemeException(to_uri.getScheme());

@@ -27,14 +27,11 @@ package org.mjsip.sip.address;
 
 import java.util.Vector;
 
-import org.mjsip.sip.provider.SipParser;
-import org.zoolu.util.Parser;
-
 
 
 /** Generic URI, according to RFC 2369.
   */
-public class GenericURI {
+public abstract class GenericURI {
 	
 	/** Scheme of SIP URI */
 	public static final String SCHEME_SIP="sip";
@@ -48,64 +45,30 @@ public class GenericURI {
 	/** Lr param name */
 	public static final String PARAM_LR="lr"; 
 
-
-
-	/** Complete URI */
-	protected String uri=null;
-
-
-
-	/** Creates a new GenericURI. */
-	public GenericURI(GenericURI u) {
-		uri=u.uri;
-	}
-
-	/** Creates a new GenericURI. */
-	public GenericURI(String uri) {
-		this.uri=uri;
-	}
-
-	/** Creates and returns a copy of this object. */
 	@Override
-	public Object clone() {
-		return new GenericURI(this);
-	}
+	public abstract Object clone();
 
 	/** Whether object <i>obj</i> is "equal to" this. */
 	@Override
 	public boolean equals(Object obj) {
-		return uri.equals(obj.toString());
+		return toString().equals(obj.toString());
 	}
 
 	/** Gets URI scheme. */
-	public String getScheme() {
-		return uri.substring(0,uri.indexOf(':'));
-	}
+	public abstract String getScheme();
 
 	/** Gets scheme specific part of the URI, i.e. the part after the colon. */
-	public String getSpecificPart() {
-		return uri.substring(uri.indexOf(':')+1);
-	}
+	public abstract String getSpecificPart();
 
 	/** Whether it is a SIP or SIPS URI. */
-	public boolean isSipURI() {
-		String scheme=getScheme();
-		return scheme.equals(SCHEME_SIP) || scheme.equals(SCHEME_SIPS);
-	}
+	public abstract boolean isSipURI();
 
 	/** Whether it is a TEL URI. */
-	public boolean isTelURI() {
-		String scheme=getScheme();
-		return scheme.equals(SCHEME_TEL);
-	}
+	public abstract boolean isTelURI();
 
 	/** Gets string representation of this object. */
 	@Override
-	public String toString() {
-		return uri;
-	}
-
-
+	public abstract String toString();
 
 	/** Whether lr (loose-route) parameter is present. */
 	public boolean hasLr() {
@@ -116,70 +79,31 @@ public class GenericURI {
 		addParameter(PARAM_LR);
 	}
 
-
-
 	/** Gets the value of specified parameter.
 	  * @return Returns the value of the specified parameter or null if not present. */
-	public String getParameter(String name)  {
-		SipParser par=new SipParser(uri);
-		return ((SipParser)par.goTo(';').skipChar()).getParameter(name);
-	}
+	public abstract String getParameter(String name);
 	
 	/** Gets a String Vector of parameter names.
 	  * @return Returns a String Vector of all parameter names or null if no parameter is present. */
-	public Vector getParameterNames()  {
-		SipParser par=new SipParser(uri);
-		return ((SipParser)par.goTo(';').skipChar()).getParameterNames();
-	}
+	public abstract Vector<String> getParameterNames();
 	
 	/** Whether there is the specified parameter. */
-	public boolean hasParameter(String name) {
-		SipParser par=new SipParser(uri);
-		return ((SipParser)par.goTo(';').skipChar()).hasParameter(name);
-	}
+	public abstract boolean hasParameter(String name);
 	
 	/** Whether there are any parameters. */
-	public boolean hasParameters() {
-		if (uri!=null && uri.indexOf(';')>=0) return true;
-		else return false;
-	}
+	public abstract boolean hasParameters();
 	
 	/** Adds a new parameter without a value. */
-	public void addParameter(String name)  {
-		uri=uri+";"+name;       
-	}
+	public abstract void addParameter(String name);
 	
 	/** Adds a new parameter with value. */
-	public void addParameter(String name, String value)  {
-		if (value!=null) uri=uri+";"+name+"="+value;
-		else uri=uri+";"+name;       
-	}
+	public abstract void addParameter(String name, String value);
 
 	/** Removes all parameters (if any). */
-	public void removeParameters()  {
-		int index=uri.indexOf(';');
-		if (index>=0) uri=uri.substring(0,index);      
-	}
+	public abstract void removeParameters();
 
 	/** Removes specified parameter (if present). */
-	public void removeParameter(String name)  {
-		int index=uri.indexOf(';');
-		if (index<0) return;
-		Parser par=new Parser(uri,index);
-		while (par.hasMore()) {
-			int begin_param=par.getPos();
-			par.skipChar();
-			if (par.getWord(SipParser.param_separators).equals(name)) {
-				String top=uri.substring(0,begin_param); 
-				par.goToSkippingQuoted(';');
-				String bottom="";
-				if (par.hasMore()) bottom=uri.substring(par.getPos()); 
-				uri=top.concat(bottom);
-				return;
-			}
-			par.goTo(';');
-		}
-	}
+	public abstract void removeParameter(String name);
 
 }
 

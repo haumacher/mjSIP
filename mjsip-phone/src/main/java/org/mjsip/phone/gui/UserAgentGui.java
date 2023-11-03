@@ -479,7 +479,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		}
 		else {
 			// try to parse a SipURI
-			SipURI uri=new SipURI(name);
+			SipURI uri=SipURI.parseSipURI(name);
 			if (uri!=null) name=uri.toString();
 			else name=null;
 		}

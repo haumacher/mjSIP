@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.mjsip.sip.address.GenericURI;
+import org.mjsip.sip.address.GenericURIImpl;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.Header;
@@ -229,7 +230,7 @@ public class SipParser extends Parser {
 		if (end<0) end=str.length();
 		String uri=getString(end-begin);
 		if (hasMore()) skipChar();
-		return new GenericURI(uri);
+		return new GenericURIImpl(uri);
 	}
 /* 
 	public static SipURI parseSipURI(String s) {
@@ -253,7 +254,7 @@ public class SipParser extends Parser {
 			//if (uri==null) return null;
 			if (uri==null) {
 				setPos(begin);
-				uri=new SipURI(getString());
+				uri=SipURI.parseSipURI(getString());
 			}
 			return new NameAddress(uri);
 		}

@@ -137,7 +137,7 @@ public class RegistrationClient implements TransactionClientListener {
 		NameAddress contact_naddr;
 		{
 			GenericURI to_uri = toNAddr.getAddress();
-			String user=(to_uri.isSipURI())? new SipURI(to_uri).getUserName() : null;
+			String user=(to_uri.isSipURI())? SipURI.createSipURI(to_uri).getUserName() : null;
 			contact_naddr=new NameAddress(sip_provider.getContactAddress(user));
 		}
 
