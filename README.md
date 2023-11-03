@@ -22,13 +22,23 @@ implementations. mjSIP comes with a core package implementation that includes:
 
 ## Changes since 1.8
 
-* Split source into sip, server, and ua modules, added Maven build.
-* Code cleanup: Added type parameter, added override annotations, reduced excessive logging, made fields private final, removed statics, replaced lazy initialization with defined initialization order, reduced number of constructors, enhanced configuration file parsing, applied Java naming conventions, encapsulated fields. 
+* Added Maven build.
+* Split source into core modules `sip`, `server`, `ua`, and supporting modules `net`, `sound`, and `util`. Extracted 
+  examples into modules `examples` and `phone`. 
+* Code cleanup: Added type parameter, added override annotations, reduced excessive logging, made fields private final
+  where possible, removed mutable static fields, replaced lazy initialization with defined initialization order, reduced
+  number of constructors, enhanced configuration file parsing with args4j, applied Java naming conventions, encapsulated
+  fields. Access configuration from production code through read-only interfaces.
 * Replaced self-made logging with slf4j over tinylog.
 * Clarified transaction timeout handling with separate handler methods for each timeout. 
 * Modernized scheduling using ScheduledThreadPoolExecutor.
 * Implemented listening on DTMF info messages.
 * Implemented port pool for RTP media streams. 
+* Separated creation of concrete media streams from user agent handling. Removed audio file configuration (for steaming 
+  and recording) from core components.
+* Pulled out system audio sounds played when calls are incoming, accepted, or terminated to client code.
+* Added audio filter for silence stripping.
+* Added IPv6 support.
 
 ## License
 
