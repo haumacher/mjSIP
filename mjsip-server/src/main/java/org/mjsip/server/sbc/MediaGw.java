@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.mjsip.pool.PortPool;
 import org.mjsip.sdp.MediaDescriptor;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sdp.field.MediaField;
@@ -57,8 +58,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	/** SymmetricUdpRelay listener. */
 	//SymmetricUdpRelayListener mgw_listener;
 
-	/** Avaliable local media ports. */
-	CircularEnumeration media_ports;
+	PortPool _portPool;
 	
 	/** Media address */
 	//String media_addr=null;
@@ -74,10 +74,10 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	/**
 	 * Constructs a new MediaGw.
 	 */
-	public MediaGw(Scheduler scheduler, SessionBorderControllerProfile sbc_profile) {
+	public MediaGw(Scheduler scheduler, PortPool portPool, SessionBorderControllerProfile sbc_profile) {
 		_scheduler = scheduler;
 		this.sbc_profile=sbc_profile;
-		media_ports=new CircularEnumeration(sbc_profile.media_ports);
+		_portPool=portPool;
 		masq_table=new Hashtable();
 		call_set=new HashSet();
 	}
@@ -98,7 +98,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 		// substitute 0.0.0.0 with 127.0.0.1
 		if (dest_addr.equals("0.0.0.0")) dest_addr="127.0.0.1";
 		
-		String masq_addr=sbc_profile.media_addr;
+		String masq_addr=sbc_profile.mediaAddr;
 
 		//String[] media={ "audio" };
 		//int[] masq_port=new int[media.length];                   
@@ -127,7 +127,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			}
 			else {
 				// set masq
-				masq_port[i]=((Integer)media_ports.nextElement()).intValue();
+				masq_port[i]=_portPool.allocate();
 				Masquerade masq=new Masquerade(new SocketAddress(dest_addr,dest_port),new SocketAddress(masq_addr,masq_port[i]));
 				masq_table.put(key,masq);
 			}
@@ -169,28 +169,28 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			int right_port=masq_left.getMasqSoaddr().getPort();
 			
 			SymmetricUdpRelay symm_relay;
-			if (sbc_profile.do_interception) {
+			if (sbc_profile.doInterception) {
 				// intercepting symmetric UDP relay
-				int left_intercept_port=((Integer)media_ports.nextElement()).intValue();
-				int right_intercept_port=((Integer)media_ports.nextElement()).intValue();
+				int left_intercept_port=_portPool.allocate();
+				int right_intercept_port=_portPool.allocate();
 				SocketAddress sink_soaddr=null;
-				if (sbc_profile.sink_addr!=null && sbc_profile.sink_port>0) sink_soaddr=new SocketAddress(sbc_profile.sink_addr,sbc_profile.sink_port);
+				if (sbc_profile.sinkAddr!=null && sbc_profile.sinkPort>0) sink_soaddr=new SocketAddress(sbc_profile.sinkAddr,sbc_profile.sinkPort);
 				symm_relay = new InterceptingUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), left_intercept_port, sink_soaddr, right_intercept_port, sink_soaddr,
-						sbc_profile.do_active_interception, sbc_profile.relay_timeout, this);
+						sbc_profile.doActiveInterception, sbc_profile.relayTimeout, this);
 				LOG.debug("IMGW started: "+symm_relay);
 			}
 			else
-			if (sbc_profile.interpacket_time>0) {
+			if (sbc_profile.interpacketTime>0) {
 				// symmetric regulated UDP relay
 				symm_relay = new SymmetricRegulatedUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
-						masq_right.getPeerSoaddr(), sbc_profile.relay_timeout, sbc_profile.interpacket_time, this);
+						masq_right.getPeerSoaddr(), sbc_profile.relayTimeout, sbc_profile.interpacketTime, this);
 				LOG.debug("MGW started: "+symm_relay);
 			}
 			else {
 				// simple symmetric UDP relay
 				symm_relay = new SymmetricUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
-						masq_right.getPeerSoaddr(), sbc_profile.relay_timeout, this);
+						masq_right.getPeerSoaddr(), sbc_profile.relayTimeout, this);
 				LOG.debug("MGW started: "+symm_relay);
 			}
 
@@ -210,7 +210,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	public void onSymmetricUdpRelayLeftPeerChanged(SymmetricUdpRelay symm_relay, SocketAddress soaddr) {
 		LOG.info("change left peer soaddr "+soaddr);
 		// handover?
-		long htime=sbc_profile.handover_time;
+		long htime=sbc_profile.handoverTime;
 		if (htime>0 && (System.currentTimeMillis()+htime)<symm_relay.getLastLeftChangeTime()) return;
 		// else
 		symm_relay.setLeftSoAddress(soaddr);
@@ -223,7 +223,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	public void onSymmetricUdpRelayRightPeerChanged(SymmetricUdpRelay symm_relay, SocketAddress soaddr) {
 		LOG.debug("change right peer soaddr "+soaddr);
 		// handover?
-		long htime=sbc_profile.handover_time;
+		long htime=sbc_profile.handoverTime;
 		if (htime>0 && (System.currentTimeMillis()+htime)<symm_relay.getLastRightChangeTime()) return;
 		// else
 		symm_relay.setRightSoAddress(soaddr);

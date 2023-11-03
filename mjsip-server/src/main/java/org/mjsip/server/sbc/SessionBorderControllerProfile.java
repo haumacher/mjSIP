@@ -1,117 +1,55 @@
 package org.mjsip.server.sbc;
 
-
-import java.util.Vector;
-
+import org.kohsuke.args4j.Option;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.ConfigFile;
-import org.zoolu.util.Configure;
-import org.zoolu.util.Parser;
-
 
 /**
  * SessionBorderControllerProfile maintains the SessionBorderController configuration.
  */
-public class SessionBorderControllerProfile extends Configure {
+public class SessionBorderControllerProfile {
 	
-	public static final String MEDIA_PORTS = "media_ports";
-		 
-	// *********************** SBC configurations *********************
+	@Option(name = "--relay-timeout", usage = "Maximum time that the UDP relay remains active without receiving UDP datagrams (in milliseconds).")
+	public long relayTimeout=60000; // 1min
 
+	@Option(name = "--binding_timeout", usage = "Refresh time of address-binding cache (in milliseconds).")
+	public long bindingTimeout=3600000;
 
-	/** Maximum time that the UDP relay remains active without receiving UDP datagrams (in milliseconds). */
-	public long relay_timeout=60000; // 1min
+	@Option(name = "--handover_time", usage = "Minimum time between two changes of peer address (in milliseconds).")
+	public int handoverTime=0; //5000;
 
-	/** Refresh time of address-binding cache (in milliseconds) */
-	public long binding_timeout=3600000;
+	@Option(name = "--keepalive-time", usage = "Rate of keep-alive datagrams sent toward all registered UAs (in milliseconds). Set keepalive_time=0 to disable the sending of keep-alive datagrams.")
+	public long keepaliveTime=0;
 
-	/** Minimum time between two changes of peer address (in milliseconds) */
-	public int handover_time=0; //5000;
+	// /** Whether sending keepalive datagram only to UAs that explicitely request it through 'keep-alive' parameter. */
+	// public boolean keepalive_selective=false;
 
-	/** Rate of keep-alive datagrams sent toward all registered UAs (in milliseconds).
-	  * Set keepalive_time=0 to disable the sending of keep-alive datagrams */
-	public long keepalive_time=0;
+	@Option(name = "--keepalive-aggressive", usage = "Whether sending keep-alive datagrams to all user agents (also to non-registered ones).")
+	public boolean keepaliveAggressive=false;
 
-	/** Whether sending keepalive datagram only to UAs that explicitely request it through 'keep-alive' parameter. */
-	//public boolean keepalive_selective=false;
-
-	/** Whether sending keepalive datagram to all contacted UAs (also toward non-registered UAs) */
-	public boolean keepalive_aggressive=false;
-
-	/** Whether implementing symmetric RTP for NAT traversal. */
-	//boolean symmetric_rtp=false;
+	// /** Whether implementing symmetric RTP for NAT traversal. */
+	// boolean symmetric_rtp=false;
 	
-	/** Minimum inter-packet departure time */
-	public long interpacket_time=0; 
+	@Option(name = "--interpacket-time", usage = "Minimum inter-packet departure time.")
+	public long interpacketTime=0; 
 
-	/** Whether intercepting media traffics. */
-	public boolean do_interception=false;
+	@Option(name = "--do-interception", usage = "Whether to intercept media traffic.")
+	public boolean doInterception=false;
 
-	/** Whether injecting new media flows. */
-	public boolean do_active_interception=false;
+	@Option(name = "--do-activeInterception", usage = "Whether to inject new media flows.")
+	public boolean doActiveInterception=false;
 
-	/** Sink address for media traffic interception. */
-	public String sink_addr="127.0.0.1";
+	@Option(name = "--sink-addr", usage = "Sink address for media traffic interception.")
+	public String sinkAddr="127.0.0.1";
 
-	/** Sink port for media traffic interception. */
-	public int sink_port=0;
+	@Option(name = "--sink-port", usage = "Sink port for media traffic interception.")
+	public int sinkPort=0;
 
-	/** Media address. */
-	public String media_addr="0.0.0.0";
+	@Option(name = "--media-addr", usage = "Media address.")
+	public String mediaAddr="0.0.0.0";
 
-	/** Available media ports (default interval=[41000:41499]). */
-	public Vector media_ports=null;
+	@Option(name = "--backend-proxy", usage = "Backend proxy where all requests not coming from it are passed to. "
+			+ "It can be specified as FQDN or host_addr[:host_port]. "
+			+ "Use 'NONE' for not using a backend proxy (or let it undefined).")
+	public SocketAddress backendProxy=null;
 
-	/** First Available media port. */
-	private int first_port=41000;
-	/** Last Available media port. */
-	private int last_port=41199;
-
-	/** Backend proxy where all requests not coming from it are passed to. 
-	  * It can be specified as FQDN or host_addr[:host_port].
-	  * Use 'NONE' for not using a backend proxy (or let it undefined). */
-	public SocketAddress backend_proxy=null;
-
-
-	// ************************** costructors *************************
-	
-	/** Constructs a new SessionBorderControllerProfile */
-	public SessionBorderControllerProfile(ConfigFile config) {
-		config.configure(this);
-		media_ports=new Vector();
-		for (int i=first_port; i<=last_port; i+=2) media_ports.addElement(new Integer(i)); 
-	}
-
-	// **************************** methods ***************************
-
-	/** Parses a single line (loaded from the config file) */
-	@Override
-	public void setOption(String attribute, Parser par) {
-		if (attribute.equals("relay_timeout")) { relay_timeout=par.getInt(); return; }
-		if (attribute.equals("binding_timeout")) { binding_timeout=par.getInt(); return; }
-		if (attribute.equals("handover_time")) { handover_time=par.getInt(); return; }
-		if (attribute.equals("keepalive_time")) { keepalive_time=par.getInt(); return; }
-		//if (attribute.equals("keepalive_selective")) { keepalive_selective=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("keepalive_aggressive")) { keepalive_aggressive=(par.getString().toLowerCase().startsWith("y")); return; }
-		//if (attribute.equals("symmetric_rtp")) { symmetric_rtp=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("interpacket_time")) { interpacket_time=par.getInt(); return; }
-		if (attribute.equals("do_interception")) { do_interception=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("do_active_interception")) { do_active_interception=(par.getString().toLowerCase().startsWith("y")); return; }
-		if (attribute.equals("sink_addr")) { sink_addr=par.getString(); return; }
-		if (attribute.equals("sink_port")) { sink_port=par.getInt(); return; }
-		if (attribute.equals("media_addr")) { media_addr=par.getString(); return; }
-		if (attribute.equals(MEDIA_PORTS)) {
-			char[] delim={' ','-',':'};
-			first_port=Integer.parseInt(par.getWord(delim));
-			last_port=Integer.parseInt(par.getWord(delim));
-			return;
-		}
-		if (attribute.equals("backend_proxy")) {
-			String soaddr=par.getString();
-			if (soaddr==null || soaddr.length()==0 || soaddr.equalsIgnoreCase(Configure.NONE)) backend_proxy=null;
-			else backend_proxy=new SocketAddress(soaddr);
-			return;
-		}
-	}  
- 
 }

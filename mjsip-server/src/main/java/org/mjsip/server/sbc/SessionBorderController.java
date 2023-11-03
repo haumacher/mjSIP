@@ -28,6 +28,8 @@ import java.util.Vector;
 
 import org.mjsip.config.MetaConfig;
 import org.mjsip.config.OptionParser;
+import org.mjsip.pool.PortConfig;
+import org.mjsip.pool.PortPool;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.server.Proxy;
 import org.mjsip.server.ServerProfile;
@@ -47,7 +49,6 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
-import org.zoolu.util.ConfigFile;
 import org.zoolu.util.Parser;
 
 
@@ -107,29 +108,20 @@ public class SessionBorderController extends Proxy {
 	  * @param sip_provider is the SIP transport provider
 	  * @param server_profile the ServerProfile cointaining basic server confiuguration
 	  * @param sbc_profile the SessionBorderControllerProfile cointaining specific SBC network configuration. */
-	public SessionBorderController(ExtendedSipProvider sip_provider, ServerProfile server_profile, SessionBorderControllerProfile sbc_profile) {
+	public SessionBorderController(ExtendedSipProvider sip_provider, PortPool portPool,ServerProfile server_profile, SessionBorderControllerProfile sbc_profile) {
 		super(sip_provider,server_profile);
-		init(sip_provider,server_profile,sbc_profile);
-	}
 
-
-	/** Inits the SessionBorderController. */
-	private void init(ExtendedSipProvider sip_provider, ServerProfile server_profile, SessionBorderControllerProfile sbc_profile) {
-		// init
 		this.sip_provider=sip_provider;
 		this.sbc_profile=sbc_profile;
 		
-		if (sbc_profile.keepalive_time>0 && !sbc_profile.keepalive_aggressive) keepalive_daemons=new Hashtable();
-		if (sbc_profile.media_addr==null || sbc_profile.media_addr.equals("0.0.0.0")) sbc_profile.media_addr=sip_provider.getViaAddress();
+		if (sbc_profile.keepaliveTime>0 && !sbc_profile.keepaliveAggressive) keepalive_daemons=new Hashtable();
+		if (sbc_profile.mediaAddr==null || sbc_profile.mediaAddr.equals("0.0.0.0")) sbc_profile.mediaAddr=sip_provider.getViaAddress();
 		
-		media_gw = new MediaGw(sip_provider.scheduler(), sbc_profile);
+		media_gw = new MediaGw(sip_provider.scheduler(), portPool, sbc_profile);
 
 		// be sure to stay on route
 		//server_profile.on_route=true;
-
-		LOG.info("Available media ports: ["+sbc_profile.media_ports.elementAt(0)+":"+sbc_profile.media_ports.elementAt(sbc_profile.media_ports.size()-1)+"] ("+sbc_profile.media_ports.size()+")");
 	}
-
 
 	/** When a new request message is received for a local user. */
 	@Override
@@ -156,11 +148,11 @@ public class SessionBorderController extends Proxy {
 		LOG.debug("inside updateProxyingRequest(req)");
 		
 		// before doing anything, force the use of a backend proxy
-		if (sbc_profile.backend_proxy!=null) {
+		if (sbc_profile.backendProxy!=null) {
 			ViaHeader via=req.getViaHeader();
 			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():sip_provider.sipConfig().getDefaultPort());
 			// pass to the backend_proxy only requests that are not coming from it
-			if (!via_soaddr.equals(sbc_profile.backend_proxy)) {
+			if (!via_soaddr.equals(sbc_profile.backendProxy)) {
 				Vector route_list;
 				if (req.hasRouteHeader()) route_list=req.getRoutes().getHeaders();
 				else route_list=new Vector();
@@ -180,12 +172,12 @@ public class SessionBorderController extends Proxy {
 					if (route.isSipURI()) {
 						SipURI sip_route=SipURI.createSipURI(route);
 						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():sip_provider.sipConfig().getDefaultPort());
-						already_on_route=route_soaddr.equals(sbc_profile.backend_proxy);
+						already_on_route=route_soaddr.equals(sbc_profile.backendProxy);
 					}
 				}
 				// force the route via the backend_proxy
 				if (!already_on_route) {
-					SipURI bp_route=new SipURI(sbc_profile.backend_proxy.getAddress().toString(),sbc_profile.backend_proxy.getPort());
+					SipURI bp_route=new SipURI(sbc_profile.backendProxy.getAddress().toString(),sbc_profile.backendProxy.getPort());
 					bp_route.addLr();
 					route_list.insertElementAt(new RouteHeader(new NameAddress(bp_route)),index);
 					req.setRoutes(new MultipleHeader(route_list));
@@ -254,14 +246,14 @@ public class SessionBorderController extends Proxy {
 						keepalive=(SipKeepAlive)keepalive_daemons.get(key);
 						if (!keepalive.isRunning()) {
 							keepalive_daemons.remove(key);
-							keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepalive_time);
+							keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepaliveTime);
 							keepalive_daemons.put(key,keepalive);
 							LOG.debug("KeepAlive: restart: "+soaddr+" ("+time+"secs)");
 						}
 						else LOG.debug("KeepAlive: update: "+soaddr+" ("+time+"secs)");
 					}
 					else {
-						keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepalive_time);
+						keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepaliveTime);
 						keepalive_daemons.put(key,keepalive);
 						LOG.debug("KeepAlive: start: "+soaddr+" ("+time+"secs)");
 					}
@@ -360,24 +352,25 @@ public class SessionBorderController extends Proxy {
 	public static void main(String[] args) {
 		SipConfig sipConfig = new SipConfig();
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile();
+		PortConfig portConfig = new PortConfig();
 
-		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-ua", sipConfig, schedulerConfig);
+		MetaConfig metaConfig = OptionParser.parseOptions(args, ".mjsip-sbc", sipConfig, schedulerConfig, sbc_profile, portConfig);
 		
 		sipConfig.normalize();
 		
 		ServerProfile server_profile=new ServerProfile(metaConfig.getConfigFile());
-		SessionBorderControllerProfile sbc_profile=new SessionBorderControllerProfile(new ConfigFile(metaConfig.getConfigFile()));
 
 		// remove outbound proxy in case of the presence of a backend proxy
-		if (sbc_profile.backend_proxy!=null) {
+		if (sbc_profile.backendProxy!=null) {
 			sipConfig.setOutboundProxy(null);
 		}
 		
 		// create a new ExtendedSipProvider
-		long keepalive_aggressive_time=(sbc_profile.keepalive_aggressive)? sbc_profile.keepalive_time : 0;
-		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig, new Scheduler(schedulerConfig), sbc_profile.binding_timeout,keepalive_aggressive_time);
+		long keepalive_aggressive_time=(sbc_profile.keepaliveAggressive)? sbc_profile.keepaliveTime : 0;
+		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig, new Scheduler(schedulerConfig), sbc_profile.bindingTimeout,keepalive_aggressive_time);
 
 		// create and start the SBC
-		new SessionBorderController(extended_provider,server_profile,sbc_profile);
+		new SessionBorderController(extended_provider, portConfig.createPool(), server_profile,sbc_profile);
 	}
 }

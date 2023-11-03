@@ -29,6 +29,8 @@ import java.io.PrintStream;
 
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
+import org.mjsip.pool.PortConfig;
+import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
@@ -44,8 +46,6 @@ import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.clip.ClipPlayer;
-import org.mjsip.ua.pool.PortConfig;
-import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 

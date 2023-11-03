@@ -25,6 +25,8 @@ import java.io.File;
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
+import org.mjsip.pool.PortConfig;
+import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
@@ -40,8 +42,6 @@ import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
-import org.mjsip.ua.pool.PortConfig;
-import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 
 /** Jukebox is a simple audio server.

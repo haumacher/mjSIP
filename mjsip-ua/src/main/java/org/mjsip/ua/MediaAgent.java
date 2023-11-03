@@ -6,7 +6,7 @@ package org.mjsip.ua;
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaStreamer;
-import org.mjsip.ua.pool.PortPool;
+import org.mjsip.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 
 /**
