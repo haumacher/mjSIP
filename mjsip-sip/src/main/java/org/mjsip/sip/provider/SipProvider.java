@@ -114,10 +114,10 @@ public class SipProvider implements SipTransportListener {
 	private static final int MIN_MESSAGE_LENGTH=12;
 	
 	/** Message begin delimiter */
-	private static final String MESSAGE_BEGIN_DELIMITER="-----Begin-of-message-----\r\n";
+	private static final String MESSAGE_BEGIN_DELIMITER = "-----Begin-of-message-----\n";
 
 	/** Message end delimiter */
-	private static final String MESSAGE_END_DELIMITER="-----End-of-message-----\r\n";
+	private static final String MESSAGE_END_DELIMITER = "\n-----End-of-message-----";
 
 	// ************************ Other attributes *************************
 
@@ -595,10 +595,9 @@ public class SipProvider implements SipTransportListener {
 	  * @return Returns a ConnectionId in case of connection-oriented delivery
 	  * (e.g. TCP) or null in case of connection-less delivery (e.g. UDP) */
 	public ConnectionId sendMessage(SipMessage msg) {
-		if (_sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
-			LOG.trace("sendMessage()");
-		LOG.trace("message to send:\r\n" + MESSAGE_BEGIN_DELIMITER
-				+ msg.toString() + MESSAGE_END_DELIMITER);
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(MESSAGE_BEGIN_DELIMITER + msg + MESSAGE_END_DELIMITER);
+		}
 
 		ConnectionId conn_id=msg.getConnectionId();
 		if (conn_id!=null) {
@@ -608,9 +607,9 @@ public class SipProvider implements SipTransportListener {
 			if (sip_transport!=null)
 			try {
 				SipTransportConnection conn=((SipTransportCO)sip_transport).sendMessageCO(msg);
-				// logs
-				logMessage("Sent message: ", conn.getProtocol(), conn.getRemoteAddress().toString(),
-						conn.getRemotePort(), msg.getLength(), msg);
+
+				logMessage("Sent message to: ", conn.getProtocol(), conn.getRemoteAddress().toString(),
+						conn.getRemotePort(), msg);
 				return conn_id;
 			}
 			catch (IOException e) {
@@ -646,7 +645,7 @@ public class SipProvider implements SipTransportListener {
 			
 			SipURI nexthop_sip_uri=null;
 			if (nexthop_uri.isSipURI()) {
-				nexthop_sip_uri=new SipURI(nexthop_uri);
+				nexthop_sip_uri=SipURI.createSipURI(nexthop_uri);
 			}
 			else
 			if (nexthop_uri.isTelURI()) {
@@ -788,8 +787,6 @@ public class SipProvider implements SipTransportListener {
 	  * It does the same as method {@link #sendMessage(SipMessage,String,String,int,int)}, but no via address is added (if not already present) in request messages.  */
 	public ConnectionId sendRawMessage(SipMessage msg, String proto, String dest_addr, int dest_port, int ttl) {
 		try {
-			if (_sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
-				LOG.debug("Resolving host address '" + dest_addr + "'");
 			IpAddress dest_ipaddr=IpAddress.getByName(dest_addr);  
 			return sendRawMessage(msg,proto,dest_ipaddr,dest_port,ttl); 
 		}
@@ -803,11 +800,6 @@ public class SipProvider implements SipTransportListener {
 	/** Sends the <i>msg</i> message, specifing the transport protocol, nexthop address and port.
 	  * For request messages, no via address is added. */
 	private ConnectionId sendRawMessage(SipMessage msg, String proto, IpAddress dest_ipaddr, int dest_port, int ttl) {
-		if (_sipConfig.isLogAllPackets() || msg.getLength() > MIN_MESSAGE_LENGTH)
-			LOG.debug("Sending message to "
-					+ (new ConnectionId(proto, dest_ipaddr, dest_port))
-							.toString());
-
 		if (proto==null) {
 			LOG.warn("null protocol; message discarded");
 			return null;
@@ -821,8 +813,8 @@ public class SipProvider implements SipTransportListener {
 		// else
 		try {
 			ConnectionId connection_id=sip_transport.sendMessage(msg,dest_ipaddr,dest_port,ttl);
-			// logs
-			logMessage("Sent message: ", proto, dest_ipaddr.toString(), dest_port, msg.getLength(), msg);
+
+			logMessage("Sent message to: ", proto, dest_ipaddr.toString(), dest_port, msg);
 
 			return connection_id;
 		}
@@ -857,20 +849,18 @@ public class SipProvider implements SipTransportListener {
 	public void onReceivedMessage(SipTransport transport, SipMessage msg) {
 		try {
 			// logs
-			logMessage("Received message: ", msg.getTransportProtocol(), msg.getRemoteAddress(), msg.getRemotePort(),
-					msg.getLength(), msg);
+			logMessage("Received message from: ", msg.getTransportProtocol(), msg.getRemoteAddress(),
+					msg.getRemotePort(), msg);
 			
 			// discard too short messages (e.g. CRLFCRLF "PING", or CRLF "PONG")
 			if (msg.getLength()<=4) {
-				if (_sipConfig.isLogAllPackets())
-					LOG.debug("message too short: discarded\r\n");
+				LOG.warn("message too short: discarded\r\n");
 				return;
 			}
 			// discard non-SIP messages
 			String first_line=msg.getFirstLine();
 			if (first_line==null || first_line.toUpperCase().indexOf("SIP/2.0")<0) {
-				if (_sipConfig.isLogAllPackets())
-					LOG.debug("NOT a SIP message: discarded\r\n");
+				LOG.warn("NOT a SIP message: discarded\r\n");
 				return;
 			}
 			
@@ -1157,10 +1147,10 @@ public class SipProvider implements SipTransportListener {
 	//******************************* Logs *******************************
 
 	/** Adds the SIP message to the message log. */
-	private final void logMessage(String message, String proto, String addr, int port, int len, SipMessage msg) {
-		if (_sipConfig.isLogAllPackets() || len >= MIN_MESSAGE_LENGTH) {
-			LOG.debug(message + "From: " + addr + ":" + port + "/" + proto + " (" + len + " bytes):\n\t"
-					+ msg.toString().replace("\n", "\n\t"));
+	private final void logMessage(String message, String proto, String addr, int port, SipMessage msg) {
+		if (_sipConfig.isLogAllPackets()) {
+			LOG.info(message + addr + ":" + port + "/" + proto + " (" + msg.getLength() + " bytes).\n"
+					+ MESSAGE_BEGIN_DELIMITER + msg + MESSAGE_END_DELIMITER);
 		}
 	}
 
