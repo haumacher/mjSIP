@@ -115,33 +115,6 @@ public class RegistrationClient implements TransactionClientListener {
 	ScheduledFuture<?> _registrationTimer;
 
 	/**
-	 * Creates a new RegistrationClient with authentication credentials (i.e. username, realm, and
-	 * passwd).
-	 * <p>
-	 * The From URI is equal to the To URI. The Contact URI is automatically formed with the user
-	 * name from the AOR and the address:port from the SIP provider. If a secure transport is preset
-	 * (e.g. TLS), a SIPS URI is registered as contact URI.
-	 * 
-	 * @param sip_provider
-	 *        the SIP provider
-	 * @param registrar
-	 *        the registrar server
-	 * @param to_naddr
-	 *        the AOR of the resource that has to be registered (the URI in the To header field)
-	 * @param username
-	 *        the username for authentication
-	 * @param realm
-	 *        the realm for authentication
-	 * @param passwd
-	 *        the password for authentication
-	 * @param listener
-	 *        the RegistrationClient listener
-	 */
-	public RegistrationClient(SipProvider sip_provider, SipURI registrar, NameAddress to_naddr, String username, String realm, String passwd, RegistrationClientListener listener) {
-		this(sip_provider, registrar, to_naddr, to_naddr, null, listener, username, realm, passwd);
-	}
-
-	/**
 	 * Creates a {@link RegistrationClient}.
 	 *
 	 * @param sip_provider
@@ -153,58 +126,38 @@ public class RegistrationClient implements TransactionClientListener {
 	 */
 	public RegistrationClient(SipProvider sip_provider, RegistrationOptions regConfig,
 			RegistrationClientListener listener) {
-		this(sip_provider, new SipURI(regConfig.getRegistrar()), regConfig.getUserURI(), regConfig.getAuthUser(),
-				regConfig.getAuthRealm(), regConfig.getAuthPasswd(), listener);
-	}
 
-	/**
-	 * Inits the RegistrationClient.
-	 * 
-	 * @param sip_provider
-	 *        the SIP provider
-	 * @param registrar_uri
-	 *        the registrar server
-	 * @param to_naddr
-	 *        the AOR of the resource that has to be registered (the URI in the To header field)
-	 * @param from_naddr
-	 *        the URI of the registering UA (the URI in the From header field)
-	 * @param contact_naddr
-	 *        the registered contact URI
-	 * @param listener
-	 *        the RegistrationClient listener
-	 * @param username
-	 *        the username for authentication
-	 * @param realm
-	 *        the realm for authentication
-	 * @param passwd
-	 *        the password for authentication
-	 */
-	public RegistrationClient(SipProvider sip_provider, SipURI registrar_uri, NameAddress to_naddr,
-			NameAddress from_naddr, NameAddress contact_naddr, RegistrationClientListener listener, String username, String realm, String passwd) {
+		NameAddress toNAddr = regConfig.getUserURI();
+		NameAddress fromNAddr = toNAddr;
+
 		_listener = listener;
 		_sipProvider = sip_provider;
-		_registrarUri = registrar_uri;
-		if (contact_naddr==null) {
-			GenericURI to_uri=to_naddr.getAddress();
+		_registrarUri = SipURI.parseSipURI(regConfig.getRegistrar());
+
+		NameAddress contact_naddr;
+		{
+			GenericURI to_uri = toNAddr.getAddress();
 			String user=(to_uri.isSipURI())? new SipURI(to_uri).getUserName() : null;
 			contact_naddr=new NameAddress(sip_provider.getContactAddress(user));
 		}
+
 		if (SipNameAddress.isSIPS(contact_naddr)) {
 			// change scheme of to-uri, from-uri, and request-uri to SIPS
-			to_naddr=SipNameAddress.toSIPS(to_naddr);
-			from_naddr=SipNameAddress.toSIPS(from_naddr);
-			registrar_uri.setSecure(true);
+			toNAddr = SipNameAddress.toSIPS(toNAddr);
+			fromNAddr = SipNameAddress.toSIPS(fromNAddr);
+			_registrarUri.setSecure(true);
 		}
-		_toNAddr = to_naddr;
-		_fromNAddr = from_naddr;
+
+		_toNAddr = toNAddr;
+		_fromNAddr = fromNAddr;
 		_contactNAddr = contact_naddr;
 
 		_expireTime = sip_provider.sipConfig().getDefaultExpires();
 		_renewTime = sip_provider.sipConfig().getDefaultExpires();
 
-		_username = username;
-		_realm = realm;
-		_passwd = passwd;
+		_username = regConfig.getAuthUser();
+		_realm = regConfig.getAuthRealm();
+		_passwd = regConfig.getAuthPasswd();
 	}
 
 
@@ -237,9 +190,13 @@ public class RegistrationClient implements TransactionClientListener {
 	/** Registers with the registrar server for <i>expire_time</i> seconds, with a given message body. */
 	protected void register(int expire_time, String content_type, byte[] body) {
 		_attempts=0;
-		if (expire_time>0) this._expireTime=expire_time;
+		if (expire_time > 0) {
+			this._expireTime = expire_time;
+		}
 		String call_id=_sipProvider.pickCallId();
-		SipMessage req=_sipProvider.messageFactory().createRegisterRequest(_registrarUri,_toNAddr,_fromNAddr,_contactNAddr,call_id);
+		SipMessage req = _sipProvider.messageFactory().createRegisterRequest(_registrarUri, _toNAddr, _fromNAddr,
+				_contactNAddr, call_id);
+
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(expire_time)));
 		if (_nextNonce!=null) {
 			AuthorizationHeader ah=new AuthorizationHeader("Digest");
@@ -258,9 +215,10 @@ public class RegistrationClient implements TransactionClientListener {
 			req.setBody(content_type,body);
 		}
 		if (expire_time > 0) {
-			LOG.info("Registering contact: " + _contactNAddr + " (expiry " + expire_time + " secs)");
+			LOG.info("Registering contact: " + _contactNAddr + " (expiry " + expire_time + " secs) at "
+					+ _registrarUri.getHost());
 		} else {
-			LOG.info("Unregistering contact: " + _contactNAddr);
+			LOG.info("Unregistering contact: " + _contactNAddr + " from " + _registrarUri.getHost());
 		}
 		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
