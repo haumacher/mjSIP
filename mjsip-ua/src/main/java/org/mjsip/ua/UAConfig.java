@@ -18,13 +18,13 @@ public class UAConfig implements UAOptions, RegistrationOptions {
 	@Option(name = "--display-name", metaVar = "<name>", usage = "The display name of the user.")
 	private String _displayName=null;
 
-	@Option(name = "--user", metaVar = "<nam>", usage = "The user ID to register at the registrar.")
-	private String _user=null;
+	@Option(name = "--user", metaVar = "<name>", usage = "The user ID to register at the registrar.")
+	private String _user="alice";
 
 	@Option(name = "--proxy", usage = "Proxy server to use.")
 	private String _proxy=null;
 
-	@Option(name = "--registrar", usage = "Registrar server.")
+	@Option(name = "--registrar", usage = "Registrar server.", required = true)
 	private String _registrar=null;
 
 	@Option(name = "--address")
@@ -118,9 +118,13 @@ public class UAConfig implements UAOptions, RegistrationOptions {
 		if (getAuthRealm()==null && getProxy()!=null) setAuthRealm(getProxy());
 		if (getAuthRealm()==null && getRegistrar()!=null) setAuthRealm(getRegistrar());
 		if (getAuthUser()==null && getUser()!=null) setAuthUser(getUser());
-		if (getUaAddress()==null) {
+
+		String uaAddress = getUaAddress();
+		if (uaAddress==null) {
 			setUaAddress(sipConfig.getViaAddr());
-			if (sipConfig.getHostPort()!=sipConfig.getDefaultPort()) setUaAddress(getUaAddress() + ":"+sipConfig.getHostPort());
+			if (sipConfig.getHostPort() > 0 && sipConfig.getHostPort() != sipConfig.getDefaultPort()) {
+				setUaAddress(uaAddress + ":" + sipConfig.getHostPort());
+			}
 		}
 	}
 
