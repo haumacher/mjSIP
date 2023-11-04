@@ -52,7 +52,7 @@ public class SipConfig implements SipOptions {
 	public static final String ALL_INTERFACES="ALL-INTERFACES";
 
 	/** String value "auto-configuration" used for auto configuration of the host address */
-	public static final String AUTO_CONFIGURATION="AUTO-CONFIGURATION";
+	public static final String AUTO_CONFIGURATION = "auto-configuration";
 
 	/** @see #getDefaultPort() */
 	@Option(name = "--default-port")
