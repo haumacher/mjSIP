@@ -67,7 +67,6 @@ public class Registrar extends ServerEngine {
 	/** When a new request is received for the local server. */
 	@Override
 	public void processRequestToLocalServer(SipMessage msg) {
-		
 		LOG.debug("inside processRequestToLocalServer(msg)");
 		if (server_profile.isRegistrar && msg.isRegister()) {
 			TransactionServer t=new TransactionServer(sip_provider,msg,null);
@@ -90,16 +89,13 @@ public class Registrar extends ServerEngine {
 			}
 			
 			t.respondWith(resp);
-		}
-		else
-		if (!msg.isAck()) {
+		} else if (!msg.isAck()) {
 			// send a stateless error response
 			int result=501; // response code 501 ("Not Implemented")
 			SipMessage resp=sip_provider.messageFactory().createResponse(msg,result,null,null);
 			sip_provider.sendMessage(resp);
 		}     
 	}
-
 
 	/** When a new request message is received for a local user. */
 	@Override
@@ -114,10 +110,13 @@ public class Registrar extends ServerEngine {
 	/** When a new request message is received for a remote UA. */
 	@Override
 	public void processRequestToRemoteUA(SipMessage msg) {
-		LOG.debug("inside processRequestToRemoteUA(msg)");
 		// stateless-response (in order to avoid DoS attacks)
-		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
-		else LOG.info("message discarded");
+		if (msg.isAck()) {
+			// Ignore.
+		} else {
+			LOG.info("Ignoring proxy request to: " + msg.getToHeader().getValue());
+			sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
+		}
 	}
 
 
