@@ -80,19 +80,19 @@ public abstract class ServerEngine implements SipProviderListener {
 	protected AuthenticationServer as;
 	
 	/** List of already supported location services */
-	protected static final String[] LOCATION_SERVICES={ "local", "ldap" };
+	protected static final String[] LOCATION_SERVICES={ "local" };
 	/** List of location service Classes (ordered as in <i>LOCATION_SERVICES</i>) */
-	protected static final String[] LOCATION_SERVICE_CLASSES={ "local.server.LocationServiceImpl", "local.ldap.LdapLocationServiceImpl" };
+	protected static final String[] LOCATION_SERVICE_CLASSES={ LocationServiceImpl.class.getName() };
 
 	/** List of already supported authentication services */
-	protected static final String[] AUTHENTICATION_SERVICES={ "local", "ldap" };
+	protected static final String[] AUTHENTICATION_SERVICES={ "local" };
 	/** List of authentication service Classes (ordered as in <i>AUTHENTICATION_SERVICES</i>) */
-	protected static final String[] AUTHENTICATION_SERVICE_CLASSES={ "local.server.AuthenticationServiceImpl", "local.ldap.LdapAuthenticationServiceImpl" };
+	protected static final String[] AUTHENTICATION_SERVICE_CLASSES={ AuthenticationServiceImpl.class.getName() };
 
 	/** List of already supported authentication schemes */
 	protected static final String[] AUTHENTICATION_SCHEMES={ "Digest" };
 	/** List of authentication server Classes (ordered as in <i>AUTHENTICATION_SCHEMES</i>) */
-	protected static final String[] AUTHENTICATION_SERVER_CLASSES={ "local.server.AuthenticationServerImpl" };
+	protected static final String[] AUTHENTICATION_SERVER_CLASSES={ AuthenticationServerImpl.class.getName() };
 
 
 	// *************************** abstract methods ***************************
