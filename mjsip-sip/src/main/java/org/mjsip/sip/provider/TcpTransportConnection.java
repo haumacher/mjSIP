@@ -69,18 +69,28 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 	}
 
 
-	/** Creates a new TcpTransportConnection.
-	  * @param socket the TCP socket
-	  * @param listener the TcpTransportConnection listener */
-	public TcpTransportConnection(TcpSocket socket, SipTransportConnectionListener listener) {
+	/**
+	 * Creates a new TcpTransportConnection.
+	 * 
+	 * @param socket
+	 *        the TCP socket
+	 * @param listener
+	 *        the TcpTransportConnection listener
+	 */
+	public TcpTransportConnection(TcpSocket socket, SipTransportConnectionListener listener) throws IOException {
 		init(socket,listener);
 	}
 
 
-	/** Inits the TcpTransportConnection.
-	  * @param socket the TCP socket
-	  * @param listener the TcpTransportConnection listener */
-	private void init(TcpSocket socket, SipTransportConnectionListener listener) {
+	/**
+	 * Inits the TcpTransportConnection.
+	 * 
+	 * @param socket
+	 *        the TCP socket
+	 * @param listener
+	 *        the TcpTransportConnection listener
+	 */
+	private void init(TcpSocket socket, SipTransportConnectionListener listener) throws IOException {
 		this.listener=listener;
 		TcpConnectionListener this_tcp_conn_listener=new TcpConnectionListener() {
 			@Override

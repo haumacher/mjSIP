@@ -62,9 +62,6 @@ public class TcpConnection extends Thread {
 	/** The OutputStream */
 	OutputStream ostream;
 
-	/** InputStream/OutputStream error */
-	Exception error;
-
 	/** Whether it has been halted */
 	boolean stop; 
 
@@ -76,22 +73,22 @@ public class TcpConnection extends Thread {
 
 
 
-	/** Costructs a new TcpConnection. */
-	public TcpConnection(TcpSocket socket, TcpConnectionListener listener) {
+	/** Constructs a new TcpConnection.*/
+	public TcpConnection(TcpSocket socket, TcpConnectionListener listener) throws IOException {
 		init(socket,0,listener);
 		start();
 	}
 
 
-	/** Costructs a new TcpConnection. */
-	public TcpConnection(TcpSocket socket, long alive_time, TcpConnectionListener listener) {
+	/** Constructs a new TcpConnection.*/
+	public TcpConnection(TcpSocket socket, long alive_time, TcpConnectionListener listener) throws IOException {
 		init(socket,alive_time,listener);
 		start();
 	}
 
 
 	/** Inits the TcpConnection. */
-	private void init(TcpSocket socket, long alive_time, TcpConnectionListener listener) {
+	private void init(TcpSocket socket, long alive_time, TcpConnectionListener listener) throws IOException {
 		this.listener=listener;
 		this.socket=socket;
 		this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
@@ -99,17 +96,8 @@ public class TcpConnection extends Thread {
 		this.stop=false; 
 		this.is_running=true; 
 
-		this.istream=null;
-		this.ostream=null;
-		this.error=null;
-		try {
-			istream=new BufferedInputStream(socket.getInputStream());
-			ostream=new BufferedOutputStream(socket.getOutputStream());
-		}
-		catch (Exception e) {
-			LOG.error("Initializing connection failed.", e);
-			error=e;
-		}
+		istream=new BufferedInputStream(socket.getInputStream());
+		ostream=new BufferedOutputStream(socket.getOutputStream());
 	}
 
 
@@ -183,8 +171,8 @@ public class TcpConnection extends Thread {
 		byte[] buff=new byte[BUFFER_SIZE];
 		long expire=0;
 		if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
+		IOException error = null;
 		try {
-			if (error!=null) throw error;
 			socket.setSoTimeout(socket_timeout);         
 			// loop
 			while(!stop) {
@@ -207,8 +195,8 @@ public class TcpConnection extends Thread {
 				}
 			}
 		}
-		catch (Exception e) {
-			LOG.warn("TCP connection crashed.", e);
+		catch (IOException e) {
+			LOG.info("TCP connection terminated: " + e.getMessage());
 			error=e;
 			stop=true;
 		}

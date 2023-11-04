@@ -47,8 +47,10 @@ public class TlsTransportConnection extends TcpTransportConnection {
 	}
 
 
-	/** Costructs a new TlsTransportConnection */
-	public TlsTransportConnection(TcpSocket socket, SipTransportConnectionListener listener) {
+	/**
+	 * Constructs a new TlsTransportConnection
+	 */
+	public TlsTransportConnection(TcpSocket socket, SipTransportConnectionListener listener) throws IOException {
 		super(socket,listener);
 	}
 
