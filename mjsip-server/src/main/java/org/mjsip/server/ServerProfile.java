@@ -27,7 +27,7 @@ public class ServerProfile {
 	@Option(name = "--domain-names", usage = "The domain names that the server manages. "
 			+ "Specify the domain names for which the location service maintains user bindings. "
 			+ "Use 'auto-configuration' for automatic configuration of the domain name.", handler = DomainNamesHandler.class)
-	public String[] domainNames=null;
+	public String[] domainNames= {SipConfig.AUTO_CONFIGURATION};
 	
 	@Option(name = "--domain-port-any", usage = "Whether all ports are considered valid local domain ports (regardless which SIP port is used).", handler = YesNoHandler.class)
 	public boolean domainPortAny=false;
@@ -39,7 +39,7 @@ public class ServerProfile {
 	public int expires=3600;
 	
 	@Option(name = "--register-new-users", usage = "Whether the registrar can register new users (i.e. REGISTER requests from unregistered users).", handler = YesNoHandler.class)
-	public boolean registerNewUsers=false;
+	public boolean registerNewUsers=true;
 	
 	@Option(name = "--is-open-proxy", usage = "Whether the server relays requests for (or to) non-local users.", handler = YesNoHandler.class)
 	public boolean isOpenProxy=false;
@@ -118,6 +118,14 @@ public class ServerProfile {
 	public void normalize() {
 		if (authenticationRealm!=null && authenticationRealm.equals(Configure.NONE)) authenticationRealm=null;
 		if (domainNames==null) domainNames=new String[0];
+		
+		for (int n = 0, cnt = domainNames.length; n < cnt; n++) {
+			if (domainNames[n].equalsIgnoreCase(SipConfig.AUTO_CONFIGURATION)) {
+				IpAddress host_addr=IpAddress.getLocalHostAddress();
+				domainNames[n] = host_addr.toString();
+			}
+		}
+		
 		if (authenticatedPhoneProxyingRules==null) authenticatedPhoneProxyingRules=new ProxyingRule[0];
 		if (phoneProxyingRules==null) phoneProxyingRules=new ProxyingRule[0];
 		if (authenticatedDomainProxyingRules==null) authenticatedDomainProxyingRules=new ProxyingRule[0];
@@ -137,15 +145,7 @@ public class ServerProfile {
 			
 			do {
 				String domain=par.getWord(delim);
-				if (domain.equals(SipConfig.AUTO_CONFIGURATION)) {
-					// auto configuration
-					IpAddress host_addr=IpAddress.getLocalHostAddress();
-					setter.addValue(host_addr.toString());
-				}
-				else {
-					// manual configuration
-					setter.addValue(domain);
-				}
+				setter.addValue(domain);
 			} while (par.hasMore());
 			
 			return 1;
