@@ -801,13 +801,13 @@ public class SipProvider implements SipTransportListener {
 	  * For request messages, no via address is added. */
 	private ConnectionId sendRawMessage(SipMessage msg, String proto, IpAddress dest_ipaddr, int dest_port, int ttl) {
 		if (proto==null) {
-			LOG.warn("null protocol; message discarded");
+			LOG.warn("No protocol, message discarded.");
 			return null;
 		}
 		// else
 		SipTransport sip_transport=(SipTransport)sip_transports.get(proto.toLowerCase());
 		if (sip_transport==null) {
-			LOG.warn("unsupported protocol " + proto + "; message discarded");
+			LOG.warn("Unsupported protocol " + proto + ", message discarded.");
 			return null;
 		}
 		// else
@@ -827,15 +827,16 @@ public class SipProvider implements SipTransportListener {
 
 	/** Sends the <i>msg</i> message using the specified transport connection. */
 	/*
-	 * public ConnectionId sendMessage(SipMessage msg, ConnectionId conn_id) { if (log_all_packets ||
-	 * msg.getLength()>MIN_MESSAGE_LENGTH) LOG.info("Sending message through conn "+conn_id);
-	 * LOG.trace("message to send:\r\n"+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
-	 * SipTransportConnection conn=null; for (Enumeration e=sip_transports.elements(); e.hasMoreElements() &&
-	 * conn==null; ) { SipTransport transp=(SipTransport)e.nextElement(); if (isReliableTransport(transp))
-	 * conn=((SipTransportCO)transp).sendMessage(msg,conn_id); } if (conn!=null) { // logs String
-	 * proto=conn.getProtocol(); LOG.debug("SipProvider: sendMessage(msg,conn): conn: "+conn);
-	 * LOG.debug("SipProvider: sendMessage(msg,conn): remote_addr: "+conn.getRemoteAddress()); String
-	 * dest_addr=conn.getRemoteAddress().toString(); int dest_port=conn.getRemotePort();
+	 * public ConnectionId sendMessage(SipMessage msg, ConnectionId conn_id) { if (log_all_packets
+	 * || msg.getLength()>MIN_MESSAGE_LENGTH) LOG.info("Sending message through conn "+conn_id);
+	 * LOG.trace("message to send:."+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
+	 * SipTransportConnection conn=null; for (Enumeration e=sip_transports.elements();
+	 * e.hasMoreElements() && conn==null; ) { SipTransport transp=(SipTransport)e.nextElement(); if
+	 * (isReliableTransport(transp)) conn=((SipTransportCO)transp).sendMessage(msg,conn_id); } if
+	 * (conn!=null) { // logs String proto=conn.getProtocol();
+	 * LOG.debug("SipProvider: sendMessage(msg,conn): conn: "+conn);
+	 * LOG.debug("SipProvider: sendMessage(msg,conn): remote_addr: "+conn.getRemoteAddress());
+	 * String dest_addr=conn.getRemoteAddress().toString(); int dest_port=conn.getRemotePort();
 	 * logMessage(proto,dest_addr,dest_port,msg.getLength(),msg,"sent");
 	 * 
 	 * return new ConnectionId(conn); } else { return sendMessage(msg); } }
@@ -854,19 +855,24 @@ public class SipProvider implements SipTransportListener {
 			
 			// discard too short messages (e.g. CRLFCRLF "PING", or CRLF "PONG")
 			if (msg.getLength()<=4) {
-				LOG.warn("message too short: discarded\r\n");
+				LOG.warn("message too short: discarded.");
 				return;
 			}
 			// discard non-SIP messages
 			String first_line=msg.getFirstLine();
 			if (first_line==null || first_line.toUpperCase().indexOf("SIP/2.0")<0) {
-				LOG.warn("NOT a SIP message: discarded\r\n");
+				LOG.warn("NOT a SIP message: discarded.");
 				return;
 			}
 			
 			// if a request, handle "received" and "rport" parameters
 			if (msg.isRequest()) {
 				ViaHeader vh=msg.getViaHeader();
+				if (vh == null) {
+					LOG.info("Message without via header discarded.");
+					return;
+				}
+				
 				boolean via_changed=false;
 				String src_addr=msg.getRemoteAddress();
 				int src_port=msg.getRemotePort();

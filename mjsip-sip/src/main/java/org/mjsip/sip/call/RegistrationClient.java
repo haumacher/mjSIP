@@ -215,10 +215,9 @@ public class RegistrationClient implements TransactionClientListener {
 			req.setBody(content_type,body);
 		}
 		if (expire_time > 0) {
-			LOG.info("Registering contact: " + _contactNAddr + " (expiry " + expire_time + " secs) at "
-					+ _registrarUri.getHost());
+			LOG.info("Registering contact: " + _contactNAddr + " (expiry " + expire_time + " secs) at " + _registrarUri);
 		} else {
-			LOG.info("Unregistering contact: " + _contactNAddr + " from " + _registrarUri.getHost());
+			LOG.info("Unregistering contact: " + _contactNAddr + " from " + _registrarUri);
 		}
 		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
