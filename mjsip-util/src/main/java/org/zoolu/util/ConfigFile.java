@@ -29,7 +29,7 @@ public class ConfigFile extends Configure {
 
 	@Override
 	public void setOption(String attribute, Parser par) {
-		_options.put(attribute, par.getRemainingString());
+		_options.put(attribute, par.getRemainingString().trim());
 	}
 	
 	/**
