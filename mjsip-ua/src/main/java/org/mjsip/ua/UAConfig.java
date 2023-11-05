@@ -27,6 +27,9 @@ public class UAConfig implements UAOptions, RegistrationOptions {
 	@Option(name = "--registrar", usage = "Registrar server.", required = true)
 	private String _registrar=null;
 
+	@Option(name = "--route", usage = "Additional URI for routing the registration messages.")
+	private String _route=null;
+	
 	@Option(name = "--address")
 	private String _uaAddress=null;
 
@@ -180,6 +183,11 @@ public class UAConfig implements UAOptions, RegistrationOptions {
 	/** @see #getRegistrar() */
 	public void setRegistrar(String registrar) {
 		this._registrar = registrar;
+	}
+
+	@Override
+	public String getRoute() {
+		return _route;
 	}
 
 	/**

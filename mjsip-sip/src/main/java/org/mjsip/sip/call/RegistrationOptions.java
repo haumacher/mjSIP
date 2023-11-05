@@ -14,6 +14,11 @@ public interface RegistrationOptions {
 	boolean isRegister();
 
 	/**
+	 * Additional routing information to reach the registrar.
+	 */
+	String getRoute();
+
+	/**
 	 * Whether running the UAS (User Agent Server), or acting just as UAC (User Agent Client). In
 	 * the latter case only outgoing calls are supported.
 	 */
@@ -96,6 +101,11 @@ public interface RegistrationOptions {
 				return RegistrationOptions.this.getRegistrar();
 			}
 			
+			@Override
+			public String getRoute() {
+				return RegistrationOptions.this.getRoute();
+			}
+
 			@Override
 			public int getExpires() {
 				return RegistrationOptions.this.getExpires();

@@ -38,6 +38,7 @@ import org.mjsip.sip.header.ExpiresHeader;
 import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.ProxyAuthenticateHeader;
 import org.mjsip.sip.header.ProxyAuthorizationHeader;
+import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
@@ -114,6 +115,8 @@ public class RegistrationClient implements TransactionClientListener {
 	/** Registration timeout */
 	ScheduledFuture<?> _registrationTimer;
 
+	private final GenericURI _routeUri;
+
 	/**
 	 * Creates a {@link RegistrationClient}.
 	 *
@@ -133,6 +136,8 @@ public class RegistrationClient implements TransactionClientListener {
 		_listener = listener;
 		_sipProvider = sip_provider;
 		_registrarUri = SipURI.parseSipURI(regConfig.getRegistrar());
+
+		_routeUri = SipURI.parseSipURI(regConfig.getRoute());
 
 		NameAddress contact_naddr;
 		{
@@ -196,6 +201,10 @@ public class RegistrationClient implements TransactionClientListener {
 		String call_id=_sipProvider.pickCallId();
 		SipMessage req = _sipProvider.messageFactory().createRegisterRequest(_registrarUri, _toNAddr, _fromNAddr,
 				_contactNAddr, call_id);
+
+		if (_routeUri != null) {
+			req.addRouteHeader(new RouteHeader(new NameAddress(_routeUri)));
+		}
 
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(expire_time)));
 		if (_nextNonce!=null) {
