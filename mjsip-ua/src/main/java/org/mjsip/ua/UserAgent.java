@@ -498,12 +498,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
-			LOG.info("LOCALLY BUSY: INCOMING CALL REFUSED");
+			LOG.info("Busy, refusing incoming call from: " + extractFrom(invite));
 			call.refuse();
 			return;
 		}
    
-		LOG.info("INCOMING: " + extractFrom(invite));
+		LOG.info("Incoming call from: " + extractFrom(invite));
 		this.call=(ExtendedCall)call;
 		call.ring();
 		// response timeout
