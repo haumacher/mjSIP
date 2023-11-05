@@ -64,14 +64,11 @@ public class ExampleMediaConfig extends MediaConfig implements ExampleMediaOptio
 		_recvFile = recvFile;
 	}
 
-	@Override
 	public void normalize() {
 		if (getSendFile()!=null && getSendFile().equalsIgnoreCase(Configure.NONE)) setSendFile(null);
 		if (getRecvFile()!=null && getRecvFile().equalsIgnoreCase(Configure.NONE)) setRecvFile(null);
 
 		// use audio as default media in case of..
 		if ((isSendTone() || getSendFile()!=null || getRecvFile()!=null) && !isVideo()) setAudio(true);
-
-		super.normalize();
 	}
 }

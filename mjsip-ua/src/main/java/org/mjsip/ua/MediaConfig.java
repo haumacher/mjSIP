@@ -3,9 +3,6 @@
  */
 package org.mjsip.ua;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.YesNoHandler;
 import org.mjsip.media.MediaDesc;
@@ -54,9 +51,6 @@ public class MediaConfig implements MediaOptions {
 	@Option(name = "--media", handler = MediaDescHandler.class)
 	private MediaDesc[] _mediaDescs=new MediaDesc[]{};
 	
-	/** Temporary mapping of media type to {@link MediaDesc}. */
-	private Map<String, MediaDesc> _descByType=new HashMap<>();
-
 	@Option(name = "--random-early-drop")
 	private int _randomEarlyDropRate=20;
 
@@ -81,24 +75,6 @@ public class MediaConfig implements MediaOptions {
 	/** @see #isSymmetricRtp() */
 	public void setSymmetricRtp(boolean symmetricRtp) {
 		_symmetricRtp = symmetricRtp;
-	}
-	
-	public void normalize() {
-		// media descriptions
-		if (_descByType.size()==0 && isAudio()) {
-			// add default auido support
-			_descByType.put("audio",MediaDesc.parseMediaDesc("audio 4080 RTP/AVP { 0 PCMU 8000 160, 8 PCMA 8000 160 }"));
-		}
-		
-		int i = 0;
-		setMediaDescs(new MediaDesc[_descByType.size()]);
-		for (MediaDesc md : _descByType.values()) {
-			// Remove audio or video descriptors, if audio or video has been disabled.
-			if (md.getMediaType().equalsIgnoreCase("audio") && !isAudio()) continue;
-			if (md.getMediaType().equalsIgnoreCase("video") && !isVideo()) continue;
-			
-			getMediaDescs()[i++]=new MediaDesc(md.getMediaType(),md.getPort(),md.getTransport(),md.getMediaSpecs());
-		}
 	}
 
 	@Override

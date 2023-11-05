@@ -718,7 +718,6 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
-		mediaConfig.normalize();
 
 		new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), portConfig.createPool(), uaConfig, uiConfig, mediaConfig);
 	}
