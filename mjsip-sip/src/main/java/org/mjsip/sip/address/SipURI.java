@@ -124,6 +124,9 @@ public class SipURI extends GenericURI {
 	 * <code>sip[s]:user:password@host:port;uri-parameters?headers</code>.
 	 */
 	public static SipURI parseSipURI(String uri) {
+		if (uri == null || uri.isBlank()) {
+			return null;
+		}
 		return new SipURIParser(uri).parse();
 	}
 
