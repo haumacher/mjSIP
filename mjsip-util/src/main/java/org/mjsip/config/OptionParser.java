@@ -4,6 +4,9 @@
 package org.mjsip.config;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
@@ -28,7 +31,11 @@ public class OptionParser {
 		}
 		
 		try {
-			parser.parseArgument(args);
+			try {
+				parser.parseArgument(args);
+			} catch (CmdLineException ex) {
+				// Happens, when required configurations are not given on the command line.
+			}
 			
 			String argFile = metaConfig.configFile;
 			
@@ -38,6 +45,10 @@ public class OptionParser {
 					file = null;
 				} else {
 					file = new File(argFile);
+					if (!file.exists()) {
+						System.err.println("Configuration file does not exits: " + file.getAbsolutePath());
+						System.exit(1);
+					}
 				}
 			} else if (defaultConfigFile != null) {
 				String fileName = System.getProperty("user.home") + "/" + defaultConfigFile;
@@ -51,10 +62,13 @@ public class OptionParser {
 			
 			if (file!= null) {
 				ConfigFile configFile = new ConfigFile(file);
-				parser.parseArgument(configFile.toArguments());
 				
-				// Parse arguments again to make sure they have more precedence.
-				parser.parseArgument(args);
+				// Parse all arguments again to check for required arguments not given but give
+				// precedence to arguments given on the command line.
+				Collection<String> arguments = new ArrayList<>(configFile.toArguments());
+				arguments.addAll(Arrays.asList(args));
+				
+				parser.parseArgument(arguments);
 			}
 	
 			if (metaConfig.help) {
