@@ -585,9 +585,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** From CallListener. Callback function called when arriving a 2xx (call accepted) */
 	@Override
 	public void onCallAccepted(Call call, SdpMessage remoteSdp, SipMessage resp) {
-		LOG.debug("onCallAccepted()");
-		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("ACCEPTED/CALL");
+		if (call != this.call && call != call_transfer) {
+			LOG.debug("Ignoring accept for unknown call: " + call.getRemoteSessionDescriptor().getOrigin().getValue());  
+			return;  
+		}
+		LOG.info("Call accepted: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
+		
 		if (uaConfig.getNoOffer()) {
 			SdpMessage answerSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), remoteSdp);         
 			call.confirm2xxWithAnswer(answerSdp);
@@ -605,9 +608,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** From CallListener. Callback function called when arriving an ACK method (call confirmed) */
 	@Override
 	public void onCallConfirmed(Call call, SdpMessage sdp, SipMessage ack) {
-		LOG.debug("onCallConfirmed()");
-		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("CONFIRMED/CALL");
+		if (call != this.call) {
+			LOG.debug("Ignoring conform of unknown call: " + call.getRemoteSessionDescriptor().getOrigin().getValue());  
+			return;
+		}
+		LOG.info("Call confirmed: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
 
 		if (listener!=null) listener.onUaCallConfirmed(this);
 		

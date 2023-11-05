@@ -128,7 +128,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	 * @see #createCallHandler(SipMessage)
 	 */
 	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
-		LOG.info("Received new INVITE request: " + msg);
+		LOG.info("Received INVITE from: " + msg.getFromHeader().getNameAddress());
 		
 		AutoHangup autoHangup;
 		UserAgentListener listener = createCallHandler(msg);

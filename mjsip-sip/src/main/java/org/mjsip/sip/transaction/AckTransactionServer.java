@@ -20,70 +20,71 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.transaction;
-
-
 
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
-
-
 
 /**
  * ACK server transaction should follow an INVITE server transaction within an INVITE Dialog in a
  * SIP UAC. The AckTransactionServer sends the final response message and retransmits it several
  * times until the method terminate() is called or the transaction timeout occurs.
  */ 
-public class AckTransactionServer extends Transaction implements SipProviderListener {
+public class AckTransactionServer extends Transaction {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AckTransactionServer.class);
 
 	/** the TransactionServerListener that captures the events fired by the AckTransactionServer */
-	AckTransactionServerListener transaction_listener;
+	private AckTransactionServerListener transaction_listener;
 
 	/** last response message */
-	SipMessage response;
+	private final SipMessage response;
 	
 	/** retransmission timeout */
-	long retransmissionTimeout;
+	private long retransmissionTimeout;
 
-	ScheduledFuture<?> retransmission_to;
+	private ScheduledFuture<?> retransmission_to;
 
 	/** transaction timeout */
-	ScheduledFuture<?> transaction_to;
+	private ScheduledFuture<?> transaction_to;
 
 
-	/** Creates a new AckTransactionServer.
-	  * The AckTransactionServer starts sending a the response message <i>resp</i>.
-	  * <br>
-	  * It periodically re-sends the response if no ACK request is received.
-	  * The response is also sent each time a duplicate INVITE request is received. */
+	/**
+	 * Creates a {@link AckTransactionServer}.
+	 * 
+	 * <p>
+	 * The AckTransactionServer starts sending a the response message <i>resp</i>.
+	 * </p>
+	 * <p>
+	 * It periodically re-sends the response if no ACK request is received. The response is also
+	 * sent each time a duplicate INVITE request is received.
+	 * </p>
+	 */
 	public AckTransactionServer(SipProvider sip_provider, SipMessage invite, SipMessage resp, AckTransactionServerListener listener) {
-		super(sip_provider);
-		init(null,invite,resp,listener);
+		this(sip_provider, null, invite, resp, listener);
 	}  
 
-	/** Creates a new AckTransactionServer.
-	  * The AckTransactionServer starts sending a the response message <i>resp</i>.
-	  * <br>
-	  * It periodically re-sends the response if no ACK request is received.
-	  * The response is also sent each time a duplicate INVITE request is received.
-	  * <p>
-	  * The response is sent through the connection <i>conn_id</i>. */
+	/**
+	 * Creates a {@link AckTransactionServer}.
+	 * <p>
+	 * The AckTransactionServer starts sending a the response message <i>resp</i>.
+	 * </p>
+	 * <p>
+	 * It periodically re-sends the response if no ACK request is received. The response is also
+	 * sent each time a duplicate INVITE request is received.
+	 * </p>
+	 * <p>
+	 * The response is sent through the connection <i>conn_id</i>.
+	 * </p>
+	 */
 	public AckTransactionServer(SipProvider sip_provider, ConnectionId connection_id, SipMessage invite, SipMessage resp, AckTransactionServerListener listener) {
 		super(sip_provider);
-		init(connection_id,invite,resp,listener);
-	}  
 
-	/** Initializes timeouts and listener. */
-	void init(ConnectionId connection_id, SipMessage invite, SipMessage resp, AckTransactionServerListener listener) {
 		this.transaction_listener=listener;
 		this.connection_id=connection_id;
 		this.response=resp;
@@ -141,8 +142,9 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 		doTerminate();
 		// retransmission_to=null;
 		// transaction_to=null;
-		if (transaction_listener != null)
+		if (transaction_listener != null) {
 			transaction_listener.onTransAckTimeout(this);
+		}
 	}
 
 	private void onRetransmissionTimeout() {
@@ -174,10 +176,12 @@ public class AckTransactionServer extends Transaction implements SipProviderList
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
 			changeStatus(STATE_TERMINATED);
-			if (retransmission_to != null)
+			if (retransmission_to != null) {
 				retransmission_to.cancel(false);
-			if (transaction_to != null)
+			}
+			if (transaction_to != null) {
 				transaction_to.cancel(false);
+			}
 			//retransmission_to=null;
 			//transaction_to=null;
 			sip_provider.removeSelectiveListener(transaction_id);

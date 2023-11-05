@@ -595,10 +595,6 @@ public class SipProvider implements SipTransportListener {
 	  * @return Returns a ConnectionId in case of connection-oriented delivery
 	  * (e.g. TCP) or null in case of connection-less delivery (e.g. UDP) */
 	public ConnectionId sendMessage(SipMessage msg) {
-		if (LOG.isTraceEnabled()) {
-			LOG.trace(MESSAGE_BEGIN_DELIMITER + msg + MESSAGE_END_DELIMITER);
-		}
-
 		ConnectionId conn_id=msg.getConnectionId();
 		if (conn_id!=null) {
 			LOG.debug("trying to send message through connection " + conn_id);

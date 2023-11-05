@@ -591,7 +591,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 					resp.setSessionExpiresHeader(new SessionExpiresHeader(session_interval,refresher));
 				}
 				ConnectionId conn_id=invite_ts.getTransportConnId();
-				ack_ts=new AckTransactionServer(sip_provider,conn_id,invite_req,resp,this);
+				ack_ts = new AckTransactionServer(sip_provider, conn_id, invite_req, resp, this);
 				ack_ts.respond();
 				//if (listener!=null)
 				//{  if (statusIs(D_ReACCEPTED)) listener.onDlgReInviteAccepted(this);
