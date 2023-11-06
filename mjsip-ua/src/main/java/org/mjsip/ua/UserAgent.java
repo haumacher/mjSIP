@@ -47,7 +47,6 @@ import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.call.RegistrationClientListener;
 import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.call.SipUser;
-import org.mjsip.sip.header.FromHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
@@ -467,8 +466,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			if (listener!=null) listener.onUaMediaSessionStopped(this,entry.getKey());
 		}
 		_mediaSessions.clear();
-		_mediaAgent.releaseMediaPorts(_portPool);
-		_mediaAgent = null;
+		if (_mediaAgent != null) {
+			_mediaAgent.releaseMediaPorts(_portPool);
+			_mediaAgent = null;
+		}
 	}
 
 	// ************************* RA callbacks ************************
@@ -498,12 +499,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
-			LOG.info("Busy, refusing incoming call from: " + extractFrom(invite));
+			LOG.info("Busy, refusing incoming call from: " + invite.getFromUser());
 			call.refuse();
 			return;
 		}
    
-		LOG.info("Incoming call from: " + extractFrom(invite));
+		LOG.info("Incoming call from: " + invite.getFromUser());
 		this.call=(ExtendedCall)call;
 		call.ring();
 		// response timeout
@@ -511,27 +512,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		
 		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(remoteSdp.getMediaDescriptors()));
 	}
-
-	private String extractFrom(SipMessage invite) {
-		FromHeader fromHeader = invite.getFromHeader();
-		String from;
-		if (fromHeader == null) {
-			from = "ANONYMOUS";
-		} else {
-			String value = fromHeader.getValue();
-			
-			int start = value.indexOf(':');
-			if (start < 0) {
-				start = 0;
-			}
-			int stop = value.indexOf('@');
-			if (stop < 0) {
-				stop = value.length();
-			}
-			from = value.substring(start + 1, stop);
-		}
-		return from;
-	}  
 
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
 	@Override

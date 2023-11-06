@@ -1201,4 +1201,31 @@ public class SipMessage extends BasicSipMessage {
 		removeHeader(SipHeaders.Recv_Info);
 	}
 
+	/**
+	 * Extract the user given in the {@link #getFromHeader()}.
+	 *
+	 * @return The user ID in the {@link #getFromHeader()}, or <code>null</code> if no user name is
+	 *         given.
+	 */
+	public String getFromUser() {
+		FromHeader fromHeader = getFromHeader();
+		if (fromHeader == null) {
+			return null;
+		} else {
+			String value = fromHeader.getValue();
+			
+			int start = value.indexOf(':');
+			if (start < 0) {
+				// No protocol given.
+				start = 0;
+			}
+			int stop = value.indexOf('@');
+			if (stop < 0) {
+				// No user given. 
+				return null;
+			}
+			return value.substring(start + 1, stop);
+		}
+	}
+
 }
