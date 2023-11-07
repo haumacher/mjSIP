@@ -7,13 +7,12 @@ import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipOptions;
-import org.mjsip.ua.registration.RegistrationOptions;
 import org.zoolu.util.Configure;
 
 
 /** {@link UserAgent} configuration options.
   */
-public class UAConfig implements UAOptions, RegistrationOptions {
+public class UAConfig implements UAOptions {
 
 	@Option(name = "--display-name", metaVar = "<name>", usage = "The display name of the user.")
 	private String _displayName=null;

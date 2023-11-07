@@ -66,6 +66,7 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MediaOptions;
+import org.mjsip.ua.RegisteringUserAgent;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UIConfig;
@@ -93,7 +94,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	protected SipProvider sip_provider;
 
 	/** User Agent */
-	protected UserAgent ua;
+	protected RegisteringUserAgent ua;
 
 	/** UserAgentProfile */
 	protected UAConfig _uaConfig;
@@ -190,7 +191,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		_uiConfig = uiConfig;
 		_mediaConfig = mediaConfig;
 
-		ua=new UserAgent(sip_provider, portPool,_uaConfig, _uaConfig, this.andThen(clipPlayer()));
+		ua=new RegisteringUserAgent(sip_provider, portPool,_uaConfig, this.andThen(clipPlayer()));
 		_streamerFactory = createStreamerFactory(_mediaConfig, _uaConfig);
 		//ua.listen();
 		changeStatus(UA_IDLE);

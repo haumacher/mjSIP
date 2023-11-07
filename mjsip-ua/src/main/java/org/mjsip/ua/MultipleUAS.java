@@ -34,7 +34,6 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
-import org.mjsip.ua.registration.RegistrationOptions;
 import org.slf4j.LoggerFactory;
 
 
@@ -47,30 +46,27 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
 	/** UserAgentProfile */
-	protected UAOptions _uaConfig;
+	protected final UAOptions _uaConfig;
 			
 	/** SipProvider */
-	protected SipProvider sip_provider;
+	protected final SipProvider sip_provider;
 
-	private final PortPool _portPool;
+	protected final PortPool _portPool;
 	
 	private final int _hangupTime;
-
-	private final RegistrationOptions _clientRegOptions;
 
 	private RegistrationClient _rc;
 
 	/**
 	 * Creates a {@link MultipleUAS}.
 	 */
-	public MultipleUAS(SipProvider sip_provider, PortPool portPool, RegistrationOptions regOptions, UAOptions uaConfig, ServiceOptions serviceConfig) {
+	public MultipleUAS(SipProvider sip_provider, PortPool portPool, UAOptions uaConfig, ServiceOptions serviceConfig) {
 		this.sip_provider=sip_provider;
 		_portPool = portPool;
 		_uaConfig=uaConfig;
 		_hangupTime = serviceConfig.getHangupTime();
-		_clientRegOptions = regOptions.noRegistration();
 
-		register(regOptions);
+		register();
 		
 		// start UAS     
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
@@ -79,10 +75,10 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	/**
 	 * Registers at the registrar.
 	 */
-	public void register(RegistrationOptions regConfig) {
-		if (regConfig.isRegister()) {
-			_rc = new RegistrationClient(sip_provider, regConfig, this);
-			_rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
+	public void register() {
+		if (_uaConfig.isRegister()) {
+			_rc = new RegistrationClient(sip_provider, _uaConfig, this);
+			_rc.loopRegister(_uaConfig.getExpires(),_uaConfig.getExpires()/2);
 		}
 	}
 
@@ -111,7 +107,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		LOG.debug("onReceivedMessage()");
 		if (msg.isRequest() && msg.isInvite()) {
-			onInviteReceived(sip_provider, msg);
+			onInviteReceived(msg);
 		}
 	}
 
@@ -121,15 +117,12 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	 * <p>
 	 * By default the call is accepted and a {@link UserAgent} created for handling the new call.
 	 * </p>
-	 *
-	 * @param sip_provider
-	 *        The sip stack.
 	 * @param msg
 	 *        The invite message.
-	 * 
+	 *
 	 * @see #createCallHandler(SipMessage)
 	 */
-	protected void onInviteReceived(SipProvider sip_provider, SipMessage msg) {
+	protected void onInviteReceived(SipMessage msg) {
 		LOG.info("Received INVITE from: " + msg.getFromHeader().getNameAddress());
 		
 		AutoHangup autoHangup;
@@ -141,7 +134,7 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 			autoHangup = null;
 		}
 		
-		final UserAgent ua=new UserAgent(sip_provider, _portPool, _clientRegOptions, _uaConfig, listener);
+		final UserAgent ua = new UserAgent(sip_provider, _portPool, _uaConfig, listener);
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);

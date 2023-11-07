@@ -41,21 +41,14 @@ import org.mjsip.sip.call.Call;
 import org.mjsip.sip.call.CallListenerAdapter;
 import org.mjsip.sip.call.DTMFInfo;
 import org.mjsip.sip.call.ExtendedCall;
-import org.mjsip.sip.call.NotImplementedServer;
-import org.mjsip.sip.call.OptionsServer;
 import org.mjsip.sip.call.SipUser;
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.message.SipMethods;
-import org.mjsip.sip.provider.MethodId;
-import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
-import org.mjsip.ua.registration.RegistrationOptions;
 import org.slf4j.LoggerFactory;
-import org.zoolu.net.SocketAddress;
 import org.zoolu.util.VectorUtils;
 
 /** Simple SIP call agent (signaling and media).
@@ -73,18 +66,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	// ***************************** attributes ****************************
 	
 	/** UserAgentProfile */
-	private final UAOptions uaConfig;
+	protected final ClientOptions _config;
 
 	/** SipProvider */
-	private final SipProvider sip_provider;
+	protected final SipProvider sip_provider;
 
 	private final PortPool _portPool;
-
-	/** RegistrationClient */
-	private RegistrationClient rc=null;
-
-	/** SipKeepAlive daemon */
-	private SipKeepAlive keep_alive;
 
 	/** Call */
 	private ExtendedCall call;
@@ -94,12 +81,6 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** UAS */
 	//protected CallWatcher ua_server;
-
-	/** OptionsServer */
-	private OptionsServer options_server;
-
-	/** NotImplementedServer */
-	private NotImplementedServer null_server;
 
 	/** {@link MediaAgent} managing media of the current call. */
 	private MediaAgent _mediaAgent;
@@ -118,35 +99,18 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Whether the outgoing call is already ringing */
 	private boolean ringing;
 
-	private RegistrationOptions _regConfig;
-
 	/** Creates a {@link UserAgent}.*/
-	public UserAgent(SipProvider sip_provider, PortPool portPool, RegistrationOptions regConfig, UAOptions uaConfig, UserAgentListener listener) {
+	public UserAgent(SipProvider sip_provider, PortPool portPool, ClientOptions uaConfig, UserAgentListener listener) {
 		this.sip_provider=sip_provider;
 		_portPool = portPool;
-		_regConfig = regConfig;
 		this.listener=listener;
-		this.uaConfig=uaConfig;
-
-		// start listening for INVITE requests (UAS)
-		if (regConfig.isUaServer()) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
-		
-		// start OPTIONS server
-		if (regConfig.isOptionsServer()) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");
-
-		// start "Not Implemented" server
-		if (regConfig.isNullServer()) null_server=new NotImplementedServer(sip_provider);
-	}
-
-	/** Inits the RegistrationClient */
-	private void initRegistrationClient() {
-		rc = new RegistrationClient(sip_provider, _regConfig, this);
+		this._config=uaConfig;
 	}
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
 	private SdpMessage getSessionDescriptor() {
-		String owner=uaConfig.getUser();
-		String media_addr=(uaConfig.getMediaAddr()!=null)? uaConfig.getMediaAddr() : sip_provider.getViaAddress();
+		String owner=_config.getUser();
+		String media_addr=(_config.getMediaAddr()!=null)? _config.getMediaAddr() : sip_provider.getViaAddress();
 		SdpMessage sdp=SdpMessage.createSdpMessage(owner, media_addr);
 		for (MediaDesc md : _mediaAgent.getCallMedia()) {
 			sdp.addMediaDescriptor(md.toMediaDescriptor());
@@ -173,66 +137,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Gets a SipURI based on an input string. */
 	private SipURI completeSipURI(String str) {
 		// in case it is passed only the user field, add "@" + proxy address
-		if (uaConfig.getProxy()!=null && !str.startsWith("sip:") && !str.startsWith("sips:") && str.indexOf("@")<0 && str.indexOf(".")<0 && str.indexOf(":")<0) {
+		if (_config.getProxy()!=null && !str.startsWith("sip:") && !str.startsWith("sips:") && str.indexOf("@")<0 && str.indexOf(".")<0 && str.indexOf(":")<0) {
 			// may be it is just the user name..
-			return new SipURI(str,uaConfig.getProxy());
+			return new SipURI(str,_config.getProxy());
 		}
 		else return SipURI.parseSipURI(str);
 	}
 
-	/** Register with the registrar server
-	  * @param expire_time expiration time in seconds */
-	public void register(int expire_time) {
-		rc.register(expire_time);
-	}
-
-	/** Periodically registers the contact address with the registrar server.
-	  * @param expire_time expiration time in seconds
-	  * @param renew_time renew time in seconds
-	  * @param keepalive_time keep-alive packet rate (inter-arrival time) in milliseconds */
-	public void loopRegister(int expire_time, int renew_time, long keepalive_time) {
-		// create registration client
-		if (rc==null) {
-			initRegistrationClient();
-		}
-		
-		// start registering
-		rc.loopRegister(expire_time,renew_time);
-
-		// keep-alive
-		if (keepalive_time>0) {
-			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : SipURI.createSipURI(rc.getTargetAOR().getAddress());
-			String target_host=target_uri.getHost();
-			int target_port=target_uri.getPort();
-			if (target_port<0) target_port=sip_provider.sipConfig().getDefaultPort();
-			SocketAddress target_soaddr=new SocketAddress(target_host,target_port);
-			if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
-			keep_alive=new SipKeepAlive(sip_provider,target_soaddr,null,keepalive_time);
-		}
-	}
-
-	/** Unregisters with the registrar server */
-	public void unregister() {
-		// stop registering
-		if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
-
-		// unregister
-		if (rc!=null) {
-			rc.unregister();
-			rc.halt();
-			rc = null;
-		}
-	}
-
-	/** Unregister all contacts with the registrar server */
-	public void unregisterall() {
-		// create registration client
-		if (rc==null) initRegistrationClient();
-		// stop registering
-		if (keep_alive!=null && keep_alive.isRunning()) keep_alive.halt();
-		// unregister
-		rc.unregisterall();
-	}
 
 	/** Makes a new call (acting as UAC) with specific media description (Vector of MediaDesc). */
 	public void call(String callee, MediaAgent mediaAgent) {
@@ -250,15 +161,15 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		setupMedia(mediaAgent);
 		
 		// new call
-		SdpMessage sdp=uaConfig.getNoOffer()? null : getSessionDescriptor();
+		SdpMessage sdp=_config.getNoOffer()? null : getSessionDescriptor();
 		call(callee,sdp);
 	}
 
 	/** Makes a new call (acting as UAC) with specific SDP. */
 	public void call(NameAddress callee, SdpMessage sdp) {
-		call = new ExtendedCall(sip_provider, new SipUser(_regConfig.getUserURI(), _regConfig.getAuthUser(),
-				_regConfig.getAuthRealm(), _regConfig.getAuthPasswd()),this);      
-		if (uaConfig.getNoOffer()) {
+		call = new ExtendedCall(sip_provider, new SipUser(_config.getUserURI(), _config.getAuthUser(),
+				_config.getAuthRealm(), _config.getAuthPasswd()),this);      
+		if (_config.getNoOffer()) {
 			call.call(callee);
 		} else {
 			call.call(callee,sdp);
@@ -380,7 +291,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		
 		// select the media direction (send_only, recv_ony, fullduplex)
-		FlowSpec.Direction dir = uaConfig.getDirection();
+		FlowSpec.Direction dir = _config.getDirection();
 		String remote_address=remoteSdp.getConnection().getAddress();
 		// for each media
 		
@@ -508,7 +419,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		this.call=(ExtendedCall)call;
 		call.ring();
 		// response timeout
-		if (uaConfig.getRefuseTime()>=0) response_to=sip_provider.scheduler().schedule(uaConfig.getRefuseTime()*1000, this::onResponseTimeout);
+		if (_config.getRefuseTime()>=0) response_to=sip_provider.scheduler().schedule(_config.getRefuseTime()*1000, this::onResponseTimeout);
 		
 		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(remoteSdp.getMediaDescriptors()));
 	}
@@ -571,7 +482,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		LOG.info("Call accepted: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
 		
-		if (uaConfig.getNoOffer()) {
+		if (_config.getNoOffer()) {
 			SdpMessage answerSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), remoteSdp);         
 			call.confirm2xxWithAnswer(answerSdp);
 		}
@@ -731,7 +642,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("transfer to "+refer_to.toString());
 		call.acceptTransfer();
-		call_transfer=new ExtendedCall(sip_provider,new SipUser(_regConfig.getUserURI()),this);
+		call_transfer=new ExtendedCall(sip_provider,new SipUser(_config.getUserURI()),this);
 		call_transfer.call(refer_to,getSessionDescriptor());
 	}
 

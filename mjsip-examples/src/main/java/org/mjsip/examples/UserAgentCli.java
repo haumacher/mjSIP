@@ -38,6 +38,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
+import org.mjsip.ua.RegisteringUserAgent;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
@@ -63,7 +64,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	protected SipProvider sip_provider;
 
 	/** User Agent */
-	protected UserAgent ua;
+	protected RegisteringUserAgent ua;
 
 	/** UserAgentProfile */
 	protected final UAConfig _uaConfig;
@@ -126,7 +127,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		_mediaConfig = mediaConfig;
 		_streamerFactory = ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig);
 		
-		ua=new UserAgent(sip_provider,portPool,uaConfig, uaConfig, this.andThen(clipPlayer()));      
+		ua=new RegisteringUserAgent(sip_provider,portPool,uaConfig, this.andThen(clipPlayer()));      
 		if (!uaConfig.isNoPrompt()) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.isNoPrompt()) stdout=System.out;
 		run();

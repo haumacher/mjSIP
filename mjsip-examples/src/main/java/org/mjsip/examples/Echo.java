@@ -80,7 +80,7 @@ public class Echo extends MultipleUAS implements SipProviderListener {
 	 */
 	public Echo(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, PortPool portPool,
 			boolean force_reverse_route, ServiceOptions serviceConfig) {
-		super(sip_provider,portPool, uaConfig, uaConfig, serviceConfig);
+		super(sip_provider,portPool, uaConfig, serviceConfig);
 		_streamerFactory = streamerFactory;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS

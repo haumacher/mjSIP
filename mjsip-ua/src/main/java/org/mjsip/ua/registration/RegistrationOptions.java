@@ -3,15 +3,10 @@
  */
 package org.mjsip.ua.registration;
 
-import org.mjsip.sip.address.NameAddress;
-
 /**
  * Options for a {@link RegistrationClient}.
  */
-public interface RegistrationOptions {
-
-	/** Whether registering with the registrar server */
-	boolean isRegister();
+public interface RegistrationOptions extends AuthOptions {
 
 	/**
 	 * Additional routing information to reach the registrar.
@@ -42,90 +37,7 @@ public interface RegistrationOptions {
 	 */
 	String getRegistrar();
 
-	/**
-	 * Gets the user's AOR (Address Of Record) registered to the registrar server and used as From
-	 * URI.
-	 * <p>
-	 * In case of <i>proxy</i> and <i>user</i> parameters have been defined it is formed as
-	 * "<i>display_name</i>" &lt;sip:<i>user</i>@<i>proxy</i>&gt;, otherwhise the local UA address
-	 * (obtained by the SipProvider) is used.
-	 * 
-	 * @return the user's name address
-	 */
-	NameAddress getUserURI();
-
-	/** User's name used for server authentication. */
-	String getAuthUser();
-
-	/** User's passwd used for server authentication. */
-	String getAuthPasswd();
-
-	/** User's realm used for server authentication. */
-	String getAuthRealm();
-
 	/** Expires time (in seconds). */
 	int getExpires();
-
-	/** 
-	 * This options without active registration.
-	 */
-	default RegistrationOptions noRegistration() {
-		return new RegistrationOptions() {
-			@Override
-			public boolean isUaServer() {
-				return false;
-			}
-			
-			@Override
-			public boolean isRegister() {
-				return false;
-			}
-			
-			@Override
-			public boolean isOptionsServer() {
-				return false;
-			}
-			
-			@Override
-			public boolean isNullServer() {
-				return false;
-			}
-			
-			@Override
-			public NameAddress getUserURI() {
-				return RegistrationOptions.this.getUserURI();
-			}
-			
-			@Override
-			public String getRegistrar() {
-				return RegistrationOptions.this.getRegistrar();
-			}
-			
-			@Override
-			public String getRoute() {
-				return RegistrationOptions.this.getRoute();
-			}
-
-			@Override
-			public int getExpires() {
-				return RegistrationOptions.this.getExpires();
-			}
-			
-			@Override
-			public String getAuthUser() {
-				return RegistrationOptions.this.getAuthUser();
-			}
-			
-			@Override
-			public String getAuthRealm() {
-				return RegistrationOptions.this.getAuthRealm();
-			}
-			
-			@Override
-			public String getAuthPasswd() {
-				return RegistrationOptions.this.getAuthPasswd();
-			}
-		};
-	}
 
 }
