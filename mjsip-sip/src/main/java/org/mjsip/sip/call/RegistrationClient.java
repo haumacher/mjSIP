@@ -18,10 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.call;
-
-
 
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
@@ -49,11 +46,9 @@ import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.slf4j.LoggerFactory;
 
-
-
-/** RegistrationClient does register (one time or periodically)
-  * a contact address with a registrar server.
-  */
+/**
+ * Registers (once or periodically) a contact address with a registrar server.
+ */
 public class RegistrationClient implements TransactionClientListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RegistrationClient.class);
@@ -192,7 +187,10 @@ public class RegistrationClient implements TransactionClientListener {
 	}
 
 
-	/** Registers with the registrar server for <i>expire_time</i> seconds, with a given message body. */
+	/**
+	 * Registers with the registrar server for <i>expire_time</i> seconds, with a given message
+	 * body.
+	 */
 	protected void register(int expire_time, String content_type, byte[] body) {
 		_attempts=0;
 		if (expire_time > 0) {
@@ -249,9 +247,14 @@ public class RegistrationClient implements TransactionClientListener {
 	}
 
 
-	/** Periodically registers with the registrar server.
-	  * @param expire_time expiration time in seconds
-	  * @param renew_time renew time in seconds */
+	/**
+	 * Periodically registers with the registrar server.
+	 * 
+	 * @param expire_time
+	 *        expiration time in seconds
+	 * @param renew_time
+	 *        renew time in seconds
+	 */
 	public void loopRegister(int expire_time, int renew_time) {
 		this._expireTime=expire_time;
 		this._renewTime=renew_time;
@@ -338,8 +341,9 @@ public class RegistrationClient implements TransactionClientListener {
 						this::onRegistrationTimeout);
 				LOG.trace("Scheduling next registration in " + _renewTime + "s");
 			}
-			if (_listener != null)
+			if (_listener != null) {
 				_listener.onRegistrationSuccess(this, _toNAddr, _contactNAddr, expires, result);
+			}
 		}
 	}
 
@@ -349,7 +353,9 @@ public class RegistrationClient implements TransactionClientListener {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			StatusLine status=resp.getStatusLine();
 			int code=status.getCode();
-			if (code==401 && _attempts<_sipProvider.sipConfig().getRegAuthAttempts() && resp.hasWwwAuthenticateHeader() && resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(_realm)) {
+			if (code == 401 && _attempts < _sipProvider.sipConfig().getRegAuthAttempts()
+					&& resp.hasWwwAuthenticateHeader()
+					&& resp.getWwwAuthenticateHeader().getRealmParam().equalsIgnoreCase(_realm)) {
 				// UAS authentication
 				_attempts++;
 				SipMessage req=transaction.getRequestMessage();
@@ -367,9 +373,9 @@ public class RegistrationClient implements TransactionClientListener {
 				req.setAuthorizationHeader(ah);
 				TransactionClient t=new TransactionClient(_sipProvider,req,this);
 				t.request();
-			}
-			else
-			if (code==407 && _attempts<_sipProvider.sipConfig().getRegAuthAttempts() && resp.hasProxyAuthenticateHeader() && resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(_realm)) {
+			} else if (code == 407 && _attempts < _sipProvider.sipConfig().getRegAuthAttempts()
+					&& resp.hasProxyAuthenticateHeader()
+					&& resp.getProxyAuthenticateHeader().getRealmParam().equalsIgnoreCase(_realm)) {
 				// Proxy authentication
 				_attempts++;
 				SipMessage req=transaction.getRequestMessage();
@@ -382,8 +388,7 @@ public class RegistrationClient implements TransactionClientListener {
 				req.setProxyAuthorizationHeader(ah);
 				TransactionClient t=new TransactionClient(_sipProvider,req,this);
 				t.request();
-			}
-			else {
+			} else {
 				// Registration failure
 				String result=code+" "+status.getReason();
 				LOG.info("Registration failure: "+result);
@@ -393,8 +398,9 @@ public class RegistrationClient implements TransactionClientListener {
 					_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
 					LOG.trace("next attempt after "+(_sipProvider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
 				}
-				if (_listener != null)
+				if (_listener != null) {
 					_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, result);
+				}
 			}
 		}
 	}
@@ -413,8 +419,9 @@ public class RegistrationClient implements TransactionClientListener {
 				_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
 				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
 			}
-			if (_listener != null)
+			if (_listener != null) {
 				_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, "Timeout");
+			}
 		}
 	}
 
@@ -434,6 +441,5 @@ public class RegistrationClient implements TransactionClientListener {
 		}
 		_registrationTimer = null;
 	}
-
 	
 }
