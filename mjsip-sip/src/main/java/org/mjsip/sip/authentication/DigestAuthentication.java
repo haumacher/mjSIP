@@ -4,7 +4,6 @@ package org.mjsip.sip.authentication;
 import org.mjsip.sip.header.AuthenticationHeader;
 import org.mjsip.sip.header.AuthorizationHeader;
 import org.mjsip.sip.header.ProxyAuthorizationHeader;
-import org.mjsip.sip.header.WwwAuthenticateHeader;
 import org.zoolu.util.ByteUtils;
 import org.zoolu.util.MD5;
 import org.zoolu.util.Random;
@@ -43,50 +42,43 @@ public class DigestAuthentication {
 
 	protected byte[] body;
 
-	
-	/** Costructs a new DigestAuthentication. */
-	protected DigestAuthentication() {
-		
+	/** Constructs a new {@link DigestAuthentication}. */
+	public DigestAuthentication(String method, AuthenticationHeader ah, byte[] body, String passwd) {
+		this.method = method;
+		this.username = ah.getUsernameParam();
+		this.passwd = passwd;
+		this.realm = ah.getRealmParam();
+		this.opaque = ah.getOpaqueParam();
+		this.nonce = ah.getNonceParam();
+		this.algorithm = ah.getAlgorithParam();
+		this.qop = ah.getQopParam();
+		this.uri = ah.getUriParam();
+		this.cnonce = ah.getCnonceParam();
+		this.nc = ah.getNcParam();
+		this.response = ah.getResponseParam();
+		this.body = body;
 	}
 
-	/** Costructs a new DigestAuthentication. */
-	public DigestAuthentication(String method, AuthorizationHeader ah, byte[] body, String passwd) {
-		init(method,ah,body,passwd);
-	}
-
-	/** Costructs a new DigestAuthentication. */
-	public DigestAuthentication(String method, String uri, WwwAuthenticateHeader ah, String qop, String cnonce, int nc, byte[] body, String username, String passwd) {
-		init(method,ah,body,passwd);
+	/** Constructs a new {@link DigestAuthentication}. */
+	public DigestAuthentication(String method, String uri, AuthenticationHeader ah, String qop, String cnonce, int nc,
+			byte[] body, String username, String passwd) {
+		this(method, ah, body, passwd);
 		this.uri=uri;
 		this.qop=qop;
 		this.username=username;
-		if (this.qop!=null) {
-			if (this.cnonce!=null) this.cnonce=cnonce;
-			else this.cnonce=ByteUtils.asHex(Random.nextBytes(4));
+		if (this.qop != null) {
+			if (this.cnonce != null) {
+				this.cnonce = cnonce;
+			} else {
+				this.cnonce = ByteUtils.asHex(Random.nextBytes(4));
+			}
 			if (nc>0) {
 				this.nc=ByteUtils.asHex(ByteUtils.intToFourBytes(nc));
+			} else {
+				this.nc = "00000001";
 			}
-			else this.nc="00000001";
 		}
 	}
-
-	/** Costructs a new DigestAuthentication. */
-	private void init(String method, AuthenticationHeader ah, byte[] body, String passwd) {
-		this.method=method;
-		this.username=ah.getUsernameParam();
-		this.passwd=passwd;    
-		this.realm=ah.getRealmParam();
-		this.opaque=ah.getOpaqueParam();
-		this.nonce=ah.getNonceParam();
-		this.algorithm=ah.getAlgorithParam();
-		this.qop=ah.getQopParam();
-		this.uri=ah.getUriParam();
-		this.cnonce=ah.getCnonceParam();
-		this.nc=ah.getNcParam();
-		this.response=ah.getResponseParam();
-		this.body=body;
-	}
-
 
 	/** Gets a String representation of the object. */
 	@Override
