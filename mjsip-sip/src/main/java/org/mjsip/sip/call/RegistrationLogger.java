@@ -1,11 +1,9 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.examples;
+package org.mjsip.sip.call;
 
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.RegistrationClient;
-import org.mjsip.sip.call.RegistrationClientListener;
 import org.slf4j.LoggerFactory;
 
 /**

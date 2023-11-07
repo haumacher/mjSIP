@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
 import org.mjsip.sip.call.RegistrationClient;
+import org.mjsip.sip.call.RegistrationLogger;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
