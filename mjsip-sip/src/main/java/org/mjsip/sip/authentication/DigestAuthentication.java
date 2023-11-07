@@ -10,14 +10,17 @@ import org.zoolu.util.MD5;
 import org.zoolu.util.Random;
 
 
-/** The HTTP Digest Authentication as defined in RFC2617.
-  * It can be used to i) calculate an authentication response
-  * from an authentication request, or ii) validate an authentication response.
-  * <br> in the former case the DigestAuthentication is created based on
-  * a WwwAuthenticationHeader (or ProxyAuthenticationHeader),
-  * while in the latter case it is created based on an AuthorizationHeader
-  * (or ProxyAuthorizationHeader).
-  */
+/**
+ * The HTTP Digest Authentication as defined in RFC2617. It can be used to i) calculate an
+ * authentication response from an authentication request, or ii) validate an authentication
+ * response.
+ * 
+ * <p>
+ * in the former case the DigestAuthentication is created based on a WwwAuthenticationHeader (or
+ * ProxyAuthenticationHeader), while in the latter case it is created based on an
+ * AuthorizationHeader (or ProxyAuthorizationHeader).
+ * </p>
+ */
 public class DigestAuthentication {
 	
 	protected String method;
@@ -249,52 +252,5 @@ public class DigestAuthentication {
 		return ByteUtils.asHex(bb);
 	}
 
-
-
-	/** Main method.
-	  * It tests DigestAuthentication with the example provided in the RFC2617. */
-	public static void main(String[] args) {
-		
-/*         Authorization: Digest username="Mufasa",
-					  realm="testrealm@host.com",
-					  nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093",
-					  uri="/dir/index.html",
-					  qop=auth,
-					  nc=00000001,
-					  cnonce="0a4f113b",
-					  response="6629fae49393a05397450978507c4ef1",
-					  opaque="5ccc069c403ebaf9f0171e9517f40e41"
-*/
-		DigestAuthentication a=new DigestAuthentication();
-		a.method="GET";
-		a.passwd="Circle Of Life";
-		a.realm="testrealm@host.com";
-		a.nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093";
-		a.uri="/dir/index.html";
-		a.qop="auth";
-		a.nc="00000001";
-		a.cnonce="0a4f113b";
-		a.username="Mufasa";
-		
-		String response1=a.getResponse();
-		String response2="6629fae49393a05397450978507c4ef1";
-		System.out.println(response1);
-		System.out.println(response2);
-
-		System.out.println(" ");
-		
-		
-		String ah_str="Digest username=\"Mufasa\", realm=\"testrealm@host.com\", nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\", uri=\"/dir/index.html\", qop=auth, nc=00000001, cnonce=\"0a4f113b\", response=\"6629fae49393a05397450978507c4ef1\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"\n";
-					  
-		AuthorizationHeader ah=new AuthorizationHeader(ah_str);
-		a=new DigestAuthentication("GET",ah,null,"Circle Of Life");
-		response1=a.getResponse();
-		response2="6629fae49393a05397450978507c4ef1";
-		System.out.println(response1);
-		System.out.println(response2);
-		
-		System.out.println(a.checkResponse());
-
-	}
 }
  
