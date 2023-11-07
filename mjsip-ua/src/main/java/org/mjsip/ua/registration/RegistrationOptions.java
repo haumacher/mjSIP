@@ -14,18 +14,6 @@ public interface RegistrationOptions extends AuthOptions {
 	String getRoute();
 
 	/**
-	 * Whether running the UAS (User Agent Server), or acting just as UAC (User Agent Client). In
-	 * the latter case only outgoing calls are supported.
-	 */
-	boolean isUaServer();
-
-	/** Whether running an Options Server, that automatically responds to OPTIONS requests. */
-	boolean isOptionsServer();
-
-	/** Whether running an Null Server, that automatically responds to not-implemented requests. */
-	boolean isNullServer();
-
-	/**
 	 * Fully qualified domain name (or address) of the registrar server. It is used as recipient for
 	 * REGISTER requests.
 	 * <p>
