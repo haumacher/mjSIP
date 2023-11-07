@@ -247,6 +247,14 @@ public class RegistrationClient implements TransactionClientListener {
 	}
 
 
+	/** 
+	 * Periodically registers with the registrar server.
+	 */
+	public void loopRegister(RegistrationOptions options) {
+		loopRegister(options.getExpires(),options.getExpires()/2);
+	}
+
+
 	/**
 	 * Periodically registers with the registrar server.
 	 * 

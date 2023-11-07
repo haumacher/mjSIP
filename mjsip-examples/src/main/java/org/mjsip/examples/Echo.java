@@ -36,14 +36,13 @@ import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
-import org.mjsip.ua.MultipleUAS;
+import org.mjsip.ua.RegisteringMultipleUAS;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
@@ -60,7 +59,7 @@ import org.slf4j.LoggerFactory;
   * It automatically responds to incoming calls and sends back
   * the received RTP streams.
   */
-public class Echo extends MultipleUAS implements SipProviderListener {
+public class Echo extends RegisteringMultipleUAS {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Echo.class);
 

@@ -12,7 +12,7 @@ import org.mjsip.media.tx.AudioFileTransmitter;
 import org.mjsip.media.tx.AudioTransmitter;
 import org.mjsip.media.tx.JavaxAudioInput;
 import org.mjsip.media.tx.ToneTransmitter;
-import org.mjsip.ua.UAOptions;
+import org.mjsip.ua.StaticOptions;
 import org.mjsip.ua.streamer.DefaultStreamerFactory;
 import org.mjsip.ua.streamer.DispatchingStreamerFactory;
 import org.mjsip.ua.streamer.LoopbackStreamerFactory;
@@ -27,7 +27,7 @@ public class ExampleStreamerFactory {
 	/** 
 	 *Creates a more or less configurable {@link StreamerFactory} for various test situations.
 	 */
-	public static StreamerFactory createStreamerFactory(ExampleMediaOptions mediaConfig, UAOptions uaConfig) {
+	public static StreamerFactory createStreamerFactory(ExampleMediaOptions mediaConfig, StaticOptions uaConfig) {
 		if (mediaConfig.isLoopback()) {
 			return new LoopbackStreamerFactory();
 		} else {

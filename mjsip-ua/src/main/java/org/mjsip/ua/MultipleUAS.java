@@ -22,77 +22,45 @@
 package org.mjsip.ua;
 
 
-import java.util.concurrent.ScheduledFuture;
-
 import org.mjsip.pool.PortPool;
-import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.ua.registration.RegistrationClient;
-import org.mjsip.ua.registration.RegistrationClientListener;
 import org.slf4j.LoggerFactory;
 
 
-/** MultipleUAS is a simple UA that automatically responds to incoming calls.
-  * <br>
-  * At start up it may register with a registrar server (if properly configured).
-  */
-public abstract class MultipleUAS implements RegistrationClientListener, SipProviderListener {
+/**
+ * UA that automatically responds to incoming calls.
+ * 
+ * @see RegisteringMultipleUAS
+ */
+public abstract class MultipleUAS implements SipProviderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MultipleUAS.class);
 
 	/** UserAgentProfile */
-	protected final UAOptions _uaConfig;
+	protected final StaticOptions _config;
 			
 	/** SipProvider */
 	protected final SipProvider sip_provider;
 
 	protected final PortPool _portPool;
 	
-	private final int _hangupTime;
-
-	private RegistrationClient _rc;
 
 	/**
 	 * Creates a {@link MultipleUAS}.
 	 */
-	public MultipleUAS(SipProvider sip_provider, PortPool portPool, UAOptions uaConfig, ServiceOptions serviceConfig) {
+	public MultipleUAS(SipProvider sip_provider, PortPool portPool, StaticOptions uaConfig) {
 		this.sip_provider=sip_provider;
 		_portPool = portPool;
-		_uaConfig=uaConfig;
-		_hangupTime = serviceConfig.getHangupTime();
+		_config=uaConfig;
 
-		register();
-		
 		// start UAS     
 		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
 	}
 
-	/**
-	 * Registers at the registrar.
-	 */
-	public void register() {
-		if (_uaConfig.isRegister()) {
-			_rc = new RegistrationClient(sip_provider, _uaConfig, this);
-			_rc.loopRegister(_uaConfig.getExpires(),_uaConfig.getExpires()/2);
-		}
-	}
-
-	/**
-	 * Cancels registration.
-	 */
-	public void unregister() {
-		if (_rc != null) {
-			_rc.unregister();
-			_rc.halt();
-			_rc = null;
-		}
-	}
-	
 	/**
 	 * Unregisters from the SIP provider.
 	 */
@@ -119,66 +87,8 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	 * </p>
 	 * @param msg
 	 *        The invite message.
-	 *
-	 * @see #createCallHandler(SipMessage)
 	 */
-	protected void onInviteReceived(SipMessage msg) {
-		LOG.info("Received INVITE from: " + msg.getFromHeader().getNameAddress());
-		
-		AutoHangup autoHangup;
-		UserAgentListener listener = createCallHandler(msg);
-		if (_hangupTime > 0) {
-			autoHangup = new AutoHangup();
-			listener = listener.andThen(autoHangup);
-		} else {
-			autoHangup = null;
-		}
-		
-		final UserAgent ua = new UserAgent(sip_provider, _portPool, _uaConfig, listener);
-		
-		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
-		new ExtendedCall(sip_provider,msg,ua);
-		
-		if (autoHangup != null) {
-			autoHangup.start(ua);
-		}
-	}
+	protected abstract void onInviteReceived(SipMessage msg);
 
-	/**
-	 * Creates a handler for controlling the call started with the given invite message.
-	 * 
-	 * @param msg
-	 *        The message that represents the invite to the new call.
-	 *
-	 * @return The handler for controlling the user agent that handles the new call.
-	 */
-	protected abstract UserAgentListener createCallHandler(SipMessage msg);
-
-	// *************** RegistrationClientListener methods ****************
-
-	/** From RegistrationClientListener. When a UA has been successfully (un)registered. */
-	@Override
-	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		LOG.info("Registration success: expires="+expires+": "+result);
-	}
-
-	/** From RegistrationClientListener. When a UA failed on (un)registering. */
-	@Override
-	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		LOG.info("Registration failure: "+result);
-	}
-
-	private final class AutoHangup implements UserAgentListenerAdapter {
-		private ScheduledFuture<?> _hangupTimer;
-	
-		@Override
-		public void onUaCallClosed(UserAgent ua) {
-			if (_hangupTimer != null) _hangupTimer.cancel(false);
-		}
-	
-		public void start(UserAgent ua) {
-			_hangupTimer = sip_provider.scheduler().schedule(_hangupTime*1000, () -> ua.hangup());			
-		}
-	}
 
 }

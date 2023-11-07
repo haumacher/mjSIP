@@ -41,7 +41,7 @@ import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
-import org.mjsip.ua.MultipleUAS;
+import org.mjsip.ua.RegisteringMultipleUAS;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * {@link AnsweringMachine} is a VOIP server that automatically accepts incoming calls, sends an
  * audio file and records input received from the remote end.
  */
-public class AnsweringMachine extends MultipleUAS {
+public class AnsweringMachine extends RegisteringMultipleUAS {
 
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AnsweringMachine.class);
 

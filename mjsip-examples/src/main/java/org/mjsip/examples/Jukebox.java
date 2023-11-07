@@ -35,7 +35,7 @@ import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
-import org.mjsip.ua.MultipleUAS;
+import org.mjsip.ua.RegisteringMultipleUAS;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
@@ -48,7 +48,7 @@ import org.mjsip.ua.streamer.StreamerFactory;
   * It automatically responds to incoming calls and sends the audio file
   * as selected by the caller through the request-line parameter 'audiofile'.
   */
-public class Jukebox extends MultipleUAS {
+public class Jukebox extends RegisteringMultipleUAS {
 
 	/** URI resource parameter */
 	public static String PARAM_RESOURCE="resource";
@@ -80,7 +80,7 @@ public class Jukebox extends MultipleUAS {
 				String audio_file=_mediaPath+"/"+callee.getAddress().getParameter(PARAM_RESOURCE);
 				if (new File(audio_file).isFile()) {
 					_mediaConfig.setSendFile(audio_file);
-					StreamerFactory streamerFactory = ExampleStreamerFactory.createStreamerFactory(_mediaConfig, _uaConfig);					
+					StreamerFactory streamerFactory = ExampleStreamerFactory.createStreamerFactory(_mediaConfig, _config);					
 					ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), streamerFactory));
 				} else {
 					ua.hangup();
