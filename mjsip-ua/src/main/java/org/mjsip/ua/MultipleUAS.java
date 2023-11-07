@@ -80,8 +80,10 @@ public abstract class MultipleUAS implements RegistrationClientListener, SipProv
 	 * Registers at the registrar.
 	 */
 	public void register(RegistrationOptions regConfig) {
-		_rc = new RegistrationClient(sip_provider, regConfig, this);
-		_rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
+		if (regConfig.isRegister()) {
+			_rc = new RegistrationClient(sip_provider, regConfig, this);
+			_rc.loopRegister(regConfig.getExpires(),regConfig.getExpires()/2);
+		}
 	}
 
 	/**

@@ -43,7 +43,7 @@ public class UAConfig implements UAOptions, RegistrationOptions {
 	private String _authPasswd=null;
 
 	@Option(name = "--do-register", handler = YesNoHandler.class)
-	private boolean _doRegister=false;
+	private boolean _doRegister=true;
 
 	@Option(name = "--expires", usage = "Registers the contact address with the registrar server for a gven duration in seconds.")
 	private int _expires=3600;
