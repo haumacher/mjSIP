@@ -23,8 +23,6 @@ package org.mjsip.examples;
 
 
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.RegistrationClient;
-import org.mjsip.sip.call.RegistrationClientListener;
 import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.MessageAgent;
@@ -35,15 +33,12 @@ import org.slf4j.LoggerFactory;
 /** Simple command-line short-message UA.
   * It allows a user to send and receive short messages, using a command-line interface.
   */
-public class MessageAgentCli implements RegistrationClientListener, MessageAgentListener {
+public class MessageAgentCli implements MessageAgentListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MessageAgentCli.class);
 	
 	/** Message Agent */
 	MessageAgent ma;
-
-	/** RegistrationClient */
-	RegistrationClient rc;
 
 	/** Remote user. */
 	NameAddress remote_user;
@@ -55,9 +50,6 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	public MessageAgentCli(SipProvider sip_provider, RegistrationOptions regOptions) {
 		ma = new MessageAgent(sip_provider, regOptions,this);
 		ma.receive();
-		if (regOptions.isRegister()) {
-			rc = new RegistrationClient(sip_provider, regOptions,this);
-		}
 	}
 
 	
@@ -65,28 +57,6 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	public String getRemoteUser() {
 		return remote_user.toString();
 	}
-
-
-	/** Register with the registrar server. */
-	public void register(int expire_time) {
-		LOG.info("REGISTRATION");
-		rc.register(expire_time);
-	}
-
-
-	/** Unregister with the registrar server */
-	public void unregister() {
-		LOG.info("UNREGISTER the contact URI");
-		rc.unregister();
-	}
-
-
-	/** Unregister all contacts with the registrar server */
-	public void unregisterall() {
-		LOG.info("UNREGISTER ALL contact URIs");
-		rc.unregisterall();
-	}
-
 
 	/** Sends a new message. */
 	public void send(String recipient, String subject, String text) {
@@ -117,18 +87,6 @@ public class MessageAgentCli implements RegistrationClientListener, MessageAgent
 	@Override
 	public void onMaDeliveryFailure(MessageAgent ma, NameAddress recipient, String subject, String result) {
 		//LOG.info("Delivery failure: "+result);
-	}
-
-	/** When a UA has been successfully (un)registered. */
-	@Override
-	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		LOG.info("Registration success: expires="+expires+": "+result);
-	}
-
-	/** When a UA failed on (un)registering. */
-	@Override
-	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		LOG.info("Registration failure: "+result);
 	}
 
 }

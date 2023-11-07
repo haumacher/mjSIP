@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
+import org.mjsip.sip.call.RegistrationClient;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
@@ -33,15 +34,21 @@ public class MA {
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
 		
-		MessageAgentCli cli=new MessageAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),uaConfig);
-		if (uiConfig.doUnregisterAll) {
-			cli.unregisterall();
-		} 
-		if (uiConfig.doUnregister) {
-			cli.unregister();
-		} 
+		SipProvider sip_provider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		MessageAgentCli cli=new MessageAgentCli(sip_provider,uaConfig);
+		
 		if (uaConfig.isRegister()) {
-			cli.register(uaConfig.getExpires());
+			RegistrationClient rc = new RegistrationClient(sip_provider, uaConfig, new RegistrationLogger());
+			
+			if (uiConfig.doUnregisterAll) {
+				rc.unregisterall();
+			}
+			
+			if (uiConfig.doUnregister) {
+				rc.unregister();
+			}
+			
+			rc.register(uaConfig.getExpires());
 		}
 		
 		String remoteUser = config.remoteUser;
