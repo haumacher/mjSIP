@@ -23,10 +23,10 @@ package org.mjsip.examples;
 
 
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.MessageAgent;
 import org.mjsip.ua.MessageAgentListener;
+import org.mjsip.ua.registration.RegistrationOptions;
 import org.slf4j.LoggerFactory;
 
 

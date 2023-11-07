@@ -33,7 +33,6 @@ import org.mjsip.media.MediaDesc;
 import org.mjsip.pool.PortConfig;
 import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
@@ -50,6 +49,7 @@ import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
+import org.mjsip.ua.registration.RegistrationOptions;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 

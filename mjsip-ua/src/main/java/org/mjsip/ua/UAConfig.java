@@ -6,8 +6,8 @@ import org.mjsip.config.YesNoHandler;
 import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
-import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.provider.SipOptions;
+import org.mjsip.ua.registration.RegistrationOptions;
 import org.zoolu.util.Configure;
 
 

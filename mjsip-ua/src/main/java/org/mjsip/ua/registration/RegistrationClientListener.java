@@ -1,4 +1,4 @@
-package org.mjsip.sip.call;
+package org.mjsip.ua.registration;
 
 
 

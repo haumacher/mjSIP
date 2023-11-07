@@ -18,7 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-package org.mjsip.sip.call;
+package org.mjsip.ua.registration;
 
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;

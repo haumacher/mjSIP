@@ -27,14 +27,14 @@ import java.util.concurrent.ScheduledFuture;
 import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.call.ExtendedCall;
-import org.mjsip.sip.call.RegistrationClient;
-import org.mjsip.sip.call.RegistrationClientListener;
-import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
+import org.mjsip.ua.registration.RegistrationClient;
+import org.mjsip.ua.registration.RegistrationClientListener;
+import org.mjsip.ua.registration.RegistrationOptions;
 import org.slf4j.LoggerFactory;
 
 

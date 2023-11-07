@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.sip.call;
+package org.mjsip.ua.registration;
 
 import org.mjsip.sip.address.NameAddress;
 

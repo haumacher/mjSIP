@@ -24,7 +24,6 @@ package org.mjsip.ua;
 
 
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.MethodId;
@@ -33,6 +32,7 @@ import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.mjsip.sip.transaction.TransactionServer;
+import org.mjsip.ua.registration.RegistrationOptions;
 import org.slf4j.LoggerFactory;
 
 

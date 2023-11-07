@@ -5,14 +5,14 @@ import java.io.InputStreamReader;
 
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
-import org.mjsip.sip.call.RegistrationClient;
-import org.mjsip.sip.call.RegistrationLogger;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
+import org.mjsip.ua.registration.RegistrationClient;
+import org.mjsip.ua.registration.RegistrationLogger;
 
 public class MA {
 	
