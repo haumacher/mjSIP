@@ -332,14 +332,17 @@ public class RegistrationClient implements TransactionClientListener {
 					if (exp_i>0 && (expires==0 || exp_i<expires)) expires=exp_i;
 				}    
 			}
-			if (expires>0 && expires<_renewTime) _renewTime=expires;
+			if (expires > 0 && expires < _renewTime) {
+				_renewTime = expires;
+			}
 			
-			LOG.info("Registration " + result + ", expires in " + expires + "s, renewing in " + _renewTime + "s.");
+			LOG.info("Registration " + result + ", expires in " + expires + "s"
+					+ (_loop ? ", renewing in " + _renewTime + "s" : "") + ".");
 			if (_loop) {
 				cancelAttemptTimeout();
+
 				_registrationTimer = _sipProvider.scheduler().schedule((long) _renewTime * 1000,
 						this::onRegistrationTimeout);
-				LOG.trace("Scheduling next registration in " + _renewTime + "s");
 			}
 			if (_listener != null) {
 				_listener.onRegistrationSuccess(this, _toNAddr, _contactNAddr, expires, result);
@@ -393,10 +396,7 @@ public class RegistrationClient implements TransactionClientListener {
 				String result=code+" "+status.getReason();
 				LOG.info("Registration failure: "+result);
 				if (_loop) {
-					cancelRegistrationTimeout();
-					_attemptTimeout = _sipProvider.sipConfig().getRegMaxAttemptTimeout();
-					_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
-					LOG.trace("next attempt after "+(_sipProvider.sipConfig().getRegMaxAttemptTimeout()/1000)+" secs");
+					scheduleNextAttempt(_sipProvider.sipConfig().getRegMaxAttemptTimeout());
 				}
 				if (_listener != null) {
 					_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, result);
@@ -411,13 +411,7 @@ public class RegistrationClient implements TransactionClientListener {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			LOG.info("Registration failure: No response from server");
 			if (_loop) {
-				cancelRegistrationTimeout();
-				long inter_time_msecs = (_attemptTimer == null) ? _sipProvider.sipConfig().getRegMinAttemptTimeout()
-						: _attemptTimeout * 2;
-				if (inter_time_msecs>_sipProvider.sipConfig().getRegMaxAttemptTimeout()) inter_time_msecs=_sipProvider.sipConfig().getRegMaxAttemptTimeout();
-				_attemptTimeout = inter_time_msecs;
-				_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
-				LOG.trace("next attempt after "+(inter_time_msecs/1000)+" secs");
+				scheduleNextAttempt(nextTimeout());
 			}
 			if (_listener != null) {
 				_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, "Timeout");
@@ -425,21 +419,42 @@ public class RegistrationClient implements TransactionClientListener {
 		}
 	}
 
+	private long nextTimeout() {
+		boolean firstAttempt = _attemptTimer == null;
+		long timeout = firstAttempt ? _sipProvider.sipConfig().getRegMinAttemptTimeout() : _attemptTimeout * 2;
+		long maxTimeout = _sipProvider.sipConfig().getRegMaxAttemptTimeout();
+		if (timeout > maxTimeout) {
+			timeout = maxTimeout;
+		}
+		return timeout;
+	}
+
+	private void scheduleNextAttempt(long timeout) {
+		cancelRegistrationTimeout();
+
+		_attemptTimeout = timeout;
+		_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
+
+		LOG.info("Waiting " + (_attemptTimeout / 1000) + " secs for next registration attempt.");
+	}
+
 
 	// ******************* Timer callback functions ********************
 
 	private void onAttemptTimeout() {
+		_attemptTimer = null;
+
 		if (_loop) {
 			register();
 		}
-		_attemptTimer = null;
 	}
 
 	private void onRegistrationTimeout() {
+		_registrationTimer = null;
+
 		if (_loop) {
 			register();
 		}
-		_registrationTimer = null;
 	}
 	
 }
