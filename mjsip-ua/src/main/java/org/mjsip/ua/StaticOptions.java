@@ -20,6 +20,10 @@ public interface StaticOptions {
 	/**
 	 * Response time in seconds; it is the maximum time the user can wait before responding to an
 	 * incoming call; after such time the call is automatically declined (refused).
+	 * 
+	 * <p>
+	 * A negative value means "no automatic refuse".
+	 * </p>
 	 */
 	int getRefuseTime();
 
