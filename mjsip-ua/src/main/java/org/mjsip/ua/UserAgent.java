@@ -418,10 +418,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.info("Incoming call from: " + invite.getFromUser());
 		this.call=(ExtendedCall)call;
 		call.ring();
-		// response timeout
-		if (_config.getRefuseTime()>=0) response_to=sip_provider.scheduler().schedule(_config.getRefuseTime()*1000, this::onResponseTimeout);
+
+		if (_config.getRefuseTime()>=0) {
+			response_to=sip_provider.scheduler().schedule(_config.getRefuseTime()*1000, this::onResponseTimeout);
+		}
 		
-		if (listener!=null) listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(remoteSdp.getMediaDescriptors()));
+		if (listener!=null) {
+			listener.onUaIncomingCall(this,callee,caller,MediaDesc.parseDescriptors(remoteSdp.getMediaDescriptors()));
+		}
 	}
 
 	/** From CallListener. Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */

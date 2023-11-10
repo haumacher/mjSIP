@@ -77,45 +77,10 @@ import org.slf4j.LoggerFactory;
   * <br> - both INVITE-offer/2xx-answer and 2xx-offer/ACK-answer modes for incoming calls
   * <br> - INVITE-offer/2xx-answer mode for outgoing calls.
   */
-public class InviteDialog extends Dialog implements TransactionClientListener, InviteTransactionServerListener, TransactionServerListener, AckTransactionServerListener, SipProviderListener, ReliableProvisionalResponderListener {
+public class InviteDialog extends Dialog implements TransactionClientListener, InviteTransactionServerListener,
+		AckTransactionServerListener, ReliableProvisionalResponderListener {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(InviteDialog.class);
-
-	// ************************* Static attributes ************************
-
-	/** Dialog state INIT */
-	protected static final int D_INIT=0;   
-	/** Dialog state WAITING */
-	protected static final int D_WAITING=1;   
-	/** Dialog state INVITING  */
-	protected static final int D_INVITING=2;
-	/** Dialog state INVITED */
-	protected static final int D_INVITED=3;
-	/** Dialog state REFUSED */
-	protected static final int D_REFUSED=4;   
-	/** Dialog state ACCEPTED */
-	protected static final int D_ACCEPTED=5;
-	/** Dialog state CALL */
-	protected static final int D_CALL=6;
-
-	/** Dialog state RE-WAITING */
-	protected static final int D_ReWAITING=11;   
-	/** Dialog state RE-INVITING*/
-	protected static final int D_ReINVITING=12;
-	/** Dialog state RE-INVITED */
-	protected static final int D_ReINVITED=13;
-	/** Dialog state RE-REFUSED */
-	protected static final int D_ReREFUSED=14;   
-	/** Dialog state RE-ACCEPTED */
-	protected static final int D_ReACCEPTED=15;
-
-	/** Dialog state BYEING */
-	protected static final int D_BYEING=7;
-	/** Dialog state BYED */
-	protected static final int D_BYED=8;
-	/** Dialog state CLOSE */
-	protected static final int D_CLOSE=9;
-
 
 	// **************************** Attributes ****************************
 
@@ -165,32 +130,6 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	private final SipMessageFactory sipMessageFactory;
 
-	// ************************* Protected methods ************************
-
-	/** Gets the dialog state. */
-	@Override
-	protected String getStatus() {
-		switch (status) {
-			case D_INIT       : return "D_INIT";
-			case D_WAITING    : return "D_WAITING";   
-			case D_INVITING   : return "D_INVITING";
-			case D_INVITED    : return "D_INVITED";
-			case D_REFUSED    : return "D_REFUSED";   
-			case D_ACCEPTED   : return "D_ACCEPTED";
-			case D_CALL       : return "D_CALL";
-			case D_ReWAITING  : return "D_ReWAITING";   
-			case D_ReINVITING : return "D_ReINVITING";
-			case D_ReINVITED  : return "D_ReINVITED";
-			case D_ReREFUSED  : return "D_ReREFUSED";   
-			case D_ReACCEPTED : return "D_ReACCEPTED";
-			case D_BYEING     : return "D_BYEING";
-			case D_BYED       : return "D_BYED";
-			case D_CLOSE      : return "D_CLOSE";
-			default : return null;
-		}
-	}
-
-
 	// ************************** Public methods **************************
 
 	/** Creates a new InviteDialog.
@@ -211,7 +150,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		super(sip_provider);
 		this.sipMessageFactory = sip_provider.messageFactory();
 		init(listener);      
-		//changeStatus(D_INVITED);
+		// changeStatus(DialogStatus.D_INVITED);
 		//this.invite_req=invite;
 		//updateDialogInfo(false,invite);
 		//invite_ts=new InviteTransactionServer(sip_provider,invite,this);
@@ -226,48 +165,18 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		supported_option_tags=sip_provider.sipConfig().getSupportedOptionTags();
 		required_option_tags=sip_provider.sipConfig().getRequiredOptionTags();
 		allowed_methods=sip_provider.sipConfig().getAllowedMethods();
-		changeStatus(D_INIT);
+		changeStatus(DialogStatus.D_INIT);
 	}
-
-
-	/** Whether the dialog is in "early" state. */
-	@Override
-	public boolean isEarly() {
-		return status<D_ACCEPTED;
-	}
-
-
-	/** Whether the dialog is in "confirmed" state. */
-	@Override
-	public boolean isConfirmed() {
-		return status>=D_ACCEPTED && status<D_CLOSE;
-	}
-
-
-	/** Whether the dialog is in "terminated" state. */
-	@Override
-	public boolean isTerminated() {
-		return status==D_CLOSE;
-	}
-
-
-	/** Whether the session is "active". */
-	public boolean isSessionActive() {
-		return (status==D_CALL);
-	}
-
 
 	/** Gets the invite message */   
 	public SipMessage getInviteMessage() {
 		return invite_req;
 	}
 
-
 	/** Sets the supported extensions (using the corresponding option-tags). */
 	public void setSupportedExtensions(String[] option_tags) {
 		supported_option_tags=option_tags;
 	}
-
 
 	/** Whether the given optional extension is supported.
 	  * @param option_tag the option tag of the given extension
@@ -284,7 +193,6 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void setRequiredExtensions(String[] option_tags) {
 		required_option_tags=option_tags;
 	}
-
 
 	/** Whether the given optional extension is required.
 	  * @param option_tag the option tag of the given extension
@@ -317,9 +225,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	/** Starts a new InviteTransactionServer. */
 	public void listen() {
-		if (!statusIs(D_INIT)) return;
+		if (!statusIs(DialogStatus.D_INIT))
+			return;
 		//else
-		changeStatus(D_WAITING);
+		changeStatus(DialogStatus.D_WAITING);
 		invite_ts=new InviteTransactionServer(sip_provider,this);
 		invite_ts.listen();
 	}  
@@ -333,7 +242,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param session_descriptor SDP message body */
 	public void invite(NameAddress target, NameAddress from, NameAddress contact, SdpMessage session_descriptor) {
 		LOG.debug("inside invite(callee,caller,contact,sdp)");
-		if (!statusIs(D_INIT)) return;
+		if (!statusIs(DialogStatus.D_INIT))
+			return;
 		// else
 		GenericURI request_uri=target.getAddress();
 		String call_id=sip_provider.pickCallId();
@@ -349,9 +259,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param invite the INVITE message */
 	public void invite(SipMessage invite) {
 		LOG.debug("inside invite(invite)");
-		if (!statusIs(D_INIT)) return;
+		if (!statusIs(DialogStatus.D_INIT))
+			return;
 		// else
-		changeStatus(D_INVITING);
+		changeStatus(DialogStatus.D_INVITING);
 		// FORCE THIS NODE IN THE DIALOG ROUTE
 		if (sip_provider.sipConfig().isOnDialogRoute()) {
 			SipURI uri=new SipURI(sip_provider.getViaAddress(),sip_provider.getPort());
@@ -408,7 +319,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  */
 	public void reInvite(NameAddress contact, SdpMessage session_descriptor) {
 		LOG.debug("inside reInvite(contact,sdp)");
-		if (!statusIs(D_CALL)) return;
+		if (!statusIs(DialogStatus.D_CALL))
+			return;
 		// else
 		SipMessage invite = sipMessageFactory.createInviteRequest(this, "application/sdp",
 				session_descriptor.toString().getBytes());
@@ -421,9 +333,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * It starts a new InviteTransactionClient and changes the dialog state information. */
 	public void reInvite(SipMessage invite) {
 		LOG.debug("inside reInvite(invite)");
-		if (!statusIs(D_CALL)) return;
+		if (!statusIs(DialogStatus.D_CALL))
+			return;
 		// else
-		changeStatus(D_ReINVITING);
+		changeStatus(DialogStatus.D_ReINVITING);
 		this.invite_req=invite;
 		updateDialogInfo(true,invite);
 		invite_tc=new InviteTransactionClient(sip_provider,invite,this);                
@@ -497,7 +410,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	 * @param body the message body to be included within the response message, or <i>null</i> */
 	public void respond(int code, String reason, NameAddress contact, String content_type, byte[] body) {
 		LOG.debug("inside respond("+code+","+reason+")");
-		if (statusIs(D_INVITED) || statusIs(D_ReINVITED)) {
+		if (statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED)) {
 			SipMessage resp=sipMessageFactory.createResponse(invite_req,code,reason,contact);
 			resp.setBody(content_type,body);
 			// ALLOWED METHODS
@@ -526,40 +439,55 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		LOG.debug("inside respond(resp)");
 		String method=resp.getCSeqHeader().getMethod();
 		if (method.equals(SipMethods.INVITE)) {
-			if (!verifyStatus(statusIs(D_INVITED)||statusIs(D_ReINVITED))) {
-				LOG.info("respond(): InviteDialog not in (re)invited state: No response now");
+			if (!verifyStatus("Invite dialog not in INVITED state, no response yet.",
+					statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED))) {
 				return;
 			}     
-			int code=resp.getStatusLine().getCode();         
+			int code = resp.getStatusLine().getCode();
 			// OPTIONAL EXTENSIONS
 			if (code>=200 && code<300) {
-				if (supported_option_tags!=null && supported_option_tags.length>0) resp.setSupportedHeader(new SupportedHeader(supported_option_tags));
+				if (supported_option_tags != null && supported_option_tags.length > 0) {
+					resp.setSupportedHeader(new SupportedHeader(supported_option_tags));
+				}
 			}
 			// 1xx provisional responses
 			if (code>=100 && code<200) {
-				if (sip_provider.sipConfig().isEarlyDialog()) updateDialogInfo(false,resp);
+				if (sip_provider.sipConfig().isEarlyDialog()) {
+					updateDialogInfo(false, resp);
+				}
+
 				// RELIABILITY OF PROVISIONAL RESPONSES
 				if (code!=100 && ((invite_req.hasRequireHeader() && invite_req.getRequireHeader().hasOptionTag(SipStack.OTAG_100rel)) || (isExtensionRequired(SipStack.OTAG_100rel) && invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_100rel)))) {
-					if (reliable_responder == null)
+					if (reliable_responder == null) {
 						reliable_responder = new ReliableProvisionalResponder(sip_provider, invite_ts, this);
+					}
 					LOG.debug("respond(): reliable provisional response");
 					reliable_responder.respond(resp);
+				} else {
+					invite_ts.respondWith(resp);
 				}
-				else invite_ts.respondWith(resp);
 				return;
 			}
 			// For all final responses establish the dialog
 			if (code>=200) {
-				//changeStatus(D_ACCEPTED);
+				// changeStatus(DialogStatus.D_ACCEPTED);
 				updateDialogInfo(false,resp);
 			}
 			// 2xx success responses         
 			if (code>=200 && code<300) {
-				if(statusIs(D_INVITED)) changeStatus(D_ACCEPTED); else changeStatus(D_ReACCEPTED);
+				if (statusIs(DialogStatus.D_INVITED)) {
+					changeStatus(DialogStatus.D_ACCEPTED);
+				} else {
+					changeStatus(DialogStatus.D_ReACCEPTED);
+				}
 				// terminates the INVITE Transaction server and activates an ACK Transaction server
 				invite_ts.terminate();
+
 				// RELIABILITY OF PROVISIONAL RESPONSES
-				if (reliable_responder!=null) reliable_responder.terminate();
+				if (reliable_responder != null) {
+					reliable_responder.terminate();
+				}
+
 				// SESSION TIMERS
 				if (invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && invite_req.hasSessionExpiresHeader()) {
 					SessionExpiresHeader sh=invite_req.getSessionExpiresHeader();
@@ -573,9 +501,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 					resp.setRequireHeader(rh);
 					if (refresher==null) refresher=SessionExpiresHeader.PARAM_REFRESHER_UAS;
 					resp.setSessionExpiresHeader(new SessionExpiresHeader(delta_seconds,refresher));
-				}
-				else
-				if (session_interval>0) {
+				} else if (session_interval > 0) {
 					MinSEHeader mh=invite_req.getMinSEHeader();
 					int min_seconds=(mh!=null)? mh.getDeltaSeconds() : sip_provider.sipConfig().getMinSessionInterval();
 					if (min_seconds>session_interval) session_interval=min_seconds;
@@ -594,32 +520,36 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				ack_ts = new AckTransactionServer(sip_provider, conn_id, invite_req, resp, this);
 				ack_ts.respond();
 				//if (listener!=null)
-				//{  if (statusIs(D_ReACCEPTED)) listener.onDlgReInviteAccepted(this);
+				// { if (statusIs(DialogStatus.D_ReACCEPTED)) listener.onDlgReInviteAccepted(this);
 				//   else listener.onDlgAccepted(this);
 				//}         
 				return;
-			}
-			else
-			// 300-699 failure responses         
-			/*if (code>=300)*/ {
-				if(statusIs(D_INVITED)) changeStatus(D_REFUSED); else changeStatus(D_ReREFUSED);
+			} else {
+				// 300-699 failure responses
+				/* if (code>=300) */
+
+				if (statusIs(DialogStatus.D_INVITED)) {
+					changeStatus(DialogStatus.D_REFUSED);
+				} else {
+					changeStatus(DialogStatus.D_ReREFUSED);
+				}
 				invite_ts.respondWith(resp);
 				//if (listener!=null)
-				//{  if (statusIs(D_ReREFUSED)) listener.onDlgReInviteRefused(this);
+				// { if (statusIs(DialogStatus.D_ReREFUSED)) listener.onDlgReInviteRefused(this);
 				//   else listener.onDlgRefused(this);         
 				//}         
 				return;
 			}
-		}
-		else
-		if (method.equals(SipMethods.UPDATE)) {
-			if (!verifyStatus(isEarly()||isConfirmed())) return;
+		} else if (method.equals(SipMethods.UPDATE)) {
+			if (!verifyStatus("Update method expects early or confirmed state.", isEarly() || isConfirmed())) {
+				return;
+			}
 			updateDialogInfo(false,resp);
 			update_ts.respondWith(resp);
-		}
-		else
-		if (method.equals(SipMethods.BYE)) {
-			if (!verifyStatus(statusIs(D_BYED))) return;
+		} else if (method.equals(SipMethods.BYE)) {
+			if (!verifyStatus("BYE method expects that bye was sent.", statusIs(DialogStatus.D_BYED))) {
+				return;
+			}
 			bye_ts.respondWith(resp);
 		}
 	} 
@@ -681,7 +611,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * Increments the Cseq, moves to state D_BYEING, and creates new BYE TransactionClient. */
 	public void bye() {
 		LOG.debug("inside bye()");
-		if (statusIs(D_CALL)) {
+		if (statusIs(DialogStatus.D_CALL)) {
 			SipMessage bye=sipMessageFactory.createByeRequest(this);
 			bye(bye);        
 		}
@@ -695,8 +625,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param bye the BYE request message */
 	public void bye(SipMessage bye) {
 		LOG.debug("inside bye(bye)");
-		if (statusIs(D_CALL)) {
-			changeStatus(D_BYEING);
+		if (statusIs(DialogStatus.D_CALL)) {
+			changeStatus(DialogStatus.D_BYEING);
 			//dialog_state.incLocalCSeq(); // done by SipMessageFactory.createRequest()
 			TransactionClient tc=new TransactionClient(sip_provider,bye,this);
 			tc.request();
@@ -710,7 +640,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * or in the D_WAITING (or D_ReWAITING) state */
 	public void cancel() {
 		LOG.debug("inside cancel()");
-		if (statusIs(D_INVITING) || statusIs(D_ReINVITING)) {
+		if (statusIs(DialogStatus.D_INVITING) || statusIs(DialogStatus.D_ReINVITING)) {
 			if (invite_tc.isProceeding())  {
 				SipMessage cancel=sipMessageFactory.createCancelRequest(invite_req);
 				cancel(cancel);
@@ -720,7 +650,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			}
 		}
 		else
-		if (statusIs(D_WAITING) || statusIs(D_ReWAITING)) {
+		if (statusIs(DialogStatus.D_WAITING) || statusIs(DialogStatus.D_ReWAITING)) {
 			invite_ts.terminate();
 		}      
 	}
@@ -731,9 +661,9 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * or in the D_WAITING state */
 	public void cancel(SipMessage cancel) {
 		LOG.debug("inside cancel(cancel)");
-		if (statusIs(D_INVITING) || statusIs(D_ReINVITING)) {
+		if (statusIs(DialogStatus.D_INVITING) || statusIs(DialogStatus.D_ReINVITING)) {
 			if (invite_tc.isProceeding())  {
-				//changeStatus(D_CANCELING);
+				// changeStatus(DialogStatus.D_CANCELING);
 				TransactionClient tc=new TransactionClient(sip_provider,cancel,null);
 				tc.request();
 			}
@@ -742,7 +672,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			}
 		}
 		else
-		if (statusIs(D_WAITING) || statusIs(D_ReWAITING)) {
+		if (statusIs(DialogStatus.D_WAITING) || statusIs(DialogStatus.D_ReWAITING)) {
 			invite_ts.terminate();
 		}      
 	}
@@ -751,7 +681,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	/** Sends info. */
 	public void info(String content_type, byte[] body) {
 		LOG.debug("inside info(content_type,body)");
-		if (statusIs(D_CALL)) {
+		if (statusIs(DialogStatus.D_CALL)) {
 			SipMessage req=sipMessageFactory.createRequest(this,SipMethods.INFO,content_type,body);
 			// INFO PACKAGES
 			if (info_packages!=null && info_packages.length>0) {
@@ -765,7 +695,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	/** Sends info. */
 	public void info(SipMessage req) {
 		LOG.debug("inside info(req)");
-		if (statusIs(D_CALL)) {
+		if (statusIs(DialogStatus.D_CALL)) {
 			(new TransactionClient(sip_provider,req,this)).request();
 		}
 	}
@@ -822,8 +752,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	/** Termiantes the dialog without sending a CANCEL request for an ongoing INVITE, or a 4xx response to an incoming INVITE, or a BYE request for a confirmed session. */
 	public void terminate() {
 		LOG.info("terminate()");
-		if (!statusIs(D_CLOSE)) {
-			changeStatus(D_CLOSE);
+		if (!statusIs(DialogStatus.D_CLOSE)) {
+			changeStatus(DialogStatus.D_CLOSE);
 			if (invite_tc!=null) invite_tc.terminate();
 			if (invite_ts!=null) invite_ts.terminate();
 			if (cancel_ts!=null) cancel_ts.terminate();
@@ -844,16 +774,24 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	// ************************* Callback methods *************************
 
-	/** From SipProviderListener. Called when a new message is received (out of any ongoing transaction) for the current InviteDialog.
-	  * Always checks for out-of-date methods (CSeq header sequence number).
-	  * <p>
-	  * If the message is ACK(2xx/INVITE) request, it moves to D_CALL state, and fires <i>onDlgAck(this,body,msg)</i>.
-	  * <p>
-	  * If the message is 2xx(INVITE) response, it create a new AckTransactionClient
-	  * <p>
-	  * If the message is BYE,
-	  * it moves to D_BYED state, removes the listener from SipProvider, fires onDlgBye(this,msg)
-	  * then it responds with 200 OK, moves to D_CLOSE state and fires onDlgClosed(this). */
+	/**
+	 * From {@link SipProviderListener}. Called when a new message is received (out of any ongoing
+	 * transaction) for the current {@link InviteDialog}. Always checks for out-of-date methods
+	 * (CSeq header sequence number).
+	 * <p>
+	 * If the message is ACK(2xx/INVITE) request, it moves to D_CALL state, and fires
+	 * {@link InviteDialogListener#onDlgAck(InviteDialog, SdpMessage, SipMessage)}.
+	 * </p>
+	 * <p>
+	 * If the message is 2xx(INVITE) response, it create a new {@link AckTransactionClient}.
+	 * </p>
+	 * <p>
+	 * If the message is BYE, it moves to D_BYED state, removes the listener from
+	 * {@link SipProvider}, fires {@link InviteDialogListener#onDlgBye(InviteDialog, SipMessage)}
+	 * and then it responds with 200 OK, moves to D_CLOSE state and fires
+	 * {@link InviteDialogListener#onDlgClosed(InviteDialog)}.
+	 * </p>
+	 */
 	@Override
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		LOG.debug("inside onReceivedMessage(sip_provider,message)");
@@ -864,7 +802,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				LOG.info("Request message is too late (CSeq too small): Message discarded");
 				return;
 			}
-			// else
+
 			// SESSION TIMERS
 			if (msg.hasSupportedHeader() && msg.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && msg.hasSessionExpiresHeader() && msg.getSessionExpiresHeader().getDeltaSeconds()<sip_provider.sipConfig().getMinSessionInterval()) {
 				SipMessage resp=sipMessageFactory.createResponse(msg,422,null,null);
@@ -872,35 +810,43 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				(new TransactionServer(sip_provider,msg,null)).respondWith(resp);
 				return;
 			}
-			// else
-			// if invite
+
 			if (msg.isInvite())       {
-				verifyStatus(statusIs(D_INIT)||statusIs(D_CALL));
-				// NOTE: you arrive here in D_INIT if this method is called by the costructor InviteDialog(SipProvider,SipMessage,InviteDialogListener);
+				verifyStatus("INVITE method requires INIT or CALL state.",
+						statusIs(DialogStatus.D_INIT) || statusIs(DialogStatus.D_CALL));
+				// NOTE: you arrive here in D_INIT if this method is called by the constructor
+				// InviteDialog(SipProvider,SipMessage,InviteDialogListener);
 				// otherwise, INVITE message in D_INIT are captured by the callback method onTransRequest().
-				if (statusIs(D_INIT)) changeStatus(D_INVITED); else changeStatus(D_ReINVITED);
+				if (statusIs(DialogStatus.D_INIT)) {
+					changeStatus(DialogStatus.D_INVITED);
+				} else {
+					changeStatus(DialogStatus.D_ReINVITED);
+				}
 				this.invite_req=msg;
 				updateDialogInfo(false,msg);
 				invite_ts=new InviteTransactionServer(sip_provider,msg,this);
 				SipMessage resp=processInviteMessage(msg);
-				if (resp!=null) respond(resp);
-				else {
+				if (resp != null) {
+					respond(resp);
+				} else {
 					cancel_ts=new CancelTransactionServer(sip_provider,invite_req,this);
 					cancel_ts.listen();
 					if (listener!=null) {
-						if (statusIs(D_INVITED))
+						if (statusIs(DialogStatus.D_INVITED)) {
 							listener.onDlgInvite(this, invite_req.getToHeader().getNameAddress(),
 									invite_req.getFromHeader().getNameAddress(), invite_req.getSdpBody(), invite_req);
-						else
+						} else {
 							listener.onDlgReInvite(this, invite_req.getSdpBody(), invite_req);
+						}
 					}
 				}
-			}
-			else
-			// if ack (for 2xx)
-			if (msg.isAck())       {
-				if (!verifyStatus(statusIs(D_ACCEPTED)||statusIs(D_ReACCEPTED))) return;
-				changeStatus(D_CALL);
+			} else if (msg.isAck()) {
+				// if ack (for 2xx)
+				if (!verifyStatus("ACK method requires ACCEPTED state.",
+						statusIs(DialogStatus.D_ACCEPTED) || statusIs(DialogStatus.D_ReACCEPTED))) {
+					return;
+				}
+				changeStatus(DialogStatus.D_CALL);
 				// terminate the ack transaction server
 				ack_ts.terminate();
 				// terminate the cancel transaction server
@@ -908,85 +854,84 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				if (listener != null)
 					listener.onDlgAck(this, msg.getSdpBody(), msg);
 				if (listener!=null) listener.onDlgCall(this);
-			}
-			else  
-			// if bye 
-			if (msg.isBye()) {
-				if (!verifyStatus(statusIs(D_CALL)||statusIs(D_BYEING))) return;
-				changeStatus(D_BYED);
+			} else if (msg.isBye()) {
+				if (!verifyStatus("BYE method requires CALL or BYEING state.",
+						statusIs(DialogStatus.D_CALL) || statusIs(DialogStatus.D_BYEING))) {
+					return;
+				}
+				changeStatus(DialogStatus.D_BYED);
 				bye_ts=new TransactionServer(sip_provider,msg,this);
 				// automatically send a 200 OK
 				SipMessage resp=sipMessageFactory.createResponse(msg,200,null,null);
 				respond(resp);
 				if (listener!=null) listener.onDlgBye(this,msg);
-				changeStatus(D_CLOSE);
+				changeStatus(DialogStatus.D_CLOSE);
 				if (listener!=null) listener.onDlgClosed(this);         
-			}
-			/*else
-			// if cancel
-			if (msg.isCancel()) {
-				if (!verifyStatus(statusIs(D_INVITED)||statusIs(D_ReINVITED))) return;
-				// create a CANCEL TransactionServer and send a 200 OK (CANCEL)
-				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
-				ts.respondWith(SipMessageFactory.createResponse(msg,200,null,null));
-				// automatically sends a 487 Cancelled
-				SipMessage resp=SipMessageFactory.createResponse(invite_req,487,null,null);
-				respond(resp);
-				if (listener!=null) listener.onDlgCancel(this,msg);
-			}*/
-			else
-			// if info
-			if (msg.isInfo()) {
+//			} else if (msg.isCancel()) {
+//				if (!verifyStatus("CANCEL method expects INVITED state.",
+//						statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED))) {
+//					return;
+//				}
+//
+//				// create a CANCEL TransactionServer and send a 200 OK (CANCEL)
+//				TransactionServer ts = new TransactionServer(sip_provider, msg, null);
+//				ts.respondWith(sip_provider.messageFactory().createResponse(msg, 200, null, null));
+//
+//				// automatically sends a 487 Cancelled SipMessage
+//				respond(sip_provider.messageFactory().createResponse(invite_req, 487, null, null));
+//				if (listener != null) {
+//					listener.onDlgCancel(this, msg);
+//				}
+			} else if (msg.isInfo()) {
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 				ts.respondWith(sipMessageFactory.createResponse(msg,200,null,null));
 				String info_package=(msg.hasInfoPackageHeader())? info_package=msg.getInfoPackageHeader().getPackage() : null;
 				if (listener!=null) listener.onDlgInfo(this,info_package,msg.getContentTypeHeader().getContentType(),msg.getBody(),msg);
-			}
-			else
-			// if prack
-			if (msg.isPrack()) {
+			} else if (msg.isPrack()) {
 				// RELIABILITY OF PROVISIONAL RESPONSES
 				if (reliable_responder!=null) reliable_responder.processPrack(sip_provider, msg);
-			}
-			else
-			if (msg.isUpdate())       {
-				verifyStatus(isEarly()||isConfirmed());
+			} else if (msg.isUpdate()) {
+				verifyStatus("UPDATE requires early or confirmed state.", isEarly() || isConfirmed());
 				LOG.debug("onReceivedMessage(): is update");
 				updateDialogInfo(false,msg);
 				update_ts=new TransactionServer(sip_provider,msg,null);
 				if (listener != null)
 					listener.onDlgUpdate(this, msg.getSdpBody(), msg);
-			}
-			else
-			// if any other request
-			if (msg.isRequest()) {
+			} else if (msg.isRequest()) {
+				// if any other request
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 				ts.respondWith(sipMessageFactory.createResponse(msg,405,null,null));
 			}
-		}
-		else
-		// if response
-		if (msg.isResponse()) {
-			if (!verifyStatus(statusIs(D_CALL))) return;
+		} else if (msg.isResponse()) {
+			if (!verifyStatus("Response method requires CALL state.", statusIs(DialogStatus.D_CALL))) {
+				return;
+			}
 			int code=msg.getStatusLine().getCode();
-			verifyThat(code>=200 && code<300,"code 2xx was expected");
+			verifyCode(code,"code 2xx was expected", code>=200 && code<300);
 			// keep sending ACK (if already sent) for any "200 OK" received
 			if (ack_req!=null) {
 				AckTransactionClient ack_tc=new AckTransactionClient(sip_provider,ack_req,null);
 				ack_tc.request();
 			}
-		}   
+		}
 	}
 
-
-	/** From TransactionClientListener. When the TransactionClientListener is in "Proceeding" state and receives a new 1xx response.
-	  * <p>
-	  * For INVITE transaction it fires <i>onFailureResponse(this,code,reason,body,msg)</i>. */
+	/**
+	 * From {@link TransactionClientListener}. When the TransactionClientListener is in "Proceeding"
+	 * state and receives a new 1xx response.
+	 * <p>
+	 * For INVITE transaction it fires
+	 * {@link InviteDialogListener#onDlgInviteFailureResponse(InviteDialog, int, String, SipMessage)}.
+	 * </p>
+	 */
 	@Override
 	public void onTransProvisionalResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransProvisionalResponse(tc,mdg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
-			if (sip_provider.sipConfig().isEarlyDialog()) updateDialogInfo(true,msg);
+			if (sip_provider.sipConfig().isEarlyDialog()) {
+				updateDialogInfo(true, msg);
+			}
+
 			StatusLine statusline=msg.getStatusLine();
 			// RELIABILITY OF PROVISIONAL RESPONSES
 			if (msg.hasRequireHeader() && msg.getRequireHeader().hasOptionTag(SipStack.OTAG_100rel) && msg.hasRSeqHeader()) {
@@ -996,11 +941,18 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				if (last_rseq<0 || last_rseq<rseq) {
 					setLastRSeq(rseq);
 					if (sip_provider.sipConfig().isAutoPrack()) confirm1xx(msg,null,null);
-					if (listener!=null) listener.onDlgInviteReliableProvisionalResponse(this,statusline.getCode(),statusline.getReason(),(msg.hasContentTypeHeader())?msg.getContentTypeHeader().getContentType():null,msg.getBody(),msg);
+					if (listener != null) {
+						listener.onDlgInviteReliableProvisionalResponse(this, statusline.getCode(),
+								statusline.getReason(),
+								(msg.hasContentTypeHeader()) ? msg.getContentTypeHeader().getContentType() : null,
+								msg.getBody(), msg);
+					}
 				}
-			}
-			else {
-				if (listener!=null) listener.onDlgInviteProvisionalResponse(this,statusline.getCode(),statusline.getReason(),msg.getStringBody(),msg);
+			} else {
+				if (listener != null) {
+					listener.onDlgInviteProvisionalResponse(this, statusline.getCode(), statusline.getReason(),
+							msg.getStringBody(), msg);
+				}
 			}
 		}
 	}
@@ -1016,39 +968,42 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void onTransFailureResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransFailureResponse("+tc.getTransactionId()+",msg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
-			if (!verifyStatus(statusIs(D_INVITING)||statusIs(D_ReINVITING))) return;
+			if (!verifyStatus("INVITE failure response requires INVITING state.",
+					statusIs(DialogStatus.D_INVITING) || statusIs(DialogStatus.D_ReINVITING))) {
+				return;
+			}
 			StatusLine statusline=msg.getStatusLine();
 			int code=statusline.getCode();
-			verifyThat(code>=300 && code <700,"error code was expected");
-			if (statusIs(D_ReINVITING)) {
-				changeStatus(D_CALL);
+			verifyCode(code,"error code was expected", code>=300 && code <700);
+			if (statusIs(DialogStatus.D_ReINVITING)) {
+				changeStatus(DialogStatus.D_CALL);
 				if (listener!=null) listener.onDlgReInviteFailureResponse(this,code,statusline.getReason(),msg);
-			}
-			else {
-				changeStatus(D_CLOSE);
+			} else {
+				changeStatus(DialogStatus.D_CLOSE);
 				if (listener!=null)  {
 					if (code>=300 && code<400) listener.onDlgInviteRedirectResponse(this,code,statusline.getReason(),msg.getContacts(),msg);
 					else listener.onDlgInviteFailureResponse(this,code,statusline.getReason(),msg);
 				}
 				if (listener!=null) listener.onDlgClosed(this);
 			}
-		}
-		else
-		if (tc.getTransactionMethod().equals(SipMethods.UPDATE)) {
-			if (!(isEarly() || isConfirmed())) return;
-			// else
+		} else if (tc.getTransactionMethod().equals(SipMethods.UPDATE)) {
+			if (!(isEarly() || isConfirmed())) {
+				return;
+			}
+
 			//updateDialogInfo(true,msg);
 			StatusLine statusline=msg.getStatusLine();
 			int code=statusline.getCode();
 			if (listener!=null) listener.onDlgUpdateResponse(this,code,statusline.getReason(),msg.getStringBody(),msg);
-		}
-		else
-		if (tc.getTransactionMethod().equals(SipMethods.BYE)) {
-			if (!verifyStatus(statusIs(D_BYEING))) return;
+		} else if (tc.getTransactionMethod().equals(SipMethods.BYE)) {
+			if (!verifyStatus("BYE transaction failure requires BYEING state", statusIs(DialogStatus.D_BYEING))) {
+				return;
+			}
+
 			StatusLine statusline=msg.getStatusLine();
 			int code=statusline.getCode();
-			verifyThat(code>=300 && code <700,"error code was expected");
-			changeStatus(this.D_CALL);
+			verifyCode(code,"error code was expected", code>=300 && code <700);
+			changeStatus(DialogStatus.D_CALL);
 			if (listener!=null) listener.onDlgByeFailureResponse(this,code,statusline.getReason(),msg);
 		}
 	}
@@ -1066,12 +1021,16 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void onTransSuccessResponse(TransactionClient tc, SipMessage msg) {
 		LOG.debug("inside onTransSuccessResponse(tc,msg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
-			if (!verifyStatus(statusIs(D_INVITING)||statusIs(D_ReINVITING))) return;
+			if (!verifyStatus("INVITE transaction success requires INVITING state.",
+					statusIs(DialogStatus.D_INVITING) || statusIs(DialogStatus.D_ReINVITING))) {
+				return;
+			}
+
 			StatusLine statusline=msg.getStatusLine();
 			int code=statusline.getCode();
-			if (!verifyThat(code>=200 && code <300 && msg.getTransactionMethod().equals(SipMethods.INVITE),"2xx for invite was expected")) return;
-			boolean re_inviting=statusIs(D_ReINVITING);
-			changeStatus(D_CALL);
+			if (!verifyCode(code,"2xx for invite was expected", code>=200 && code <300 && msg.getTransactionMethod().equals(SipMethods.INVITE))) return;
+			boolean re_inviting = statusIs(DialogStatus.D_ReINVITING);
+			changeStatus(DialogStatus.D_CALL);
 			updateDialogInfo(true,msg);
 			if (invite_offer) {
 				//invite_req=SipMessageFactory.createRequest(SipMethods.ACK,dialog_state,sdp.toString());
@@ -1079,17 +1038,19 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				ack_req=sipMessageFactory.create2xxAckRequest(this,msg,null,null);
 				AckTransactionClient ack_tc=new AckTransactionClient(sip_provider,ack_req,null);
 				ack_tc.request();
+			} else {
+				inv2xx_resp = msg;
 			}
-			else inv2xx_resp=msg;
 			
 			if (!re_inviting) {
-				if (listener != null)
+				if (listener != null) {
 					listener.onDlgInviteSuccessResponse(this, code, statusline.getReason(), msg.getSdpBody(), msg);
-				if (listener!=null) listener.onDlgCall(this);         
-			}
-			else {
-				if (listener != null)
+					listener.onDlgCall(this);
+				}
+			} else {
+				if (listener != null) {
 					listener.onDlgReInviteSuccessResponse(this, code, statusline.getReason(), msg.getSdpBody(), msg);
+				}
 			}
 			// SESSION TIMERS
 			if (msg.hasSessionExpiresHeader()) {
@@ -1097,24 +1058,24 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				session_interval=sh.getDeltaSeconds();
 				refresher=sh.getRefresher();
 			}
-		}
-		else
-		if (tc.getTransactionMethod().equals(SipMethods.UPDATE)) {
-			if (!(isEarly() || isConfirmed())) return;
-			// else
+		} else if (tc.getTransactionMethod().equals(SipMethods.UPDATE)) {
+			if (!(isEarly() || isConfirmed())) {
+				return;
+			}
+
 			updateDialogInfo(true,msg);
 			StatusLine statusline=msg.getStatusLine();
 			int code=statusline.getCode();
 			if (listener!=null) listener.onDlgUpdateResponse(this,code,statusline.getReason(),msg.getStringBody(),msg);
-		}
-		else
-		if (tc.getTransactionMethod().equals(SipMethods.BYE)) {
-			if (!verifyStatus(statusIs(D_BYEING))) return;
-			// else
+		} else if (tc.getTransactionMethod().equals(SipMethods.BYE)) {
+			if (!verifyStatus("BYE transaction success requires BYEING state.", statusIs(DialogStatus.D_BYEING))) {
+				return;
+			}
+
 			StatusLine statusline=msg.getStatusLine();
 			int code=statusline.getCode();
-			verifyThat(code>=200 && code <300,"2xx for bye was expected");
-			changeStatus(D_CLOSE);
+			verifyCode(code,"2xx for bye was expected", code>=200 && code <300);
+			changeStatus(DialogStatus.D_CLOSE);
 			if (listener!=null) listener.onDlgByeSuccessResponse(this,code,statusline.getReason(),msg);
 			if (listener!=null) listener.onDlgClosed(this);         
 		}
@@ -1126,32 +1087,44 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void onTransTimeout(TransactionClient tc) {
 		LOG.debug("inside onTransTimeout(tc,msg)");
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
-			if (!verifyStatus(statusIs(D_INVITING)||statusIs(D_ReINVITING))) return;
-			changeStatus(D_CLOSE);
+			if (!verifyStatus("INVITE timeout requires INVITING state.",
+					statusIs(DialogStatus.D_INVITING) || statusIs(DialogStatus.D_ReINVITING))) {
+				return;
+			}
+
+			changeStatus(DialogStatus.D_CLOSE);
 			if (listener!=null) listener.onDlgInviteTimeout(this);
 			if (listener!=null) listener.onDlgClosed(this);
-		}
-		else
-		if (tc.getTransactionMethod().equals(SipMethods.BYE)) {
-			if (!verifyStatus(statusIs(D_BYEING))) return;
-			changeStatus(D_CLOSE);
+		} else if (tc.getTransactionMethod().equals(SipMethods.BYE)) {
+			if (!verifyStatus("BYE timeout requires BYEING state.", statusIs(DialogStatus.D_BYEING))) {
+				return;
+			}
+
+			changeStatus(DialogStatus.D_CLOSE);
 			if (listener!=null) listener.onDlgClosed(this);         
 		}
 	} 
 
 
-	/** From TransactionServerListener. When the TransactionServer goes into the "Trying" state receiving a request.
-	  * <p>
-	  * If called for a INVITE transaction, it initializes the dialog information,
-	  * <br> moves to D_INVITED state, and add a listener to the SipProvider,
-	  * <br> and fires <i>onInvite(caller,body,msg)</i>. */
+	/**
+	 * From {@link TransactionServerListener}. When the {@link TransactionServer} goes into the
+	 * "Trying" state receiving a request.
+	 * <p>
+	 * If called for a INVITE transaction, it initializes the dialog information, moves to D_INVITED
+	 * state, and adds a listener to the {@link SipProvider}, and fires
+	 * {@link InviteDialogListener#onDlgInvite(InviteDialog, NameAddress, NameAddress, SdpMessage, SipMessage)}.
+	 * </p>
+	 */
 	@Override
 	public void onTransRequest(TransactionServer ts, SipMessage req) {
 		LOG.debug("inside onTransRequest(ts,msg)");
 		// INVITE
 		if (ts.getTransactionMethod().equals(SipMethods.INVITE)) {
-			if (!verifyStatus(statusIs(D_WAITING))) return;
-			changeStatus(D_INVITED);
+			if (!verifyStatus("INVITE transaction requires WAITING state.", statusIs(DialogStatus.D_WAITING))) {
+				return;
+			}
+
+			changeStatus(DialogStatus.D_INVITED);
 			invite_req=req;
 			updateDialogInfo(false,req);
 			SipMessage resp=processInviteMessage(req);
@@ -1160,14 +1133,12 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			if (listener != null)
 				listener.onDlgInvite(this, invite_req.getToHeader().getNameAddress(),
 						invite_req.getFromHeader().getNameAddress(), invite_req.getSdpBody(), invite_req);
-		}
-		else
-		// CANCEL
-		if (ts.getTransactionMethod().equals(SipMethods.CANCEL)) {
+		} else if (ts.getTransactionMethod().equals(SipMethods.CANCEL)) {
 			// always responds with 200 OK to the CANCEL 
 			ts.respondWith(sipMessageFactory.createResponse(req,200,null,null));
+
 			// if in "invited" state, respond with 487 Request Terminated
-			if (verifyStatus(statusIs(D_INVITED)||statusIs(D_ReINVITED))) {
+			if (statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED)) {
 				// automatically sends a 487 Cancelled
 				SipMessage resp=sipMessageFactory.createResponse(invite_req,487,null,null);
 				respond(resp);
@@ -1203,20 +1174,28 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	}
 
 
-	/** From TransactionServerListener. When an InviteTransactionServer goes into the "Confirmed" state receiving an ACK for NON-2xx response.
-	  * <p>
-	  * It moves to D_CLOSE state and removes the listener from SipProvider. */
+	/**
+	 * From {@link TransactionServerListener}. When an {@link InviteTransactionServer} goes into the
+	 * "Confirmed" state receiving an ACK for NON-2xx response.
+	 * <p>
+	 * It moves to D_CLOSE state and removes the listener from {@link SipProvider}.
+	 * </p>
+	 */
 	@Override
 	public void onTransFailureAck(InviteTransactionServer ts, SipMessage msg) {
 		LOG.debug("inside onTransFailureAck(ts,msg)");
-		if (!verifyStatus(statusIs(D_REFUSED)||statusIs(D_ReREFUSED))) return;
-		// else
-		if (cancel_ts!=null) cancel_ts.terminate();
-		if (statusIs(D_ReREFUSED)) {
-			changeStatus(D_CALL);
+		if (!verifyStatus("ACK failure requires REFUSED state.",
+				statusIs(DialogStatus.D_REFUSED) || statusIs(DialogStatus.D_ReREFUSED))) {
+			return;
 		}
-		else {
-			changeStatus(D_CLOSE);
+
+		if (cancel_ts != null) {
+			cancel_ts.terminate();
+		}
+		if (statusIs(DialogStatus.D_ReREFUSED)) {
+			changeStatus(DialogStatus.D_CALL);
+		} else {
+			changeStatus(DialogStatus.D_CLOSE);
 			if (listener!=null) listener.onDlgClosed(this);
 		}
 	}
@@ -1226,9 +1205,14 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	@Override
 	public void onTransAckTimeout(AckTransactionServer ts) {
 		LOG.debug("inside onAckSrvTimeout(ts)");
-		if (!verifyStatus(statusIs(D_ACCEPTED)||statusIs(D_ReACCEPTED)||statusIs(D_REFUSED)||statusIs(D_ReREFUSED))) return;
-		LOG.info("No ACK received..");
-		changeStatus(D_CLOSE);
+		if (!verifyStatus("ACK timeout requires ACCEPTED or REFUSED state.",
+				statusIs(DialogStatus.D_ACCEPTED) || statusIs(DialogStatus.D_ReACCEPTED)
+						|| statusIs(DialogStatus.D_REFUSED) || statusIs(DialogStatus.D_ReREFUSED))) {
+			return;
+		}
+
+		LOG.info("No ACK received.");
+		changeStatus(DialogStatus.D_CLOSE);
 		if (listener!=null) listener.onDlgClosed(this);
 	}
 

@@ -395,10 +395,15 @@ public abstract class BasicSipMessage {
 	
 	/** Whether Message is a <i>method</i> request. */
 	public boolean isRequest(String method) {
-		if (request_line!=null && request_line.getMethod().equalsIgnoreCase(method)) return true;
-		else return false;
+		return getMethod().equalsIgnoreCase(method);
 	}
 
+	/**
+	 * The request method.
+	 */
+	private String getMethod() {
+		return request_line != null ? request_line.getMethod() : "<UNKNOWN>";
+	}
 
 	/** Whether Message has the request-line. */
 	protected boolean hasRequestLine() {

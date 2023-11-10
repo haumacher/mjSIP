@@ -20,18 +20,13 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.dialog;
-
-
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.DialogId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.slf4j.LoggerFactory;
-
-
 
 /** Class Dialog extends DialogInfo maintaining current dialog status ("early", "confirmed", or "terminated").
   */
@@ -44,11 +39,10 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	/** Dialogs counter */
 	private static int dialog_counter=0;
 
-
 	// *********************** Protected attributes ***********************
 
 	/** Internal dialog status. */
-	protected int status;
+	private DialogStatus status;
 	
 	/** Dialog number */
 	protected int dialog_num;
@@ -56,25 +50,36 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	/** Dialog identifier */
 	protected DialogId dialog_id;
 
-
 	// ************************* Abstract methods *************************
 
 	/** Gets the dialog state */
-	abstract protected String getStatus();
+	protected DialogStatus getStatus() {
+		return status;
+	}
 
-	/** Whether the dialog is in "early" state. */
-	abstract public boolean isEarly();
+	/** Whether the call is not yet accepted. */
+	public boolean isEarly() {
+		return status.isEarly();
+	}
 
-	/** Whether the dialog is in "confirmed" state. */
-	abstract public boolean isConfirmed();
+	/** Whether the call is alive (accepted and not yet closed). */
+	public boolean isConfirmed() {
+		return status.isConfirmed();
+	}
 
 	/** Whether the dialog is in "terminated" state. */
-	abstract public boolean isTerminated();
+	public boolean isTerminated() {
+		return status == DialogStatus.D_CLOSE;
+	}
+
+	/** Whether the session is "active". */
+	public boolean isSessionActive() {
+		return status == DialogStatus.D_CALL;
+	}
 
 	/** When a new Message is received by the SipProvider. */
 	@Override
 	abstract public void onReceivedMessage(SipProvider provider, SipMessage message);
-
 
 	// **************************** Costructors *************************** 
 
@@ -82,17 +87,18 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	protected Dialog(SipProvider provider) {
 		super(provider); 
 		this.dialog_num=dialog_counter++;  
-		this.status=0;
+		this.status = DialogStatus.D_INIT;
 		this.dialog_id=null;
 	}
  
-
 	// ************************* Protected methods ************************
 
 	/** Changes the internal dialog state */
-	protected void changeStatus(int newstatus) {
-		status=newstatus;
-		LOG.debug("changed dialog state: "+getStatus());
+	protected void changeStatus(DialogStatus newStatus) {
+		status = newStatus;
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Set state of dialog" + (dialog_id != null ? " " + dialog_id : "") + " to: " + getStatus());
+		}
 		
 		// remove the sip_provider listener when going to "terminated" state
 		if (dialog_id != null) {
@@ -104,12 +110,10 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		}
 	}
 
-
 	/** Whether the dialog state is equal to <i>st</i> */
-	protected boolean statusIs(int st) {
+	protected boolean statusIs(DialogStatus st) {
 		return status==st;
 	}
-
 
 	// ************************** Public methods **************************
 
@@ -118,23 +122,19 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		return sip_provider;
 	}
 
-
 	/** Gets an unique dialog ideintifier */
 	public DialogId getDialogID() {
 		return dialog_id;
 	} 
 
-
 	/** Updates empty attributes (tags, route set) and mutable attributes (cseqs, contacts), based on a new message.
 	  * @param is_client indicates whether the Dialog is acting as transaction client for the current message.
 	  * @param msg the message that is used to update the Dialog state */
 	public void updateDialogInfo(boolean is_client, SipMessage msg) {
-		
 		if (isTerminated()) {
 			LOG.warn("trying to update a terminated dialog: do nothing.");
 			return;
 		}
-		// else
 		
 		boolean secure_old=secure;
 		
@@ -143,30 +143,41 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		if (secure_old!=secure) LOG.info("secure dialog: on");
 
 		// update dialog_id and sip_provider listener
-		DialogId new_dialog_id=new DialogId(call_id,local_tag,remote_tag);
-		if (dialog_id==null || !dialog_id.equals(new_dialog_id)) {
-			LOG.info("new dialog-id: "+new_dialog_id);
-			if (sip_provider!=null) sip_provider.addSelectiveListener(new_dialog_id,this);
-			if (dialog_id!=null && sip_provider!=null) sip_provider.removeSelectiveListener(dialog_id);
-			dialog_id=new_dialog_id;
+		DialogId newDialogId = new DialogId(call_id, local_tag, remote_tag);
+
+		DialogId oldDialogId = dialog_id;
+		if (oldDialogId == null || !oldDialogId.equals(newDialogId)) {
+			LOG.info("Dialog ID set to: " + newDialogId);
+
+			if (sip_provider != null) {
+				if (oldDialogId != null) {
+					sip_provider.removeSelectiveListener(oldDialogId);
+				}
+
+				sip_provider.addSelectiveListener(newDialogId, this);
+			}
+			dialog_id = newDialogId;
 		}
-
 	}
 
-	/** Verifies the correct status; if not logs the event. */
-	protected final boolean verifyStatus(boolean expression) {
-		return verifyThat(expression,"dialog state mismatching");
-	}
-
-	/** Verifies an event; if not logs it. */
-	protected final boolean verifyThat(boolean expression, String str) {
+	/**
+	 * Verifies the correct status; if not logs the event.
+	 * 
+	 * @param message
+	 *        The message to log, if condition is false.
+	 */
+	protected final boolean verifyStatus(String message, boolean expression) {
 		if (!expression) {
-			if (str == null || str.length() == 0)
-				LOG.warn("expression check failed. ");
-			else
-				LOG.warn(str);
+			LOG.warn("Status " + getStatus() + ": " + message);
 		}
 		return expression;
 	}
 
+	/** Verifies a message code, logs failures. */
+	protected final boolean verifyCode(int code, String message, boolean expression) {
+		if (!expression) {
+			LOG.warn("Code " + code + ": " + message);
+		}
+		return expression;
+	}
 }
