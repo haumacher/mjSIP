@@ -223,6 +223,14 @@ public class SipParser extends Parser {
 	/** Returns the first SIP-compatible URI.
 	  * If no valid SIP-compatible URI is found, it returns <b>null</b> */
 	public GenericURI getURI() {
+		String uri = getURISource();
+		return uri == null ? null : new GenericURIImpl(uri);
+	}
+
+	/**
+	 * The source of the first SIP-compatible URI, <code>null</code> if not found.
+	 */
+	public String getURISource() {
 		goTo(uri_schemes);
 		if (!hasMore()) return null;
 		int begin=getPos();
@@ -230,14 +238,9 @@ public class SipParser extends Parser {
 		if (end<0) end=str.length();
 		String uri=getString(end-begin);
 		if (hasMore()) skipChar();
-		return new GenericURIImpl(uri);
+		return uri;
 	}
-/* 
-	public static SipURI parseSipURI(String s) {
-		SipParser par=new SipParser(s);
-		return par.parseSipURI();
-	}
-*/
+
 	/** Returns the first NameAddress in the string <i>str</i>.
 	  * If no NameAddress is found, it returns <b>null</b>.  
 	  * A NameAddress is a string of the form of:

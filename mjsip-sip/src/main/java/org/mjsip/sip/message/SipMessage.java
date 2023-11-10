@@ -29,6 +29,7 @@ import java.util.Vector;
 
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.AcceptEncodingHeader;
 import org.mjsip.sip.header.AcceptHeader;
 import org.mjsip.sip.header.AcceptLanguageHeader;
@@ -74,6 +75,7 @@ import org.mjsip.sip.header.UnsupportedHeader;
 import org.mjsip.sip.header.UserAgentHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
+import org.mjsip.sip.provider.SipParser;
 
 
 
@@ -1211,21 +1213,14 @@ public class SipMessage extends BasicSipMessage {
 		FromHeader fromHeader = getFromHeader();
 		if (fromHeader == null) {
 			return null;
-		} else {
-			String value = fromHeader.getValue();
-			
-			int start = value.indexOf(':');
-			if (start < 0) {
-				// No protocol given.
-				start = 0;
-			}
-			int stop = value.indexOf('@');
-			if (stop < 0) {
-				// No user given. 
-				return null;
-			}
-			return value.substring(start + 1, stop);
 		}
+
+		SipURI sipURI = SipURI.parseSipURI(new SipParser(fromHeader.getValue()).getURISource());
+		if (sipURI == null) {
+			return null;
+		}
+
+		return sipURI.getUserName();
 	}
 
 }
