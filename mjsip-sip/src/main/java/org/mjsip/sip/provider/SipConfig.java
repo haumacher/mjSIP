@@ -161,7 +161,7 @@ public class SipConfig implements SipOptions {
 
 	private SipURI _telGateway = null;
 
-	@Option(name = "--log-all-packets", handler = YesNoHandler.class)
+	@Option(name = "--log-all-packets", handler = YesNoHandler.class, usage = "Whether to log all SIP messages.")
 	private boolean _logAllPackets = false;
 
 	@Option(name = "--trust-all", handler = YesNoHandler.class)
