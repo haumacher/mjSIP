@@ -104,7 +104,7 @@ public interface SipOptions {
 
 	/**
 	 * Server info included in response messages in the 'Server' header field Use "NONE" if the
-	 * 'Server' header filed must not be added.
+	 * 'Server' header field is not added.
 	 */
 	String getServerInfo();
 

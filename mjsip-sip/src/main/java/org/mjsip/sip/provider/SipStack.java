@@ -22,19 +22,20 @@
  */
 package org.mjsip.sip.provider;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * Global constants for SIP.
  */
 public class SipStack {
 
 	/** Version */
-	public static final String version="1.8";
+	public static final String version;
 
 	/** Release */
-	public static final String release="mjsip "+version;
-
-	/** Authors */
-	public static final String authors="Luca Veltri - University of Parma (Italy)";
+	public static final String release;
 
 	/** Extension option tag "100rel". */
 	public static final String OTAG_100rel="100rel";
@@ -45,4 +46,17 @@ public class SipStack {
 	/** Extension option tag "precondition". */
 	public static final String OTAG_precondition="precondition";
 
+	static {
+		String v;
+		try (InputStream in = SipStack.class
+				.getResourceAsStream("/META-INF/maven/org.mjsip/mjsip-sip/pom.properties")) {
+			Properties properties = new Properties();
+			properties.load(in);
+			v = properties.getProperty("version");
+		} catch (IOException ex) {
+			v = "unknown";
+		}
+		version = v;
+		release = "mjsip " + v;
+	}
 }
