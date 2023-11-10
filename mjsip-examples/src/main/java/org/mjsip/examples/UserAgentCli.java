@@ -130,7 +130,6 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		ua=new RegisteringUserAgent(sip_provider,portPool,uaConfig, this.andThen(clipPlayer()));      
 		if (!uaConfig.isNoPrompt()) stdin=new BufferedReader(new InputStreamReader(System.in)); 
 		if (!uaConfig.isNoPrompt()) stdout=System.out;
-		run();
 	}
 
 	private UserAgentListener clipPlayer() {
@@ -151,7 +150,6 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 
 	/** Makes a new call */
 	public void call(String target_uri) {
-		ua.hangup();
 		LOG.info("CALLING " + target_uri);
 		ua.call(target_uri, mediaAgent());
 		changeStatus(UA_OUTGOING_CALL);
@@ -468,7 +466,9 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		uaConfig.normalize(sipConfig);
 		mediaConfig.normalize();
 
-		 new UserAgentCli(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), portConfig.createPool(), serviceConfig, uaConfig, uiConfig, mediaConfig);
+		SipProvider sip_provider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		UserAgentCli cli = new UserAgentCli(sip_provider, portConfig.createPool(), serviceConfig, uaConfig, uiConfig, mediaConfig);
+		cli.run();
 	}
 
 	/** Prints a message to standard output. */
