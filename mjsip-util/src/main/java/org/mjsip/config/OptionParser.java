@@ -31,10 +31,12 @@ public class OptionParser {
 		}
 		
 		try {
+			CmdLineException problem = null;
 			try {
 				parser.parseArgument(args);
 			} catch (CmdLineException ex) {
 				// Happens, when required configurations are not given on the command line.
+				problem = ex;
 			}
 			
 			String argFile = metaConfig.configFile;
@@ -69,6 +71,11 @@ public class OptionParser {
 				arguments.addAll(Arrays.asList(args));
 				
 				parser.parseArgument(arguments);
+			} else {
+				if (problem != null) {
+					// The first parse attempt should have been successful, report problem.
+					throw problem;
+				}
 			}
 	
 			if (metaConfig.help) {
