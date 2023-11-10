@@ -176,10 +176,18 @@ public class InviteTransactionClient extends TransactionClient {
 	@Override
 	protected void doTerminate() {
 		if (!statusIs(STATE_TERMINATED)) {
-			retransmission_to.cancel(false);
-			transaction_to.cancel(false);
-			end_to.cancel(false);
-			sip_provider.removeSelectiveListener(transaction_id);
+			if (retransmission_to != null) {
+				retransmission_to.cancel(false);
+			}
+			if (transaction_to != null) {
+				transaction_to.cancel(false);
+			}
+			if (end_to != null) {
+				end_to.cancel(false);
+			}
+			if (transaction_id != null) {
+				sip_provider.removeSelectiveListener(transaction_id);
+			}
 			changeStatus(STATE_TERMINATED);
 		}
 	}
