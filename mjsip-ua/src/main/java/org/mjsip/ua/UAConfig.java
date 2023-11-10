@@ -23,7 +23,7 @@ public class UAConfig implements UAOptions {
 	@Option(name = "--proxy", usage = "Proxy server to use.")
 	private String _proxy=null;
 
-	@Option(name = "--registrar", usage = "Registrar server.", required = true)
+	@Option(name = "--registrar", usage = "Registrar server.")
 	private String _registrar=null;
 
 	@Option(name = "--route", usage = "Additional URI for routing the registration messages.")
@@ -121,6 +121,10 @@ public class UAConfig implements UAOptions {
 		if (getAuthRealm()==null && getRegistrar()!=null) setAuthRealm(getRegistrar());
 		if (getAuthUser()==null && getUser()!=null) setAuthUser(getUser());
 
+		if (isRegister() && getRegistrar() == null) {
+			throw new IllegalArgumentException("Registrar is required, when registering is enabled.");
+		}
+		
 		String uaAddress = getUaAddress();
 		if (uaAddress==null) {
 			setUaAddress(sipConfig.getViaAddr());
