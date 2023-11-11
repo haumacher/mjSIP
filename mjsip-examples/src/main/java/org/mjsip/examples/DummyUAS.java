@@ -29,7 +29,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 
 
@@ -88,7 +88,7 @@ public class DummyUAS implements SipProviderListener {
 		
 		sipConfig.normalize();
 		
-		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sipProvider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		
 		new DummyUAS(sipProvider, config.code, config.reason);
 	}    

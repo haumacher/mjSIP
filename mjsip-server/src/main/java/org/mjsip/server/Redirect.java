@@ -31,7 +31,7 @@ import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.Flags;
@@ -104,7 +104,7 @@ public class Redirect extends Registrar {
 		sipConfig.normalize();
 		server_profile.normalize();
 						
-		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sip_provider=new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 
 		new Redirect(sip_provider,server_profile);      
 	}

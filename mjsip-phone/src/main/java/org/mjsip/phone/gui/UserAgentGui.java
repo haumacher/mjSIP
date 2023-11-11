@@ -61,7 +61,7 @@ import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
@@ -720,7 +720,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
 
-		new UserAgentGui(new SipProvider(sipConfig, new Scheduler(schedulerConfig)), portConfig.createPool(), uaConfig, uiConfig, mediaConfig);
+		new UserAgentGui(new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig)), portConfig.createPool(), uaConfig, uiConfig, mediaConfig);
 	}
 	
 	/** Prints a message to standard output. */

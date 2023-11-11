@@ -37,7 +37,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
@@ -119,7 +119,7 @@ public class AnsweringMachine extends RegisteringMultipleUAS {
 		}
 
 		StreamerFactory streamerFactory = ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig);
-		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sipProvider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		new AnsweringMachine(sipProvider, uaConfig, mediaConfig, streamerFactory, portConfig.createPool(), serviceConfig);
 	}
 

@@ -40,7 +40,7 @@ import org.mjsip.sip.transaction.Transaction;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 
@@ -364,7 +364,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		sipConfig.normalize();
 		server_profile.normalize();
 						
-		SipProvider sip_provider=new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sip_provider=new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		
 		StatefulProxy sproxy=new StatefulProxy(sip_provider,server_profile);   
 	}

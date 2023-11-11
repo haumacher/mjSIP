@@ -7,7 +7,7 @@ import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UIConfig;
@@ -35,7 +35,7 @@ public class MA {
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
 		
-		SipProvider sip_provider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sip_provider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		MessageAgentCli cli=new MessageAgentCli(sip_provider,uaConfig);
 		
 		if (uaConfig.isRegister()) {

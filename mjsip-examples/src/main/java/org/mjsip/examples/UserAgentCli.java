@@ -35,7 +35,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.RegisteringUserAgent;
@@ -466,7 +466,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		uaConfig.normalize(sipConfig);
 		mediaConfig.normalize();
 
-		SipProvider sip_provider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sip_provider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		UserAgentCli cli = new UserAgentCli(sip_provider, portConfig.createPool(), serviceConfig, uaConfig, uiConfig, mediaConfig);
 		cli.run();
 	}

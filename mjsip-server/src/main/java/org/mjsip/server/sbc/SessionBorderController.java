@@ -45,7 +45,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipKeepAlive;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.SocketAddress;
@@ -368,7 +368,7 @@ public class SessionBorderController extends Proxy {
 		
 		// create a new ExtendedSipProvider
 		long keepalive_aggressive_time=(sbc_profile.keepaliveAggressive)? sbc_profile.keepaliveTime : 0;
-		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig, new Scheduler(schedulerConfig), sbc_profile.bindingTimeout,keepalive_aggressive_time);
+		ExtendedSipProvider extended_provider=new ExtendedSipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig), sbc_profile.bindingTimeout,keepalive_aggressive_time);
 
 		// create and start the SBC
 		new SessionBorderController(extended_provider, portConfig.createPool(), server_profile,sbc_profile);

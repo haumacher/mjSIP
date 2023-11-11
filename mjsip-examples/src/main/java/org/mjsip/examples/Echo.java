@@ -39,7 +39,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.RegisteringMultipleUAS;
@@ -149,7 +149,7 @@ public class Echo extends RegisteringMultipleUAS {
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
 		
-		new Echo(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portConfig.createPool(), config.forceReverseRoute, serviceConfig);
+		new Echo(new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig)),new LoopbackStreamerFactory(),uaConfig,portConfig.createPool(), config.forceReverseRoute, serviceConfig);
 
 		// Prompt before exit
 		if (config.prompt) {

@@ -29,7 +29,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.ServiceConfig;
 import org.mjsip.ua.ServiceOptions;
@@ -96,7 +96,7 @@ public class MiniJukebox extends UserAgentCli {
 		mediaConfig.setVideo(false);
 		uaConfig.setSendOnly(true);
 		
-		new MiniJukebox(new SipProvider(sipConfig, new Scheduler(schedulerConfig)),portConfig.createPool(),serviceConfig, uaConfig, uiConfig, mediaConfig);
+		new MiniJukebox(new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig)),portConfig.createPool(),serviceConfig, uaConfig, uiConfig, mediaConfig);
 	}    
 	
 }
