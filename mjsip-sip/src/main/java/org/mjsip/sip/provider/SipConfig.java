@@ -220,7 +220,7 @@ public class SipConfig implements SipOptions {
 		return _defaultPort;
 	}
 
-	private void setDefaultPort(int defaultPort) {
+	public void setDefaultPort(int defaultPort) {
 		this._defaultPort = defaultPort;
 	}
 
@@ -229,7 +229,7 @@ public class SipConfig implements SipOptions {
 		return _defaultTlsPort;
 	}
 
-	private void setDefaultTlsPort(int defaultTlsPort) {
+	public void setDefaultTlsPort(int defaultTlsPort) {
 		this._defaultTlsPort = defaultTlsPort;
 	}
 
@@ -238,7 +238,7 @@ public class SipConfig implements SipOptions {
 		return _defaultMaxConnections;
 	}
 
-	private void setDefaultMaxConnections(int defaultMaxConnections) {
+	public void setDefaultMaxConnections(int defaultMaxConnections) {
 		this._defaultMaxConnections = defaultMaxConnections;
 	}
 
@@ -247,7 +247,7 @@ public class SipConfig implements SipOptions {
 		return _useRport;
 	}
 
-	private void setUseRport(boolean useRport) {
+	public void setUseRport(boolean useRport) {
 		this._useRport = useRport;
 	}
 
@@ -256,7 +256,7 @@ public class SipConfig implements SipOptions {
 		return _forceRport;
 	}
 
-	private void setForceRport(boolean forceRport) {
+	public void setForceRport(boolean forceRport) {
 		this._forceRport = forceRport;
 	}
 
@@ -265,7 +265,7 @@ public class SipConfig implements SipOptions {
 		return _retransmissionTimeout;
 	}
 
-	private void setRetransmissionTimeout(long retransmissionTimeout) {
+	public void setRetransmissionTimeout(long retransmissionTimeout) {
 		this._retransmissionTimeout = retransmissionTimeout;
 	}
 
@@ -274,7 +274,7 @@ public class SipConfig implements SipOptions {
 		return _maxRetransmissionTimeout;
 	}
 
-	private void setMaxRetransmissionTimeout(long maxRetransmissionTimeout) {
+	public void setMaxRetransmissionTimeout(long maxRetransmissionTimeout) {
 		this._maxRetransmissionTimeout = maxRetransmissionTimeout;
 	}
 
@@ -283,7 +283,7 @@ public class SipConfig implements SipOptions {
 		return _transactionTimeout;
 	}
 
-	private void setTransactionTimeout(long transaction_timeout) {
+	public void setTransactionTimeout(long transaction_timeout) {
 		this._transactionTimeout = transaction_timeout;
 	}
 
@@ -292,7 +292,7 @@ public class SipConfig implements SipOptions {
 		return _clearingTimeout;
 	}
 
-	private void setClearingTimeout(long clearingTimeout) {
+	public void setClearingTimeout(long clearingTimeout) {
 		this._clearingTimeout = clearingTimeout;
 	}
 
@@ -301,7 +301,7 @@ public class SipConfig implements SipOptions {
 		return _maxForwards;
 	}
 
-	private void setMaxForwards(int maxForwards) {
+	public void setMaxForwards(int maxForwards) {
 		this._maxForwards = maxForwards;
 	}
 
@@ -310,7 +310,7 @@ public class SipConfig implements SipOptions {
 		return _autoTrying;
 	}
 
-	private void setAutoTrying(boolean autoTrying) {
+	public void setAutoTrying(boolean autoTrying) {
 		_autoTrying = autoTrying;
 	}
 
@@ -319,7 +319,7 @@ public class SipConfig implements SipOptions {
 		return _earlyDialog;
 	}
 
-	private void setEarlyDialog(boolean earlyDialog) {
+	public void setEarlyDialog(boolean earlyDialog) {
 		this._earlyDialog = earlyDialog;
 	}
 
@@ -338,7 +338,7 @@ public class SipConfig implements SipOptions {
 		return _defaultExpires;
 	}
 
-	private void setDefaultExpires(int defaultExpires) {
+	public void setDefaultExpires(int defaultExpires) {
 		this._defaultExpires = defaultExpires;
 	}
 
@@ -347,7 +347,7 @@ public class SipConfig implements SipOptions {
 		return _uaInfo;
 	}
 
-	private void setUaInfo(String uaInfo) {
+	public void setUaInfo(String uaInfo) {
 		this._uaInfo = uaInfo;
 	}
 
@@ -356,7 +356,7 @@ public class SipConfig implements SipOptions {
 		return _serverInfo;
 	}
 
-	private void setServerInfo(String serverInfo) {
+	public void setServerInfo(String serverInfo) {
 		this._serverInfo = serverInfo;
 	}
 
@@ -365,7 +365,7 @@ public class SipConfig implements SipOptions {
 		return _supportedOptionTags;
 	}
 
-	private void setSupportedOptionTags(String[] supportedOptionTags) {
+	public void setSupportedOptionTags(String[] supportedOptionTags) {
 		this._supportedOptionTags = supportedOptionTags;
 	}
 
@@ -374,7 +374,7 @@ public class SipConfig implements SipOptions {
 		return _requiredOptionTags;
 	}
 
-	private void setRequiredOptionTags(String[] requiredOptionTags) {
+	public void setRequiredOptionTags(String[] requiredOptionTags) {
 		_requiredOptionTags = requiredOptionTags;
 	}
 
@@ -383,7 +383,7 @@ public class SipConfig implements SipOptions {
 		return _allowedMethods;
 	}
 
-	private void setAllowedMethods(String[] allowedMethods) {
+	public void setAllowedMethods(String[] allowedMethods) {
 		this._allowedMethods = allowedMethods;
 	}
 
@@ -392,7 +392,7 @@ public class SipConfig implements SipOptions {
 		return _minSessionInterval;
 	}
 
-	private void setMinSessionInterval(int minSessionInterval) {
+	public void setMinSessionInterval(int minSessionInterval) {
 		this._minSessionInterval = minSessionInterval;
 	}
 
@@ -401,7 +401,7 @@ public class SipConfig implements SipOptions {
 		return _defaultSessionInterval;
 	}
 
-	private void setDefaultSessionInterval(int defaultSessionInterval) {
+	public void setDefaultSessionInterval(int defaultSessionInterval) {
 		this._defaultSessionInterval = defaultSessionInterval;
 	}
 
@@ -410,7 +410,7 @@ public class SipConfig implements SipOptions {
 		return _regMinAttemptTimeout;
 	}
 
-	private void setRegMinAttemptTimeout(long regMinAttemptTimeout) {
+	public void setRegMinAttemptTimeout(long regMinAttemptTimeout) {
 		this._regMinAttemptTimeout = regMinAttemptTimeout;
 	}
 
@@ -419,7 +419,7 @@ public class SipConfig implements SipOptions {
 		return _regMaxAttemptTimeout;
 	}
 
-	private void setRegMaxAttemptTimeout(long regMaxAttemptTimeout) {
+	public void setRegMaxAttemptTimeout(long regMaxAttemptTimeout) {
 		this._regMaxAttemptTimeout = regMaxAttemptTimeout;
 	}
 
@@ -428,7 +428,7 @@ public class SipConfig implements SipOptions {
 		return _regAuthAttempts;
 	}
 
-	private void setRegAuthAttempts(int regAuthAttempts) {
+	public void setRegAuthAttempts(int regAuthAttempts) {
 		this._regAuthAttempts = regAuthAttempts;
 	}
 
@@ -437,7 +437,7 @@ public class SipConfig implements SipOptions {
 		return _onDialogRoute;
 	}
 
-	private void setOnDialogRoute(boolean onDialogRoute) {
+	public void setOnDialogRoute(boolean onDialogRoute) {
 		this._onDialogRoute = onDialogRoute;
 	}
 
@@ -446,7 +446,7 @@ public class SipConfig implements SipOptions {
 		return _viaAddr;
 	}
 
-	private void setViaAddr(String via_addr) {
+	public void setViaAddr(String via_addr) {
 		this._viaAddr = via_addr;
 	}
 
@@ -455,7 +455,7 @@ public class SipConfig implements SipOptions {
 		return _hostPort;
 	}
 
-	private void setHostPort(int host_port) {
+	public void setHostPort(int host_port) {
 		this._hostPort = host_port;
 	}
 
@@ -464,7 +464,7 @@ public class SipConfig implements SipOptions {
 		return _bindingIpAddr;
 	}
 
-	private void setBindingIpAddr(IpAddress bindingIpAddr) {
+	public void setBindingIpAddr(IpAddress bindingIpAddr) {
 		this._bindingIpAddr = bindingIpAddr;
 	}
 
@@ -485,7 +485,7 @@ public class SipConfig implements SipOptions {
 		return _transportPorts;
 	}
 
-	private void setTransportPorts(int[] transportPorts) {
+	public void setTransportPorts(int[] transportPorts) {
 		this._transportPorts = transportPorts;
 	}
 
@@ -494,7 +494,7 @@ public class SipConfig implements SipOptions {
 		return _maxConnections;
 	}
 
-	private void setMaxConnections(int maxConnections) {
+	public void setMaxConnections(int maxConnections) {
 		this._maxConnections = maxConnections;
 	}
 
@@ -513,7 +513,7 @@ public class SipConfig implements SipOptions {
 		return _telGateway;
 	}
 
-	private void setTelGateway(SipURI telGateway) {
+	public void setTelGateway(SipURI telGateway) {
 		this._telGateway = telGateway;
 	}
 
@@ -522,7 +522,7 @@ public class SipConfig implements SipOptions {
 		return _logAllPackets;
 	}
 
-	private void setLogAllPackets(boolean logAllPackets) {
+	public void setLogAllPackets(boolean logAllPackets) {
 		this._logAllPackets = logAllPackets;
 	}
 
@@ -531,7 +531,7 @@ public class SipConfig implements SipOptions {
 		return _trustAll;
 	}
 
-	private void setTrustAll(boolean trustAll) {
+	public void setTrustAll(boolean trustAll) {
 		this._trustAll = trustAll;
 	}
 
@@ -540,7 +540,7 @@ public class SipConfig implements SipOptions {
 		return _trustedCerts;
 	}
 
-	private void setTrustedCerts(String[] trustedCerts) {
+	public void setTrustedCerts(String[] trustedCerts) {
 		this._trustedCerts = trustedCerts;
 	}
 
@@ -549,7 +549,7 @@ public class SipConfig implements SipOptions {
 		return _trustFolder;
 	}
 
-	private void setTrustFolder(String trustFolder) {
+	public void setTrustFolder(String trustFolder) {
 		this._trustFolder = trustFolder;
 	}
 
@@ -558,7 +558,7 @@ public class SipConfig implements SipOptions {
 		return _certFile;
 	}
 
-	private void setCertFile(String certFile) {
+	public void setCertFile(String certFile) {
 		this._certFile = certFile;
 	}
 
@@ -567,7 +567,7 @@ public class SipConfig implements SipOptions {
 		return _keyFile;
 	}
 
-	private void setKeyFile(String keyFile) {
+	public void setKeyFile(String keyFile) {
 		this._keyFile = keyFile;
 	}
 
@@ -576,7 +576,7 @@ public class SipConfig implements SipOptions {
 		return _outboundAddr;
 	}
 
-	private void setOutboundAddr(String outboundAddr) {
+	public void setOutboundAddr(String outboundAddr) {
 		this._outboundAddr = outboundAddr;
 	}
 
@@ -585,7 +585,7 @@ public class SipConfig implements SipOptions {
 		return _outboundPort;
 	}
 
-	private void setOutboundPort(int outboundPort) {
+	public void setOutboundPort(int outboundPort) {
 		this._outboundPort = outboundPort;
 	}
 }
