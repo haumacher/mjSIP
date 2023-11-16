@@ -32,7 +32,6 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.spi.FormatConversionProvider;
 
 import org.zoolu.sound.CodecType;
 import org.zoolu.sound.SimpleAudioSystem;
@@ -63,68 +62,58 @@ public class AudioFile {
 	  * <p>
 	  * Supported audio file formats are: WAV (wave), AU, AMR, and RAW.
 	  * Raw audio files contain only audio frames without any description header.
-	  * @param file_name the file name
-	  * @param target_audio_format the target audio format. If not <i>null</i>, audio conversion is performed.
+	  * @param fileName the file name
+	  * @param targetFormat the target audio format. If not <i>null</i>, audio conversion is performed.
 	  * Note: In case of AU file, this is the audio format assigned to raw audio */
-	 public static AudioInputStream getAudioFileInputStream(String file_name, AudioFormat target_audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
-		if (file_name.toLowerCase().endsWith(".wav")) {
-			File file=new File(file_name);
-			AudioInputStream audio_input_stream=AudioSystem.getAudioInputStream(file);
-
-			// Apply audio conversion through AudioSystem
-			if (target_audio_format!=null) {
-				audio_input_stream=AudioSystem.getAudioInputStream(target_audio_format,audio_input_stream);
+	 public static AudioInputStream getAudioFileInputStream(String fileName, AudioFormat targetFormat) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
+		if (fileName.toLowerCase().endsWith(".au")) {
+			// AU
+			InputStream file_input_stream=new FileInputStream(new File(fileName));
+			AuFileHeader au=new AuFileHeader(file_input_stream);
+			int sample_rate=au.getSampleRate();
+			int encoding_format=au.getEncodingFormat();
+			AudioFormat.Encoding encoding=null;
+			switch (encoding_format) {
+				case 1 : encoding=G711Encoding.G711_ULAW; break;
+				case 27 : encoding=G711Encoding.G711_ALAW; break;
 			}
-			return audio_input_stream;
+			AudioFormat sourceFormat=new AudioFormat(encoding,sample_rate,8,1,1,sample_rate,false);
+			AudioInputStream audio=new AudioInputStream(file_input_stream,sourceFormat,-1);
+			if (targetFormat==null) {
+				return audio;		
+			}
+			return new G711FormatConversionProvider().getAudioInputStream(targetFormat,audio);
+		} else if (fileName.toLowerCase().endsWith(".amr")) {
+			// AMR
+			InputStream file_input_stream=new FileInputStream(new File(fileName));
+			file_input_stream.skip(("#!AMR\n").getBytes().length);
+			//source_audio_format=new AudioFormat(AmrEncoding.AMR_NB,8000.0F,16,1,-1,50.0F,false);
+			//source_audio_format=new AudioFormat(AmrEncoding.AMR_0590,8000.0F,16,1,AMR.frameSize(AMR.M_0590),50.0F,false);
+			AudioFormat sourceFormat = new AudioFormat(AmrEncoding.AMR_0475,8000.0F,16,1,AMR.frameSize(AMR.M0_0475),50.0F,false);
+			AudioInputStream audio=new AudioInputStream(file_input_stream,sourceFormat,-1);
+			if (targetFormat == null) {
+				return audio;
+			}
+			return new AmrFormatConversionProvider().getAudioInputStream(targetFormat,audio);
 		} else {
-			InputStream file_input_stream=new FileInputStream(new File(file_name));
-			// source audio format
-			AudioFormat source_audio_format=null;
-			// audio format converter
-			FormatConversionProvider converter=null;		
-			if (file_name.toLowerCase().endsWith(".au")) {
-				// AU
-				AuFileHeader au=new AuFileHeader(file_input_stream);
-				int sample_rate=au.getSampleRate();
-				int encoding_format=au.getEncodingFormat();
-				AudioFormat.Encoding encoding=null;
-				switch (encoding_format) {
-					case 1 : encoding=G711Encoding.G711_ULAW; break;
-					case 27 : encoding=G711Encoding.G711_ALAW; break;
-				}
-				source_audio_format=new AudioFormat(encoding,sample_rate,8,1,1,sample_rate,false);
-				if (target_audio_format!=null) converter=new G711FormatConversionProvider();
+			AudioInputStream audio = AudioSystem.getAudioInputStream(new File(fileName));
+			if (targetFormat==null) {
+				return audio;
 			}
-			else
-			if (file_name.toLowerCase().endsWith(".amr")) {
-				// AMR
-				file_input_stream.skip(("#!AMR\n").getBytes().length);
-				//source_audio_format=new AudioFormat(AmrEncoding.AMR_NB,8000.0F,16,1,-1,50.0F,false);
-				//source_audio_format=new AudioFormat(AmrEncoding.AMR_0590,8000.0F,16,1,AMR.frameSize(AMR.M_0590),50.0F,false);
-				source_audio_format=new AudioFormat(AmrEncoding.AMR_0475,8000.0F,16,1,AMR.frameSize(AMR.M0_0475),50.0F,false);
-				if (target_audio_format!=null) converter=new AmrFormatConversionProvider();
-			}
-			else {
-				// RAW
-				file_input_stream=new FileInputStream(new File(file_name));
-				source_audio_format=target_audio_format;
-			}
-			// get the audio input stream
-			AudioInputStream audio_input_stream=new AudioInputStream(file_input_stream,source_audio_format,-1);
-			// apply audio conversion through FormatConversionProvider
-			if (converter!=null) audio_input_stream=converter.getAudioInputStream(target_audio_format,audio_input_stream);
-			return audio_input_stream;		
+			return AudioSystem.getAudioInputStream(targetFormat,audio);
 		}
 	}
-
 
 	/** Creates an audio file output stream.
 	  * It can be used to write audio data to a file. Audio format is not converted.
 	  * @param file_name the file name
 	  * @param audio_format the audio format */
-	 public static OutputStream getAudioFileOutputStream(String file_name, AudioFormat audio_format) throws FileNotFoundException, IOException, javax.sound.sampled.UnsupportedAudioFileException {
+	 public static OutputStream getAudioFileOutputStream(String file_name, AudioFormat audio_format) throws FileNotFoundException, IOException {
 		if (file_name.toLowerCase().endsWith(".wav")) {
 			final File tmp = new File(file_name + ".tmp");
+			if (tmp.exists()) {
+				tmp.delete();
+			}
 			return new FileOutputStream(tmp, true) {
 		    	@Override
 				public void close() throws IOException {
@@ -137,8 +126,7 @@ public class AudioFile {
 					tmp.delete();
 		    	}
 		    };
-		}
-		else {
+		} else {
 			FileOutputStream output_stream=new FileOutputStream(new File(file_name));
 			if (file_name.toLowerCase().endsWith(".au")) {
 				// AU
