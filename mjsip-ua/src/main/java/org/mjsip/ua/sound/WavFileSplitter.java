@@ -70,6 +70,13 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 		}
 	}
 	
+	/**
+	 * The number of output files produced so far.
+	 */
+	public int getPartCntCreated() {
+		return _part - 1;
+	}
+	
 	@Override
 	public void onSilenceEnded(long clock) {
 		try {
