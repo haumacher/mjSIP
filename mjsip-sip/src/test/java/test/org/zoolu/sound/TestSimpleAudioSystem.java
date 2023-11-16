@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.zoolu.sound;
+package test.org.zoolu.sound;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +17,8 @@ import org.mjsip.sound.AudioFile;
 import org.mjsip.sound.ToneGenerator;
 import org.mjsip.sound.ToneInputStream;
 import org.mjsip.sound.ToneGenerator.Encoding;
+import org.zoolu.sound.CodecType;
+import org.zoolu.sound.SimpleAudioSystem;
 import org.zoolu.sound.codec.G711;
 
 /**
