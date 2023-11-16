@@ -39,6 +39,7 @@ implementations. mjSIP comes with a core package implementation that includes:
 * Pulled out system audio sounds played when calls are incoming, accepted, or terminated to client code.
 * Added audio filter for silence stripping.
 * Added IPv6 support.
+* Added Java module support.
 
 ## License
 
