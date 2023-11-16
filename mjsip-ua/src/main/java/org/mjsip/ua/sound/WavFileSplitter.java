@@ -27,9 +27,14 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 	/**
 	 * The number of the current part created.
 	 */
-	private int _part = 1;
 	private File _outputDir;
+	private int _bufferTime = 20;
+	private int _minSilenceTime = 1000;
+	private int _paddingTime = 500;
+	private int _silenceDb = -30;
 
+	private int _part = 1;
+	
 	/** 
 	 * Creates a {@link WavFileSplitter}.
 	 *
@@ -54,9 +59,8 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 		try (AudioInputStream in = AudioFile.getAudioFileInputStream(_file.getAbsolutePath())) {
 			_format = in.getFormat();
 			int sampleRate = (int) _format.getSampleRate();
-			int bufferTime = 20;
-			_trimmer = new AlawSilenceTrimmer(sampleRate, bufferTime, 500, 100, -30, null, this);
-			byte[] buffer = new byte[sampleRate * bufferTime / 1000];
+			_trimmer = new AlawSilenceTrimmer(sampleRate, _bufferTime, _minSilenceTime, _paddingTime, _silenceDb, null, this);
+			byte[] buffer = new byte[sampleRate * _bufferTime / 1000];
 			int direct;
 			while ((direct = in.read(buffer)) >= 0) {
 				_trimmer.write(buffer, 0, direct);
@@ -70,14 +74,24 @@ public class WavFileSplitter implements SilenceListenerAdapter {
 	public void onSilenceEnded(long clock) {
 		try {
 			flushOut();
-			String fileName = _file.getName();
-			String partName = fileName.substring(0, fileName.length() - 4) + "-part" + _part++ + ".wav";
-			File output = new File(_outputDir == null ? _file.getParentFile() : _outputDir, partName);
-			_out = AudioFile.getAudioFileOutputStream(output.getAbsolutePath(), _format);
+			_out = AudioFile.getAudioFileOutputStream(toFile(getOutputFileName(_part++)).getAbsolutePath(), _format);
 			_trimmer.setOut(_out);
-		} catch (IOException | UnsupportedAudioFileException ex) {
+		} catch (IOException ex) {
 			throw new IOError(ex);
 		}
+	}
+
+	/** 
+	 * Creates an output file name for the part with the given ID.
+	 */
+	protected String getOutputFileName(int partId) {
+		String fileName = _file.getName();
+		String partName = fileName.substring(0, fileName.length() - 4) + "-part" + partId + ".wav";
+		return partName;
+	}
+
+	private File toFile(String partName) {
+		return new File(_outputDir == null ? _file.getParentFile() : _outputDir, partName);
 	}
 	
 	@Override
