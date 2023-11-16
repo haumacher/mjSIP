@@ -18,8 +18,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.spi.FormatConversionProvider;
 
-import org.tritonus.sampled.convert.gsm.GSMFormatConversionProvider;
-import org.tritonus.share.sampled.Encodings;
 import org.zoolu.sound.codec.amr.AmrEncoding;
 import org.zoolu.sound.codec.amr.AmrFormatConversionProvider;
 import org.zoolu.sound.codec.g711.G711Encoding;
@@ -156,12 +154,6 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 			frame_rate=sample_rate/8;
 		}
 		else
-		if (codec.equals(CodecType.GSM0610)) {
-			encoding = Encodings.getEncoding("GSM0610");
-			frame_size=33;
-			frame_rate=sample_rate/160; // = 50 frames/sec in case of sample rate = 8000 Hz
-		}
-		else
 		if (codec.equals(CodecType.AMR_NB)) {
 			encoding=AmrEncoding.AMR_NB;
 			frame_size=codec.getFrameSize();
@@ -232,10 +224,6 @@ public class ConverterAudioSystem extends SimpleAudioSystem {
 		if (codec.equals(CodecType.G726_32)) converter=new G726FormatConversionProvider();
 		else
 		if (codec.equals(CodecType.G726_40)) converter=new G726FormatConversionProvider();
-		else
-		if (codec.equals(CodecType.GSM0610)) {
-			converter = new GSMFormatConversionProvider();
-		}
 		else
 		if (codec.equals(CodecType.AMR_0475)) converter=new AmrFormatConversionProvider();
 		else
