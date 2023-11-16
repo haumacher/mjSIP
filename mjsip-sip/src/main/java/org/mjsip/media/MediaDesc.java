@@ -197,6 +197,15 @@ public class MediaDesc {
 
 		AttributeField[] rtpmap = descriptor.getAttributes("rtpmap");
 		List<MediaSpec> specs = new ArrayList<>(rtpmap.length);
+
+		Vector<String> avps = mf.getFormatList();
+		for (String avp : avps) {
+			MediaSpec spec = MediaSpec.getWellKnown(Integer.parseInt(avp));
+			if (spec != null) {
+				specs.add(spec);
+			}
+		}
+
 		for (AttributeField field : rtpmap) {
 			specs.add(parseMediaSpec(field.getAttributeValue()));
 		}
@@ -239,6 +248,18 @@ public class MediaDesc {
 			copy[n] = media[n].copy();
 		}
 		return copy;
+	}
+
+	/**
+	 * Retrieves the {@link MediaDesc} with the given media type from the given list of descriptors.
+	 */
+	public static MediaDesc findMedia(String mediaType, MediaDesc[] media_descs) {
+		for (MediaDesc media : media_descs) {
+			if (mediaType.equals(media.getMediaType())) {
+				return media;
+			}
+		}
+		return null;
 	}
 
 }
