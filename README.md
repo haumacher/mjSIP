@@ -27,13 +27,14 @@ implementations. mjSIP comes with a core package implementation that includes:
   examples into modules `examples` and `phone`. 
 * Code cleanup: Added type parameter, added override annotations, reduced excessive logging, made fields private final
   where possible, removed mutable static fields, replaced lazy initialization with defined initialization order, reduced
-  number of constructors, enhanced configuration file parsing with args4j, applied Java naming conventions, encapsulated
+  number of constructors, enhanced configuration file parsing with `args4j`, applied Java naming conventions, encapsulated
   fields. Access configuration from production code through read-only interfaces.
-* Replaced self-made logging with slf4j over tinylog.
+* Replaced self-made logging with `slf4j` over `tinylog`.
 * Clarified transaction timeout handling with separate handler methods for each timeout. 
 * Modernized scheduling using ScheduledThreadPoolExecutor.
-* Implemented listening on DTMF info messages.
-* Implemented port pool for RTP media streams. 
+* Implemented listening on `DTMF` info messages.
+* Implemented port pool for `RTP` media streams.
+* Fixed parsing of `SDP` messages with well-known formats that are not explained in `rtpmap` fields. 
 * Separated creation of concrete media streams from user agent handling. Removed audio file configuration (for steaming 
   and recording) from core components.
 * Pulled out system audio sounds played when calls are incoming, accepted, or terminated to client code.
