@@ -336,7 +336,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private FlowSpec buildFlowSpec(String mediaType, MediaDescriptor remoteDescriptor, MediaDescriptor matchingDescriptor, FlowSpec.Direction dir, String remote_address) {
 		MediaField mediaField=matchingDescriptor.getMediaField();
 		String transport=mediaField.getTransport();
-		int avp=Integer.parseInt(mediaField.getFormatList().elementAt(0));
+		Vector<String> formatList = mediaField.getFormatList();
+		if (formatList.isEmpty()) {
+			LOG.warn("No matching formats found to establish flow: " + remoteDescriptor);
+			return null;
+		}
+		
+		int avp=Integer.parseInt(formatList.elementAt(0));
 
 		int local_port=mediaField.getPort();
 		int remote_port=remoteDescriptor.getMediaField().getPort();
@@ -346,27 +352,23 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (local_port!=0 && remote_port!=0 && media_spec!=null) {
 			return new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
 		} else {
-			LOG.info("No matching media found (local_port="+local_port+", remote_port="+remote_port+", media_spec="+media_spec+").");
+			LOG.warn("No matching media found (local_port="+local_port+", remote_port="+remote_port+", remoteDescriptor="+remoteDescriptor+").");
 			return null;
 		}
 	}
 
 	private MediaSpec findMatchingMediaSpec(String mediaType, int avp) {
-		MediaSpec media_spec=null;
-		
-		findMediaSpec:
 		for (MediaDesc descriptors : _mediaAgent.getCallMedia()) {
 			if (descriptors.getMediaType().equalsIgnoreCase(mediaType)) {
 				MediaSpec[] specs=descriptors.getMediaSpecs();
 				for (MediaSpec spec : specs) {
 					if (spec.getAVP() == avp) {
-						media_spec=spec;
-						break findMediaSpec;
+						return spec;
 					}
 				}
 			}
 		}
-		return media_spec;
+		return null;
 	}
 	
 	/** Closes media sessions.  */
