@@ -27,7 +27,7 @@ package org.mjsip.sip.header;
 
 
 /** Server header that carries information about the UAS */
-public class ServerHeader extends Header {
+public class ServerHeader extends LegacyHeader {
 	
 	public ServerHeader(String info) {
 		super(SipHeaders.Server,info);

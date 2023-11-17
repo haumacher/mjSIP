@@ -32,7 +32,7 @@ import org.zoolu.util.Parser;
 
 
 /** Generic SIP Header containing a list of tokens (Strings). */
-public abstract class ListHeader extends Header {
+public abstract class ListHeader extends LegacyHeader {
 	
 	/** Creates a new ListHeader. */
 	public ListHeader(Header hd) {

@@ -630,7 +630,7 @@ public class SipProvider implements SipTransportListener {
 		// destination address and port, proto, and ttl have to be set
 		String dest_addr=null;
 		int dest_port=0;
-		String proto=null;
+		String transport = null;
 		String maddr=null;
 		int ttl=0;
 		
@@ -667,31 +667,35 @@ public class SipProvider implements SipTransportListener {
 			dest_addr=(maddr==null)? nexthop_sip_uri.getHost() : maddr;
 			dest_port=nexthop_sip_uri.getPort();
 			
-			if (nexthop_sip_uri.isSecure()) proto=PROTO_TLS;
+			if (nexthop_sip_uri.isSecure())
+				transport = PROTO_TLS;
 			else
-			if (nexthop_sip_uri.hasTransport()) proto=nexthop_sip_uri.getTransport();
-			else proto=getDefaultTransport();
+			if (nexthop_sip_uri.hasTransport())
+				transport = nexthop_sip_uri.getTransport();
+			else
+				transport = getDefaultTransport();
 
 			// for TLS and DTLS port=port+1
-			if (dest_port>0 && isSecureTransport(proto)) dest_port++;
+			if (dest_port > 0 && isSecureTransport(transport))
+				dest_port++;
 
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via = new ViaHeader(proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
+				ViaHeader via = new ViaHeader(transport, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
 				if (_sipConfig.useRport())
 					via.setRport();
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}
 			// update the via according to transport information
-			updateViaHeader(msg, proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort(), maddr, ttl);
+			updateViaHeader(msg, transport, _sipConfig.getViaAddr(), _sipConfig.getHostPort(), maddr, ttl);
 			
-			LOG.debug("using transport " + proto);
+			LOG.debug("using transport " + transport);
 		}
 		else {
 			// RESPONSES
 			ViaHeader via=msg.getViaHeader();
-			proto=via.getProtocol();
+			transport = via.getTransport();
 			SipURI uri=via.getSipURI();
 			if (via.hasReceived()) dest_addr=via.getReceived(); else dest_addr=uri.getHost();
 			//if (!isReliableTransport(via.getProtocol()) && via.hasRport()) dest_port=via.getRport();
@@ -701,9 +705,9 @@ public class SipProvider implements SipTransportListener {
 
 		// if port <= use default port
 		if (dest_port <= 0)
-			dest_port = (isSecureTransport(proto)) ? _sipConfig.getDefaultPort() + 1 : _sipConfig.getDefaultPort();
+			dest_port = (isSecureTransport(transport)) ? _sipConfig.getDefaultPort() + 1 : _sipConfig.getDefaultPort();
 
-		return sendMessage(msg,proto,dest_addr,dest_port,ttl); 
+		return sendMessage(msg, transport, dest_addr, dest_port, ttl);
 	}
 
 
@@ -717,28 +721,39 @@ public class SipProvider implements SipTransportListener {
 	}
 
 
-	/** Updates the top Via header field of a SIP message, according to the given transport information.
-	  * @param msg the message to be updated
-	  * @param proto the transport protocol
-	  * @param via_addr the sent-by address of the via
-	  * @param host_port the host port
-	  * @param maddr the IP multicast address (if applicable) or null
-	  * @param ttl the TTL for multicast (used only when parameter <i>maddr</i> is set) */
-	public static void updateViaHeader(SipMessage msg, String proto, String via_addr, int host_port, String maddr, int ttl) {
+	/**
+	 * Updates the top Via header field of a SIP message, according to the given transport
+	 * information.
+	 * 
+	 * @param msg
+	 *        the message to be updated
+	 * @param transport
+	 *        the transport protocol
+	 * @param via_addr
+	 *        the sent-by address of the via
+	 * @param host_port
+	 *        the host port
+	 * @param maddr
+	 *        the IP multicast address (if applicable) or null
+	 * @param ttl
+	 *        the TTL for multicast (used only when parameter <i>maddr</i> is set)
+	 */
+	public static void updateViaHeader(SipMessage msg, String transport, String via_addr, int host_port, String maddr,
+			int ttl) {
 		ViaHeader via=msg.getViaHeader();
 		boolean via_changed=false;        
 		// if sent-by differs, update the via header
 		if (!via.getHost().equalsIgnoreCase(via_addr) || via.getPort()!=host_port) {
 			boolean rport=via.hasRport();
 			String branch=via.getBranch();
-			via=new ViaHeader(proto,via_addr,host_port);
+			via = new ViaHeader(transport, via_addr, host_port);
 			if (rport) via.setRport();
 			via.setBranch(branch);
 			via_changed=true;
 		}
 		// if proto differs, update the proto of via header
-		if (!via.getProtocol().equalsIgnoreCase(proto)) {
-			via.setProtocol(proto);
+		if (!via.getTransport().equalsIgnoreCase(transport)) {
+			via.setTransport(transport);
 			via_changed=true;
 		}
 		// if maddr is set, update the via header by adding maddr and ttl params 

@@ -34,7 +34,7 @@ public class ServiceRouteHeader extends NameAddressHeader {
 		super(SipHeaders.ServiceRoute,nameaddr);
 	}
 
-	public ServiceRouteHeader(Header hd) {
+	public ServiceRouteHeader(LegacyHeader hd) {
 		super(hd);
 	}
 }

@@ -27,7 +27,7 @@ package org.mjsip.sip.header;
 
 
 /** User-Agent header that carries information about the UAC */
-public class UserAgentHeader extends Header {
+public class UserAgentHeader extends LegacyHeader {
 	
 	public UserAgentHeader(String info) {
 		super(SipHeaders.User_Agent,info);

@@ -28,7 +28,7 @@ package org.mjsip.sip.header;
 
 /** SIP Header Subject.
   */
-public class SubjectHeader extends Header {
+public class SubjectHeader extends LegacyHeader {
 	
 	/** Creates a SubjectHeader */
 	//public SubjectHeader()

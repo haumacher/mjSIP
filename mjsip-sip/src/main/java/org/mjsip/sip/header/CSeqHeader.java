@@ -33,7 +33,7 @@ import org.mjsip.sip.provider.SipParser;
   * method MUST match that of the request.  For non-REGISTER requests
   * outside of a dialog, the sequence number value is arbitrary.
   */
-public class CSeqHeader extends Header {
+public class CSeqHeader extends LegacyHeader {
 	
 	//public CSeqHeader()
 	//{  super(SipHeaders.CSeq);

@@ -27,6 +27,7 @@ import java.util.Vector;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
+import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.AcceptEncodingHeader;
 import org.mjsip.sip.header.AcceptHeader;
 import org.mjsip.sip.header.AcceptLanguageHeader;
@@ -42,7 +43,6 @@ import org.mjsip.sip.header.DateHeader;
 import org.mjsip.sip.header.EventHeader;
 import org.mjsip.sip.header.ExpiresHeader;
 import org.mjsip.sip.header.FromHeader;
-import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.InfoPackageHeader;
 import org.mjsip.sip.header.MaxForwardsHeader;
 import org.mjsip.sip.header.MinSEHeader;
@@ -157,7 +157,7 @@ public class SipMessage extends BasicSipMessage {
 	}  
 	/** Gets MaxForwardsHeader of Message. */
 	public MaxForwardsHeader getMaxForwardsHeader() {
-		Header h=getHeader(SipHeaders.Max_Forwards);
+		Header h = getHeader(SipHeaders.Max_Forwards);
 		if (h==null) return null;
 		else return new MaxForwardsHeader(h);
 	} 
@@ -177,7 +177,7 @@ public class SipMessage extends BasicSipMessage {
 	}  
 	/** Gets FromHeader of Message. */
 	public FromHeader getFromHeader() {
-		Header h=getHeader(SipHeaders.From);
+		Header h = getHeader(SipHeaders.From);
 		if (h==null) return null;
 		else return new FromHeader(h);
 	} 
@@ -196,7 +196,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets ToHeader of Message. */
 	public ToHeader getToHeader() {
-		Header h=getHeader(SipHeaders.To);
+		Header h = getHeader(SipHeaders.To);
 		if (h==null) return null;
 		else return new ToHeader(h);
 	} 
@@ -269,7 +269,9 @@ public class SipMessage extends BasicSipMessage {
 		//Header h=getHeader(SipHeaders.Via);
 		//if (h==null) return null; else return new ViaHeader(h);
 		MultipleHeader mh=getVias();
-		if (mh==null) return null; return new ViaHeader(mh.getTop());
+		if (mh == null)
+			return null;
+		return ViaHeader.parse(mh.getTop().getValue());
 	} 
 	/** Gets all Via header fields.
 	  * @return all Via header fields (MultipleHeader of <code>ViaHeader</code>) */
@@ -438,7 +440,7 @@ public class SipMessage extends BasicSipMessage {
 	}  
 	/** Gets CSeqHeader of Message. */
 	public CSeqHeader getCSeqHeader() {
-		Header h=getHeader(SipHeaders.CSeq);
+		Header h = getHeader(SipHeaders.CSeq);
 		if (h==null) return null;
 		else return new CSeqHeader(h);
 	} 
@@ -462,7 +464,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets CallIdHeader of Message. */
 	public CallIdHeader getCallIdHeader() {
-		Header h=getHeader(SipHeaders.Call_ID);
+		Header h = getHeader(SipHeaders.Call_ID);
 		if (h==null) return null;
 		else return new CallIdHeader(h);
 	} 
@@ -482,7 +484,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets SubjectHeader of Message. */
 	public SubjectHeader getSubjectHeader() {
-		Header h=getHeader(SipHeaders.Subject);
+		Header h = getHeader(SipHeaders.Subject);
 		if (h==null) return null;
 		else return new SubjectHeader(h);
 	} 
@@ -498,7 +500,7 @@ public class SipMessage extends BasicSipMessage {
 	}  
 	/** Gets DateHeader of Message. */
 	public DateHeader getDateHeader() {
-		Header h=getHeader(SipHeaders.Date);
+		Header h = getHeader(SipHeaders.Date);
 		if (h==null) return null;
 		else return new DateHeader(h);
 	} 
@@ -522,7 +524,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets UserAgentHeader. */
 	public UserAgentHeader getUserAgentHeader() {
-		Header h=getHeader(SipHeaders.User_Agent);
+		Header h = getHeader(SipHeaders.User_Agent);
 		if (h==null) return null;
 		else return new UserAgentHeader(h);
 	} 
@@ -542,7 +544,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets ServerHeader. */
 	public ServerHeader getServerHeader() {
-		Header h=getHeader(SipHeaders.Server);
+		Header h = getHeader(SipHeaders.Server);
 		if (h==null) return null;
 		else return new ServerHeader(h);
 	} 
@@ -562,7 +564,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AcceptHeader. */
 	public AcceptHeader getAcceptHeader() {
-		Header h=getHeader(SipHeaders.Accept);
+		Header h = getHeader(SipHeaders.Accept);
 		if (h==null) return null;
 		else return new AcceptHeader(h);
 	} 
@@ -582,7 +584,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AcceptEncodingHeader. */
 	public AcceptEncodingHeader getAcceptEncodingHeader() {
-		Header h=getHeader(SipHeaders.Accept_Encoding);
+		Header h = getHeader(SipHeaders.Accept_Encoding);
 		if (h==null) return null;
 		else return new AcceptEncodingHeader(h);
 	} 
@@ -602,7 +604,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AcceptLanguageHeader. */
 	public AcceptLanguageHeader getAcceptLanguageHeader() {
-		Header h=getHeader(SipHeaders.Accept_Language);
+		Header h = getHeader(SipHeaders.Accept_Language);
 		if (h==null) return null;
 		else return new AcceptLanguageHeader(h);
 	} 
@@ -622,7 +624,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AlertInfoHeader. */
 	public AlertInfoHeader getAlertInfoHeader() {
-		Header h=getHeader(SipHeaders.Alert_Info);
+		Header h = getHeader(SipHeaders.Alert_Info);
 		if (h==null) return null;
 		else return new AlertInfoHeader(h);
 	} 
@@ -642,7 +644,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AllowHeader. */
 	public AllowHeader getAllowHeader() {
-		Header h=getHeader(SipHeaders.Allow);
+		Header h = getHeader(SipHeaders.Allow);
 		if (h==null) return null;
 		else return new AllowHeader(h);
 	} 
@@ -658,7 +660,7 @@ public class SipMessage extends BasicSipMessage {
 	}   
 	/** Gets ExpiresHeader of Message. */
 	public ExpiresHeader getExpiresHeader() {
-		Header h=getHeader(SipHeaders.Expires);
+		Header h = getHeader(SipHeaders.Expires);
 		if (h==null) return null;
 		else return new ExpiresHeader(h);
 	} 
@@ -682,7 +684,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AuthenticationInfoHeader. */
 	public AuthenticationInfoHeader getAuthenticationInfoHeader() {
-		Header h=getHeader(SipHeaders.Authentication_Info);
+		Header h = getHeader(SipHeaders.Authentication_Info);
 		if (h==null) return null;
 		else return new AuthenticationInfoHeader(h);
 	} 
@@ -702,7 +704,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets AuthorizationHeader. */
 	public AuthorizationHeader getAuthorizationHeader() {
-		Header h=getHeader(SipHeaders.Authorization);
+		Header h = getHeader(SipHeaders.Authorization);
 		if (h==null) return null;
 		else return new AuthorizationHeader(h);
 	} 
@@ -722,7 +724,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets WwwAuthenticateHeader. */
 	public WwwAuthenticateHeader getWwwAuthenticateHeader() {
-		Header h=getHeader(SipHeaders.WWW_Authenticate);
+		Header h = getHeader(SipHeaders.WWW_Authenticate);
 		if (h==null) return null;
 		else return new WwwAuthenticateHeader(h);
 	} 
@@ -742,7 +744,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets ProxyAuthenticateHeader. */
 	public ProxyAuthenticateHeader getProxyAuthenticateHeader() {
-		Header h=getHeader(SipHeaders.Proxy_Authenticate);
+		Header h = getHeader(SipHeaders.Proxy_Authenticate);
 		if (h==null) return null;
 		else return new ProxyAuthenticateHeader(h);
 	} 
@@ -762,7 +764,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets ProxyAuthorizationHeader. */
 	public ProxyAuthorizationHeader getProxyAuthorizationHeader() {
-		Header h=getHeader(SipHeaders.Proxy_Authorization);
+		Header h = getHeader(SipHeaders.Proxy_Authorization);
 		if (h==null) return null;
 		else return new ProxyAuthorizationHeader(h);
 	} 
@@ -782,7 +784,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets SupportedHeader. */
 	public SupportedHeader getSupportedHeader() {
-		Header h=getHeader(SipHeaders.Supported);
+		Header h = getHeader(SipHeaders.Supported);
 		if (h==null) return null;
 		else return new SupportedHeader(h);
 	} 
@@ -802,7 +804,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets RequireHeader. */
 	public RequireHeader getRequireHeader() {
-		Header h=getHeader(SipHeaders.Require);
+		Header h = getHeader(SipHeaders.Require);
 		if (h==null) return null;
 		else return new RequireHeader(h);
 	} 
@@ -822,7 +824,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets UnsupportedHeader. */
 	public UnsupportedHeader getUnsupportedHeader() {
-		Header h=getHeader(SipHeaders.Unsupported);
+		Header h = getHeader(SipHeaders.Unsupported);
 		if (h==null) return null;
 		else return new UnsupportedHeader(h);
 	} 
@@ -842,7 +844,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets ProxyRequireHeader. */
 	public ProxyRequireHeader getProxyRequireHeader() {
-		Header h=getHeader(SipHeaders.Proxy_Require);
+		Header h = getHeader(SipHeaders.Proxy_Require);
 		if (h==null) return null;
 		else return new ProxyRequireHeader(h);
 	} 
@@ -947,7 +949,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets RSeqHeader */
 	public RSeqHeader getRSeqHeader() {
-		Header h=getHeader(SipHeaders.RSeq);
+		Header h = getHeader(SipHeaders.RSeq);
 		if (h==null) return null;
 		return new RSeqHeader(h);
 	}  
@@ -967,7 +969,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets RAckHeader */
 	public RAckHeader getRAckHeader() {
-		Header h=getHeader(SipHeaders.RAck);
+		Header h = getHeader(SipHeaders.RAck);
 		if (h==null) return null;
 		return new RAckHeader(h);
 	}  
@@ -987,7 +989,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets SessionExpiresHeader */
 	public SessionExpiresHeader getSessionExpiresHeader() {
-		Header h=getHeader(SipHeaders.Session_Expires);
+		Header h = getHeader(SipHeaders.Session_Expires);
 		if (h==null) return null;
 		return new SessionExpiresHeader(h);
 	}  
@@ -1007,7 +1009,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets MinSEHeader */
 	public MinSEHeader getMinSEHeader() {
-		Header h=getHeader(SipHeaders.Min_SE);
+		Header h = getHeader(SipHeaders.Min_SE);
 		if (h==null) return null;
 		return new MinSEHeader(h);
 	}  
@@ -1027,7 +1029,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets ReferToHeader */
 	public ReferToHeader getReferToHeader() {
-		Header h=getHeader(SipHeaders.Refer_To);
+		Header h = getHeader(SipHeaders.Refer_To);
 		if (h==null) return null;
 		return new ReferToHeader(h);
 	}  
@@ -1047,7 +1049,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets ReplacesHeader */
 	public ReplacesHeader getReplacesHeader() {
-		Header h=getHeader(SipHeaders.Replaces);
+		Header h = getHeader(SipHeaders.Replaces);
 		if (h==null) return null;
 		return new ReplacesHeader(h);
 	}  
@@ -1067,7 +1069,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets ReferredByHeader */
 	public ReferredByHeader getReferredByHeader() {
-		Header h=getHeader(SipHeaders.Referred_By);
+		Header h = getHeader(SipHeaders.Referred_By);
 		if (h==null) return null;
 		return new ReferredByHeader(h);
 	}  
@@ -1087,7 +1089,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets EventHeader */
 	public EventHeader getEventHeader() {
-		Header h=getHeader(SipHeaders.Event);
+		Header h = getHeader(SipHeaders.Event);
 		if (h==null) return null;
 		return new EventHeader(h);
 	}  
@@ -1107,7 +1109,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets AllowEventsHeader */
 	public AllowEventsHeader getAllowEventsHeader() {
-		Header h=getHeader(SipHeaders.Allow_Events);
+		Header h = getHeader(SipHeaders.Allow_Events);
 		if (h==null) return null;
 		return new AllowEventsHeader(h);
 	}  
@@ -1127,7 +1129,7 @@ public class SipMessage extends BasicSipMessage {
 	}
 	/** Gets SubscriptionStateHeader */
 	public SubscriptionStateHeader getSubscriptionStateHeader() {
-		Header h=getHeader(SipHeaders.Subscription_State);
+		Header h = getHeader(SipHeaders.Subscription_State);
 		if (h==null) return null;
 		return new SubscriptionStateHeader(h);
 	}  
@@ -1151,7 +1153,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets InfoPackageHeader. */
 	public InfoPackageHeader getInfoPackageHeader() {
-		Header h=getHeader(SipHeaders.Info_Package);
+		Header h = getHeader(SipHeaders.Info_Package);
 		if (h==null) return null;
 		else return new InfoPackageHeader(h);
 	} 
@@ -1172,7 +1174,7 @@ public class SipMessage extends BasicSipMessage {
 	} 
 	/** Gets RecvInfoHeader. */
 	public RecvInfoHeader getRecvInfoHeader() {
-		Header h=getHeader(SipHeaders.Recv_Info);
+		Header h = getHeader(SipHeaders.Recv_Info);
 		if (h==null) return null;
 		else return new RecvInfoHeader(h);
 	} 

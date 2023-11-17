@@ -23,6 +23,7 @@ package org.mjsip.server;
 
 
 import org.mjsip.sip.authentication.DigestAuthentication;
+import org.mjsip.sip.header.AuthenticationHeader;
 import org.mjsip.sip.header.AuthenticationInfoHeader;
 import org.mjsip.sip.header.AuthorizationHeader;
 import org.mjsip.sip.header.ProxyAuthenticateHeader;
@@ -191,13 +192,13 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 			if (type==SERVER_AUTHENTICATION) result=401; // response code 401 ("Unauthorized")
 			else result=407; // response code 407 ("Proxy Authentication Required")
 			err_resp=sip_provider.messageFactory().createResponse(msg,result,null,null);
-			WwwAuthenticateHeader wah;
+			AuthenticationHeader wah;
 			if (type==SERVER_AUTHENTICATION) wah=new WwwAuthenticateHeader("Digest");
 			else wah=new ProxyAuthenticateHeader("Digest");
 			wah.addRealmParam(realm);
 			wah.addQopOptionsParam(qop_options);
 			wah.addNonceParam(HEX(rand));
-			err_resp.setWwwAuthenticateHeader(wah); 
+			err_resp.setHeader(wah); 
 		}
 		return err_resp;
 	}

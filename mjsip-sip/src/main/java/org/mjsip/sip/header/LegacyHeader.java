@@ -24,48 +24,44 @@ package org.mjsip.sip.header;
 
 /** Header is the base Class for all SIP Headers
  */
-public abstract class Header {
+public class LegacyHeader extends Header {
 	
-	/** The header type */
-	private String _name;
+	/** The header string, without terminating CRLF */
+	protected String value;
 
-	/** Creates a new Header. */
-	public Header(String hname) {
-		_name = hname;
+	/** Creates a void Header. */
+	protected LegacyHeader() {
+		super((String) null);
+		value=null;
 	}
 
 	/** Creates a new Header. */
-	public Header(Header hd) {
-		_name = hd.getName();
+	public LegacyHeader(String hname, String hvalue) {
+		super(hname);
+		value=hvalue;
 	}
 
-	/** Whether the Header is equal to Object <i>obj</i> */
+	/** Creates a new Header. */
+	public LegacyHeader(Header hd) {
+		super(hd.getName());
+		value=hd.getValue();
+	}
+
+	/** Creates and returns a copy of the Header */
 	@Override
-	public final boolean equals(Object obj) {
-		try {
-			Header hd=(Header)obj;
-			if (hd.getName().equals(this.getName()) && hd.getValue().equals(this.getValue())) return true;
-			else return false;
-		}
-		catch (Exception e) {  return false;  }
-	}
-
-	@Override
-	public int hashCode() {
-		return getName().hashCode() + getValue().hashCode();
-	}
-
-	/** Gets name of Header */
-	public final String getName() {
-		return _name;
+	public Object clone() {
+		return new LegacyHeader(getName(),getValue());
 	}
 
 	/** Gets value of Header */
-	public abstract String getValue();
-
-	/** Gets string representation of Header */
 	@Override
-	public final String toString() {
-		return getName() + ": " + getValue() + "\r\n";
+	public String getValue() {
+		return value;
 	}
+
+	/** Sets value of Header */
+	public void setValue(String hvalue) {
+		value=hvalue; 
+	}
+
 }

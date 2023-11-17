@@ -62,7 +62,6 @@ public class ReplacesHeader extends ParametricHeader {
 	public ReplacesHeader(Header hd) {
 		super(hd);
 	}
-
 	
 	/** Gets call_id. */
 	public String getCallId() {

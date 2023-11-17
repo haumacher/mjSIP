@@ -28,7 +28,7 @@ import org.mjsip.sip.provider.SipParser;
 
 
 /** SIP Header Content-Length */
-public class ContentLengthHeader extends Header {
+public class ContentLengthHeader extends LegacyHeader {
 	
 	//public ContentLengthHeader()
 	//{  super(SipHeaders.Content_Length);

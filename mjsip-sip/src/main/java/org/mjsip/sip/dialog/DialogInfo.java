@@ -91,7 +91,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	long last_rseq;
 
 	/** Route set (Vector<NameAddress>) */
-	Vector route; 
+	Vector<NameAddress> route;
 
 	/** Secure flag indicating whether the current dialog should be secured */
 	boolean secure; 
@@ -371,7 +371,8 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 		// update secure
 		if (!secure && msg.isRequest()) {
 			GenericURI request_uri=msg.getRequestLine().getAddress();
-			if (request_uri.isSipURI() && SipURI.createSipURI(request_uri).isSecure() && msg.getViaHeader().getProtocol().equalsIgnoreCase("tls")) {
+			if (request_uri.isSipURI() && SipURI.createSipURI(request_uri).isSecure()
+					&& msg.getViaHeader().getTransport().equalsIgnoreCase("tls")) {
 				secure=true;
 			}
 		}

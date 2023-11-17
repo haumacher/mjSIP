@@ -33,7 +33,7 @@ import org.zoolu.util.DateFormat;
 
 
 /** SIP Header Date */
-public abstract class SipDateHeader extends Header {
+public abstract class SipDateHeader extends LegacyHeader {
 	
 	
 	//public SipDateHeader(String hname)

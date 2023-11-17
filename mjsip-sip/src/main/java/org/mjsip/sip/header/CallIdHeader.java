@@ -41,7 +41,7 @@ import org.zoolu.util.Parser;
   * form "localid@host".  Call-IDs are case-sensitive and are simply
   * compared byte-by-byte.
   */
-public class CallIdHeader extends Header {
+public class CallIdHeader extends LegacyHeader {
 	
 	/** Creates a CallIdHeader */
 	//public CallIdHeader()

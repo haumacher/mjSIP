@@ -32,7 +32,7 @@ package org.mjsip.sip.header;
   * <br>
   * It contains a single numeric value from 1 to 2^32 - 1.
   */
-public class RSeqHeader extends Header {
+public class RSeqHeader extends LegacyHeader {
 	
 
 	/** Creates a new RSeqHeader. */

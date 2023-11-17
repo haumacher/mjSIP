@@ -33,7 +33,7 @@ import org.zoolu.util.Parser;
 
 /** SIP Header that carries a list of option-tags.
   */
-public abstract class OptionTagsHeader extends Header {
+public abstract class OptionTagsHeader extends LegacyHeader {
 	
 	/** Creates a new OptionTagsHeader.
 	  * @param option_tags Vector (of <code>String</code>) of option-tags. */

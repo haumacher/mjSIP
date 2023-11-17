@@ -32,7 +32,7 @@ import org.mjsip.sip.provider.SipParser;
 /** Abstract header for various authentication schemes
   * <p> It is inherited by WwwAuthenticateHeader, AuthorizationHeader, etc.
   */
-public abstract class AuthenticationHeader extends Header {
+public abstract class AuthenticationHeader extends LegacyHeader {
 	
 
 	/** Lienar white space separator inserted bethween parameters. */

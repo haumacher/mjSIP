@@ -51,7 +51,7 @@ public class ContactHeader extends EndPointHeader {
 	
 	/** Creates a ContactHeader with '*' as contact value */
 	public ContactHeader() {
-		super(new Header(SipHeaders.Contact,null));
+		super(new LegacyHeader(SipHeaders.Contact,null));
 		value="*";
 	}
 

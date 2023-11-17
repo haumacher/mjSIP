@@ -34,7 +34,7 @@ public class WwwAuthenticateHeader extends AuthenticationHeader {
 	
 	/** Creates a new WwwAuthenticateHeader */
 	public WwwAuthenticateHeader(String hvalue) {
-		super(SipHeaders.WWW_Authenticate,hvalue);
+		this(SipHeaders.WWW_Authenticate, hvalue);
 	}
 
 	/** Creates a new WwwAuthenticateHeader */
@@ -46,6 +46,20 @@ public class WwwAuthenticateHeader extends AuthenticationHeader {
 	  * specifing the <i>auth_scheme</i> and the vector of authentication parameters.
 	  * <p> <i>auth_param</i> is a vector of String of the form <i>parm_name</i> "=" <i>parm_value</i> */
 	public WwwAuthenticateHeader(String auth_scheme, Vector auth_params) {
-		super(SipHeaders.WWW_Authenticate,auth_scheme,auth_params);
+		this(SipHeaders.WWW_Authenticate, auth_scheme, auth_params);
+	}
+
+	/**
+	 * Creates a {@link WwwAuthenticateHeader}.
+	 */
+	public WwwAuthenticateHeader(String name, String hvalue, Vector auth_params) {
+		super(name, hvalue, auth_params);
+	}
+
+	/**
+	 * Creates a {@link WwwAuthenticateHeader}.
+	 */
+	public WwwAuthenticateHeader(String name, String hvalue) {
+		super(name, hvalue);
 	}
 }

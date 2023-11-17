@@ -37,7 +37,7 @@ import org.mjsip.sip.provider.SipParser;
   * method, are copied from the CSeq in the response that is being
   * acknowledged.
   */
-public class RAckHeader extends Header {
+public class RAckHeader extends LegacyHeader {
 	
 
 	/** Creates a new RAckHeader. */

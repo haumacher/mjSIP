@@ -28,6 +28,7 @@ import java.util.Vector;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.Header;
+import org.mjsip.sip.header.LegacyHeader;
 import org.mjsip.sip.header.MaxForwardsHeader;
 import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.header.RouteHeader;
@@ -469,12 +470,12 @@ public abstract class ServerEngine implements SipProviderListener {
 		if (err_code==0 && server_profile.loopDetection) {
 			String loop_tag=pickLoopTag(msg);
 			// add temporary Loop-Tag header field
-			msg.setHeader(new Header(Loop_Tag,loop_tag));
+			msg.setHeader(new LegacyHeader(Loop_Tag,loop_tag));
 			// check for loop
 			if (!msg.hasRouteHeader())  {
-				Vector v=msg.getVias().getHeaders();
+				Vector<Header> v=msg.getVias().getHeaders();
 				for (int i=0; i<v.size(); i++) {
-					ViaHeader vh=new ViaHeader((Header)v.elementAt(i));
+					ViaHeader vh=ViaHeader.parse(v.elementAt(i).getValue());
 					if (sip_provider.getViaAddress().equals(vh.getHost()) && sip_provider.getPort()==vh.getPort()) {
 						// possible loop
 						if (!vh.hasBranch()) err_code=482;

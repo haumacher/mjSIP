@@ -29,13 +29,13 @@ import java.util.Hashtable;
 
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.authentication.DigestAuthentication;
+import org.mjsip.sip.header.AuthenticationHeader;
 import org.mjsip.sip.header.AuthorizationHeader;
 import org.mjsip.sip.header.CSeqHeader;
 import org.mjsip.sip.header.ReplacesHeader;
 import org.mjsip.sip.header.RequestLine;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.header.ViaHeader;
-import org.mjsip.sip.header.WwwAuthenticateHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.provider.SipProvider;
@@ -303,7 +303,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 			req.removeViaHeader();
 			vh.setBranch(SipProvider.pickBranch());
 			req.addViaHeader(vh);
-			WwwAuthenticateHeader wah;
+			AuthenticationHeader wah;
 			if (code==401) wah=msg.getWwwAuthenticateHeader();
 			else wah=msg.getProxyAuthenticateHeader();
 			String qop_options=wah.getQopOptionsParam();

@@ -189,7 +189,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		if (ack.hasViaHeader()) ack.removeViaHeader();
 		ViaHeader via=resp.getViaHeader();
 		String branch=via.getBranch();
-		via=new ViaHeader(via.getProtocol(),via.getHost(),via.getPort());
+		via = new ViaHeader(via.getTransport(), via.getHost(), via.getPort());
 		via.setBranch(branch);
 		ack.addViaHeader(via);
 		// route
@@ -215,7 +215,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		// via
 		ViaHeader via=resp.getViaHeader();
 		String branch=via.getBranch();
-		via=new ViaHeader(via.getProtocol(),via.getHost(),via.getPort());
+		via = new ViaHeader(via.getTransport(), via.getHost(), via.getPort());
 		via.setBranch(branch);
 		ack.addViaHeader(via);
 		// route

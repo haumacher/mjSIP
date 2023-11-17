@@ -184,7 +184,7 @@ public abstract class BasicSipMessage {
 			// parse all header fields
 			//headers=new Vector();
 			if (headers.size()>0) headers.removeAllElements();
-			Header h=par.getHeader();
+			Header h = par.getHeader();
 			while (h!=null) {
 				headers.addElement(h);
 				h=par.getHeader();
@@ -249,7 +249,7 @@ public abstract class BasicSipMessage {
 			// parse all header fields
 			//headers=new Vector();
 			if (headers.size()>0) headers.removeAllElements();
-			Header h=par.getHeader();
+			Header h = par.getHeader();
 			while (h!=null) {
 				headers.addElement(h);
 				h=par.getHeader();
@@ -474,7 +474,7 @@ public abstract class BasicSipMessage {
 
 	/** Whether Message has any headers of specified name. */   
 	public boolean hasHeader(String name) {
-		Header hd=getHeader(name);
+		Header hd = getHeader(name);
 		if (hd==null) return false;
 		else return true;
 	}
@@ -506,7 +506,7 @@ public abstract class BasicSipMessage {
 
 	/** Adds Header at the top/bottom.
 	  * The bottom is considered before the Content-Length and Content-Type headers. */
-	public void addHeader(Header header, boolean top)  {
+	public void addHeader(Header header, boolean top) {
 		int pos=0;
 		if (!top) {
 			pos=headers.size();
@@ -543,7 +543,7 @@ public abstract class BasicSipMessage {
 
 	/** Adds Header before the first header <i>refer_hname</i>
 	  * . <p>If there is no header of such type, it is added at top. */
-	public void addHeaderBefore(Header new_header, String refer_hname)  {
+	public void addHeaderBefore(Header new_header, String refer_hname) {
 		int i=indexOfHeader(refer_hname);
 		if (i<0) i=0;
 		headers.insertElementAt(new_header,i);
@@ -563,7 +563,7 @@ public abstract class BasicSipMessage {
 
 	/** Adds Header after the first header <i>refer_hname</i>
 	  * . <p>If there is no header of such type, it is added at bottom. */
-	public void addHeaderAfter(Header new_header, String refer_hname)  {
+	public void addHeaderAfter(Header new_header, String refer_hname) {
 		int i=indexOfHeader(refer_hname);
 		if (i>=0) i++; else i=headers.size();
 		headers.insertElementAt(new_header,i);
@@ -611,7 +611,7 @@ public abstract class BasicSipMessage {
 	}
 	
 	/** Sets the Header <i>hd</i> removing any previous headers of the same type.. */
-	public void setHeader(Header hd)  {
+	public void setHeader(Header hd) {
 		boolean not_found=true;
 		String hname=hd.getName();
 		for (int i=0 ; i<headers.size(); i++) {
@@ -764,7 +764,7 @@ public abstract class BasicSipMessage {
 	} 
 	/** Gets ContentDispositionHeader of Message. */
 	public ContentDispositionHeader getContentDispositionHeader() {
-		Header h=getHeader(SipHeaders.Content_Disposition);
+		Header h = getHeader(SipHeaders.Content_Disposition);
 		if (h==null) return null;
 		else return new ContentDispositionHeader(h);
 	} 
@@ -780,7 +780,7 @@ public abstract class BasicSipMessage {
 	}   
 	/** Gets ContentTypeHeader of Message. */
 	public ContentTypeHeader getContentTypeHeader() {
-		Header h=getHeader(SipHeaders.Content_Type);
+		Header h = getHeader(SipHeaders.Content_Type);
 		if (h==null) return null;
 		else return new ContentTypeHeader(h);
 	} 
@@ -800,7 +800,7 @@ public abstract class BasicSipMessage {
 	}  
 	/** Gets ContentLengthHeader of Message. */
 	public ContentLengthHeader getContentLengthHeader() {
-		Header h=getHeader(SipHeaders.Content_Length);
+		Header h = getHeader(SipHeaders.Content_Length);
 		if (h==null) return null;
 		else return new ContentLengthHeader(h);
 	} 

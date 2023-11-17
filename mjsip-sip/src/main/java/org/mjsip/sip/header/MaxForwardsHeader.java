@@ -36,7 +36,7 @@ import org.zoolu.util.Parser;
   * be rejected with a 483(Too Many Hops) error response.
   * A default Max-Forwards value 70 is used.
   */
-public class MaxForwardsHeader extends Header {
+public class MaxForwardsHeader extends LegacyHeader {
 	
 	/** Creates a MaxForwardsHeader with value=<b>SipStack.max_forwards</b>
 	  * (the default value is 70, as recommended in RFC3261) */

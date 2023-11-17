@@ -23,6 +23,7 @@
 package org.mjsip.sip.address;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,7 +94,7 @@ public class SipURI extends GenericURI {
 
 	/** Creates a new SipURI. */
 	public SipURI(String username, String hostname, int portnumber) {
-		this(username, null, hostname, portnumber, false, Collections.emptyMap(), Collections.emptyMap());
+		this(username, null, hostname, portnumber, false, new HashMap<>(), Collections.emptyMap());
 	}
 
 	/**

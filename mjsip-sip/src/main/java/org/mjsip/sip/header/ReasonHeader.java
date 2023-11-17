@@ -50,7 +50,7 @@ public class ReasonHeader extends TokenParametricHeader {
 	}
 
 	/** Creates a new ReasonHeader equal to ReasonHeader <i>hd</i>. */
-	public ReasonHeader(Header hd) {
+	public ReasonHeader(LegacyHeader hd) {
 		super(hd);
 	}
 

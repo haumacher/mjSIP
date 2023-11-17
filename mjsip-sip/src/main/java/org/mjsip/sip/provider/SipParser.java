@@ -33,6 +33,7 @@ import org.mjsip.sip.address.GenericURIImpl;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.Header;
+import org.mjsip.sip.header.LegacyHeader;
 import org.mjsip.sip.header.RequestLine;
 import org.mjsip.sip.header.StatusLine;
 import org.zoolu.util.DateFormat;
@@ -162,7 +163,7 @@ public class SipParser extends Parser {
 	}
 	
 	/** Returns the first header and goes to the next line. */
-	public Header getHeader()     {
+	public Header getHeader() {
 		if (!hasMore()) return null;
 		int begin=getPos();
 		int end=indexOfEOH();
@@ -172,11 +173,11 @@ public class SipParser extends Parser {
 		if (colon<0) return null;
 		String hname=header_str.substring(0,colon).trim();
 		String hvalue=header_str.substring(++colon).trim();
-		return new Header(hname,hvalue);       
+		return new LegacyHeader(hname,hvalue);       
 	}
 
 	/** Returns the first occurence of Header <i>hname</i>. */
-	public Header getHeader(String hname)     {
+	public Header getHeader(String hname) {
 		SipParser par=new SipParser(str,indexOfHeader(hname));
 		if (!par.hasMore()) return null;
 		par.skipN(hname.length());
@@ -185,7 +186,7 @@ public class SipParser extends Parser {
 		if (begin>end) return null;
 		String hvalue=str.substring(begin,end).trim();
 		index=end;
-		return new Header(hname,hvalue);
+		return new LegacyHeader(hname,hvalue);
 	}
 	
 

@@ -175,7 +175,7 @@ public class MultipleHeader {
 	public Vector<Header> getHeaders() {
 		Vector<Header> v = new Vector<>(values.size());
 		for (int i=0; i<values.size(); i++) {
-			Header h = new Header(name, values.elementAt(i));
+			Header h = new LegacyHeader(name, values.elementAt(i));
 			v.addElement(h);
 		}
 		return v; 
@@ -211,7 +211,7 @@ public class MultipleHeader {
 	/** Gets top Header
 	  * @return the top header */
 	public Header getTop() {
-		return new Header(name, values.firstElement());
+		return new LegacyHeader(name, values.firstElement());
 	}
 	
 	/** Removes the top Header. */
@@ -242,7 +242,7 @@ public class MultipleHeader {
 	/** Gets bottom Header.
 	  * @return the bottom header */
 	public Header getBottom() {
-		return new Header(name, values.lastElement());
+		return new LegacyHeader(name, values.lastElement());
 	}
 	
 	/** Removes bottom Header. */
@@ -256,7 +256,7 @@ public class MultipleHeader {
 		String str="";
 		for (int i=0; i<values.size()-1; i++) str+=values.elementAt(i)+", ";
 		if (values.size()>0) str+=values.elementAt(values.size()-1);
-		return new Header(name,str);
+		return new LegacyHeader(name, str);
 	}
 
 	/** Gets comma-separated (compact) or multi-headers (extended) representation of this multi-header.<BR>

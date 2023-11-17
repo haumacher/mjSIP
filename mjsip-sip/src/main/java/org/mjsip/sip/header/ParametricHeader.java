@@ -31,7 +31,7 @@ import org.zoolu.util.Parser;
 
 
 /** Abstract ParametricHeader is the base class for all SIP Headers that include parameters */
-public abstract class ParametricHeader extends Header {
+public abstract class ParametricHeader extends LegacyHeader {
 	
 	//public ParametricHeader(String hname)
 	//{  super(hname);
