@@ -8,8 +8,8 @@
 module org.mjsip.sip {
 
 	requires org.mjsip.sound;
-	requires org.mjsip.util;
-	requires org.mjsip.net;
+	requires transitive org.mjsip.util;
+	requires transitive org.mjsip.net;
 	requires args4j;
 	requires org.slf4j;
 	requires java.desktop;
