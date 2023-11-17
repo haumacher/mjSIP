@@ -251,7 +251,7 @@ public class SipConfig implements SipOptions {
 		this._useRport = useRport;
 	}
 
-	/** Whether adding (forcing) 'rport' parameter on via header fields of incoming requests. */
+	@Override
 	public boolean forceRport() {
 		return _forceRport;
 	}

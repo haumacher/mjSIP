@@ -161,6 +161,7 @@ public class SipProvider implements SipTransportListener {
 		_sipMessageFactory = new SipMessageFactory(sipConfig);
 		initLog();
 		initSipTrasport(sipConfig.getTransportProtocols(),sipConfig.getTransportPorts());
+		setForceRport(sipConfig.forceRport());
 	}
 
 	/** Inits logs. */ 
@@ -682,8 +683,9 @@ public class SipProvider implements SipTransportListener {
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
 				ViaHeader via = new ViaHeader(transport, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
-				if (_sipConfig.useRport())
+				if (_sipConfig.useRport()) {
 					via.setRport();
+				}
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}
@@ -788,8 +790,9 @@ public class SipProvider implements SipTransportListener {
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
 				ViaHeader via = new ViaHeader(proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
-				if (_sipConfig.useRport())
+				if (_sipConfig.useRport()) {
 					via.setRport();
+				}
 				via.setBranch(pickBranch());
 				msg.addViaHeader(via);
 			}

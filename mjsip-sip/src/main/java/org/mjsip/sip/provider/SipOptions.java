@@ -183,4 +183,7 @@ public interface SipOptions {
 	/** Whether adding 'rport' parameter on via header fields of outgoing requests. */
 	boolean useRport();
 
+	/** Whether adding (forcing) 'rport' parameter on via header fields of incoming requests. */
+	boolean forceRport();
+
 }
