@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.transaction;
-
-
 
 import java.util.concurrent.ScheduledFuture;
 
@@ -32,8 +29,6 @@ import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
-
-
 
 /**
  * Generic server transaction as defined in RFC 3261 (Section 17.2.2).
@@ -61,7 +56,7 @@ public class TransactionServer extends Transaction {
 	ScheduledFuture<?> clearing_to;
 
 
-	// ************************** Costructors **************************
+	// ************************** Constructors **************************
 
 	/** Creates a new TransactionServer. */
 	protected TransactionServer(SipProvider sip_provider) {

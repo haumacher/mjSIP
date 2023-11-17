@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.message;
-
-
 
 import java.util.Vector;
 
@@ -66,7 +63,6 @@ import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.ServerHeader;
 import org.mjsip.sip.header.SessionExpiresHeader;
 import org.mjsip.sip.header.SipHeaders;
-import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.header.SubjectHeader;
 import org.mjsip.sip.header.SubscriptionStateHeader;
 import org.mjsip.sip.header.SupportedHeader;
@@ -76,8 +72,6 @@ import org.mjsip.sip.header.UserAgentHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
 import org.mjsip.sip.provider.SipParser;
-
-
 
 /** Class SipMessage extends class BasicSipMessage providing
   * methods for handling and parsing specific methods and header fields.
@@ -95,22 +89,6 @@ public class SipMessage extends BasicSipMessage {
 	
 	/** Creates a new empty Message */
 	public SipMessage() { super(); }
-
-	/** Creates a new SIP request message.
-	  * @param request_line the request-line
-	  * @param headers vector of SIP header fields
-	  * @param body the message body */
-	public SipMessage(RequestLine request_line, Vector headers, byte[] body) {
-		super(request_line,headers,body);
-	}
-
-	/** Creates a new SIP response message.
-	  * @param status_line the response status-line
-	  * @param headers vector of SIP header fields
-	  * @param body the message body */
-	public SipMessage(StatusLine status_line, Vector headers, byte[] body) {
-		super(status_line,headers,body);
-	}
 
 	/** Creates a new Message */
 	public SipMessage(String str) {

@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.message;
-
-
 
 import java.util.Vector;
 
@@ -40,8 +37,6 @@ import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipParser;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.ByteUtils;
-
-
 
 /** BasicSipMessage is a standard SIP Message as defined by RFC 3261.
   * <p>
@@ -89,7 +84,6 @@ public abstract class BasicSipMessage {
 	protected ConnectionId connection_id=null;
 
 
-
 	/** Request-line */
 	protected RequestLine request_line=null;
 
@@ -102,38 +96,21 @@ public abstract class BasicSipMessage {
 	/** Message body */
 	protected byte[] body=null;
 
-
-
-
 	/** Costructs a new empty Message. */
 	public BasicSipMessage() {
 		//headers=new Vector();
 	}
 
-	/** Creates a new SIP request message.
-	  * @param request_line the request-line
-	  * @param headers vector of SIP header fields
-	  * @param body the message body */
-	public BasicSipMessage(RequestLine request_line, Vector<Header> headers, byte[] body) {
-		this.request_line=request_line;
-		this.headers=headers;
-		this.body=body;
-	}
-
-	/** Creates a new SIP response message.
-	  * @param status_line the response status-line
-	  * @param headers vector of SIP header fields
-	  * @param body the message body */
-	public BasicSipMessage(StatusLine status_line, Vector<Header> headers, byte[] body) {
-		this.status_line=status_line;
-		this.headers=headers;
-		this.body=body;
-	}
-
-	/** Costructs a new Message.
-	  * @param buf the byte array containing the message 
-	  * @param off the message offset within the byte array
-	  * @param len the message len */
+	/**
+	 * Constructs a new Message.
+	 * 
+	 * @param buf
+	 *        the byte array containing the message
+	 * @param off
+	 *        the message offset within the byte array
+	 * @param len
+	 *        the message len
+	 */
 	public BasicSipMessage(byte[] buf, int off, int len) {
 		try {
 			setMessage(buf,off,len);
@@ -145,8 +122,12 @@ public abstract class BasicSipMessage {
 		}
 	}
 
-	/** Costructs a new Message.
-	  * @param str the string containing the message */ 
+	/**
+	 * Constructs a new Message.
+	 * 
+	 * @param str
+	 *        the string containing the message
+	 */ 
 	public BasicSipMessage(String str) {
 		try {
 			setMessage(str);
@@ -158,12 +139,15 @@ public abstract class BasicSipMessage {
 		}
 	}
 
-	/** Costructs a new Message.
-	  * @param msg the message to be copied */ 
+	/**
+	 * Constructs a new Message.
+	 * 
+	 * @param msg
+	 *        the message to be copied
+	 */ 
 	public BasicSipMessage(BasicSipMessage msg) {
 		setMessage(msg);
 	}
-	
 
 	/** Sets the message as a copy of an other message.
 	  * @param msg the message to be copied */ 

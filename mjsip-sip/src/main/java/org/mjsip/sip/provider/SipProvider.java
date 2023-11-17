@@ -110,9 +110,6 @@ public class SipProvider implements SipTransportListener {
 	/** String value "NO-OUTBOUND" used for setting no outbound proxy */
 	//public static final String NO_OUTBOUND="NO-OUTBOUND";
 
-	/** Minimum length for a valid SIP message */
-	private static final int MIN_MESSAGE_LENGTH=12;
-	
 	/** Message begin delimiter */
 	private static final String MESSAGE_BEGIN_DELIMITER = "-----Begin-of-message-----\n";
 
@@ -252,12 +249,13 @@ public class SipProvider implements SipTransportListener {
 					if (port == 0)
 						port = _sipConfig.getHostPort();
 					//transp=new SctpTransport(new SocketAddress(binding_ipaddr,port),nmax_connections,log_writer);
-					Class sctp_transport=Class.forName("org.zoolu.ext.sip.provider.SctpTransport");
-					Class[] param_classes={ Class.forName("org.zoolu.net.SocketAddress"), int.class, Class.forName("org.zoolu.util.LogWriter") };
+					Class<?> sctp_transport = Class.forName("org.zoolu.ext.sip.provider.SctpTransport");
+					Class<?>[] param_classes = { Class.forName("org.zoolu.net.SocketAddress"), int.class,
+							Class.forName("org.zoolu.util.LogWriter") };
 					Object[] param_objects = { new SocketAddress(_sipConfig.getBindingIpAddr(), port),
-							new Integer(_sipConfig.getMaxConnections()) };
+							Integer.valueOf(_sipConfig.getMaxConnections()) };
 					try  {
-						java.lang.reflect.Constructor constructor=sctp_transport.getConstructor(param_classes);
+						java.lang.reflect.Constructor<?> constructor = sctp_transport.getConstructor(param_classes);
 						transp=(SipTransport)constructor.newInstance(param_objects);
 					}
 					catch (NoSuchMethodException e) {
@@ -280,9 +278,9 @@ public class SipProvider implements SipTransportListener {
 	/** Stops the transport services. */ 
 	private void stopSipTrasport() {
 		if (sip_transports!=null)  {
-			for(Enumeration e=sip_transports.keys(); e.hasMoreElements(); ) {
-				String proto=(String)e.nextElement();
-				SipTransport transp=(SipTransport)sip_transports.get(proto);
+			for (Enumeration<String> e = sip_transports.keys(); e.hasMoreElements();) {
+				String proto = e.nextElement();
+				SipTransport transp = sip_transports.get(proto);
 				LOG.trace(proto + " is going down");
 				transp.halt();
 			}
@@ -306,7 +304,7 @@ public class SipProvider implements SipTransportListener {
 	/** Removes a specific transport protocol. */ 
 	public void removeSipTransport(String proto) {
 		if (sip_transports.containsKey(proto))  {
-			SipTransport t=(SipTransport)sip_transports.get(proto);
+			SipTransport t = sip_transports.get(proto);
 			sip_transports.remove(proto);
 			t.halt();
 			if (proto.equals(default_transport)) default_transport=null;
@@ -360,7 +358,7 @@ public class SipProvider implements SipTransportListener {
 
 	/** Gets tls port. */ 
 	public int getTlsPort() {
-		return (sip_transports.containsKey(PROTO_TLS))? ((SipTransport)sip_transports.get(PROTO_TLS)).getLocalPort() : 0;
+		return (sip_transports.containsKey(PROTO_TLS)) ? sip_transports.get(PROTO_TLS).getLocalPort() : 0;
 	}       
 
 	/** Gets a valid SIP or SIPS contact address.
@@ -412,8 +410,10 @@ public class SipProvider implements SipTransportListener {
 	/** Gets array of transport protocols. */ 
 	public String[] getTransportProtocols() {
 		String[] protocols=new String[sip_transports.size()];
-		Enumeration e=sip_transports.keys();
-		for (int i=0; i<protocols.length; i++) protocols[i]=(String)e.nextElement(); 
+		Enumeration<String> e = sip_transports.keys();
+		for (int i = 0; i < protocols.length; i++) {
+			protocols[i] = e.nextElement();
+		}
 		return protocols;
 	}    
 	
@@ -424,12 +424,18 @@ public class SipProvider implements SipTransportListener {
 	
 	/** Whether the given transport protocol is supported and reliable. */ 
 	public boolean isReliableTransport(String proto) {
-		return isReliableTransport((SipTransport)sip_transports.get(proto.toLowerCase()));
+		return isReliableTransport(sip_transports.get(proto.toLowerCase()));
 	}    
 	
 	/** Whether the given transport is reliable. */ 
 	boolean isReliableTransport(SipTransport transp) {
-		if (transp!=null) try {  return Class.forName("org.mjsip.sip.provider.SipTransportCO").isInstance(transp);  } catch (ClassNotFoundException e) {}
+		if (transp != null) {
+			try {
+				return Class.forName("org.mjsip.sip.provider.SipTransportCO").isInstance(transp);
+			} catch (ClassNotFoundException e) {
+				// Ignore.
+			}
+		}
 		// else
 		return false;
 	}    
@@ -462,23 +468,27 @@ public class SipProvider implements SipTransportListener {
 	/** Whether setting the Via protocol, sent-by, and port values according to the transport connection.
 	  * @param force_sent_by whether setting Via protocol, sent-by, and port values according to the transport connection */ 
 	public synchronized void setForceSentBy(boolean force_sent_by) {
-		for (Enumeration i=sip_transports.elements(); i.hasMoreElements(); ) {
+		for (Enumeration<SipTransport> i = sip_transports.elements(); i.hasMoreElements();) {
 			try {
 				SipTransportCO transp=(SipTransportCO)i.nextElement();
 				transp.setForceSentBy(force_sent_by);
 			}
-			catch (Exception e) {}
+			catch (Exception e) {
+				// Ignore.
+			}
 		}
 	}
 
 	/** Whether "force-sent-by" mode is set. */ 
 	public boolean isForceSentBySet() {
-		for (Enumeration i=sip_transports.elements(); i.hasMoreElements(); ) {
+		for (Enumeration<SipTransport> i = sip_transports.elements(); i.hasMoreElements();) {
 			try {
 				SipTransportCO transp=(SipTransportCO)i.nextElement();
 				return transp.isForceSentBySet();
 			}
-			catch (Exception e) {}
+			catch (Exception e) {
+				// Ignore.
+			}
 		}
 		return false;
 	}
@@ -599,7 +609,7 @@ public class SipProvider implements SipTransportListener {
 		if (conn_id!=null) {
 			LOG.debug("trying to send message through connection " + conn_id);
 		
-			SipTransport sip_transport=(SipTransport)sip_transports.get(conn_id.getProtocol());
+			SipTransport sip_transport = sip_transports.get(conn_id.getProtocol());
 			if (sip_transport!=null)
 			try {
 				SipTransportConnection conn=((SipTransportCO)sip_transport).sendMessageCO(msg);
@@ -783,7 +793,7 @@ public class SipProvider implements SipTransportListener {
 	  * It does the same as method {@link #sendMessage(SipMessage,String,String,int,int)}, but no via address is added (if not already present) in request messages.  */
 	public ConnectionId sendRawMessage(SipMessage msg, String proto, String dest_addr, int dest_port, int ttl) {
 		try {
-			IpAddress dest_ipaddr=IpAddress.getByName(dest_addr);  
+			IpAddress dest_ipaddr = IpAddress.getByName(dest_addr);
 			return sendRawMessage(msg,proto,dest_ipaddr,dest_port,ttl); 
 		}
 		catch (Exception e) {
@@ -801,7 +811,7 @@ public class SipProvider implements SipTransportListener {
 			return null;
 		}
 		// else
-		SipTransport sip_transport=(SipTransport)sip_transports.get(proto.toLowerCase());
+		SipTransport sip_transport = sip_transports.get(proto.toLowerCase());
 		if (sip_transport==null) {
 			LOG.warn("Unsupported protocol " + proto + ", message discarded.");
 			return null;
@@ -964,7 +974,11 @@ public class SipProvider implements SipTransportListener {
 		if (error!=null && transport.getProtocol().equals(PROTO_UDP)) {
 			LOG.info(
 					"transport UDP terminated with error: trying to restart it (after 1000ms)..");
-			try {  Thread.sleep(1000);  } catch (Exception e) {}
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				// Ignore.
+			}
 			try {
 				SipTransport udp = new UdpTransport(_sipConfig.getHostPort(), _sipConfig.getBindingIpAddr());
 				setTransport(udp);

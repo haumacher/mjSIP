@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.provider;
-
-
 
 import java.io.IOException;
 
@@ -35,8 +32,6 @@ import org.zoolu.net.UdpProviderListener;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.util.ByteUtils;
 
-
-
 /** UdpTransport provides an UDP transport service for SIP.
   */
 public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
@@ -47,18 +42,15 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 	/** Pong data */
 	static final byte[] PONG=new byte[]{0x0d,0x0a}; // CRCF (RFC5626 PONG)
 
-
-
 	/** UDP protocol type */
 	public static final String PROTO_UDP="udp";
+
 
 	/** UDP provider */
 	UdpProvider udp_provider;  
 
 	/** SipTransport listener */
-	SipTransportListener listener=null;   
-
-
+	SipTransportListener listener = null;
 
 	/** Creates a new UdpTransport */ 
 	public UdpTransport(UdpSocket socket) {

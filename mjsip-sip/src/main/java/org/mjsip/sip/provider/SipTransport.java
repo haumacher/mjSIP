@@ -20,17 +20,12 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.provider;
-
-
 
 import java.io.IOException;
 
 import org.mjsip.sip.message.SipMessage;
 import org.zoolu.net.IpAddress;
-
-
 
 /** SipTransport is a generic transport service for SIP.
   */

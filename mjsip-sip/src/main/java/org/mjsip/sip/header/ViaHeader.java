@@ -20,15 +20,10 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.header;
-
-
 
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipParser;
-
-
 
 /** SIP Header Via.
   * The Via header field indicates the transport used for the transaction
@@ -69,39 +64,15 @@ public class ViaHeader extends ParametricHeader {
 	/** "maddr" parameter */
 	protected static final String ttl_param="ttl";
 
-	//public ViaHeader()
-	//{  super(SipHeaders.Via);
-	//}
-
-	/** Creates a new ViaHeader. */
-	public ViaHeader(String hvalue) {
-		super(SipHeaders.Via,hvalue);
-	}
-
 	/** Creates a new ViaHeader. */
 	public ViaHeader(Header hd) {
 		super(hd);
 	}
 
 	/** Creates a new ViaHeader. */
-	public ViaHeader(String host, int port) {
-		super(SipHeaders.Via,"SIP/2.0/UDP "+host+":"+port);
-	}
-
-	/** Creates a new ViaHeader. */
-	/*public ViaHeader(String host, int port, String branch) {
-		super(SipHeaders.Via,"SIP/2.0/UDP "+host+":"+port+";branch="+branch);
-	}*/
-
-	/** Creates a new ViaHeader. */
 	public ViaHeader(String proto, String host, int port) {
 		super(SipHeaders.Via,"SIP/2.0/"+proto.toUpperCase()+" "+host+":"+port);
 	}
-
-	/** Creates a new ViaHeader. */
-	/*public ViaHeader(String proto, String host, int port, String branch) {
-		super(SipHeaders.Via,"SIP/2.0/"+proto.toUpperCase()+" "+host+":"+port+";branch="+branch);
-	}*/
 
 	/** Gets the transport protocol. */
 	public String getProtocol() {

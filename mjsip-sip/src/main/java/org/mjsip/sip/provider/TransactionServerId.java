@@ -20,14 +20,9 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.provider;
 
-
-
 import org.mjsip.sip.message.SipMessage;
-
-
 
 /** Transaction server identifier.
   */
