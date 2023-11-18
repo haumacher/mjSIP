@@ -128,6 +128,7 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 		this.sequence_check = silence_padding || options.sequenceCheck();
 		this.ssrc_check = options.ssrcCheck();
 
+		LOG.info("Created RTP stream receiver: " + socket + " <-- " + remote_soaddr);
 	}
 
 	/** Gets the local port. */

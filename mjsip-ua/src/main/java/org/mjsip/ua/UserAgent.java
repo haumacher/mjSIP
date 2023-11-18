@@ -313,9 +313,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				existing.halt();
 			}
 			
-			LOG.info("Starting media session: " + mediaType + " format: " + flow_spec.getMediaSpec().getCodec());
-			LOG.info("Flow: " + flow_spec.getLocalPort() + " " + flow_spec.getDirection().arrow() + " " + flow_spec.getRemoteAddress() + ":" + flow_spec.getRemotePort());
-			
+			LOG.info("Starting media session: " + flow_spec);
 			MediaStreamer streamer = _mediaAgent.startMediaSession(flow_spec);
 			
 			if (streamer == null) {

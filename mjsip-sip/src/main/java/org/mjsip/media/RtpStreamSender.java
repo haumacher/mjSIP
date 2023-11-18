@@ -197,6 +197,7 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		if (rtp_control != null) {
 			rtp_control.setRtpSender(this);
 		}
+		LOG.info("Created RTP stream sender: " + src_socket + " --> " + remote_soaddr);
 	}          
 
 	/** Gets the local port. */
@@ -274,7 +275,6 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	/** Runs it in a new Thread. */
 	@Override
 	public void run() {
-		
 		if (rtp_socket==null || input_stream==null) return;
 		//else
 		

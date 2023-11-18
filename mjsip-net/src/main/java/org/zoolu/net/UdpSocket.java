@@ -115,10 +115,8 @@ public class UdpSocket {
 	/** Converts this object to a String. */
 	@Override
 	public String toString() {
-		//return socket.toString();
 		return "UDP:"+getLocalAddress()+":"+getLocalPort();
 	}
-
 
 	/** Gets the total number of sent packets. */
 	public long getSenderPacketCounter() {

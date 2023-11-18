@@ -138,4 +138,9 @@ public class FlowSpec {
 		return direction;
 	}
 
+	@Override
+	public String toString() {
+		return getMediaType() + " " + getMediaSpec() + ": " + getLocalPort() + " " + getDirection().arrow() + " "
+				+ getRemoteAddress() + ":" + getRemotePort();
+	}
 }
