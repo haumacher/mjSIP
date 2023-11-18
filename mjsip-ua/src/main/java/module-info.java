@@ -9,7 +9,7 @@ module org.mjsip.ua {
 
 	requires org.mjsip.sound;
 	requires org.mjsip.util;
-	requires org.mjsip.sip;
+	requires transitive org.mjsip.sip;
 	requires org.mjsip.net;
 	requires args4j;
 	requires org.slf4j;
