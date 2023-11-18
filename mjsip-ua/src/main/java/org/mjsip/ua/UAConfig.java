@@ -127,9 +127,10 @@ public class UAConfig implements UAOptions {
 		
 		String uaAddress = getUaAddress();
 		if (uaAddress==null) {
-			setUaAddress(sipConfig.getViaAddr());
 			if (sipConfig.getHostPort() > 0 && sipConfig.getHostPort() != sipConfig.getDefaultPort()) {
-				setUaAddress(uaAddress + ":" + sipConfig.getHostPort());
+				setUaAddress(new SipURI(sipConfig.getViaAddr(), sipConfig.getHostPort()).toString());
+			} else {
+				setUaAddress(sipConfig.getViaAddr());
 			}
 		}
 	}

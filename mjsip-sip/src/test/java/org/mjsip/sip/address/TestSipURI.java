@@ -3,6 +3,7 @@
  */
 package org.mjsip.sip.address;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,6 +17,20 @@ import org.junit.jupiter.api.Test;
  */
 @SuppressWarnings("javadoc")
 public class TestSipURI {
+
+	@Test
+	public void testCreate() {
+		SipURI uri = new SipURI("alice", "foobar", "phoneblock.net", 55060, false, Collections.singletonMap("p", "v"),
+				null);
+		Assertions.assertEquals("sip:alice:foobar@phoneblock.net:55060;p=v", uri.toString());
+	}
+
+	@Test
+	public void testCreateIPv6() {
+		SipURI uri = new SipURI("alice", "foobar", "fe80::43c6:1e57:8a59:ce55", 55060, false,
+				Collections.singletonMap("p", "v"), null);
+		Assertions.assertEquals("sip:alice:foobar@[fe80::43c6:1e57:8a59:ce55]:55060;p=v", uri.toString());
+	}
 
 	@Test
 	public void testParse() {
@@ -93,13 +108,13 @@ public class TestSipURI {
 	@Test
 	public void testIPv6() {
 		SipURI uri = SipURI.parseSipURI("[fe80::43c6:1e57:8a59:ce55]");
-		Assertions.assertEquals("[fe80::43c6:1e57:8a59:ce55]", uri.getHost());
+		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 	}
 
 	@Test
 	public void testIPv6WithPort() {
 		SipURI uri = SipURI.parseSipURI("[fe80::43c6:1e57:8a59:ce55]:5060");
-		Assertions.assertEquals("[fe80::43c6:1e57:8a59:ce55]", uri.getHost());
+		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 		Assertions.assertEquals(5060, uri.getPort());
 	}
 
@@ -107,7 +122,7 @@ public class TestSipURI {
 	public void testIPv6WithUser() {
 		SipURI uri = SipURI.parseSipURI("foo@[fe80::43c6:1e57:8a59:ce55]");
 		Assertions.assertEquals("foo", uri.getUserName());
-		Assertions.assertEquals("[fe80::43c6:1e57:8a59:ce55]", uri.getHost());
+		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 	}
 
 	@Test
@@ -115,7 +130,7 @@ public class TestSipURI {
 		SipURI uri = SipURI.parseSipURI("foo:secure@[fe80::43c6:1e57:8a59:ce55]:5060");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("secure", uri.getPassword());
-		Assertions.assertEquals("[fe80::43c6:1e57:8a59:ce55]", uri.getHost());
+		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 		Assertions.assertEquals(5060, uri.getPort());
 	}
 
@@ -123,7 +138,7 @@ public class TestSipURI {
 	public void testIPv6WithUserAndParam() {
 		SipURI uri = SipURI.parseSipURI("foo@[fe80::43c6:1e57:8a59:ce55]:5060;key0=value0;key1");
 		Assertions.assertEquals("foo", uri.getUserName());
-		Assertions.assertEquals("[fe80::43c6:1e57:8a59:ce55]", uri.getHost());
+		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 		Assertions.assertEquals(5060, uri.getPort());
 		Assertions.assertTrue(uri.hasParameter("key0"));
 		Assertions.assertTrue(uri.hasParameter("key1"));
@@ -187,11 +202,17 @@ public class TestSipURI {
 		@Override
 		void build(StringBuilder buffer, Random rnd) {
 			_ipv6 = rnd.nextBoolean();
-			buffer.append(host());
+			if (_ipv6) {
+				buffer.append('[');
+				buffer.append(host());
+				buffer.append(']');
+			} else {
+				buffer.append(host());
+			}
 		}
 
 		private String host() {
-			return _ipv6 ? "[fe80::43c6:1e57:8a59:ce55]" : "myhost.org";
+			return _ipv6 ? "fe80::43c6:1e57:8a59:ce55" : "myhost.org";
 		}
 
 		@Override

@@ -23,6 +23,8 @@ public class SipURIParser {
 
 	String host = null;
 
+	boolean ipv6 = false;
+
 	int port = -1;
 
 	Map<String, String> params = new LinkedHashMap<>();
@@ -72,6 +74,7 @@ public class SipURIParser {
 		}
 
 		case '[': {
+			skip(index);
 			return parseIPv6();
 		}
 
@@ -138,6 +141,7 @@ public class SipURIParser {
 
 		switch (current(index)) {
 		case '[': {
+			skip(index);
 			return parseIPv6();
 		}
 
@@ -169,7 +173,8 @@ public class SipURIParser {
 			throw parseError(pos);
 		}
 
-		host = consumeInclusive(index);
+		host = consume(index);
+		ipv6 = true;
 		
 		index = next(':', ';', '?');
 
@@ -318,7 +323,7 @@ public class SipURIParser {
 	}
 
 	private SipURI uri() {
-		return new SipURI(user, password, host, port, secure, params, headers);
+		return new SipURI(user, password, host, ipv6, port, secure, params, headers);
 	}
 
 	private String remaining() {

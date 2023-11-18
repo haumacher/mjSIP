@@ -20,7 +20,8 @@ public class TestViaHeader {
 		Assertions.assertEquals("SIP", header.getProtocol());
 		Assertions.assertEquals("2.0", header.getVersion());
 		Assertions.assertEquals("UDP", header.getTransport());
-		Assertions.assertEquals("[2001:9e8:2050:becc:7eff:4dff:fe57:1a5a]", header.getHost());
+		Assertions.assertEquals("2001:9e8:2050:becc:7eff:4dff:fe57:1a5a", header.getHost());
+		Assertions.assertEquals("[2001:9e8:2050:becc:7eff:4dff:fe57:1a5a]", header.getHostName());
 		Assertions.assertEquals(5060, header.getPort());
 		Assertions.assertEquals("z9hG4bK0D731C24CCBB2565", header.getParameter("branch"));
 	}

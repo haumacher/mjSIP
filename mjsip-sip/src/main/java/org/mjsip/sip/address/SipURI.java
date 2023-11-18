@@ -76,6 +76,8 @@ public class SipURI extends GenericURI {
 
 	private Map<String, String> _headers;
 
+	private boolean _ipv6;
+
 	private void checkScheme() {
 		if (!getScheme().equals(SCHEME_SIP) && !getScheme().equals(SCHEME_SIPS)) {
 			throw new UnexpectedUriSchemeException(getScheme());
@@ -83,18 +85,26 @@ public class SipURI extends GenericURI {
 	}
 
 	/** Creates a new SipURI. */
-	public SipURI(String username, String hostname) {
-		this(username, hostname, -1);
+	public SipURI(String user, String host) {
+		this(user, host, -1);
 	}
 
 	/** Creates a new SipURI. */
-	public SipURI(String hostname, int portnumber) {
-		this(null, hostname, portnumber);
+	public SipURI(String host, int portnumber) {
+		this(null, host, portnumber);
+	}
+
+	public SipURI(String host, boolean ipv6, int portnumber) {
+		this(null, host, ipv6, portnumber);
 	}
 
 	/** Creates a new SipURI. */
-	public SipURI(String username, String hostname, int portnumber) {
-		this(username, null, hostname, portnumber, false, new HashMap<>(), Collections.emptyMap());
+	public SipURI(String user, String host, int portnumber) {
+		this(user, null, host, isIPv6(host), portnumber, false, new HashMap<>(), Collections.emptyMap());
+	}
+
+	public SipURI(String user, String host, boolean ipv6, int portnumber) {
+		this(user, null, host, portnumber, false, new HashMap<>(), Collections.emptyMap());
 	}
 
 	/**
@@ -104,10 +114,23 @@ public class SipURI extends GenericURI {
 	 */
 	public SipURI(String user, String password, String host, int port, boolean secure, Map<String, String> params,
 			Map<String, String> headers) {
+		this(user, password, host, isIPv6(host), port, secure, params, headers);
+	}
+
+	/**
+	 * Whether the given host name or address is an IPv6 address.
+	 */
+	public static boolean isIPv6(String host) {
+		return host.indexOf(':') >= 0;
+	}
+
+	SipURI(String user, String password, String host, boolean ipv6, int port, boolean secure,
+			Map<String, String> params, Map<String, String> headers) {
 		_user = user;
 		_password = password;
 		_secure = secure;
 		_host = host;
+		_ipv6 = ipv6;
 		_port = port;
 		_params = params;
 		_headers = headers;
@@ -151,6 +174,13 @@ public class SipURI extends GenericURI {
 	/** Gets host of SipURI. */
 	public String getHost() {
 		return _host;
+	}
+
+	/**
+	 * Whether the {@link #getHost()} is an IPv6 address.
+	 */
+	public boolean isIpv6() {
+		return _ipv6;
 	}
 
 	/** Gets port of SipURI; returns -1 if port is not specidfied. */
@@ -283,7 +313,7 @@ public class SipURI extends GenericURI {
 	 * Creates a copy of this URI.
 	 */
 	public SipURI copy() {
-		return new SipURI(_user, _password, _host, _port, _secure, new LinkedHashMap<>(_params),
+		return new SipURI(_user, _password, _host, _ipv6, _port, _secure, new LinkedHashMap<>(_params),
 				new LinkedHashMap<>(_headers));
 	}
 
@@ -328,7 +358,13 @@ public class SipURI extends GenericURI {
 			sb.append('@');
 		}
 
-		sb.append(_host);
+		if (_ipv6) {
+			sb.append('[');
+			sb.append(_host);
+			sb.append(']');
+		} else {
+			sb.append(_host);
+		}
 
 		if (_port > 0) {
 			sb.append(":");

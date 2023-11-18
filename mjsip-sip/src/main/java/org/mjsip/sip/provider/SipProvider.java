@@ -347,11 +347,6 @@ public class SipProvider implements SipTransportListener {
 		return _sipConfig.getViaAddr();
 	}    
 	
-	/** Sets via address. */ 
-	/*public void setViaAddress(String addr) {
-		via_addr=addr;
-	}*/   
-
 	/** Gets host port. */ 
 	public int getPort() {
 		return _sipConfig.getHostPort();
@@ -1049,7 +1044,8 @@ public class SipProvider implements SipTransportListener {
 		if (top_via.hasBranch())
 			sb.append(top_via.getBranch());
 		else {
-			sb.append(top_via.getHost()+top_via.getPort());
+			sb.append(top_via.getHost());
+			sb.append(top_via.getPort());
 			//sb.append(msg.getToHeader().getTag());
 			sb.append(msg.getFromHeader().getTag());
 			sb.append(msg.getCallIdHeader().getCallId());

@@ -71,23 +71,31 @@ public class ViaHeader extends HeaderWithParams {
 
 	private String _host;
 
+	private boolean _ipv6;
+
 	private int _port;
 
 	/** Creates a new ViaHeader. */
 	public ViaHeader(String proto, String host, int port) {
-		this("SIP", "2.0", proto.toUpperCase(), host, port);
+		this(proto.toUpperCase(), host, SipURI.isIPv6(host), port);
+	}
+
+	/** Creates a new ViaHeader. */
+	public ViaHeader(String proto, String host, boolean ipv6, int port) {
+		this("SIP", "2.0", proto, host, ipv6, port);
 	}
 
 	/**
 	 * Creates a {@link ViaHeader}.
 	 */
-	public ViaHeader(String protocol, String version, String transport, String host, int port) {
+	public ViaHeader(String protocol, String version, String transport, String host, boolean ipv6, int port) {
 		super(SipHeaders.Via);
 
 		_protocol = protocol;
 		_version = version;
 		_transport = transport;
 		_host = host;
+		_ipv6 = ipv6;
 		_port = port;
 	}
 
@@ -124,12 +132,30 @@ public class ViaHeader extends HeaderWithParams {
 
 	/** Gets "sent-by" parameter. */
 	public String getSentBy() {
-		return hasPort() ? getHost() + ":" + getPort() : getHost();
+		return hasPort() ? getHostName() + ":" + getPort() : getHostName();
 	}
 
 	/** Gets host of ViaHeader. */
 	public String getHost() {
 		return _host;
+	}
+
+	/**
+	 * Whether {@link #getHost()} is an IPv6 address.
+	 */
+	public boolean isIpv6() {
+		return _ipv6;
+	}
+
+	/**
+	 * The host name to to use as part of a SIP URI.
+	 */
+	public String getHostName() {
+		if (_ipv6) {
+			return '[' + _host + ']';
+		} else {
+			return _host;
+		}
 	}
 
 	/** Returns boolean value indicating if ViaHeader has port. */
@@ -144,7 +170,7 @@ public class ViaHeader extends HeaderWithParams {
 	
 	/** Makes a SipURI from ViaHeader. */
 	public SipURI getSipURI() {
-		return new SipURI(getHost(),getPort());
+		return new SipURI(getHost(), isIpv6(), getPort());
 	}   
 	
 	/** Checks if "branch" parameter is present. */
@@ -287,16 +313,19 @@ public class ViaHeader extends HeaderWithParams {
 			
 			// sent-by
 			String host;
+			boolean ipv6;
 			int port = -1;
 			switch (parser.currentChar()) {
 			case '[': {
 				// IPv6
-				host = parser.findChar(']').stringIncluding();
+				host = parser.skip().findChar(']').stringBefore();
+				ipv6 = true;
 				parser.skip();
 				break;
 			}
 			default: {
 				host = parser.findChars(" \t\r\n:;,").stringBefore();
+				ipv6 = false;
 			}
 			}
 			parser.skipWSPCRLF();
@@ -308,7 +337,7 @@ public class ViaHeader extends HeaderWithParams {
 				parser.skipWSPCRLF();
 			}
 
-			ViaHeader header = new ViaHeader(protocolName, protocolVersion, transport, host, port);
+			ViaHeader header = new ViaHeader(protocolName, protocolVersion, transport, host, ipv6, port);
 			
 			header.parseParams(parser);
 
@@ -325,7 +354,13 @@ public class ViaHeader extends HeaderWithParams {
 		buffer.append('/');
 		buffer.append(_transport);
 		buffer.append(' ');
-		buffer.append(_host);
+		if (_ipv6) {
+			buffer.append('[');
+			buffer.append(_host);
+			buffer.append(']');
+		} else {
+			buffer.append(_host);
+		}
 		if (_port > 0) {
 			buffer.append(':');
 			buffer.append(_port);

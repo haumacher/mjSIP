@@ -189,7 +189,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		if (ack.hasViaHeader()) ack.removeViaHeader();
 		ViaHeader via=resp.getViaHeader();
 		String branch=via.getBranch();
-		via = new ViaHeader(via.getTransport(), via.getHost(), via.getPort());
+		via = new ViaHeader(via.getTransport(), via.getHost(), via.isIpv6(), via.getPort());
 		via.setBranch(branch);
 		ack.addViaHeader(via);
 		// route
@@ -215,7 +215,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 		// via
 		ViaHeader via=resp.getViaHeader();
 		String branch=via.getBranch();
-		via = new ViaHeader(via.getTransport(), via.getHost(), via.getPort());
+		via = new ViaHeader(via.getTransport(), via.getHost(), via.isIpv6(), via.getPort());
 		via.setBranch(branch);
 		ack.addViaHeader(via);
 		// route
@@ -279,7 +279,7 @@ public class SipMessageFactory extends BasicSipMessageFactory {
 			GenericURI to_uri=to.getAddress();
 			if (to_uri.isSipURI()) {
 				SipURI sip_uri=SipURI.createSipURI(to_uri);
-				registrar=new SipURI(sip_uri.getHost(),sip_uri.getPort());
+				registrar = new SipURI(sip_uri.getHost(), sip_uri.isIpv6(), sip_uri.getPort());
 			}
 			else throw new UnexpectedUriSchemeException(to_uri.getScheme());
 		}

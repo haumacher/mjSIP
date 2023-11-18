@@ -146,8 +146,11 @@ public interface SipOptions {
 	String getUaInfo();
 
 	/**
-	 * Via IP address or fully-qualified domanin name (FQDN). Use 'auto-configuration' for auto
-	 * detection, or let it undefined.
+	 * Via IP address or fully-qualified domanin name (FQDN).
+	 * 
+	 * <p>
+	 * Use 'auto-configuration' for auto detection, or let it undefined.
+	 * </p>
 	 */
 	String getViaAddr();
 
