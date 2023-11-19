@@ -456,8 +456,7 @@ public class RegistrationClient implements TransactionClientListener {
 	private void scheduleNextAttempt(long timeout) {
 		cancelRegistrationTimeout();
 
-		_attemptTimeout = timeout;
-		_attemptTimer = _sipProvider.scheduler().schedule(_attemptTimeout, this::onAttemptTimeout);
+		_attemptTimer = _sipProvider.scheduler().schedule(timeout, this::onAttemptTimeout);
 
 		LOG.info("Waiting " + (_attemptTimeout / 1000) + " secs for next registration attempt.");
 	}
