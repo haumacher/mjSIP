@@ -131,7 +131,6 @@ public class RegistrationClient implements TransactionClientListener {
 		_listener = listener;
 		_sipProvider = sip_provider;
 		_registrarUri = regConfig.getRegistrar();
-
 		_routeUri = regConfig.getRoute();
 
 		NameAddress contact_naddr;
@@ -230,9 +229,9 @@ public class RegistrationClient implements TransactionClientListener {
 			req.setBody(content_type,body);
 		}
 		if (expire_time > 0) {
-			LOG.info("Registering contact: " + _contactNAddr + " (expiry " + expire_time + " secs) at " + _registrarUri);
+			LOG.info("Registering " + _contactNAddr + " (expiry " + expire_time + " secs) at " + _registrarUri);
 		} else {
-			LOG.info("Unregistering contact: " + _contactNAddr + " from " + _registrarUri);
+			LOG.info("Unregistering " + _contactNAddr + " from " + _registrarUri);
 		}
 		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
@@ -249,7 +248,7 @@ public class RegistrationClient implements TransactionClientListener {
 		//ContactHeader contact_star=new ContactHeader(); // contact is *
 		//req.setContactHeader(contact_star);
 		req.setExpiresHeader(new ExpiresHeader(String.valueOf(0)));
-		LOG.info("unregistering all contacts");
+		LOG.info("Unregistering all contacts.");
 		TransactionClient t=new TransactionClient(_sipProvider,req,this); 
 		t.request(); 
 	}
@@ -352,7 +351,7 @@ public class RegistrationClient implements TransactionClientListener {
 				_renewTime = expires;
 			}
 			
-			LOG.info("Registration " + result + ", expires in " + expires + "s"
+			LOG.info("Registration of '" + _contactNAddr + "' " + result + ", expires in " + expires + "s"
 					+ (_loop ? ", renewing in " + _renewTime + "s" : "") + ".");
 			if (_loop) {
 				cancelAttemptTimeout();
@@ -415,7 +414,7 @@ public class RegistrationClient implements TransactionClientListener {
 			} else {
 				// Registration failure
 				String result=code+" "+status.getReason();
-				LOG.info("Registration failure: "+result);
+				LOG.info("Registration of " + _contactNAddr + " failed: "+result);
 				if (_loop) {
 					scheduleNextAttempt(_sipProvider.sipConfig().getRegMaxAttemptTimeout());
 				}
@@ -430,7 +429,7 @@ public class RegistrationClient implements TransactionClientListener {
 	@Override
 	public void onTransTimeout(TransactionClient transaction) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
-			LOG.info("Registration failure: No response from server");
+			LOG.info("Registration of " + _contactNAddr + " timed out.");
 			if (_loop) {
 				scheduleNextAttempt(nextTimeout());
 			}
@@ -458,7 +457,7 @@ public class RegistrationClient implements TransactionClientListener {
 
 		_attemptTimer = _sipProvider.scheduler().schedule(timeout, this::onAttemptTimeout);
 
-		LOG.info("Waiting " + (_attemptTimeout / 1000) + " secs for next registration attempt.");
+		LOG.info("Waiting " + (timeout / 1000) + "s for next registration of " + _contactNAddr + ".");
 	}
 
 
