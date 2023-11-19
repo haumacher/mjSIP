@@ -84,33 +84,65 @@ public class SipURI extends GenericURI {
 		}
 	}
 
-	/** Creates a new SipURI. */
+	/**
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 */
 	public SipURI(String user, String host) {
 		this(user, host, -1);
 	}
 
-	/** Creates a new SipURI. */
+	/**
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 */
 	public SipURI(String host, int portnumber) {
 		this(null, host, portnumber);
 	}
 
+	/**
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 * @param ipv6
+	 *        Whether the given host address is an IPv6 address.
+	 */
 	public SipURI(String host, boolean ipv6, int portnumber) {
 		this(null, host, ipv6, portnumber);
 	}
 
-	/** Creates a new SipURI. */
+	/**
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 */
 	public SipURI(String user, String host, int portnumber) {
 		this(user, null, host, isIPv6(host), portnumber, false, new HashMap<>(), Collections.emptyMap());
 	}
 
+	/**
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 * @param ipv6
+	 *        Whether the given host address is an IPv6 address.
+	 */
 	public SipURI(String user, String host, boolean ipv6, int portnumber) {
 		this(user, null, host, portnumber, false, new HashMap<>(), Collections.emptyMap());
 	}
 
 	/**
-	 * Creates a new SipURI.
-	 * 
-	 * @param headers
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
 	 */
 	public SipURI(String user, String password, String host, int port, boolean secure, Map<String, String> params,
 			Map<String, String> headers) {
@@ -118,13 +150,14 @@ public class SipURI extends GenericURI {
 	}
 
 	/**
-	 * Whether the given host name or address is an IPv6 address.
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 * @param ipv6
+	 *        Whether the given host address is an IPv6 address.
 	 */
-	public static boolean isIPv6(String host) {
-		return host.indexOf(':') >= 0;
-	}
-
-	SipURI(String user, String password, String host, boolean ipv6, int port, boolean secure,
+	public SipURI(String user, String password, String host, boolean ipv6, int port, boolean secure,
 			Map<String, String> params, Map<String, String> headers) {
 		_user = user;
 		_password = password;
@@ -134,6 +167,13 @@ public class SipURI extends GenericURI {
 		_port = port;
 		_params = params;
 		_headers = headers;
+	}
+
+	/**
+	 * Whether the given host name or address is an IPv6 address.
+	 */
+	public static boolean isIPv6(String host) {
+		return host.indexOf(':') >= 0;
 	}
 
 	/**
