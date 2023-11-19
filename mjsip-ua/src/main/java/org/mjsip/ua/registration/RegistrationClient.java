@@ -158,6 +158,8 @@ public class RegistrationClient implements TransactionClientListener {
 		_username = regConfig.getAuthUser();
 		_realm = regConfig.getAuthRealm();
 		_passwd = regConfig.getAuthPasswd();
+		
+		resetAttemptTimeout();
 	}
 
 
@@ -348,7 +350,8 @@ public class RegistrationClient implements TransactionClientListener {
 					+ (_loop ? ", renewing in " + _renewTime + "s" : "") + ".");
 			if (_loop) {
 				cancelAttemptTimeout();
-
+				resetAttemptTimeout();
+				
 				_registrationTimer = _sipProvider.scheduler().schedule((long) _renewTime * 1000,
 						this::onRegistrationTimeout);
 			}
@@ -356,6 +359,10 @@ public class RegistrationClient implements TransactionClientListener {
 				_listener.onRegistrationSuccess(this, _toNAddr, _contactNAddr, expires, result);
 			}
 		}
+	}
+
+	private void resetAttemptTimeout() {
+		_attemptTimeout = _sipProvider.sipConfig().getRegMinAttemptTimeout();
 	}
 
 	/** Callback function called when client sends back a failure response. */
@@ -428,13 +435,16 @@ public class RegistrationClient implements TransactionClientListener {
 	}
 
 	private long nextTimeout() {
-		boolean firstAttempt = _attemptTimer == null;
-		long timeout = firstAttempt ? _sipProvider.sipConfig().getRegMinAttemptTimeout() : _attemptTimeout * 2;
+		final long result = _attemptTimeout;
+		
+		long nextTimeout = result * 2;
 		long maxTimeout = _sipProvider.sipConfig().getRegMaxAttemptTimeout();
-		if (timeout > maxTimeout) {
-			timeout = maxTimeout;
+		if (nextTimeout > maxTimeout) {
+			nextTimeout = maxTimeout;
 		}
-		return timeout;
+		_attemptTimeout = nextTimeout;
+		
+		return result;
 	}
 
 	private void scheduleNextAttempt(long timeout) {
