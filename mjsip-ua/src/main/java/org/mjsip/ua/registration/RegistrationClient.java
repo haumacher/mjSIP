@@ -162,6 +162,12 @@ public class RegistrationClient implements TransactionClientListener {
 		resetAttemptTimeout();
 	}
 
+	/**
+	 * The user name used for registration.
+	 */
+	public String getUsername() {
+		return _username;
+	}
 
 	/** Gets the target AOR registered with the registrar server.
 	  * @return the AOR */
