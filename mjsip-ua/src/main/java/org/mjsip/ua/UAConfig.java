@@ -6,6 +6,7 @@ import org.mjsip.config.YesNoHandler;
 import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
+import org.mjsip.sip.config.SipURIHandler;
 import org.mjsip.sip.provider.SipOptions;
 import org.zoolu.util.Configure;
 
@@ -23,11 +24,11 @@ public class UAConfig implements UAOptions {
 	@Option(name = "--proxy", usage = "Proxy server to use.")
 	private String _proxy=null;
 
-	@Option(name = "--registrar", usage = "Registrar server.")
-	private String _registrar=null;
+	@Option(name = "--registrar", usage = "Registrar server.", handler = SipURIHandler.class)
+	private SipURI _registrar=null;
 
-	@Option(name = "--route", usage = "Additional URI for routing the registration messages.")
-	private String _route=null;
+	@Option(name = "--route", usage = "Additional URI for routing the registration messages.", handler = SipURIHandler.class)
+	private SipURI _route=null;
 	
 	@Option(name = "--address")
 	private String _uaAddress=null;
@@ -110,15 +111,14 @@ public class UAConfig implements UAOptions {
 	/** Inits the UserAgentProfile. */
 	public void normalize(SipOptions sipConfig) {
 		if (getProxy()!=null && getProxy().equalsIgnoreCase(Configure.NONE)) setProxy(null);
-		if (getRegistrar()!=null && getRegistrar().equalsIgnoreCase(Configure.NONE)) setRegistrar(null);
 		if (getDisplayName()!=null && getDisplayName().equalsIgnoreCase(Configure.NONE)) setDisplayName(null);
 		if (getUser()!=null && getUser().equalsIgnoreCase(Configure.NONE)) setUser(null);
 		if (getAuthRealm()!=null && getAuthRealm().equalsIgnoreCase(Configure.NONE)) setAuthRealm(null);
 
-		if (getRegistrar()==null && getProxy()!=null) setRegistrar(getProxy());
-		if (getProxy()==null && getRegistrar()!=null) setProxy(getRegistrar());
+		if (getRegistrar()==null && getProxy()!=null) setRegistrar(new SipURI(getProxy()));
+		if (getProxy()==null && getRegistrar()!=null) setProxy(getRegistrar().getHost());
 		if (getAuthRealm()==null && getProxy()!=null) setAuthRealm(getProxy());
-		if (getAuthRealm()==null && getRegistrar()!=null) setAuthRealm(getRegistrar());
+		if (getAuthRealm()==null && getRegistrar()!=null) setAuthRealm(getRegistrar().getHost());
 		if (getAuthUser()==null && getUser()!=null) setAuthUser(getUser());
 
 		if (isRegister() && getRegistrar() == null) {
@@ -180,17 +180,17 @@ public class UAConfig implements UAOptions {
 	}
 
 	@Override
-	public String getRegistrar() {
+	public SipURI getRegistrar() {
 		return _registrar;
 	}
 
 	/** @see #getRegistrar() */
-	public void setRegistrar(String registrar) {
+	public void setRegistrar(SipURI registrar) {
 		this._registrar = registrar;
 	}
 
 	@Override
-	public String getRoute() {
+	public SipURI getRoute() {
 		return _route;
 	}
 

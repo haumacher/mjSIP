@@ -90,6 +90,16 @@ public class SipURI extends GenericURI {
 	 * @param host
 	 *        The host address (IP address or fully qualified domain name) of the SIP device.
 	 */
+	public SipURI(String host) {
+		this(null, host);
+	}
+
+	/**
+	 * Creates a SipURI.
+	 *
+	 * @param host
+	 *        The host address (IP address or fully qualified domain name) of the SIP device.
+	 */
 	public SipURI(String user, String host) {
 		this(user, host, -1);
 	}
@@ -259,9 +269,12 @@ public class SipURI extends GenericURI {
 		return hasParameter(PARAM_TRANSPORT);
 	}
 
-	/** Adds transport parameter. */
-	public void addTransport(String proto)  {
+	/**
+	 * Adds transport parameter.
+	 */
+	public SipURI addTransport(String proto) {
 		addParameter(PARAM_TRANSPORT,proto.toLowerCase());
+		return this;
 	}
 
 	/** Gets the value of maddr parameter.
@@ -275,9 +288,12 @@ public class SipURI extends GenericURI {
 		return hasParameter(PARAM_MADDR);
 	}
 
-	/** Adds maddr parameter. */
-	public void addMaddr(String maddr)  {
+	/**
+	 * Adds maddr parameter.
+	 */
+	public SipURI addMaddr(String maddr) {
 		addParameter(PARAM_MADDR,maddr);
+		return this;
 	}
 
 	@Override
@@ -342,6 +358,12 @@ public class SipURI extends GenericURI {
 	/** Adds ttl parameter. */
 	public void addTtl(int ttl)  {
 		addParameter(PARAM_TTL,Integer.toString(ttl));
+	}
+
+	@Override
+	public SipURI addLr() {
+		super.addLr();
+		return this;
 	}
 
 	@Override

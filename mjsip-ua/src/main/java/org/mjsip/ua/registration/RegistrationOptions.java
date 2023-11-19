@@ -3,15 +3,17 @@
  */
 package org.mjsip.ua.registration;
 
+import org.mjsip.sip.address.SipURI;
+
 /**
  * Options for a {@link RegistrationClient}.
  */
 public interface RegistrationOptions extends AuthOptions {
 
 	/**
-	 * Additional routing information to reach the registrar.
+	 * Additional routing information to reach the {@link #getRegistrar() registrar}.
 	 */
-	String getRoute();
+	SipURI getRoute();
 
 	/**
 	 * Fully qualified domain name (or address) of the registrar server. It is used as recipient for
@@ -23,7 +25,7 @@ public interface RegistrationOptions extends AuthOptions {
 	 * If <i>proxy</i> is not defined, the <i>registrar</i> value is used in its place.
 	 * </p>
 	 */
-	String getRegistrar();
+	SipURI getRegistrar();
 
 	/** Expires time (in seconds). */
 	int getExpires();

@@ -130,9 +130,9 @@ public class RegistrationClient implements TransactionClientListener {
 
 		_listener = listener;
 		_sipProvider = sip_provider;
-		_registrarUri = SipURI.parseSipURI(regConfig.getRegistrar());
+		_registrarUri = regConfig.getRegistrar();
 
-		_routeUri = SipURI.parseSipURI(regConfig.getRoute());
+		_routeUri = regConfig.getRoute();
 
 		NameAddress contact_naddr;
 		{

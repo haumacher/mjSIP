@@ -70,15 +70,6 @@ public abstract class GenericURI {
 	@Override
 	public abstract String toString();
 
-	/** Whether lr (loose-route) parameter is present. */
-	public boolean hasLr() {
-		return hasParameter(PARAM_LR);
-	}
-	/** Adds lr parameter. */
-	public void addLr()  {
-		addParameter(PARAM_LR);
-	}
-
 	/** Gets the value of specified parameter.
 	  * @return Returns the value of the specified parameter or null if not present. */
 	public abstract String getParameter(String name);
@@ -104,6 +95,19 @@ public abstract class GenericURI {
 
 	/** Removes specified parameter (if present). */
 	public abstract void removeParameter(String name);
+
+	/** Whether lr (loose-route) parameter is present. */
+	public boolean hasLr() {
+		return hasParameter(PARAM_LR);
+	}
+
+	/**
+	 * Adds the <code>lr</code> (loose-route) parameter.
+	 */
+	public GenericURI addLr() {
+		addParameter(PARAM_LR);
+		return this;
+	}
 
 }
 
