@@ -347,17 +347,16 @@ public class RegistrationClient implements TransactionClientListener {
 					if (exp_i>0 && (expires==0 || exp_i<expires)) expires=exp_i;
 				}    
 			}
-			if (expires > 0 && expires < _renewTime) {
-				_renewTime = expires;
-			}
+			
+			int renewTime = expires > 0 && expires < _renewTime ? expires : _renewTime;
 			
 			LOG.info("Registration of '" + _contactNAddr + "' " + result + ", expires in " + expires + "s"
-					+ (_loop ? ", renewing in " + _renewTime + "s" : "") + ".");
+					+ (_loop ? ", renewing in " + renewTime + "s" : "") + ".");
 			if (_loop) {
 				cancelAttemptTimeout();
 				resetAttemptTimeout();
 				
-				_registrationTimer = _sipProvider.scheduler().schedule((long) _renewTime * 1000,
+				_registrationTimer = _sipProvider.scheduler().schedule((long) renewTime * 1000,
 						this::onRegistrationTimeout);
 			}
 			if (_listener != null) {
