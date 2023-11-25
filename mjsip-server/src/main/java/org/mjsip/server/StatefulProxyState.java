@@ -28,8 +28,8 @@ import java.util.Iterator;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipResponses;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionId;
 import org.mjsip.sip.transaction.Transaction;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
@@ -60,7 +60,7 @@ public class StatefulProxyState {
 	public synchronized void addServer(TransactionServer ts) {
 		//printlog("addServer(ts)",LogWriter.LEVEL_LOW);
 		if (hasServer(ts)) return;
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		s_clients.put(sid,new HashSet());
 		SipMessage request=new SipMessage(ts.getRequestMessage());
 		//printlog("creating a possible server 408 final response",LogWriter.LEVEL_LOW);
@@ -74,7 +74,7 @@ public class StatefulProxyState {
 	public synchronized void addClient(TransactionServer ts, Transaction tc) {
 		//printlog("addClient(ts,tc)",LogWriter.LEVEL_LOW);
 		c_server.put(tc.getTransactionId(),ts);
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		HashSet clients=(HashSet)s_clients.get(sid);
 		if (clients==null) clients=new HashSet();
 		clients.add(tc);
@@ -88,11 +88,11 @@ public class StatefulProxyState {
 	
 	/** Removes a client. */
 	public synchronized void removeClient(TransactionClient tc) {
-		TransactionId cid=tc.getTransactionId();
+		SipId cid=tc.getTransactionId();
 		TransactionServer ts=(TransactionServer)c_server.get(cid);
 		if (ts==null) return;
 		c_server.remove(cid);
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		HashSet clients=(HashSet)s_clients.get(sid);
 		if (clients==null) return;
 		Transaction target=null;
@@ -104,20 +104,20 @@ public class StatefulProxyState {
 	
 	/** Removes all clients bound to server <i>ts</i>. */
 	public synchronized void clearClients(TransactionServer ts) {
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		s_clients.remove(sid);
 		s_clients.put(sid,new HashSet());
 	}
 
 	/** Whether there is a server <i>ts</i>. */
 	public boolean hasServer(TransactionServer ts) {
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		return s_clients.containsKey(sid);
 	}
 
 	/** Removes server <i>ts</i>. */
 	public synchronized void removeServer(TransactionServer ts) {
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		s_clients.remove(sid);
 		s_response.remove(sid);
 	}
@@ -134,7 +134,7 @@ public class StatefulProxyState {
 		
 	/** Sets the final response for server <i>ts</i>. */
 	public synchronized void setFinalResponse(TransactionServer ts, SipMessage resp) {
-		TransactionId sid=ts.getTransactionId();
+		SipId sid=ts.getTransactionId();
 		s_response.remove(sid);
 		s_response.put(sid,resp);
 	}

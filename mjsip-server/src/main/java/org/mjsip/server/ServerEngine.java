@@ -35,7 +35,7 @@ import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipResponses;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.InviteTransactionServer;
@@ -122,7 +122,7 @@ public abstract class ServerEngine implements SipProviderListener {
 	public ServerEngine(SipProvider provider, ServerProfile profile) {
 		server_profile=profile;
 		sip_provider=provider;
-		sip_provider.addSelectiveListener(MethodId.ANY,this);
+		sip_provider.addSelectiveListener(SipId.ANY_METHOD,this);
 			 
 		// LOCAL DOMAINS
 		LOG.info("Domains="+getLocalDomains());

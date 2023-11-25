@@ -26,8 +26,8 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -89,7 +89,7 @@ public class AckTransactionServer extends Transaction {
 		this.connection_id=connection_id;
 		this.response=resp;
 		response.setConnectionId(connection_id);
-		transaction_id=new TransactionServerId(invite);
+		transaction_id=SipId.createTransactionServerId(invite);
 		// init the timer just to set the timeout value and label, without listener (never started)
 		// (CHANGE-040905) now timeouts are started when method respond() is called
 		//transaction_to=new Timer(transaction_to.getTime(),this);

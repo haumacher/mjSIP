@@ -26,7 +26,7 @@ package org.mjsip.sip.call;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionServer;
@@ -48,14 +48,14 @@ public class CancelServer implements SipProviderListener {
 	/** Costructs a new CancelServer. */
 	public CancelServer(SipProvider sip_provider) {
 		this.sip_provider=sip_provider;
-		sip_provider.addSelectiveListener(new MethodId(SipMethods.CANCEL),this);  
+		sip_provider.addSelectiveListener(SipId.createMethodId(SipMethods.CANCEL),this);  
 	} 
 
 
 	/** Stops the CancelServer */
 	public void halt() {
 		if (sip_provider!=null) {
-			sip_provider.removeSelectiveListener(new MethodId(SipMethods.CANCEL));
+			sip_provider.removeSelectiveListener(SipId.createMethodId(SipMethods.CANCEL));
 			sip_provider=null;
 		}
 	}   

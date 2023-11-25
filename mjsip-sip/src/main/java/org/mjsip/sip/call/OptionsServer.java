@@ -30,7 +30,7 @@ import org.mjsip.sip.header.SupportedHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionServer;
@@ -85,13 +85,13 @@ public class OptionsServer implements SipProviderListener {
 		this.accept_encoding=accept_encoding;
 		this.accept_language=accept_language;
 		this.supported_option_tags=supported_option_tags;
-		sip_provider.addSelectiveListener(new MethodId(SipMethods.OPTIONS),this);  
+		sip_provider.addSelectiveListener(SipId.createMethodId(SipMethods.OPTIONS),this);  
 	} 
 
 
 	/** Stops the OptionsServer */
 	public void halt() {
-		if (sip_provider!=null) sip_provider.removeSelectiveListener(new MethodId(SipMethods.OPTIONS));
+		if (sip_provider!=null) sip_provider.removeSelectiveListener(SipId.createMethodId(SipMethods.OPTIONS));
 		sip_provider=null;
 	}   
 

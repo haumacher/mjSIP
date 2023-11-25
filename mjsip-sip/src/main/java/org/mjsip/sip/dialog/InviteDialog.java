@@ -820,30 +820,34 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		(new TransactionClient(sip_provider,req,this)).request();
 	}
 
-
 	/** Accepts an UPDATE request.
 	  * @param sdp the answered sdp (if any). */
 	public void acceptUpdate(SdpMessage sdp) {
-		LOG.debug("inside acceptUpdate(req)");
-		if (update_ts!=null) {
-			SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(), SipResponses.OK, null,
-					null);
-			if (sdp!=null) resp.setSdpBody(sdp);
-			respond(resp);
+		if (update_ts == null) {
+			LOG.warn("Cannot accept update outside transaction.");
+			return;
 		}
-	} 
 
+		LOG.info("Accepting update.");
+		SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(), SipResponses.OK, null, null);
+		if (sdp != null) {
+			resp.setSdpBody(sdp);
+		}
+		respond(resp);
+	} 
 
 	/** Refuses an UPDATE request. */
 	public void refuseUpdate() {
-		LOG.debug("inside refuseUpdate(req)");
-		if (update_ts!=null) {
-			SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(),
-					SipResponses.SERVER_TIME_OUT, null, null);
-			respond(resp);
+		if (update_ts == null) {
+			LOG.warn("Cannot refuse update outside transation.");
+			return;
 		}
-	} 
 
+		LOG.info("Refusing update.");
+		SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(), SipResponses.SERVER_TIME_OUT,
+				null, null);
+		respond(resp);
+	} 
 
 	/** Termiantes the dialog without sending a CANCEL request for an ongoing INVITE, or a 4xx response to an incoming INVITE, or a BYE request for a confirmed session. */
 	public void terminate() {

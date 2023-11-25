@@ -23,7 +23,7 @@
 package org.mjsip.sip.dialog;
 
 import org.mjsip.sip.message.SipMessage;
-import org.mjsip.sip.provider.DialogId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	protected int dialog_num;
 
 	/** Dialog identifier */
-	protected DialogId dialog_id;
+	protected SipId dialog_id;
 
 	// ************************* Abstract methods *************************
 
@@ -123,7 +123,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	}
 
 	/** Gets an unique dialog ideintifier */
-	public DialogId getDialogID() {
+	public SipId getDialogID() {
 		return dialog_id;
 	} 
 
@@ -143,9 +143,9 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		if (secure_old!=secure) LOG.info("secure dialog: on");
 
 		// update dialog_id and sip_provider listener
-		DialogId newDialogId = new DialogId(call_id, local_tag, remote_tag);
+		SipId newDialogId = SipId.createDialogId(call_id, local_tag, remote_tag);
 
-		DialogId oldDialogId = dialog_id;
+		SipId oldDialogId = dialog_id;
 		if (oldDialogId == null || !oldDialogId.equals(newDialogId)) {
 			LOG.info("Dialog ID set to: " + newDialogId);
 

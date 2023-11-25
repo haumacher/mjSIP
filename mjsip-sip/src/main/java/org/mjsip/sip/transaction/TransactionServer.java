@@ -27,8 +27,8 @@ import java.util.concurrent.ScheduledFuture;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.ConnectionId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -69,21 +69,21 @@ public class TransactionServer extends Transaction {
 	/** Creates a new TransactionServer of type <i>method</i>. */
 	public TransactionServer(SipProvider sip_provider, String method, TransactionServerListener listener) {
 		super(sip_provider);
-		init(listener,new TransactionServerId(method),null);
+		init(listener,SipId.createTransactionServerId(method),null);
 	}  
 
 	/** Creates a new TransactionServer for the already received request <i>req</i>. */
 	public TransactionServer(SipProvider provider, SipMessage req, TransactionServerListener listener) {
 		super(provider);
 		request=new SipMessage(req);
-		init(listener,new TransactionServerId(request),request.getConnectionId());
+		init(listener,SipId.createTransactionServerId(request),request.getConnectionId());
 		
 		changeStatus(STATE_TRYING);
 		sip_provider.addSelectiveListener(transaction_id,this); 
 	}  
 
 	/** Inits the transaction server. */
-	protected void init(TransactionServerListener listener, TransactionServerId transaction_id, ConnectionId connection_id) {
+	protected void init(TransactionServerListener listener, SipId transaction_id, ConnectionId connection_id) {
 		this.transaction_listener=listener;
 		this.transaction_id=transaction_id;
 		this.connection_id=connection_id;
@@ -162,7 +162,7 @@ public class TransactionServer extends Transaction {
 			if (statusIs(STATE_WAITING)) {
 				request=new SipMessage(msg);
 				connection_id=msg.getConnectionId();
-				TransactionServerId new_transaction_id=new TransactionServerId(request);
+				SipId new_transaction_id = SipId.createTransactionServerId(request);
 				if (!new_transaction_id.equals(transaction_id)) {
 					sip_provider.removeSelectiveListener(transaction_id);
 					sip_provider.addSelectiveListener(transaction_id=new_transaction_id,this); 

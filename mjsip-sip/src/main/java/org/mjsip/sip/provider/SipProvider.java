@@ -935,7 +935,7 @@ public class SipProvider implements SipTransportListener {
 			if (listener != null) {
 				listener.onReceivedMessage(this, msg);
 			} else {
-				LOG.debug("No listener found for message, discarded.");
+				LOG.info("No listener found for message, discarded.");
 			}
 		}
 		catch (Exception exception) {
@@ -947,37 +947,40 @@ public class SipProvider implements SipTransportListener {
 	/** Gets a listener for a given message.
 	 * @param msg the SIP message */
 	private synchronized SipProviderListener getListener(SipMessage msg) {
-		SipId key;
 		// try to look for a transaction (requests go to transaction servers and response go to transaction clients)
-		key=(msg.isRequest())? (SipId)new TransactionServerId(msg) : (SipId)new TransactionClientId(msg);
-		LOG.debug("transaction-id: " + key);
-		if (sip_listeners.containsKey(key)) {
-			LOG.debug("message passed to transaction: " + key);
-			return sip_listeners.get(key);
+		SipId transactionKey = SipId.createTransactionId(!msg.isRequest(), msg);
+		SipProviderListener transactionListener = sip_listeners.get(transactionKey);
+		if (transactionListener != null) {
+			LOG.info("Message passed to transaction: " + transactionKey);
+			return transactionListener;
 		}
+
 		// try to look for a dialog
-		key=new DialogId(msg);
-		LOG.debug("dialog-id: " + key);
-		if (sip_listeners.containsKey(key)) {
-			LOG.debug("message passed to dialog: " + key);
-			return sip_listeners.get(key);
+		SipId dialogKey = SipId.createDialogId(msg);
+		SipProviderListener dialogListener = sip_listeners.get(dialogKey);
+		if (dialogListener != null) {
+			LOG.info("Message passed to dialog: " + dialogKey);
+			return dialogListener;
 		}
+
 		// try to look for a UAS
-		key=new MethodId(msg);
-		if (sip_listeners.containsKey(key)) {
-			LOG.debug("message passed to uas: " + key);
-			return sip_listeners.get(key);
+		SipId methodKey = SipId.createMethodId(msg);
+		SipProviderListener methodListener = sip_listeners.get(methodKey);
+		if (methodListener != null) {
+			LOG.info("Message passed to method: " + methodKey);
+			return methodListener;
 		}        
+
 		// try to look for a default UA
-		if (sip_listeners.containsKey(MethodId.ANY)) {
-			LOG.debug("message passed to uas: " + MethodId.ANY);
-			return sip_listeners.get(MethodId.ANY);
+		SipProviderListener anyListener = sip_listeners.get(SipId.ANY_METHOD);
+		if (anyListener != null) {
+			LOG.info("Message passed to ua: " + SipId.ANY_METHOD);
+			return anyListener;
 		}
-		// else
+
+		LOG.warn("No listener found for message.");
 		return null;
 	}
-
-	
 
 	/** From SipTransportListener. When SipTransport terminates. */
 	@Override

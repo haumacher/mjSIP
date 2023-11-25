@@ -27,7 +27,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionClient;
@@ -81,13 +81,13 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 
 	/** Waits for incoming message. */
 	public void receive() {
-		sip_provider.addSelectiveListener(new MethodId(SipMethods.MESSAGE),this);
+		sip_provider.addSelectiveListener(SipId.createMethodId(SipMethods.MESSAGE),this);
 	} 
 	
 
 	/** Stops receiving messages. */
 	public void halt() {
-		sip_provider.removeSelectiveListener(new MethodId(SipMethods.MESSAGE));  
+		sip_provider.removeSelectiveListener(SipId.createMethodId(SipMethods.MESSAGE));  
 	} 
 
 

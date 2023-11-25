@@ -28,8 +28,8 @@ package org.mjsip.sip.transaction;
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 
 
@@ -68,11 +68,11 @@ public class TransactionClient extends Transaction {
 	public TransactionClient(SipProvider sip_provider, SipMessage req, TransactionClientListener listener) {
 		super(sip_provider);
 		request=new SipMessage(req);
-		init(listener,new TransactionClientId(request));
+		init(listener,SipId.createTransactionClientId(request));
 	}
 	
 	/** Initializes it. */
-	void init(TransactionClientListener listener, TransactionClientId transaction_id) {
+	void init(TransactionClientListener listener, SipId transaction_id) {
 		this.transaction_listener=listener;
 		this.transaction_id=transaction_id;
 		LOG.debug("new transaction-id: " + transaction_id.toString());

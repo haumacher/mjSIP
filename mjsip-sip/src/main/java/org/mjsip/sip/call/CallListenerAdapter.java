@@ -20,20 +20,14 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.call;
 
-
-
-//import java.util.Iterator;
 import java.util.Vector;
 
 import org.mjsip.sdp.OfferAnswerModel;
 import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
-
-
 
 /**
  * {@link CallListenerAdapter} implements {@link CallListener} providing a dummy implementation of

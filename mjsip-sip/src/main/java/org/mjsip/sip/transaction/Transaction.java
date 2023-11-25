@@ -27,9 +27,9 @@ package org.mjsip.sip.transaction;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.ConnectionId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
-import org.mjsip.sip.provider.TransactionId;
 import org.slf4j.LoggerFactory;
 
 
@@ -98,7 +98,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ im
 	SipMessage request;
 	
 	/** Transaction identifier */
-	TransactionId transaction_id;
+	SipId transaction_id;
 
 	/** Transaction connection id */
 	ConnectionId connection_id;
@@ -163,7 +163,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ im
 	}
 
 	/** Gets the transaction identifier */
-	public TransactionId getTransactionId() {
+	public SipId getTransactionId() {
 		return transaction_id;
 	}
 

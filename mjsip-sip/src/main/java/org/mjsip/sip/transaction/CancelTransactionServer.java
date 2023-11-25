@@ -28,8 +28,8 @@ package org.mjsip.sip.transaction;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionServerId;
 
 
 
@@ -49,7 +49,7 @@ public class CancelTransactionServer extends TransactionServer {
 		String branch=(top_via!=null && top_via.hasBranch())? top_via.getBranch() : null;
 		String sent_by=(top_via!=null)? top_via.getSentBy() : null;
 		long seqn=req.getCSeqHeader().getSequenceNumber();      
-		TransactionServerId transaction_id=new TransactionServerId(call_id,seqn,SipMethods.CANCEL,sent_by,branch);
+		SipId transaction_id = SipId.createTransactionServerId(call_id, seqn, SipMethods.CANCEL, sent_by, branch);
 		init(ts_listener,transaction_id,null);
 	}  
 

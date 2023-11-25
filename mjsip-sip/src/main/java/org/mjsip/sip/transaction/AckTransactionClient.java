@@ -26,8 +26,8 @@ package org.mjsip.sip.transaction;
 
 
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 
 
@@ -48,7 +48,7 @@ public class AckTransactionClient extends Transaction {
 		super(sip_provider);
 		request=new SipMessage(ack);
 		transaction_listener=listener;
-		transaction_id=new TransactionClientId(request);
+		transaction_id=SipId.createTransactionClientId(request);
 		LOG.info("new transaction-id: "+transaction_id.toString());
 	}
 	

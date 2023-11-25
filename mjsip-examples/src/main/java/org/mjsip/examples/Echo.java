@@ -34,8 +34,8 @@ import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
-import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
 import org.mjsip.sip.transaction.TransactionClient;
@@ -84,7 +84,7 @@ public class Echo extends RegisteringMultipleUAS {
 		_streamerFactory = streamerFactory;
 		this.force_reverse_route=force_reverse_route;
 		// message UAS
-		sip_provider.addSelectiveListener(new MethodId(SipMethods.MESSAGE),this); 
+		sip_provider.addSelectiveListener(SipId.createMethodId(SipMethods.MESSAGE),this); 
 	} 
 
 	/** From SipProviderListener. When a new Message is received by the SipProvider. */

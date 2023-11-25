@@ -28,8 +28,8 @@ package org.mjsip.sip.transaction;
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionClientId;
 import org.slf4j.LoggerFactory;
 
 
@@ -55,18 +55,18 @@ public class InviteTransactionClient extends TransactionClient {
 	ScheduledFuture<?> end_to;
 
 
-	// ************************** Costructors **************************
+	// ************************** Constructors **************************
 
 	/** Creates a new InviteTransactionClient */
 	public InviteTransactionClient(SipProvider sip_provider, SipMessage req, TransactionClientListener listener) {
 		super(sip_provider);
 		request=new SipMessage(req);
-		init(listener,new TransactionClientId(request));
+		init(listener,SipId.createTransactionClientId(request));
 	}  
 
 	/** Initializes it. */
 	@Override
-	void init(TransactionClientListener listener, TransactionClientId transaction_id) {
+	void init(TransactionClientListener listener, SipId transaction_id) {
 		this.invite_tc_listener=listener;
 		this.transaction_id=transaction_id;
 		this.ack=null;

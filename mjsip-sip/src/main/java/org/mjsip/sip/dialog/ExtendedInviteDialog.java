@@ -39,8 +39,8 @@ import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionServerId;
 import org.mjsip.sip.transaction.InviteTransactionClient;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionServer;
@@ -219,7 +219,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 			super.respond(resp);
 		}
 		else {
-			TransactionServerId transaction_id=new TransactionServerId(resp);
+			SipId transaction_id = SipId.createTransactionServerId(resp);
 			LOG.debug("transaction-id="+transaction_id);
 			if (transactions.containsKey(transaction_id)) {
 				LOG.trace("responding");

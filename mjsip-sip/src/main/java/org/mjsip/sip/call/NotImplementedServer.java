@@ -25,7 +25,7 @@ package org.mjsip.sip.call;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipResponses;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.transaction.TransactionServer;
@@ -54,7 +54,7 @@ public class NotImplementedServer implements SipProviderListener {
 	public NotImplementedServer(SipProvider sip_provider) {
 		this.sip_provider=sip_provider;
 		implemented_methods=null;
-		sip_provider.addSelectiveListener(MethodId.ANY,this);  
+		sip_provider.addSelectiveListener(SipId.ANY_METHOD, this);
 	} 
 
 
@@ -62,13 +62,14 @@ public class NotImplementedServer implements SipProviderListener {
 	public NotImplementedServer(String[] implemented_methods, SipProvider sip_provider) {
 		this.sip_provider=sip_provider;
 		this.implemented_methods=implemented_methods;
-		sip_provider.addSelectiveListener(MethodId.ANY,this);  
+		sip_provider.addSelectiveListener(SipId.ANY_METHOD, this);
 	} 
 
 
 	/** Stops the NotImplementedServer */
 	public void halt() {
-		if (sip_provider!=null) sip_provider.removeSelectiveListener(MethodId.ANY);
+		if (sip_provider != null)
+			sip_provider.removeSelectiveListener(SipId.ANY_METHOD);
 		sip_provider=null;
 	}   
 

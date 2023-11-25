@@ -433,8 +433,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	@Override
 	public void onCallModify(Call call, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallModify()");
-		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("RE-INVITE/MODIFY");
+		if (call!=this.call) {
+			LOG.warn("Modify of unknown call received: " + call.getCallId());  
+			return;  
+		}
+		LOG.info("Received RE-INVITE/MODIFY.");
 		// to be implemented.
 		// currently it simply accepts the session changes (see method onCallModify() in CallListenerAdapter)
 		super.onCallModify(call,remoteSdp,invite);

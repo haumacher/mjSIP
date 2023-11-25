@@ -8,7 +8,7 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.NotImplementedServer;
 import org.mjsip.sip.call.OptionsServer;
 import org.mjsip.sip.message.SipMethods;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipKeepAlive;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.registration.RegistrationClient;
@@ -42,7 +42,7 @@ public class RegisteringUserAgent extends UserAgent {
 		_registrationConfig = uaConfig;
 		
 		// start listening for INVITE requests (UAS)
-		if (uaConfig.isUaServer()) sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this);
+		if (uaConfig.isUaServer()) sip_provider.addSelectiveListener(SipId.createMethodId(SipMethods.INVITE),this);
 		
 		// start OPTIONS server
 		if (uaConfig.isOptionsServer()) options_server=new OptionsServer(sip_provider,"INVITE, ACK, CANCEL, OPTIONS, BYE","application/sdp");

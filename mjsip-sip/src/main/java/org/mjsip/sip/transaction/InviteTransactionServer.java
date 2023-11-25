@@ -28,8 +28,8 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.ConnectionId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.TransactionServerId;
 import org.slf4j.LoggerFactory;
 
 /** INVITE server transaction as defined in RFC 3261 (Section 17.2.1).
@@ -72,14 +72,14 @@ public class InviteTransactionServer extends TransactionServer {
 	/** Creates a new InviteTransactionServer. */
 	public InviteTransactionServer(SipProvider sip_provider, InviteTransactionServerListener listener) {
 		super(sip_provider);
-		init(listener,new TransactionServerId(SipMethods.INVITE),null);
+		init(listener,SipId.createTransactionServerId(SipMethods.INVITE),null);
 	}  
 		
 	/** Creates a new InviteTransactionServer for the already received INVITE request <i>invite</i>. */
 	public InviteTransactionServer(SipProvider sip_provider, SipMessage invite, InviteTransactionServerListener listener) {
 		super(sip_provider);
 		request=new SipMessage(invite);
-		init(listener,new TransactionServerId(request),request.getConnectionId());
+		init(listener,SipId.createTransactionServerId(request),request.getConnectionId());
 
 		changeStatus(STATE_TRYING);
 		sip_provider.addSelectiveListener(transaction_id,this);
@@ -95,7 +95,7 @@ public class InviteTransactionServer extends TransactionServer {
 	public InviteTransactionServer(SipProvider sip_provider, SipMessage invite, boolean auto_trying, InviteTransactionServerListener listener) {
 		super(sip_provider);
 		request=new SipMessage(invite);
-		init(listener,new TransactionServerId(request),request.getConnectionId());      
+		init(listener,SipId.createTransactionServerId(request),request.getConnectionId());      
 		this.auto_trying=auto_trying;
 
 		changeStatus(STATE_TRYING);
@@ -109,7 +109,7 @@ public class InviteTransactionServer extends TransactionServer {
 	}  
 
 	/** Initializes it. */
-	void init(InviteTransactionServerListener listener, TransactionServerId transaction_id, ConnectionId connection_id) {
+	void init(InviteTransactionServerListener listener, SipId transaction_id, ConnectionId connection_id) {
 		this.invite_ts_listener=listener;
 		this.transaction_id=transaction_id;
 		this.connection_id=connection_id;
@@ -184,7 +184,7 @@ public class InviteTransactionServer extends TransactionServer {
 					request=new SipMessage(msg);
 					connection_id=request.getConnectionId();
 					sip_provider.removeSelectiveListener(transaction_id);
-					transaction_id=new TransactionServerId(request);
+					transaction_id=SipId.createTransactionServerId(request);
 					sip_provider.addSelectiveListener(transaction_id,this); 
 					changeStatus(STATE_TRYING);
 					// automatically send "100 Tryng" response and go to STATE_PROCEEDING

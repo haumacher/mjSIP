@@ -20,7 +20,14 @@ public interface UserAgentListener {
 	public void onUaRegistrationFailed(UserAgent ua, String result);
 
 	
-	/** When an incoming call is detected */
+	/**
+	 * An incoming call is received.
+	 * 
+	 * <p>
+	 * Should be answered with either {@link UserAgent#accept(MediaAgent)} or
+	 * {@link UserAgent#hangup()}.
+	 * </p>
+	 */
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs);
 	
 	/** When an incoming call has been accepted. */

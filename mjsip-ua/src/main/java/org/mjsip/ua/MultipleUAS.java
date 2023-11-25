@@ -25,7 +25,7 @@ package org.mjsip.ua;
 import org.mjsip.pool.PortPool;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
-import org.mjsip.sip.provider.MethodId;
+import org.mjsip.sip.provider.SipId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.slf4j.LoggerFactory;
@@ -58,14 +58,14 @@ public abstract class MultipleUAS implements SipProviderListener {
 		_config=uaConfig;
 
 		// start UAS     
-		sip_provider.addSelectiveListener(new MethodId(SipMethods.INVITE),this); 
+		sip_provider.addSelectiveListener(SipId.createMethodId(SipMethods.INVITE),this); 
 	}
 
 	/**
 	 * Unregisters from the SIP provider.
 	 */
 	public void halt() {
-		sip_provider.removeSelectiveListener(new MethodId(SipMethods.INVITE));
+		sip_provider.removeSelectiveListener(SipId.createMethodId(SipMethods.INVITE));
 	}
 
 	// ******************* SipProviderListener methods  ******************
