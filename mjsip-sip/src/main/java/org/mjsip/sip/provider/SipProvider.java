@@ -128,7 +128,7 @@ public class SipProvider implements SipTransportListener {
 	boolean force_rport=false;
 
 	/** Table of sip listeners (Hashtable<SipId id, SipProviderListener listener>) */
-	final Map<SipId, SipProviderListener> sip_listeners = new HashMap<>();
+	private final Map<SipId, SipProviderListener> sip_listeners = new HashMap<>();
 	
 	/** Vector of promiscuous listeners (Vector<SipProviderListener>) */
 	private CopyOnWriteListeners<SipProviderListener, SipMessage> promisquousListeners = new CopyOnWriteListeners<>() {
@@ -520,7 +520,7 @@ public class SipProvider implements SipTransportListener {
 	  * Use MethodId.ANY to capture all messages.
 	  * @param listener is the SipProviderListener that the specified type of messages has to be passed to. */
 	public synchronized void addSelectiveListener(SipId id, SipProviderListener listener) {
-		LOG.debug("adding SipProviderListener: " + id);
+		LOG.debug("Adding SipProviderListener: " + id);
 		sip_listeners.put(id,listener);   
 	}
 
@@ -528,7 +528,7 @@ public class SipProvider implements SipTransportListener {
 	/** Removes a SipProviderListener.
 	  * @param id specifies the messages that the listener was associated to. */
 	public synchronized void removeSelectiveListener(SipId id) {
-		LOG.debug("removing SipProviderListener: " + id);
+		LOG.debug("Removing SipProviderListener: " + id);
 		sip_listeners.remove(id);
 	}
   
@@ -540,7 +540,7 @@ public class SipProvider implements SipTransportListener {
 	  * in that case the same message is passed to all promiscuous SipProviderListeners.
 	  * @param listener is the SipProviderListener. */
 	public synchronized void addPromiscuousListener(SipProviderListener listener) {
-		LOG.debug("adding SipProviderListener in promiscuous mode");
+		LOG.debug("Adding SipProviderListener in promiscuous mode.");
 		if (!promisquousListeners.add(listener)) {
 			LOG.warn("trying to add an already present SipProviderListener in promiscuous mode.");
 		}
@@ -550,7 +550,7 @@ public class SipProvider implements SipTransportListener {
 	/** Removes a SipProviderListener in promiscuous mode. 
 	  * @param listener is the SipProviderListener to be removed. */
 	public synchronized void removePromiscuousListener(SipProviderListener listener) {
-		LOG.debug("removing SipProviderListener in promiscuous mode");
+		LOG.debug("Removing SipProviderListener in promiscuous mode.");
 		if (!promisquousListeners.remove(listener)) {
 			LOG.warn("trying to remove a missed SipProviderListener in promiscuous mode.");
 		}
@@ -951,7 +951,7 @@ public class SipProvider implements SipTransportListener {
 		SipId transactionKey = SipId.createTransactionId(!msg.isRequest(), msg);
 		SipProviderListener transactionListener = sip_listeners.get(transactionKey);
 		if (transactionListener != null) {
-			LOG.info("Message passed to transaction: " + transactionKey);
+			LOG.debug("Message passed to transaction: " + transactionKey);
 			return transactionListener;
 		}
 
@@ -959,7 +959,7 @@ public class SipProvider implements SipTransportListener {
 		SipId dialogKey = SipId.createDialogId(msg);
 		SipProviderListener dialogListener = sip_listeners.get(dialogKey);
 		if (dialogListener != null) {
-			LOG.info("Message passed to dialog: " + dialogKey);
+			LOG.debug("Message passed to dialog: " + dialogKey);
 			return dialogListener;
 		}
 
@@ -967,18 +967,18 @@ public class SipProvider implements SipTransportListener {
 		SipId methodKey = SipId.createMethodId(msg);
 		SipProviderListener methodListener = sip_listeners.get(methodKey);
 		if (methodListener != null) {
-			LOG.info("Message passed to method: " + methodKey);
+			LOG.debug("Message passed to method: " + methodKey);
 			return methodListener;
 		}        
 
 		// try to look for a default UA
 		SipProviderListener anyListener = sip_listeners.get(SipId.ANY_METHOD);
 		if (anyListener != null) {
-			LOG.info("Message passed to ua: " + SipId.ANY_METHOD);
+			LOG.debug("Message passed to ua: " + SipId.ANY_METHOD);
 			return anyListener;
 		}
 
-		LOG.warn("No listener found for message.");
+		LOG.warn("No listener found for message: " + msg.getFirstLine());
 		return null;
 	}
 
