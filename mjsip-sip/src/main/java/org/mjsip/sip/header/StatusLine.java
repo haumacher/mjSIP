@@ -23,8 +23,7 @@
 
 package org.mjsip.sip.header;
 
-
-
+import org.mjsip.sip.message.SipResponses;
 
 /** SIP Status-line, i.e. the first line of a response message.
   */
@@ -36,7 +35,12 @@ public class StatusLine {
 	/** Status reason */
 	protected String reason;
 
-	/** Construct StatusLine  */
+	/**
+	 * Constructs a {@link StatusLine}
+	 * 
+	 * @param c
+	 *        The response code, see {@link SipResponses}.
+	 */
 	public StatusLine(int c, String r) {
 		code=c;
 		reason=r;
@@ -66,7 +70,11 @@ public class StatusLine {
 		return "SIP/2.0 "+code+" "+reason+"\r\n";
 	}
 
-	/** Gets status code. */
+	/**
+	 * Gets status code.
+	 * 
+	 * @see SipResponses
+	 */
 	public int getCode() {
 		return code;
 	}

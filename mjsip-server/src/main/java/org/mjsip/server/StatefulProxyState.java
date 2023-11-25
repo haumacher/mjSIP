@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionId;
 import org.mjsip.sip.transaction.Transaction;
@@ -63,7 +64,7 @@ public class StatefulProxyState {
 		s_clients.put(sid,new HashSet());
 		SipMessage request=new SipMessage(ts.getRequestMessage());
 		//printlog("creating a possible server 408 final response",LogWriter.LEVEL_LOW);
-		SipMessage resp=sip_provider.messageFactory().createResponse(request,408,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(request,SipResponses.REQUEST_TIMEOUT,null,null);
 		//printlog("DEBUG: addServer()\r\n"+resp,LogWriter.LEVEL_LOW);
 		s_response.put(sid,resp);
 	}
@@ -80,7 +81,7 @@ public class StatefulProxyState {
 		s_clients.put(sid,clients);
 		SipMessage request=new SipMessage(ts.getRequestMessage());
 		//printlog("creating a possible server 408 final response",LogWriter.LEVEL_LOW);
-		SipMessage resp=sip_provider.messageFactory().createResponse(request,408,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(request, SipResponses.REQUEST_TIMEOUT,null,null);
 		//printlog("DEBUG addClient():\r\n"+resp,LogWriter.LEVEL_LOW);
 		s_response.put(sid,resp);
 	}

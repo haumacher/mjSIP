@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
@@ -84,7 +85,8 @@ public class InviteTransactionServer extends TransactionServer {
 		sip_provider.addSelectiveListener(transaction_id,this);
 		// automatically send "100 Tryng" response and go to STATE_PROCEEDING
 		if (auto_trying) {
-			SipMessage trying100=sip_provider.messageFactory().createResponse(request,100,null,null);
+			SipMessage trying100 = sip_provider.messageFactory().createResponse(request, SipResponses.TRYING, null,
+					null);
 			respondWith(trying100); // this method makes it going automatically to STATE_PROCEEDING
 		}
 	}  
@@ -100,7 +102,8 @@ public class InviteTransactionServer extends TransactionServer {
 		sip_provider.addSelectiveListener(transaction_id,this);
 		// automatically send "100 Tryng" response and go to STATE_PROCEEDING
 		if (auto_trying) {
-			SipMessage trying100=sip_provider.messageFactory().createResponse(request,100,null,null);
+			SipMessage trying100 = sip_provider.messageFactory().createResponse(request, SipResponses.TRYING, null,
+					null);
 			respondWith(trying100); // this method makes it going automatically to STATE_PROCEEDING
 		}
 	}  
@@ -186,7 +189,8 @@ public class InviteTransactionServer extends TransactionServer {
 					changeStatus(STATE_TRYING);
 					// automatically send "100 Tryng" response and go to STATE_PROCEEDING
 					if (auto_trying) {
-						SipMessage trying100=sip_provider.messageFactory().createResponse(request,100,null,null);
+						SipMessage trying100 = sip_provider.messageFactory().createResponse(request,
+								SipResponses.TRYING, null, null);
 						respondWith(trying100); // this method makes it going automatically to STATE_PROCEEDING
 					}
 					if (invite_ts_listener!=null) invite_ts_listener.onTransRequest(this,msg);

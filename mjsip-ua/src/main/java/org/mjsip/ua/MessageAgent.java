@@ -26,6 +26,7 @@ package org.mjsip.ua;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
@@ -97,7 +98,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		//printLog("Message received: "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')));
 		if (msg.isRequest()) {
-			(new TransactionServer(sip_provider,msg,null)).respondWith(sip_provider.messageFactory().createResponse(msg,200,null,null));
+			(new TransactionServer(sip_provider,msg,null)).respondWith(sip_provider.messageFactory().createResponse(msg,SipResponses.OK,null,null));
 			NameAddress sender=msg.getFromHeader().getNameAddress();
 			NameAddress recipient=msg.getToHeader().getNameAddress();
 			String subject=null;

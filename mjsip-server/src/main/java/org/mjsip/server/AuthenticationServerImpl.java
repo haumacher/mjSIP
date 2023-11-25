@@ -29,6 +29,7 @@ import org.mjsip.sip.header.AuthorizationHeader;
 import org.mjsip.sip.header.ProxyAuthenticateHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.ByteUtils;
@@ -162,9 +163,7 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 					rand=pickRandBytes();        
 						
 					if (!is_authorized) {
-						// authentication/authorization failed
-						int result=403; // response code 403 ("Forbidden")
-						err_resp=sip_provider.messageFactory().createResponse(msg,result,null,null);
+						err_resp=sip_provider.messageFactory().createResponse(msg,SipResponses.FORBIDDEN,null,null);
 						LOG.info("Login error: Authentication of '" + user + "' failed");
 					}
 					else {

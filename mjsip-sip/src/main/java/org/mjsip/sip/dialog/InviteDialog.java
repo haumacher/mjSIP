@@ -364,7 +364,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * This method should be called when the InviteDialog is in D_INVITED or D_ReINVITED state. */
 	public void ring() {
 		LOG.debug("inside ring()");
-		respond(180,null,null,null,null);
+		respond(SipResponses.RINGING, null, null, null, null);
 	}
 
 
@@ -372,7 +372,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * This method should be called when the InviteDialog is in D_INVITED or D_ReINVITED state. */
 	public void accept(NameAddress contact, SdpMessage sdp) {
 		LOG.debug("inside accept(contact,sdp)");
-		respond(200, null, contact, "application/sdp", sdp.toString().getBytes());
+		respond(SipResponses.OK, null, contact, "application/sdp", sdp.toString().getBytes());
 	}
 
 	
@@ -383,31 +383,48 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		//refuse(480,null);
 		//refuse(603,null);
 		//refuse(403,null);
-		refuse(486,null);
+		refuse(SipResponses.BUSY_HERE, null);
 	}
 
 
-	/** Refuses the incoming call.
-	  * This method should be called when the InviteDialog is in D_INVITED or D_ReINVITED state. */
+	/**
+	 * Refuses the incoming call. This method should be called when the InviteDialog is in D_INVITED
+	 * or D_ReINVITED state.
+	 * 
+	 * @param code
+	 *        See {@link SipResponses}.
+	 */
 	public void refuse(int code, String reason) {
 		LOG.debug("inside refuse("+code+","+((reason!=null)?reason:SipResponses.reasonOf(code))+")");
 		respond(code,reason,null,null,null);
 	}
 
 
-	/** Redirects the incoming call
-	  * , specifing the <i>code</i> and <i>reason</i>.
-	  * This method can be called when the InviteDialog is in D_INVITED or D_ReINVITED state. */
+	/**
+	 * Redirects the incoming call , specifing the <i>code</i> and <i>reason</i>. This method can be
+	 * called when the InviteDialog is in D_INVITED or D_ReINVITED state.
+	 * 
+	 * @param code
+	 *        See {@link SipResponses}.
+	 */
 	public void redirect(int code, String reason, NameAddress contact) {
 		LOG.debug("inside redirect("+code+","+reason+","+contact.toString()+")");
 		respond(code,reason,contact,null,null);
 	}
 
 
-	/** Responds with <i>code</i> and <i>reason</i>.
-	 * This method can be called when the InviteDialog is in D_INVITED, D_ReINVITED states. 
-	 * @param content_type the type of the content to be included within the response (or <i>null</i> in case of no message body)
-	 * @param body the message body to be included within the response message, or <i>null</i> */
+	/**
+	 * Responds with <i>code</i> and <i>reason</i>. This method can be called when the InviteDialog
+	 * is in D_INVITED, D_ReINVITED states.
+	 * 
+	 * @param code
+	 *        See {@link SipResponses}.
+	 * @param content_type
+	 *        the type of the content to be included within the response (or <i>null</i> in case of
+	 *        no message body)
+	 * @param body
+	 *        the message body to be included within the response message, or <i>null</i>
+	 */
 	public void respond(int code, String reason, NameAddress contact, String content_type, byte[] body) {
 		LOG.debug("inside respond("+code+","+reason+")");
 		if (statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED)) {
@@ -732,7 +749,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void acceptUpdate(SdpMessage sdp) {
 		LOG.debug("inside acceptUpdate(req)");
 		if (update_ts!=null) {
-			SipMessage resp=sipMessageFactory.createResponse(update_ts.getRequestMessage(),200,null,null);
+			SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(), SipResponses.OK, null,
+					null);
 			if (sdp!=null) resp.setSdpBody(sdp);
 			respond(resp);
 		}
@@ -743,7 +761,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	public void refuseUpdate() {
 		LOG.debug("inside refuseUpdate(req)");
 		if (update_ts!=null) {
-			SipMessage resp=sipMessageFactory.createResponse(update_ts.getRequestMessage(),504,null,null);
+			SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(),
+					SipResponses.SERVER_TIME_OUT, null, null);
 			respond(resp);
 		}
 	} 
@@ -805,7 +824,8 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 			// SESSION TIMERS
 			if (msg.hasSupportedHeader() && msg.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && msg.hasSessionExpiresHeader() && msg.getSessionExpiresHeader().getDeltaSeconds()<sip_provider.sipConfig().getMinSessionInterval()) {
-				SipMessage resp=sipMessageFactory.createResponse(msg,422,null,null);
+				SipMessage resp = sipMessageFactory.createResponse(msg, SipResponses.SESSION_INTERVAL_TOO_SMALL, null,
+						null);
 				resp.setMinSEHeader(new MinSEHeader(sip_provider.sipConfig().getMinSessionInterval()));
 				(new TransactionServer(sip_provider,msg,null)).respondWith(resp);
 				return;
@@ -862,7 +882,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				changeStatus(DialogStatus.D_BYED);
 				bye_ts=new TransactionServer(sip_provider,msg,this);
 				// automatically send a 200 OK
-				SipMessage resp=sipMessageFactory.createResponse(msg,200,null,null);
+				SipMessage resp = sipMessageFactory.createResponse(msg, SipResponses.OK, null, null);
 				respond(resp);
 				if (listener!=null) listener.onDlgBye(this,msg);
 				changeStatus(DialogStatus.D_CLOSE);
@@ -884,7 +904,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 //				}
 			} else if (msg.isInfo()) {
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
-				ts.respondWith(sipMessageFactory.createResponse(msg,200,null,null));
+				ts.respondWith(sipMessageFactory.createResponse(msg, SipResponses.OK, null, null));
 				String info_package=(msg.hasInfoPackageHeader())? info_package=msg.getInfoPackageHeader().getPackage() : null;
 				if (listener!=null) listener.onDlgInfo(this,info_package,msg.getContentTypeHeader().getContentType(),msg.getBody(),msg);
 			} else if (msg.isPrack()) {
@@ -900,7 +920,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			} else if (msg.isRequest()) {
 				// if any other request
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
-				ts.respondWith(sipMessageFactory.createResponse(msg,405,null,null));
+				ts.respondWith(sipMessageFactory.createResponse(msg, SipResponses.METHOD_NOT_ALLOWED, null, null));
 			}
 		} else if (msg.isResponse()) {
 			if (!verifyStatus("Response method requires CALL state.", statusIs(DialogStatus.D_CALL))) {
@@ -1135,12 +1155,13 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 						invite_req.getFromHeader().getNameAddress(), invite_req.getSdpBody(), invite_req);
 		} else if (ts.getTransactionMethod().equals(SipMethods.CANCEL)) {
 			// always responds with 200 OK to the CANCEL 
-			ts.respondWith(sipMessageFactory.createResponse(req,200,null,null));
+			ts.respondWith(sipMessageFactory.createResponse(req, SipResponses.OK, null, null));
 
 			// if in "invited" state, respond with 487 Request Terminated
 			if (statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED)) {
 				// automatically sends a 487 Cancelled
-				SipMessage resp=sipMessageFactory.createResponse(invite_req,487,null,null);
+				SipMessage resp = sipMessageFactory.createResponse(invite_req, SipResponses.REQUEST_TERMINATED, null,
+						null);
 				respond(resp);
 				if (listener!=null) listener.onDlgCancel(this,req);
 			}
@@ -1166,7 +1187,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				if (!isExtensionSupported(option_tag)) unsupported_option_tags.addElement(option_tag);
 			}
 			if (unsupported_option_tags.size()>0) {
-				refuse_resp=sipMessageFactory.createResponse(invite,420,null,null);
+				refuse_resp = sipMessageFactory.createResponse(invite, SipResponses.BAD_EXTENSION, null, null);
 				refuse_resp.setUnsupportedHeader(new UnsupportedHeader(unsupported_option_tags));
 			}
 		}

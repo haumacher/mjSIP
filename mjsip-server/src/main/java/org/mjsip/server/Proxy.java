@@ -36,6 +36,7 @@ import org.mjsip.sip.header.RequestLine;
 import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.ConfiguredScheduler;
@@ -74,8 +75,7 @@ public class Proxy extends Registrar {
 			// send a stateless error response
 			//int result=501; // response code 501 ("Not Implemented")
 			//int result=485; // response code 485 ("Ambiguous");
-			int result=484; // response code 484 ("Address Incomplete");
-			SipMessage resp=sip_provider.messageFactory().createResponse(msg,result,null,null);
+			SipMessage resp=sip_provider.messageFactory().createResponse(msg,SipResponses.ADDRESS_INCOMPLETE,null,null);
 			sip_provider.sendMessage(resp);
 		}
 	}
@@ -108,7 +108,7 @@ public class Proxy extends Registrar {
 		}
 		if (targets.isEmpty()) {
 			LOG.info("No target found, message discarded");
-			if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
+			if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,SipResponses.NOT_FOUND,null,null));
 			return;
 		}           
 		
@@ -134,7 +134,7 @@ public class Proxy extends Registrar {
 			// check whether the caller or callee is a local user 
 			if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress())) {
 				LOG.info("both caller and callee are not registered with the local server: proxy denied.");
-				sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,503,null,null));
+				sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,SipResponses.SERVICE_UNAVAILABLE,null,null));
 				return;
 			}
 		}

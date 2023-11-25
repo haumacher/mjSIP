@@ -33,6 +33,7 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.RequestLine;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.InviteTransactionServer;
@@ -142,7 +143,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		if (targets.isEmpty()) {
 			LOG.info("No target found, message discarded");
 			// the msg is not an ACK (already checked)
-			sendStatefulServerResponse(ts,sip_provider.messageFactory().createResponse(msg,404,null,null));
+			sendStatefulServerResponse(ts,sip_provider.messageFactory().createResponse(msg,SipResponses.NOT_FOUND,null,null));
 			return;
 		}
 
@@ -184,7 +185,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			// check whether the caller or callee is a local user 
 			if (!isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress()) && !isResponsibleFor(msg.getToHeader().getNameAddress().getAddress())) {
 				LOG.info("both caller and callee are not registered with the local server: proxy denied.");
-				ts.respondWith(sip_provider.messageFactory().createResponse(msg,503,null,null));
+				ts.respondWith(sip_provider.messageFactory().createResponse(msg,SipResponses.SERVICE_UNAVAILABLE,null,null));
 				return;
 			}
 		}

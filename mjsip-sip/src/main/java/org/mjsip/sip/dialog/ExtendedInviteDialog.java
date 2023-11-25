@@ -38,6 +38,7 @@ import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
 import org.mjsip.sip.transaction.InviteTransactionClient;
@@ -191,7 +192,12 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	}
 
 
-	/** Sends a new NOTIFY within the dialog */
+	/**
+	 * Sends a new NOTIFY within the dialog
+	 * 
+	 * @param code
+	 *        See {@link SipResponses}.
+	 */
 	public void notify(int code, String reason) {
 		notify((new StatusLine(code,reason)).toString());
 	}
@@ -230,7 +236,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Accepts a REFER request. */
 	public void acceptRefer(SipMessage req) {
 		LOG.debug("inside acceptRefer(refer)");
-		SipMessage resp=sip_provider.messageFactory().createResponse(req,202,null,null);
+		SipMessage resp = sip_provider.messageFactory().createResponse(req, SipResponses.ACCEPTED, null, null);
 		respond(resp);
 	} 
 
@@ -238,7 +244,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	/** Refuses a REFER request. */
 	public void refuseRefer(SipMessage req) {
 		LOG.debug("inside refuseRefer(refer)");
-		SipMessage resp=sip_provider.messageFactory().createResponse(req,603,null,null);
+		SipMessage resp = sip_provider.messageFactory().createResponse(req, SipResponses.DECLINE, null, null);
 		respond(resp);
 	} 
 
@@ -268,7 +274,7 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 			} 
 			else
 			if (msg.isNotify()) {
-				SipMessage resp=sip_provider.messageFactory().createResponse(msg,200,null,null);
+				SipMessage resp = sip_provider.messageFactory().createResponse(msg, SipResponses.OK, null, null);
 				respond(resp);
 				String event=msg.getEventHeader().getValue();
 				String sipfragment=msg.getStringBody();

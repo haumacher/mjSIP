@@ -455,7 +455,7 @@ public abstract class ServerEngine implements SipProviderListener {
 		// Max-Forwads
 		if (err_code==0)  {
 			MaxForwardsHeader mfh=msg.getMaxForwardsHeader();
-			if (mfh!=null && mfh.getNumber()==0) err_code=483;
+			if (mfh!=null && mfh.getNumber()==0) err_code=SipResponses.TOO_MANY_HOPS;
 		}
 		// Loops
 		// Insert also a temporary Loop-Tag header field in order to correctly compose
@@ -478,11 +478,11 @@ public abstract class ServerEngine implements SipProviderListener {
 					ViaHeader vh=ViaHeader.parse(v.elementAt(i).getValue());
 					if (sip_provider.getViaAddress().equals(vh.getHost()) && sip_provider.getPort()==vh.getPort()) {
 						// possible loop
-						if (!vh.hasBranch()) err_code=482;
+						if (!vh.hasBranch()) err_code=SipResponses.LOOP_DETECTED;
 						else {
 							// check branch
 							String branch=vh.getBranch();
-							if (branch.indexOf(loop_tag,branch.length()-loop_tag.length())>=0) err_code=482;
+							if (branch.indexOf(loop_tag,branch.length()-loop_tag.length())>=0) err_code=SipResponses.LOOP_DETECTED;
 						}
 					}
 				}

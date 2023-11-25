@@ -30,6 +30,7 @@ import org.mjsip.sip.dialog.ExtendedInviteDialogListener;
 import org.mjsip.sip.dialog.InviteDialog;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +158,12 @@ public class ExtendedCall extends Call {
 		}
 	}
 
-	/** Notifies about the satus of an other call. */
+	/**
+	 * Notifies about the satus of an other call.
+	 * 
+	 * @param code
+	 *        See {@link SipResponses}.
+	 */
 	public void notify(int code, String reason) {
 		((ExtendedInviteDialog)dialog).notify(code,reason);
 	}

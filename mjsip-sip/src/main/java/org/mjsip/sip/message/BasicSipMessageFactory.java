@@ -210,15 +210,26 @@ public abstract class BasicSipMessageFactory {
 	//}
 
 
-	/** Creates a SIP response message.
-	  * @param req the request message
-	  * @param code the response code
-	  * @param reason the response reason
-	  * @param local_tag tag in the <i>To</i> header field, or <i>null</i>
-	  * @param contact contact address, that is the name address in the <i>Contact</i> header field, or <i>null</i>
-	  * @param content_type content type, or <i>null</i> in case of no message body
-	  * @param body message content (body), or <i>null</i>
-	  * @return the new response message */
+	/**
+	 * Creates a SIP response message.
+	 * 
+	 * @param req
+	 *        the request message
+	 * @param code
+	 *        the response code, see {@link SipResponses}.
+	 * @param reason
+	 *        the response reason
+	 * @param local_tag
+	 *        tag in the <i>To</i> header field, or <i>null</i>
+	 * @param contact
+	 *        contact address, that is the name address in the <i>Contact</i> header field, or
+	 *        <i>null</i>
+	 * @param content_type
+	 *        content type, or <i>null</i> in case of no message body
+	 * @param body
+	 *        message content (body), or <i>null</i>
+	 * @return the new response message
+	 */
 	public SipMessage createResponse(SipMessage req, int code, String reason, String local_tag, NameAddress contact, String content_type, byte[] body) {
 		SipMessage resp=new SipMessage();
 		if (reason==null) reason=SipResponses.reasonOf(code);
@@ -240,13 +251,21 @@ public abstract class BasicSipMessageFactory {
 	}
 
 
-	/** Creates a SIP response message.
-	  * For 2xx responses the local tag is created by using the {@link SipProvider#pickTag(SipMessage req)} method.
-	  * @param req the request message
-	  * @param code the response code
-	  * @param reason the response reason
-	  * @param contact contact address, that is the name address in the <i>Contact</i> header field, or <i>null</i>
-	  * @return the new response message */
+	/**
+	 * Creates a SIP response message. For 2xx responses the local tag is created by using the
+	 * {@link SipProvider#pickTag(SipMessage req)} method.
+	 * 
+	 * @param req
+	 *        the request message
+	 * @param code
+	 *        the response code, see {@link SipResponses}.
+	 * @param reason
+	 *        the response reason
+	 * @param contact
+	 *        contact address, that is the name address in the <i>Contact</i> header field, or
+	 *        <i>null</i>
+	 * @return the new response message
+	 */
 	public SipMessage createResponse(SipMessage req, int code, String reason, NameAddress contact) {
 		//String reason=SipResponses.reasonOf(code);
 		String localtag=null;

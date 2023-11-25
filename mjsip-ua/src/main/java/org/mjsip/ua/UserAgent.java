@@ -43,6 +43,7 @@ import org.mjsip.sip.call.DTMFInfo;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.call.SipUser;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
@@ -604,10 +605,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallTimeout()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
 		LOG.info("NOT FOUND/TIMEOUT");
-		int code=408;
 		String reason="Request Timeout";
 		if (call==call_transfer) {
-			this.call.notify(code,reason);
+			this.call.notify(SipResponses.REQUEST_TIMEOUT,reason);
 			call_transfer=null;
 		}
 		

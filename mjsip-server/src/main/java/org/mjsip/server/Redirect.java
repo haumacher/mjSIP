@@ -29,6 +29,7 @@ import org.mjsip.config.OptionParser;
 import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.header.SipHeaders;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.ConfiguredScheduler;
@@ -60,7 +61,7 @@ public class Redirect extends Registrar {
 
 		if (contacts.isEmpty()) {
 			LOG.info("No target found, message discarded");
-			if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
+			if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,SipResponses.NOT_FOUND,null,null));
 			return;
 		} 
 					 
@@ -68,7 +69,7 @@ public class Redirect extends Registrar {
 		// create the response with all contact URIs, and send it 
 		MultipleHeader mc=new MultipleHeader(SipHeaders.Contact,contacts);
 		mc.setCommaSeparated(true);
-		SipMessage resp=sip_provider.messageFactory().createResponse(msg,302,null,null);
+		SipMessage resp=sip_provider.messageFactory().createResponse(msg,SipResponses.MOVED_TEMPORARILY,null,null);
 		resp.setContacts(mc);
 		sip_provider.sendMessage(resp);      
 	}
@@ -78,7 +79,7 @@ public class Redirect extends Registrar {
 	public void processRequestToRemoteUA(SipMessage msg) {
 		LOG.debug("inside processRequestToRemoteUA(msg)");
 		LOG.info("request not for local server");
-		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,404,null,null));
+		if (!msg.isAck()) sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,SipResponses.NOT_FOUND,null,null));
 		else LOG.info("message discarded");
 	}   
 

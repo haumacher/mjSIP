@@ -33,6 +33,7 @@ import org.mjsip.sip.dialog.InviteDialog;
 import org.mjsip.sip.dialog.InviteDialogListener;
 import org.mjsip.sip.header.MultipleHeader;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
 
@@ -228,7 +229,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	 * @param content_type the type of the content to be included within the response (or <i>null</i> in case of no message body)
 	 * @param body the message body to be included within the response, or <i>null</i>. In an offer/answer model, this body represents the answer to the offer contained in the 1xx response message */
 	public void progress(String content_type, byte[] body) {
-		if (dialog!=null) dialog.respond(183,null,null,content_type,body);
+		if (dialog != null)
+			dialog.respond(SipResponses.SESSION_PROGRESS, null, null, content_type, body);
 	}
 
 	/** Respond to a incoming call (invite) with 183 progress.
@@ -261,7 +263,8 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Redirects the incoming call.
 	  * @param redirect_url the new address where the call is redirected to */
 	public void redirect(NameAddress redirect_url) {
-		if (dialog!=null) dialog.redirect(302,"Moved Temporarily",redirect_url);
+		if (dialog != null)
+			dialog.redirect(SipResponses.MOVED_TEMPORARILY, "Moved Temporarily", redirect_url);
 		changeState(CallState.C_CLOSED);
 	}
 

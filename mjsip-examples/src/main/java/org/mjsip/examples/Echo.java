@@ -33,6 +33,7 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.header.RouteHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.MethodId;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
@@ -98,7 +99,7 @@ public class Echo extends RegisteringMultipleUAS {
 			LOG.info("message received: "+new String(content));
 			// respond
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
-			ts.respondWith(200);
+			ts.respondWith(SipResponses.OK);
 			// reply
 			SipMessage reply=sip_provider.messageFactory().createMessageRequest(sender,recipient,sip_provider.pickCallId(),null,content_type,content);
 			if (force_reverse_route) {

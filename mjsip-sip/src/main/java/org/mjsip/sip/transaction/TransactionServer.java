@@ -25,6 +25,7 @@ package org.mjsip.sip.transaction;
 import java.util.concurrent.ScheduledFuture;
 
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.ConnectionId;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.TransactionServerId;
@@ -104,7 +105,12 @@ public class TransactionServer extends Transaction {
 		}
 	}  
 
-	/** Sends a response message */
+	/**
+	 * Sends a response message
+	 * 
+	 * @param code
+	 *        See {@link SipResponses}.
+	 */
 	public void respondWith(int code) {
 		SipMessage resp=sip_provider.messageFactory().createResponse(request,code,null,null);
 		respondWith(resp);

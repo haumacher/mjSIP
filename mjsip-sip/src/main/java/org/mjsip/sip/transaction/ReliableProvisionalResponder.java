@@ -33,6 +33,7 @@ import org.mjsip.sip.header.RAckHeader;
 import org.mjsip.sip.header.RSeqHeader;
 import org.mjsip.sip.header.RequireHeader;
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
@@ -122,7 +123,7 @@ public class ReliableProvisionalResponder {
 			if (rh!=null && rh.getCSeqSequenceNumber()==sh.getSequenceNumber() && rh.getCSeqMethod().equals(sh.getMethod()) && rh.getRAckSequenceNumber()==resp.getRSeqHeader().getSequenceNumber()) {
 				stopResponseRetransmission();
 				responses.removeElementAt(0);
-				(new TransactionServer(sip_provider, prack, null)).respondWith(200);
+				(new TransactionServer(sip_provider, prack, null)).respondWith(SipResponses.OK);
 				if (listener!=null) listener.onReliableProvisionalResponseConfirmation(this,resp,prack);
 				if (retransmission_to==null && hasPendingResponses()) sendNextResponse();
 			}
