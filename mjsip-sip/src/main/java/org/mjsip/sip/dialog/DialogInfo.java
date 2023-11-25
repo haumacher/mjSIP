@@ -97,23 +97,6 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	boolean secure; 
 
 
-	/** Session interval.
-	  * The maximum amount of time that can occur between session refresh requests
-	  * in a dialog before the session will be considered timed out. */
-	//int session_interval=0;
-	int session_interval;
-
-	/** Session expiration.
-	  * The time at which an element will consider the session timed out,
-	  * if no successful session refresh transaction occurs beforehand. */
-	long session_expiration=0; 
-
-	/** Refresher.
-	  * Who is doing the refreshing -- UAC or UAS. */
-	String refresher=null; 
-
-
-
 	// **************************** Costructors *************************** 
 
 	/** Creates a new DialogInfo.
@@ -136,7 +119,6 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Creates a new empty DialogInfo. */
 	public DialogInfo(SipProvider provider) {
 		this.sip_provider=provider;
-		session_interval=sip_provider.sipConfig().getDefaultSessionInterval();
 
 		this.local_name=null;
 		this.remote_name=null;
@@ -233,32 +215,6 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	/** Whether secure flag is set.
 	  * That is whether the current dialog should be secured. */
 	public boolean isSecure() { return secure; }
-
-
-	/** Sets the session interval.
-	  * That is the maximum amount of time that can occur between session refresh requests
-	  * in a dialog before the session will be considered timed out. */
-	public void setSessionInterval(int session_interval) { this.session_interval=session_interval; }
-	/** Gets the session interval.
-	  * That is the maximum amount of time that can occur between session refresh requests
-	  * in a dialog before the session will be considered timed out. */
-	public int getSessionInterval() { return session_interval; }
-
-	/** Sets the session expiration.
-	  * That is the time at which an element will consider the session timed out,
-	  * if no successful session refresh transaction occurs beforehand. */
-	public void setSessionExpiration(long session_expiration) { this.session_expiration=session_expiration; }
-	/** Gets the session expiration.
-	  * That is the time at which an element will consider the session timed out,
-	  * if no successful session refresh transaction occurs beforehand. */
-	public long getSessionExpiration() { return session_expiration; }
-
-	/** Sets the refresher.
-	  * That is who is doing the refreshing -- UAC or UAS. */
-	public void setRefresher(String refresher) { this.refresher=refresher; }
-	/** Sets the refresher.
-	  * That is who is doing the refreshing -- UAC or UAS. */
-	public String getRefresher() { return refresher; }
 
 
 	/** Updates empty attributes (tags, route set) and mutable attributes (cseqs, contacts), based on a new message.

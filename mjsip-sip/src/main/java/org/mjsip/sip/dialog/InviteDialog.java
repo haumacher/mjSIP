@@ -46,6 +46,7 @@ import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.sip.message.SipMethods;
 import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.ConnectionId;
+import org.mjsip.sip.provider.SipOptions;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.sip.provider.SipStack;
@@ -106,7 +107,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	TransactionServer update_ts;
 
 	/** The InviteDialog listener */
-	InviteDialogListener listener;
+	private final InviteDialogListener listener;
 	
 
 	/** Whether offer/answer are in INVITE/200_OK */
@@ -130,6 +131,26 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	private final SipMessageFactory sipMessageFactory;
 
+	/**
+	 * The maximum amount of time that can occur between session refresh requests in a dialog before
+	 * the session will be considered timed out.
+	 */
+	private int session_interval;
+
+	/**
+	 * The time at which an element will consider the session timed out, if no successful session
+	 * refresh transaction occurs beforehand.
+	 */
+	private long session_expiration = 0;
+
+	/**
+	 * Who is doing the refreshing -- UAC or UAS.
+	 * 
+	 * @see SessionExpiresHeader#PARAM_REFRESHER_UAC
+	 * @see SessionExpiresHeader#PARAM_REFRESHER_UAS
+	 */
+	private String refresher = null;
+
 	// ************************** Public methods **************************
 
 	/** Creates a new InviteDialog.
@@ -137,8 +158,18 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param listener invite dialog listener */
 	public InviteDialog(SipProvider sip_provider, InviteDialogListener listener) {
 		super(sip_provider);
+		this.listener = listener;
 		this.sipMessageFactory = sip_provider.messageFactory();
-		init(listener);
+
+		SipOptions config = sip_provider.sipConfig();
+		session_interval = config.getDefaultSessionInterval();
+		supported_option_tags = config.getSupportedOptionTags();
+		required_option_tags = config.getRequiredOptionTags();
+		allowed_methods = config.getAllowedMethods();
+
+		this.invite_offer = true;
+
+		changeStatus(DialogStatus.D_INIT);
 	}
 
 
@@ -147,25 +178,13 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * @param invite the already received INVITE message that creates this dialog
 	  * @param listener invite dialog listener */
 	public InviteDialog(SipProvider sip_provider, SipMessage invite, InviteDialogListener listener) {
-		super(sip_provider);
-		this.sipMessageFactory = sip_provider.messageFactory();
-		init(listener);      
+		this(sip_provider, listener);
+
 		// changeStatus(DialogStatus.D_INVITED);
 		//this.invite_req=invite;
 		//updateDialogInfo(false,invite);
 		//invite_ts=new InviteTransactionServer(sip_provider,invite,this);
 		onReceivedMessage(sip_provider,invite);
-	}
-
-	
-	/** Inits the InviteDialog. */
-	private void init(InviteDialogListener listener) {
-		this.listener=listener;
-		this.invite_offer=true;
-		supported_option_tags=sip_provider.sipConfig().getSupportedOptionTags();
-		required_option_tags=sip_provider.sipConfig().getRequiredOptionTags();
-		allowed_methods=sip_provider.sipConfig().getAllowedMethods();
-		changeStatus(DialogStatus.D_INIT);
 	}
 
 	/** Gets the invite message */   
@@ -222,6 +241,51 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		this.info_packages=info_packages;
 	}
 
+	/**
+	 * Sets the session interval. That is the maximum amount of time that can occur between session
+	 * refresh requests in a dialog before the session will be considered timed out.
+	 */
+	public void setSessionInterval(int session_interval) {
+		this.session_interval = session_interval;
+	}
+
+	/**
+	 * Gets the session interval. That is the maximum amount of time that can occur between session
+	 * refresh requests in a dialog before the session will be considered timed out.
+	 */
+	public int getSessionInterval() {
+		return session_interval;
+	}
+
+	/**
+	 * Sets the session expiration. That is the time at which an element will consider the session
+	 * timed out, if no successful session refresh transaction occurs beforehand.
+	 */
+	public void setSessionExpiration(long session_expiration) {
+		this.session_expiration = session_expiration;
+	}
+
+	/**
+	 * Gets the session expiration. That is the time at which an element will consider the session
+	 * timed out, if no successful session refresh transaction occurs beforehand.
+	 */
+	public long getSessionExpiration() {
+		return session_expiration;
+	}
+
+	/**
+	 * Sets the refresher. That is who is doing the refreshing -- UAC or UAS.
+	 */
+	public void setRefresher(String refresher) {
+		this.refresher = refresher;
+	}
+
+	/**
+	 * Sets the refresher. That is who is doing the refreshing -- UAC or UAS.
+	 */
+	public String getRefresher() {
+		return refresher;
+	}
 
 	/** Starts a new InviteTransactionServer. */
 	public void listen() {
@@ -507,31 +571,34 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 				// SESSION TIMERS
 				if (invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && invite_req.hasSessionExpiresHeader()) {
-					SessionExpiresHeader sh=invite_req.getSessionExpiresHeader();
-					int delta_seconds=sh.getDeltaSeconds();
-					if (session_interval>0 && delta_seconds>session_interval) delta_seconds=session_interval;
-					else session_interval=delta_seconds;
-					refresher=SessionExpiresHeader.PARAM_REFRESHER_UAC;
-					RequireHeader rh=resp.getRequireHeader();
-					if (rh==null) rh=new RequireHeader(SipStack.OTAG_timer);
-					if (!rh.hasOptionTag(SipStack.OTAG_timer)) rh.addOptionTag(SipStack.OTAG_timer);
-					resp.setRequireHeader(rh);
-					if (refresher==null) refresher=SessionExpiresHeader.PARAM_REFRESHER_UAS;
-					resp.setSessionExpiresHeader(new SessionExpiresHeader(delta_seconds,refresher));
-				} else if (session_interval > 0) {
-					MinSEHeader mh=invite_req.getMinSEHeader();
-					int min_seconds=(mh!=null)? mh.getDeltaSeconds() : sip_provider.sipConfig().getMinSessionInterval();
-					if (min_seconds>session_interval) session_interval=min_seconds;
-					if (invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer)) {
-						RequireHeader rh=resp.getRequireHeader();
-						if (rh!=null) {
-							if (!rh.hasOptionTag(SipStack.OTAG_timer)) rh.addOptionTag(SipStack.OTAG_timer);
-						}
-						else rh=new RequireHeader(SipStack.OTAG_timer);
-						resp.setRequireHeader(rh);
+					SessionExpiresHeader requestExpiresHeader = invite_req.getSessionExpiresHeader();
+					int sessionTimeout = requestExpiresHeader.getDeltaSeconds();
+					if (session_interval > 0 && sessionTimeout > session_interval) {
+						sessionTimeout = session_interval;
+					} else {
+						session_interval = sessionTimeout;
 					}
-					refresher=SessionExpiresHeader.PARAM_REFRESHER_UAS;
-					resp.setSessionExpiresHeader(new SessionExpiresHeader(session_interval,refresher));
+
+					refresher = requestExpiresHeader.getRefresher();
+					if (refresher == null) {
+						refresher = SessionExpiresHeader.PARAM_REFRESHER_UAS;
+					}
+
+					addRequireTimer(resp);
+					resp.setSessionExpiresHeader(new SessionExpiresHeader(sessionTimeout, refresher));
+				} else if (session_interval > 0) {
+					MinSEHeader minHeader = invite_req.getMinSEHeader();
+					int min_seconds = (minHeader != null) ? minHeader.getDeltaSeconds()
+							: sip_provider.sipConfig().getMinSessionInterval();
+					if (min_seconds > session_interval) {
+						session_interval = min_seconds;
+					}
+					if (invite_req.hasSupportedHeader()
+							&& invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer)) {
+						addRequireTimer(resp);
+					}
+					refresher = SessionExpiresHeader.PARAM_REFRESHER_UAS;
+					resp.setSessionExpiresHeader(new SessionExpiresHeader(session_interval, refresher));
 				}
 				ConnectionId conn_id=invite_ts.getTransportConnId();
 				ack_ts = new AckTransactionServer(sip_provider, conn_id, invite_req, resp, this);
@@ -569,6 +636,16 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			}
 			bye_ts.respondWith(resp);
 		}
+	}
+
+	private void addRequireTimer(SipMessage resp) {
+		RequireHeader requireHeader = resp.getRequireHeader();
+		if (requireHeader == null) {
+			requireHeader = new RequireHeader(SipStack.OTAG_timer);
+		} else if (!requireHeader.hasOptionTag(SipStack.OTAG_timer)) {
+			requireHeader.addOptionTag(SipStack.OTAG_timer);
+		}
+		resp.setRequireHeader(requireHeader);
 	} 
   
 
