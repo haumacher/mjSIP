@@ -129,11 +129,6 @@ public final class SipId extends Identifier {
 		return new SipId(msg.getCSeqHeader().getMethod());
 	}
 
-	/** Creates a void SipId. */
-	private SipId() {
-		super();
-	}
-
 	/** Creates a new SipId.
 	  * @param str_id the string value of the identifier */
 	private SipId(String str_id) {

@@ -20,25 +20,14 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.zoolu.util;
-
-
-
 
 /** A generic identifier that has an unique string representation.
   */
 public class Identifier {
 	
 	/** String value of the identifier */   
-	protected String id;
-
-
-
-	/** Creates a void Identifier. */
-	protected Identifier() {
-		
-	}
+	private final String id;
 
 	/** Creates a new Identifier.
 	  * @param id string value of the identifier */

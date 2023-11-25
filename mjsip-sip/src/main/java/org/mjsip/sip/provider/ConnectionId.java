@@ -82,6 +82,7 @@ public class ConnectionId extends Identifier {
 	/** Gets the transport protocol.
 	  * @return the transport protocol */
 	public String getProtocol() {
+		String id = toString();
 		return id.substring(0,id.indexOf(':'));
 	}
 
