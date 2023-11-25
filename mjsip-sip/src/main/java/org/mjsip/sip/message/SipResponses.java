@@ -20,16 +20,158 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.message;
-
-
-
 
 /** All raeson-phrases of SIP response codes, according to the IANA SIP registry.
   */
 public class SipResponses {
 	
+	public static final int TRYING = 100;
+
+	public static final int RINGING = 180;
+
+	public static final int CALL_BEING_FORWARDED = 181;
+
+	public static final int QUEUED = 182;
+
+	public static final int SESSION_PROGRESS = 183;
+
+	public static final int EARLY_DIALOG_TERMINATED = 199;
+
+
+	public static final int OK = 200;
+
+	public static final int ACCEPTED = 202;
+
+	public static final int NO_NOTIFICATION = 204;
+
+	public static final int MULTIPLE_CHOICES = 300;
+
+	public static final int MOVED_PERMANENTLY = 301;
+
+	public static final int MOVED_TEMPORARILY = 302;
+
+	public static final int USE_PROXY = 305;
+
+	public static final int ALTERNATIVE_SERVICE = 380;
+
+
+	public static final int BAD_REQUEST = 400;
+
+	public static final int UNAUTHORIZED = 401;
+
+	public static final int PAYMENT_REQUIRED = 402;
+
+	public static final int FORBIDDEN = 403;
+
+	public static final int NOT_FOUND = 404;
+
+	public static final int METHOD_NOT_ALLOWED = 405;
+
+	public static final int NOT_ACCEPTABLE = 406;
+
+	public static final int PROXY_AUTHENTICATION_REQUIRED = 407;
+
+	public static final int REQUEST_TIMEOUT = 408;
+
+	public static final int GONE = 410;
+
+	public static final int CONDITIONAL_REQUEST_FAILED = 412;
+
+	public static final int REQUEST_ENTITY_TOO_LARGE = 413;
+
+	public static final int REQUEST_URI_TOO_LONG = 414;
+
+	public static final int UNSUPPORTED_MEDIA_TYPE = 415;
+
+	public static final int UNSUPPORTED_URI_SCHEME = 416;
+
+	public static final int UNKNOWN_RESOURCE_PRIORITY = 417;
+
+	public static final int BAD_EXTENSION = 420;
+
+	public static final int EXTENSION_REQUIRED = 421;
+
+	public static final int SESSION_INTERVAL_TOO_SMALL = 422;
+
+	public static final int INTERVAL_TOO_BRIEF = 423;
+
+	public static final int BAD_LOCATION_INFORMATION = 424;
+
+	public static final int USE_IDENTITY_HEADER = 428;
+
+	public static final int PROVIDE_REFERRER_IDENTITY = 429;
+
+	public static final int FLOW_FAILED = 430;
+
+	public static final int ANONYMITY_DISALLOWED = 433;
+
+	public static final int BAD_IDENTITY_INFO = 436;
+
+	public static final int UNSUPPORTED_CERTIFICATE = 437;
+
+	public static final int INVALID_IDENTITY_HEADER = 438;
+
+	public static final int FIRST_HOP_LACKS_OUTBOUND_SUPPORT = 439;
+
+	public static final int MAX_BREADTH_EXCEEDED = 440;
+
+	public static final int BAD_INFO_PACKAGE = 469;
+
+	public static final int CONSENT_NEEDED = 470;
+
+	public static final int TEMPORARILY_UNAVAILABLE = 480;
+
+	public static final int CALL_TRANSACTION_DOES_NOT_EXIST = 481;
+
+	public static final int LOOP_DETECTED = 482;
+
+	public static final int TOO_MANY_HOPS = 483;
+
+	public static final int ADDRESS_INCOMPLETE = 484;
+
+	public static final int AMBIGUOUS = 485;
+
+	public static final int BUSY_HERE = 486;
+
+	public static final int REQUEST_TERMINATED = 487;
+
+	public static final int NOT_ACCEPTABLE_HERE = 488;
+
+	public static final int BAD_EVENT = 489;
+
+	public static final int REQUEST_PENDING = 491;
+
+	public static final int UNDECIPHERABLE = 493;
+
+	public static final int SECURITY_AGREEMENT_REQUIRED = 494;
+
+
+	public static final int SERVER_INTERNAL_ERROR = 500;
+
+	public static final int NOT_IMPLEMENTED = 501;
+
+	public static final int BAD_GATEWAY = 502;
+
+	public static final int SERVICE_UNAVAILABLE = 503;
+
+	public static final int SERVER_TIME_OUT = 504;
+
+	public static final int VERSION_NOT_SUPPORTED = 505;
+
+	public static final int MESSAGE_TOO_LARGE = 513;
+
+	public static final int PRECONDITION_FAILURE = 580;
+
+
+	public static final int BUSY_EVERYWHERE = 600;
+
+	public static final int DECLINE = 603;
+
+	public static final int DOES_NOT_EXIST_ANYWHERE = 604;
+
+	public static final int NOT_ACCEPTABLE_GLOBAL = 606;
+
 
 	/** Gets the reason phrase of a given response code.
 	  * @param code the response code
@@ -37,87 +179,158 @@ public class SipResponses {
 	public static String reasonOf(int code) {
 		switch (code) {
 			// 1xx Provisional
-			case 100 : return "Trying";
-			case 180 : return "Ringing";
-			case 181 : return "Call Is Being Forwarded";
-			case 182 : return "Queued";
-			case 183 : return "Session Progress";
-			case 199 : return "Early Dialog Terminated";
+			case TRYING:
+				return "Trying";
+			case RINGING:
+				return "Ringing";
+			case CALL_BEING_FORWARDED:
+				return "Call Is Being Forwarded";
+			case QUEUED:
+				return "Queued";
+			case SESSION_PROGRESS:
+				return "Session Progress";
+			case EARLY_DIALOG_TERMINATED:
+				return "Early Dialog Terminated";
 			
 			// 2xx Successful
-			case 200 : return "OK";
-			case 202 : return "Accepted (Deprecated)";
-			case 204 : return "No Notification";
+			case OK:
+				return "OK";
+			case ACCEPTED:
+				return "Accepted (Deprecated)";
+			case NO_NOTIFICATION:
+				return "No Notification";
 			
 			// 3xx Redirection
-			case 300 : return "Multiple Choices";
-			case 301 : return "Moved Permanently";
-			case 302 : return "Moved Temporarily";
-			case 305 : return "Use Proxy";
-			case 380 : return "Alternative Service";
+			case MULTIPLE_CHOICES:
+				return "Multiple Choices";
+			case MOVED_PERMANENTLY:
+				return "Moved Permanently";
+			case MOVED_TEMPORARILY:
+				return "Moved Temporarily";
+			case USE_PROXY:
+				return "Use Proxy";
+			case ALTERNATIVE_SERVICE:
+				return "Alternative Service";
 
 			// 4xx Request Failure
-			case 400 : return "Bad Request";
-			case 401 : return "Unauthorized";
-			case 402 : return "Payment Required";
-			case 403 : return "Forbidden";
-			case 404 : return "Not Found";
-			case 405 : return "Method Not Allowed";
-			case 406 : return "Not Acceptable";
-			case 407 : return "Proxy Authentication Required";
-			case 408 : return "Request Timeout";
-			case 410 : return "Gone";
-			case 412 : return "Conditional Request Failed";
-			case 413 : return "Request Entity Too Large";
-			case 414 : return "Request-URI Too Long";
-			case 415 : return "Unsupported Media Type";
-			case 416 : return "Unsupported URI Scheme";
-			case 417 : return "Unknown Resource-Priority";
-			case 420 : return "Bad Extension";
-			case 421 : return "Extension Required";
-			case 422 : return "Session Interval Too Small";
-			case 423 : return "Interval Too Brief";
-			case 424 : return "Bad Location Information";
-			case 428 : return "Use Identity Header";
-			case 429 : return "Provide Referrer Identity";
-			case 430 : return "Flow Failed";
-			case 433 : return "Anonymity Disallowed";
-			case 436 : return "Bad Identity-Info";
-			case 437 : return "Unsupported Certificate";
-			case 438 : return "Invalid Identity Header";
-			case 439 : return "First Hop Lacks Outbound Support";
-			case 440 : return "Max-Breadth Exceeded";
-			case 469 : return "Bad Info Package";
-			case 470 : return "Consent Needed";
-			case 480 : return "Temporarily Unavailable";
-			case 481 : return "Call/Transaction Does Not Exist";
-			case 482 : return "Loop Detected";
-			case 483 : return "Too Many Hops";
-			case 484 : return "Address Incomplete";
-			case 485 : return "Ambiguous";
-			case 486 : return "Busy Here";
-			case 487 : return "Request Terminated";
-			case 488 : return "Not Acceptable Here";
-			case 489 : return "Bad Event";
-			case 491 : return "Request Pending";
-			case 493 : return "Undecipherable";
-			case 494 : return "Security Agreement Required";
+			case BAD_REQUEST:
+				return "Bad Request";
+			case UNAUTHORIZED:
+				return "Unauthorized";
+			case PAYMENT_REQUIRED:
+				return "Payment Required";
+			case FORBIDDEN:
+				return "Forbidden";
+			case NOT_FOUND:
+				return "Not Found";
+			case METHOD_NOT_ALLOWED:
+				return "Method Not Allowed";
+			case NOT_ACCEPTABLE:
+				return "Not Acceptable";
+			case PROXY_AUTHENTICATION_REQUIRED:
+				return "Proxy Authentication Required";
+			case REQUEST_TIMEOUT:
+				return "Request Timeout";
+			case GONE:
+				return "Gone";
+			case CONDITIONAL_REQUEST_FAILED:
+				return "Conditional Request Failed";
+			case REQUEST_ENTITY_TOO_LARGE:
+				return "Request Entity Too Large";
+			case REQUEST_URI_TOO_LONG:
+				return "Request-URI Too Long";
+			case UNSUPPORTED_MEDIA_TYPE:
+				return "Unsupported Media Type";
+			case UNSUPPORTED_URI_SCHEME:
+				return "Unsupported URI Scheme";
+			case UNKNOWN_RESOURCE_PRIORITY:
+				return "Unknown Resource-Priority";
+			case BAD_EXTENSION:
+				return "Bad Extension";
+			case EXTENSION_REQUIRED:
+				return "Extension Required";
+			case SESSION_INTERVAL_TOO_SMALL:
+				return "Session Interval Too Small";
+			case INTERVAL_TOO_BRIEF:
+				return "Interval Too Brief";
+			case BAD_LOCATION_INFORMATION:
+				return "Bad Location Information";
+			case USE_IDENTITY_HEADER:
+				return "Use Identity Header";
+			case PROVIDE_REFERRER_IDENTITY:
+				return "Provide Referrer Identity";
+			case FLOW_FAILED:
+				return "Flow Failed";
+			case ANONYMITY_DISALLOWED:
+				return "Anonymity Disallowed";
+			case BAD_IDENTITY_INFO:
+				return "Bad Identity-Info";
+			case UNSUPPORTED_CERTIFICATE:
+				return "Unsupported Certificate";
+			case INVALID_IDENTITY_HEADER:
+				return "Invalid Identity Header";
+			case FIRST_HOP_LACKS_OUTBOUND_SUPPORT:
+				return "First Hop Lacks Outbound Support";
+			case MAX_BREADTH_EXCEEDED:
+				return "Max-Breadth Exceeded";
+			case BAD_INFO_PACKAGE:
+				return "Bad Info Package";
+			case CONSENT_NEEDED:
+				return "Consent Needed";
+			case TEMPORARILY_UNAVAILABLE:
+				return "Temporarily Unavailable";
+			case CALL_TRANSACTION_DOES_NOT_EXIST:
+				return "Call/Transaction Does Not Exist";
+			case LOOP_DETECTED:
+				return "Loop Detected";
+			case TOO_MANY_HOPS:
+				return "Too Many Hops";
+			case ADDRESS_INCOMPLETE:
+				return "Address Incomplete";
+			case AMBIGUOUS:
+				return "Ambiguous";
+			case BUSY_HERE:
+				return "Busy Here";
+			case REQUEST_TERMINATED:
+				return "Request Terminated";
+			case NOT_ACCEPTABLE_HERE:
+				return "Not Acceptable Here";
+			case BAD_EVENT:
+				return "Bad Event";
+			case REQUEST_PENDING:
+				return "Request Pending";
+			case UNDECIPHERABLE:
+				return "Undecipherable";
+			case SECURITY_AGREEMENT_REQUIRED:
+				return "Security Agreement Required";
 
 			// 5xx Server Failure
-			case 500 : return "Server Internal Error";
-			case 501 : return "Not Implemented";
-			case 502 : return "Bad Gateway";
-			case 503 : return "Service Unavailable";
-			case 504 : return "Server Time-out";
-			case 505 : return "Version Not Supported";
-			case 513 : return "Message Too Large";
-			case 580 : return "Precondition Failure";
+			case SERVER_INTERNAL_ERROR:
+				return "Server Internal Error";
+			case NOT_IMPLEMENTED:
+				return "Not Implemented";
+			case BAD_GATEWAY:
+				return "Bad Gateway";
+			case SERVICE_UNAVAILABLE:
+				return "Service Unavailable";
+			case SERVER_TIME_OUT:
+				return "Server Time-out";
+			case VERSION_NOT_SUPPORTED:
+				return "Version Not Supported";
+			case MESSAGE_TOO_LARGE:
+				return "Message Too Large";
+			case PRECONDITION_FAILURE:
+				return "Precondition Failure";
 
 			// 6xx Global Failures
-			case 600 : return "Busy Everywhere";
-			case 603 : return "Decline";
-			case 604 : return "Does Not Exist Anywhere";
-			case 606 : return "Not Acceptable";
+			case BUSY_EVERYWHERE:
+				return "Busy Everywhere";
+			case DECLINE:
+				return "Decline";
+			case DOES_NOT_EXIST_ANYWHERE:
+				return "Does Not Exist Anywhere";
+			case NOT_ACCEPTABLE_GLOBAL:
+				return "Not Acceptable";
 		}
 		
 		// else     
