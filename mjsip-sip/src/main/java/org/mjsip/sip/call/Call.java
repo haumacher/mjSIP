@@ -292,9 +292,9 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	}
 
 	/** Accepts an update request. */
-	public void acceptUpdate(SdpMessage sdp) {
+	public void acceptUpdate(SipMessage update, SdpMessage sdp) {
 		local_sdp=sdp;
-		dialog.acceptUpdate(local_sdp);
+		dialog.acceptUpdate(update, local_sdp);
 	}
 
 

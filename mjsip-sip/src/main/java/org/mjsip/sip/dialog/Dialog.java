@@ -140,14 +140,15 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		
 		update(is_client,sip_provider,msg);
 			
-		if (secure_old!=secure) LOG.info("secure dialog: on");
+		if (secure_old != secure) {
+			LOG.info("Switing secure dialog to: " + secure);
+		}
 
-		// update dialog_id and sip_provider listener
-		SipId newDialogId = SipId.createDialogId(call_id, local_tag, remote_tag);
-
+		// Update dialog_id and sip_provider listener
 		SipId oldDialogId = dialog_id;
+		SipId newDialogId = SipId.createDialogId(call_id, local_tag, remote_tag);
 		if (oldDialogId == null || !oldDialogId.equals(newDialogId)) {
-			LOG.info("Dialog ID set to: " + newDialogId);
+			LOG.info("Updated dialog ID to: " + newDialogId);
 
 			if (sip_provider != null) {
 				if (oldDialogId != null) {

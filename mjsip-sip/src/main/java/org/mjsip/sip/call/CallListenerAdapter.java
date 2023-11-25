@@ -233,7 +233,7 @@ public class CallListenerAdapter implements ExtendedCallListener {
 		}
 
 		// accept immediatly
-		call.acceptUpdate(acceptSdp);
+		call.acceptUpdate(update, acceptSdp);
 	}
 
 	/** Callback function called when arriving a 2xx for an UPDATE request */

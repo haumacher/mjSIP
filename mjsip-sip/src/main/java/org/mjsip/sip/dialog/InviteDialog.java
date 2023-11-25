@@ -570,36 +570,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				}
 
 				// SESSION TIMERS
-				if (invite_req.hasSupportedHeader() && invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer) && invite_req.hasSessionExpiresHeader()) {
-					SessionExpiresHeader requestExpiresHeader = invite_req.getSessionExpiresHeader();
-					int sessionTimeout = requestExpiresHeader.getDeltaSeconds();
-					if (session_interval > 0 && sessionTimeout > session_interval) {
-						sessionTimeout = session_interval;
-					} else {
-						session_interval = sessionTimeout;
-					}
-
-					refresher = requestExpiresHeader.getRefresher();
-					if (refresher == null) {
-						refresher = SessionExpiresHeader.PARAM_REFRESHER_UAS;
-					}
-
-					addRequireTimer(resp);
-					resp.setSessionExpiresHeader(new SessionExpiresHeader(sessionTimeout, refresher));
-				} else if (session_interval > 0) {
-					MinSEHeader minHeader = invite_req.getMinSEHeader();
-					int min_seconds = (minHeader != null) ? minHeader.getDeltaSeconds()
-							: sip_provider.sipConfig().getMinSessionInterval();
-					if (min_seconds > session_interval) {
-						session_interval = min_seconds;
-					}
-					if (invite_req.hasSupportedHeader()
-							&& invite_req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer)) {
-						addRequireTimer(resp);
-					}
-					refresher = SessionExpiresHeader.PARAM_REFRESHER_UAS;
-					resp.setSessionExpiresHeader(new SessionExpiresHeader(session_interval, refresher));
-				}
+				updateTimers(invite_req, resp);
 				ConnectionId conn_id=invite_ts.getTransportConnId();
 				ack_ts = new AckTransactionServer(sip_provider, conn_id, invite_req, resp, this);
 				ack_ts.respond();
@@ -635,6 +606,39 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				return;
 			}
 			bye_ts.respondWith(resp);
+		}
+	}
+
+	private void updateTimers(SipMessage req, SipMessage resp) {
+		if (req.hasSupportedHeader() && req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer)
+				&& req.hasSessionExpiresHeader()) {
+			SessionExpiresHeader requestExpiresHeader = req.getSessionExpiresHeader();
+			int sessionTimeout = requestExpiresHeader.getDeltaSeconds();
+			if (session_interval > 0 && sessionTimeout > session_interval) {
+				sessionTimeout = session_interval;
+			} else {
+				session_interval = sessionTimeout;
+			}
+
+			refresher = requestExpiresHeader.getRefresher();
+			if (refresher == null) {
+				refresher = SessionExpiresHeader.PARAM_REFRESHER_UAS;
+			}
+
+			addRequireTimer(resp);
+			resp.setSessionExpiresHeader(new SessionExpiresHeader(sessionTimeout, refresher));
+		} else if (session_interval > 0) {
+			MinSEHeader minHeader = req.getMinSEHeader();
+			int min_seconds = (minHeader != null) ? minHeader.getDeltaSeconds()
+					: sip_provider.sipConfig().getMinSessionInterval();
+			if (min_seconds > session_interval) {
+				session_interval = min_seconds;
+			}
+			if (req.hasSupportedHeader() && req.getSupportedHeader().hasOptionTag(SipStack.OTAG_timer)) {
+				addRequireTimer(resp);
+			}
+			refresher = SessionExpiresHeader.PARAM_REFRESHER_UAS;
+			resp.setSessionExpiresHeader(new SessionExpiresHeader(session_interval, refresher));
 		}
 	}
 
@@ -822,7 +826,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 	/** Accepts an UPDATE request.
 	  * @param sdp the answered sdp (if any). */
-	public void acceptUpdate(SdpMessage sdp) {
+	public void acceptUpdate(SipMessage update, SdpMessage sdp) {
 		if (update_ts == null) {
 			LOG.warn("Cannot accept update outside transaction.");
 			return;
@@ -830,6 +834,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 
 		LOG.info("Accepting update.");
 		SipMessage resp = sipMessageFactory.createResponse(update_ts.getRequestMessage(), SipResponses.OK, null, null);
+		updateTimers(update, resp);
 		if (sdp != null) {
 			resp.setSdpBody(sdp);
 		}
@@ -993,12 +998,13 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 				if (reliable_responder!=null) reliable_responder.processPrack(sip_provider, msg);
 			} else if (msg.isUpdate()) {
 				verifyStatus("UPDATE requires early or confirmed state.", isEarly() || isConfirmed());
-				LOG.debug("onReceivedMessage(): is update");
+				LOG.debug("Received update request.");
 				updateDialogInfo(false,msg);
 				update_ts=new TransactionServer(sip_provider,msg,null);
-				if (listener != null)
+				if (listener != null) {
 					listener.onDlgUpdate(this, msg.getSdpBody(), msg);
-			} else if (msg.isRequest()) {
+				}
+			} else {
 				// if any other request
 				TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 				ts.respondWith(sipMessageFactory.createResponse(msg, SipResponses.METHOD_NOT_ALLOWED, null, null));
