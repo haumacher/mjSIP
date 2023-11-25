@@ -117,10 +117,10 @@ public class SipConfig implements SipOptions {
 	private String[] _requiredOptionTags=null; //{ OTAG_100rel,OTAG_timer };
 	private String[] _allowedMethods={ SipMethods.INVITE,SipMethods.ACK,SipMethods.OPTIONS,SipMethods.BYE,SipMethods.CANCEL,SipMethods.INFO,SipMethods.PRACK,SipMethods.NOTIFY,SipMethods.MESSAGE,SipMethods.UPDATE };
 
-	@Option(name = "--min-session-interval")
+	@Option(name = "--min-session-interval", usage = "Minimum session interval (Min-SE header field) for supporting \"Session Timers\" (RFC 4028).")
 	private int _minSessionInterval=90;
 
-	@Option(name = "--default-session-interval")
+	@Option(name = "--default-session-interval", usage = "Default session interval (Session-Expires header field) for supporting \"Session Timers\" (RFC  4028).")
 	private int _defaultSessionInterval=0;
 
 
