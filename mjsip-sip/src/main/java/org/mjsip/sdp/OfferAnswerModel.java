@@ -25,6 +25,7 @@ package org.mjsip.sdp;
 
 
 
+import java.util.List;
 import java.util.Vector;
 
 import org.mjsip.sdp.field.MediaField;
@@ -164,7 +165,10 @@ public class OfferAnswerModel {
 		// select the proper formats 
 		MediaField localMedia = local.getMediaField();
 
-		Vector<String> answerFormats = intersection(localMedia.getFormatList(), remote.getMediaField().getFormatList());
+		List<String> answerFormats = intersection(localMedia.getFormatList(), remote.getMediaField().getFormatList());
+
+		// Only offer last common format to enforce using the format with the maximum sample rate.
+		answerFormats = answerFormats.subList(answerFormats.size() - 1, answerFormats.size());
 
 		// select the 'rtpmap' attributes
 		AttributeField[] localAttributes = local.getAttributes("rtpmap");
