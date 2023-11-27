@@ -115,7 +115,9 @@ public class InviteTransactionServer extends TransactionServer {
 		this.connection_id=connection_id;
 		auto_trying=sip_provider.sipConfig().isAutoTrying();
 		// init the timer just to set the timeout value and label, without listener (never started)
-		LOG.info("new transaction-id: "+transaction_id.toString());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("new transaction-id: " + transaction_id.toString());
+		}
 	}   
 
 
@@ -218,7 +220,7 @@ public class InviteTransactionServer extends TransactionServer {
 
 	private void onRetransmissionTimeout() {
 		if (statusIs(STATE_COMPLETED)) {
-			LOG.info("Retransmission timeout expired");
+			LOG.debug("Retransmission timeout expired");
 			scheduleRetransmission(sip_provider.retransmissionSlowdown(_retransmissionTimeout));
 			sip_provider.sendMessage(response);
 		}
@@ -231,7 +233,7 @@ public class InviteTransactionServer extends TransactionServer {
 
 	private void onEndTimeout() {
 		if (statusIs(STATE_COMPLETED)) {
-			LOG.info("End timeout expired");
+			LOG.debug("End timeout expired");
 			doTerminate();
 			invite_ts_listener = null;
 		}

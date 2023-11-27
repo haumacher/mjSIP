@@ -96,7 +96,7 @@ public abstract class RegisteringMultipleUAS extends MultipleUAS implements Regi
 
 	/** From RegistrationClientListener. When a UA has been successfully (un)registered. */
 	@Override
-	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
+	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, int renewTime, String result) {
 		LOG.info("Registration success: expires="+expires+": "+result);
 	}
 

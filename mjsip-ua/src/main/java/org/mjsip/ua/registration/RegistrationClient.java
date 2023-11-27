@@ -228,11 +228,15 @@ public class RegistrationClient implements TransactionClientListener {
 			LOG.debug("Register body type: " + content_type + "; length: " + body.length + " bytes");
 			req.setBody(content_type,body);
 		}
-		if (expire_time > 0) {
-			LOG.info("Registering " + _contactNAddr + " (expiry " + expire_time + " secs) at " + _registrarUri);
-		} else {
-			LOG.info("Unregistering " + _contactNAddr + " from " + _registrarUri);
+		
+		if (LOG.isDebugEnabled()) {
+			if (expire_time > 0) {
+				LOG.debug("Registering " + _contactNAddr + " (expiry " + expire_time + " secs) at " + _registrarUri);
+			} else {
+				LOG.debug("Unregistering " + _contactNAddr + " from " + _registrarUri);
+			}
 		}
+		
 		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
 	}
@@ -348,19 +352,20 @@ public class RegistrationClient implements TransactionClientListener {
 				}    
 			}
 			
-			int renewTime = expires > 0 && expires < _renewTime ? expires : _renewTime;
 			
-			LOG.info("Registration of '" + _contactNAddr + "' " + result + ", expires in " + expires + "s"
-					+ (_loop ? ", renewing in " + renewTime + "s" : "") + ".");
+			int renewTime;
 			if (_loop) {
 				cancelAttemptTimeout();
 				resetAttemptTimeout();
 				
+				renewTime = expires > 0 && expires < _renewTime ? expires : _renewTime;
 				_registrationTimer = _sipProvider.scheduler().schedule((long) renewTime * 1000,
 						this::onRegistrationTimeout);
+			} else {
+				renewTime = 0;
 			}
 			if (_listener != null) {
-				_listener.onRegistrationSuccess(this, _toNAddr, _contactNAddr, expires, result);
+				_listener.onRegistrationSuccess(this, _toNAddr, _contactNAddr, expires, renewTime, result);
 			}
 		}
 	}

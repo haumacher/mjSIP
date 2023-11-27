@@ -15,14 +15,15 @@ public class RegistrationLogger implements RegistrationClientListener {
 
 	/** When a UA has been successfully (un)registered. */
 	@Override
-	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
-		LOG.info("Registration success: expires="+expires+": "+result);
+	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, int renewTime, String result) {
+		LOG.info("Registration of '" + contact + "' " + result + ", expires in " + expires + "s"
+				+ (renewTime > 0 ? ", renewing in " + renewTime + "s" : "") + ".");
 	}
 
 	/** When a UA failed on (un)registering. */
 	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		LOG.info("Registration failure: "+result);
+		LOG.info("Registration of '" + contact + "' failed: "+result);
 	}
 
 }

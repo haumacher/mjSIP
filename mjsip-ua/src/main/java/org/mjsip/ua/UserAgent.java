@@ -241,7 +241,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Modifies the current session. It re-invites the remote party changing the contact URI and SDP. */
 	public void modify(SdpMessage sdp) {
 		if (call!=null && call.getState().isActive()) {
-			LOG.info("RE-INVITING/MODIFING");
+			LOG.debug("RE-INVITING/MODIFING");
 			call.modify(sdp);
 		}
 	}
@@ -255,7 +255,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** Transfers the current call to a remote UA. */
 	public void transfer(NameAddress transfer_to) {
 		if (call!=null && call.getState().isActive()) {
-			LOG.info("REFER/TRANSFER");
+			LOG.debug("REFER/TRANSFER");
 			call.transfer(transfer_to);
 		}
 	}
@@ -314,7 +314,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				existing.halt();
 			}
 			
-			LOG.info("Starting media session: " + flow_spec);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Starting media session: " + flow_spec);
+			}
 			MediaStreamer streamer = _mediaAgent.startMediaSession(flow_spec);
 			
 			if (streamer == null) {
@@ -388,7 +390,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** From RegistrationClientListener. When it has been successfully (un)registered. */
 	@Override
-	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, String result) {
+	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, int renewTime, String result) {
 		if (listener!=null) listener.onUaRegistrationSucceeded(this,result);   
 	}
 
@@ -411,12 +413,14 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
-			LOG.info("Busy, refusing incoming call from: " + invite.getFromUser());
+			LOG.debug("Busy, refusing incoming call from: " + invite.getFromUser());
 			call.refuse();
 			return;
 		}
    
-		LOG.info("Incoming call from: " + invite.getFromUser());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Incoming call from: " + invite.getFromUser());
+		}
 		this.call=(ExtendedCall)call;
 		call.ring();
 
@@ -437,7 +441,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			LOG.warn("Modify of unknown call received: " + call.getCallId());  
 			return;  
 		}
-		LOG.info("Received RE-INVITE/MODIFY.");
+		LOG.debug("Received RE-INVITE/MODIFY.");
 		// to be implemented.
 		// currently it simply accepts the session changes (see method onCallModify() in CallListenerAdapter)
 		super.onCallModify(call,remoteSdp,invite);
@@ -449,7 +453,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallProgress()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		if (!progress) {
-			LOG.info("PROGRESS");
+			LOG.debug("PROGRESS");
 			progress=true;
 			
 			if (listener!=null) listener.onUaCallProgress(this);
@@ -462,7 +466,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallRinging()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		if (!ringing) {
-			LOG.info("RINGING");
+			LOG.debug("RINGING");
 			ringing=true;
 			
 			if (listener!=null) listener.onUaCallRinging(this);
@@ -488,7 +492,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			LOG.debug("Ignoring accept for unknown call: " + call.getRemoteSessionDescriptor().getOrigin().getValue());  
 			return;  
 		}
-		LOG.info("Call accepted: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Call accepted: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
+		}
 		
 		if (_config.getNoOffer()) {
 			SdpMessage answerSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), remoteSdp);         
@@ -511,7 +517,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			LOG.debug("Ignoring conform of unknown call: " + call.getRemoteSessionDescriptor().getOrigin().getValue());  
 			return;
 		}
-		LOG.info("Call confirmed: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Call confirmed: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
+		}
 
 		if (listener!=null) listener.onUaCallConfirmed(this);
 		
@@ -523,7 +531,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallModifyAccepted(Call call, SdpMessage sdp, SipMessage resp) {
 		LOG.debug("onCallModifyAccepted()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("RE-INVITE-ACCEPTED/CALL");
+		LOG.debug("RE-INVITE-ACCEPTED/CALL");
 	}
 
 	/** From CallListener. Callback function called when arriving a 4xx (re-invite/modify failure) */
@@ -531,7 +539,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
 		LOG.debug("onCallReInviteRefused()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("RE-INVITE-REFUSED ("+reason+")/CALL");
+		LOG.debug("RE-INVITE-REFUSED ("+reason+")/CALL");
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
 
@@ -540,7 +548,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallRefused(Call call, String reason, SipMessage resp) {
 		LOG.debug("onCallRefused()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("REFUSED ("+reason+")");
+		LOG.debug("REFUSED ("+reason+")");
 		if (call==call_transfer) {
 			this.call.notify(resp);
 			call_transfer=null;
@@ -555,7 +563,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
 		LOG.debug("onCallRedirected()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("REDIRECTION ("+reason+")");
+		LOG.debug("REDIRECTION ("+reason+")");
 		NameAddress first_contact=NameAddress.parse((String)contact_list.elementAt(0));
 		call.call(first_contact); 
 	}
@@ -565,7 +573,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallCancel(Call call, SipMessage cancel) {
 		LOG.debug("onCallCancel()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("CANCEL");
+		LOG.debug("CANCEL");
 		this.call=null;
 		// response timeout
 		cancelResponseTimeout();
@@ -579,13 +587,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("onCallBye()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
 		if (call!=call_transfer && call_transfer!=null) {
-			LOG.info("CLOSE PREVIOUS CALL");
+			LOG.debug("CLOSE PREVIOUS CALL");
 			this.call=call_transfer;
 			call_transfer=null;
 			return;
 		}
 		// else
-		LOG.info("CLOSE");
+		LOG.debug("CLOSE");
 		this.call=null;
 		closeMediaSessions();
 		
@@ -596,9 +604,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	/** From CallListener. Callback function called when arriving a response after a BYE request (call closed) */
 	@Override
 	public void onCallClosed(Call call, SipMessage resp) {
-		LOG.info("LogLevel.DEBUG,onCallClosed()");
+		LOG.debug("LogLevel.DEBUG,onCallClosed()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("CLOSE/OK");
+		LOG.debug("CLOSE/OK");
 		if (listener!=null) listener.onUaCallClosed(this);
 	}
 
@@ -607,7 +615,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTimeout(Call call) {
 		LOG.debug("onCallTimeout()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("NOT FOUND/TIMEOUT");
+		LOG.debug("NOT FOUND/TIMEOUT");
 		String reason="Request Timeout";
 		if (call==call_transfer) {
 			this.call.notify(SipResponses.REQUEST_TIMEOUT,reason);
@@ -635,7 +643,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallUpdate(ExtendedCall call, SdpMessage sdp, SipMessage update) {
 		LOG.debug("onCallUpdate()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("UPDATE");
+		LOG.debug("UPDATE");
 		// to be implemented.
 		// currently it simply accepts the session changes (see method onCallModify() in CallListenerAdapter)
 		super.onCallUpdate(call,sdp,update);
@@ -647,7 +655,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
 		LOG.debug("onCallTransfer()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("transfer to "+refer_to.toString());
+		LOG.debug("transfer to "+refer_to.toString());
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(_config.getUserURI()),this);
 		call_transfer.call(refer_to,getSessionDescriptor());
@@ -658,7 +666,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransferAccepted(ExtendedCall call, SipMessage resp) {
 		LOG.debug("onCallTransferAccepted()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("transfer accepted");
+		LOG.debug("transfer accepted");
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is refused. */
@@ -666,7 +674,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransferRefused(ExtendedCall call, String reason, SipMessage resp) {
 		LOG.debug("onCallTransferRefused()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("transfer refused");
+		LOG.debug("transfer refused");
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is successfully completed */
@@ -674,7 +682,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransferSuccess(ExtendedCall call, SipMessage notify) {
 		LOG.debug("onCallTransferSuccess()");
 		if (call!=this.call) {  LOG.trace("NOT the current call");  return;  }
-		LOG.info("transfer successed");
+		LOG.debug("transfer successed");
 		call.hangup();
 		if (listener!=null) listener.onUaCallTransferred(this);
 	}
@@ -684,13 +692,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransferFailure(ExtendedCall call, String reason, SipMessage notify) {
 		LOG.debug("onCallTransferFailure()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.info("transfer failed");
+		LOG.debug("transfer failed");
 	}
 
 	// *********************** Timer callbacks ***********************
 
 	private void onResponseTimeout() {
-		LOG.info("response time expired: incoming call declined");
+		LOG.debug("response time expired: incoming call declined");
 		if (call!=null) call.refuse();
 		
 		if (listener!=null) listener.onUaIncomingCallTimeout(this);
