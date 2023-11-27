@@ -27,7 +27,6 @@ import java.util.Vector;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
-import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.AcceptEncodingHeader;
 import org.mjsip.sip.header.AcceptHeader;
 import org.mjsip.sip.header.AcceptLanguageHeader;
@@ -43,6 +42,7 @@ import org.mjsip.sip.header.DateHeader;
 import org.mjsip.sip.header.EventHeader;
 import org.mjsip.sip.header.ExpiresHeader;
 import org.mjsip.sip.header.FromHeader;
+import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.InfoPackageHeader;
 import org.mjsip.sip.header.MaxForwardsHeader;
 import org.mjsip.sip.header.MinSEHeader;
@@ -1190,17 +1190,24 @@ public class SipMessage extends BasicSipMessage {
 	 *         given.
 	 */
 	public String getFromUser() {
-		FromHeader fromHeader = getFromHeader();
-		if (fromHeader == null) {
-			return null;
-		}
-
-		SipURI sipURI = SipURI.parseSipURI(new SipParser(fromHeader.getValue()).getURISource());
+		SipURI sipURI = getFromUri();
 		if (sipURI == null) {
 			return null;
 		}
 
 		return sipURI.getUserName();
+	}
+
+	/**
+	 * Extract the URI transmitted in the from header.
+	 */
+	public SipURI getFromUri() {
+		FromHeader fromHeader = getFromHeader();
+		if (fromHeader == null) {
+			return null;
+		}
+
+		return SipURI.parseSipURI(new SipParser(fromHeader.getValue()).getURISource());
 	}
 
 }
