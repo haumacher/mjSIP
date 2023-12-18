@@ -52,26 +52,15 @@ public class OriginField extends SdpField {
 	 * @param addrtype address type, e.g. IP4, IP6 (default is IP4)
 	 * @param address the address */
 	public OriginField(String username, String sess_id, String sess_version, String addrtype, String address) {
-		//super('o',username+" "+sess_id+" "+sess_version+" IN "+addrtype+" "+address);
-		super('o',getValue(username,sess_id,sess_version,addrtype,address));
+		this(getValue(username, sess_id, sess_version, addrtype, address));
 	}
-
-	/** Creates a new OriginField.
-	 * @param username the name of the owner of the session
-	 * @param sess_id session identifier
-	 * @param sess_version session version
-	 * @param address the IPv4 address */
-	/*public OriginField(String username, String sess_id, String sess_version, String address) {
-		//super('o',username+" "+sess_id+" "+sess_version+" IN IP4 "+address);
-		super('o',getValue(username,sess_id,sess_version,null,address));
-	}*/
 
 	/** Creates a new OriginField.
 	 * @param username the name of the owner of the session
 	 * @param addrtype address type, e.g. IP4, IP6 (default is IP4)
 	 * @param address the IPv4 address */
 	public OriginField(String username, String addrtype, String address) {
-		super('o',getValue(username,null,null,addrtype,address));
+		this(username, null, null, addrtype, address);
 	}
 
 	/** Gets the value of the origin field.
@@ -81,7 +70,8 @@ public class OriginField extends SdpField {
 		if (username==null || username.length()==0) username="-";
 		if (sess_id==null || sess_id.length()==0) sess_id="0";
 		if (sess_version==null || sess_version.length()==0) sess_version="0";
-		if (addrtype==null || addrtype.length()==0) addrtype="IP4";
+		if (addrtype == null || addrtype.length() == 0)
+			addrtype = ConnectionField.addressType(address);
 		sb.append(username);
 		sb.append(' ').append(sess_id);
 		sb.append(' ').append(sess_version);

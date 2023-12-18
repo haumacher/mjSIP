@@ -123,10 +123,11 @@ public class SdpMessage {
 	 */
 	public static SdpMessage createSdpMessage(String owner, String address) {
 		String nonNullAddress = nonNull(address);
+		String addrtype = ConnectionField.addressType(nonNullAddress);
 		return new SdpMessage(
-				new OriginField(owner, null, nonNullAddress), 
+				new OriginField(owner, addrtype, nonNullAddress),
 				new SessionNameField(),
-				new ConnectionField("IP4", nonNullAddress),
+				new ConnectionField(addrtype, nonNullAddress),
 				new TimeDescription[] { new TimeDescription(new TimeField()) });
 	}
 

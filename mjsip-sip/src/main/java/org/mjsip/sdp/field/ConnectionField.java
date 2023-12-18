@@ -72,12 +72,20 @@ public class ConnectionField extends SdpField {
 	 * @return a string with the value of the origin field */
 	private static String getValue(String address_type, String address, int ttl, int num) {
 		StringBuffer sb=new StringBuffer();
-		if (address_type==null || address_type.length()==0) address_type="IP4";
+		if (address_type == null || address_type.length() == 0)
+			address_type = ConnectionField.addressType(address);
 		sb.append("IN").append(' ').append(address_type);
 		sb.append(' ').append(address);
 		if (ttl>0) sb.append('/').append(ttl);
 		if (num>0) sb.append('/').append(num);
 		return sb.toString();
+	}
+
+	/**
+	 * Guessed address type of the given address.
+	 */
+	public static String addressType(String address) {
+		return address.indexOf(':') >= 0 ? "IP6" : "IP4";
 	}
 
 	/** Creates a new ConnectionField.
