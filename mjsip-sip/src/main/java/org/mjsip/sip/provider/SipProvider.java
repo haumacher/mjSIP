@@ -124,9 +124,6 @@ public class SipProvider implements SipTransportListener {
 	/** Default transport */
 	String default_transport=null;
 	
-	/** Whether forcing 'rport' parameter on incoming requests ('force-rport' mode). */
-	boolean force_rport=false;
-
 	/** Table of sip listeners (Hashtable<SipId id, SipProviderListener listener>) */
 	private final Map<SipId, SipProviderListener> sip_listeners = new HashMap<>();
 	
@@ -161,7 +158,6 @@ public class SipProvider implements SipTransportListener {
 		_sipMessageFactory = new SipMessageFactory(sipConfig);
 		initLog();
 		initSipTrasport(sipConfig.getTransportProtocols(),sipConfig.getTransportPorts());
-		setForceRport(sipConfig.forceRport());
 	}
 
 	/** Inits logs. */ 
@@ -451,14 +447,9 @@ public class SipProvider implements SipTransportListener {
 		return _sipConfig.useRport();
 	}   
 
-	/** Sets 'force-rport' mode. */ 
-	public synchronized void setForceRport(boolean flag) {
-		force_rport=flag;
-	}   
-
 	/** Whether using 'force-rport' mode. */ 
-	public boolean isForceRportSet() {
-		return force_rport;
+	public boolean forceRport() {
+		return _sipConfig.forceRport();
 	}
 
 	/** Whether setting the Via protocol, sent-by, and port values according to the transport connection.
@@ -893,27 +884,23 @@ public class SipProvider implements SipTransportListener {
 				}
 				
 				boolean via_changed=false;
-				String src_addr=msg.getRemoteAddress();
-				int src_port=msg.getRemotePort();
-				String via_addr=vh.getHost();
-				int via_port=vh.getPort();
-				if (via_port <= 0)
-					via_port = _sipConfig.getDefaultPort();
+
+				String viaAddr = vh.getHost();
+				int viaPort = vh.getPort();
+				if (viaPort <= 0) {
+					viaPort = _sipConfig.getDefaultPort();
+				}
 				 
-				if (!via_addr.equals(src_addr)) {
-					vh.setReceived(src_addr);
+				String srcAddr = msg.getRemoteAddress();
+				if (vh.hasReceived() || (forceRport() && !viaAddr.equals(srcAddr))) {
+					vh.setReceived(srcAddr);
 					via_changed=true;
 				}
 				
-				if (vh.hasRport()) {
-					vh.setRport(src_port);
+				int srcPort = msg.getRemotePort();
+				if (vh.hasRport() || (forceRport() && viaPort != srcPort)) {
+					vh.setRport(srcPort);
 					via_changed=true;
-				}
-				else {
-					if (force_rport && via_port!=src_port) {
-						vh.setRport(src_port);
-						via_changed=true;
-					}
 				}
 				
 				if (via_changed) {

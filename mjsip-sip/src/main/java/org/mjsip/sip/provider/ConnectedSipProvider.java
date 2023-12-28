@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.provider;
-
-
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -34,29 +31,24 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.time.Scheduler;
 import org.zoolu.net.IpAddress;
 
-
-
-/** Connected SIP provider.
-  * It pre-establishes semi-permanent transport connections to the outbound proxy.
-  * <br>
-  * It establishes one connection per each connection-oriented transport protocol.
-  * <p>
-  * Methods getContactAddress() returns a contact address that refer to the
-  * pre-establishes semi-permanent transport connections (if any).
-  */
+/**
+ * Connected SIP provider. It pre-establishes semi-permanent transport
+ * connections to the outbound proxy. <br>
+ * It establishes one connection per connection-oriented transport protocol.
+ * <p>
+ * Methods getContactAddress() returns a contact address that refer to the
+ * pre-establishes semi-permanent transport connections (if any).
+ */
 public class ConnectedSipProvider extends SipProvider {
-	
 
 	/** The semi-permanet connections, one for each connection-oriented porotocol (Hastable<String proto, SipTransportConnection transport_connection>) */
 	Hashtable connections=new Hashtable();
-
 
 	/**
 	 * Creates a {@link ConnectedSipProvider}.
 	 */
 	public ConnectedSipProvider(SipOptions sipConfig, Scheduler scheduler) throws IOException {
 		super(sipConfig, scheduler);
-		setForceRport(true);
 		connect();
 	}
 
@@ -83,43 +75,6 @@ public class ConnectedSipProvider extends SipProvider {
 			catch (Exception e) {}
 		}
 	}
-
-
-	/** Adds a semi-permanent transport connection. 
-	  * Pre-establishes a transport connection to a remote socket address.
-	  * @param proto transport protocol
-	  * @param remote_addr remote address
-	  * @param remote_port remote port
-	  * @return the transport connection (if succeded in finding the corresponding SIP transport service), or null (if failed) */ 
-	/*public SipTransportConnection addTransportConnection(String proto, String remote_addr, int remote_port) throws IOException {
-		SipTransportCO sip_transport=null;
-		sip_transport=(SipTransportCO)sip_transports.get(proto.toLowerCase());
-		if (sip_transport==null) throw new IOException("Protocol '"+proto+"' is not supported by this SIP provider");
-		// else
-		return sip_transport.addConnection(new IpAddress(remote_addr),remote_port);
-	}*/
-
-
-	/** Adds a pre-established transport connection.
-	  * @param conn the pre-established trasport connection */ 
-	/*public void addTransportConnection(SipTransportConnection conn) throws IOException {
-		SipTransportCO sip_transport=null;
-		String proto=conn.getProtocol().toLowerCase();
-		sip_transport=(SipTransportCO)sip_transports.get(proto);
-		if (sip_transport==null) throw new IOException("Protocol '"+proto+"' is not supported by this SIP provider");
-		// else
-		sip_transport.addConnection(conn);
-	}*/
-
-
-	/** Removes a semi-permanent transport connection. */ 
-	/*public void removeTransportConnection(String proto, String remote_addr, int remote_port) throws IOException {
-		SipTransportCO sip_transport=(SipTransportCO)sip_transports.get(proto.toLowerCase());
-		if (sip_transport==null) throw new IOException("Protocol '"+proto+"' is not supported by this SIP provider");
-		// else
-		sip_transport.removeConnection(new ConnectionId(proto,new IpAddress(remote_addr),remote_port));
-	}*/
-
 
 	/** Gets a valid SIP or SIPS contact address.
 	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
