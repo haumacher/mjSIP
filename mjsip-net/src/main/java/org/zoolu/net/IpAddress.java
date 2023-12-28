@@ -27,6 +27,8 @@ package org.zoolu.net;
 
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -144,31 +146,21 @@ public class IpAddress {
 		catch (Exception e) {}
 		
 		if (ip_address==null) {
-			// Note:
-			// java reflection is used in order to keep backward compatibility with java3 VM (e.g. jdk1.3) at both compiling and/or execution time
 			try {
-				// continue only with java4 VM (e.g. jdk1.4) or later, otherwise ClassNotFoundException is thrown
-				Class network_interface_class=Class.forName("java.net.NetworkInterface");
-				Class inet4_address_class=Class.forName("java.net.Inet4Address");
-				//System.out.println("IpAddress: java4 VM (or later) detected");
-				// only with java4 VM
-				Vector all_ip4_addrs=new Vector();
-				//Enumeration networks=java.net.NetworkInterface.getNetworkInterfaces(); // this line can be compiled only with java4
-				Enumeration networks=(Enumeration)network_interface_class.getMethod("getNetworkInterfaces",(Class[])null).invoke((Object)null,(Object[])null);
+				Vector<IpAddress> all_ip4_addrs=new Vector<>();
+				Enumeration<NetworkInterface> networks = NetworkInterface.getNetworkInterfaces();
 				while (networks.hasMoreElements()) {
-					//Enumeration iaddrs=((java.net.NetworkInterface)networks.nextElement()).getInetAddresses(); // this line can be compiled only with java4
-					Enumeration iaddrs=(Enumeration)network_interface_class.getMethod("getInetAddresses",(Class[])null).invoke(networks.nextElement(),(Object[])null);
+					NetworkInterface intf = networks.nextElement();
+					Enumeration<InetAddress> iaddrs = intf.getInetAddresses();
 					while (iaddrs.hasMoreElements()) {
-						java.net.InetAddress iaddr=(java.net.InetAddress)iaddrs.nextElement();
-						//if (iaddr.getClass().getName().equals("java.net.Inet4Address") && !iaddr.isLoopbackAddress()) return new IpAddress(iaddr); // this line can be compiled only with java4
+						InetAddress iaddr=iaddrs.nextElement();
 						if (iaddr.getClass().getName().equals("java.net.Inet4Address")) {
-							if (((Boolean)inet4_address_class.getMethod("isLoopbackAddress",(Class[])null).invoke(iaddr,(Object[])null)).booleanValue()) continue;
-							if (((Boolean)inet4_address_class.getMethod("isLinkLocalAddress",(Class[])null).invoke(iaddr,(Object[])null)).booleanValue()) continue;
-							if (((Boolean)inet4_address_class.getMethod("isMulticastAddress",(Class[])null).invoke(iaddr,(Object[])null)).booleanValue()) continue;
+							if (iaddr.isLoopbackAddress()) continue;
+							if (iaddr.isLinkLocalAddress()) continue;
+							if (iaddr.isMulticastAddress()) continue;
 							if (iaddr.getHostAddress().equals("255.255.255.255")) continue;
-							// else
+
 							all_ip4_addrs.add(new IpAddress(iaddr));
-							//System.out.println("DEBUG: IpAddress: getLocalHostAddress(): "+iaddr.getHostAddress());
 						}
 					}
 				}
@@ -201,19 +193,16 @@ public class IpAddress {
 					ip_address=(IpAddress)all_ip4_addrs.get(0);
 				}
 			}
-			catch (java.lang.ClassNotFoundException e) {}
-			catch (Exception e) {}			
+			catch (SocketException e) {}			
 		}
 		if (ip_address==null) {
 			try {
-				//System.out.println("IpAddress: java3 VM detected");
 				ip_address=new IpAddress(InetAddress.getLocalHost());
 			}
 			catch (java.net.UnknownHostException e) {}
 		}
 		if (ip_address==null) ip_address=new IpAddress("127.0.0.1");
 		
-		//System.out.println("IpAddress: "+ip_address.toString());
 		return ip_address;
 	}
 
