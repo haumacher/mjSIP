@@ -32,7 +32,7 @@ public class MediaDescHandler extends OptionHandler<MediaDesc> {
 
 	@Override
 	public String getDefaultMetaVariable() {
-		return "<addr>";
+		return "<media-descr>";
 	}
 
 }
