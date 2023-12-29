@@ -18,11 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.rtp;
-
-
-
 
 /** RTP packet, as defined by RFC 3550. 
  */
@@ -30,7 +26,6 @@ public class RtpPacket {
 	
 	/** Minimum RTP header length */
 	static final int HDR_LEN=12;
-
 
 	/** RTP packet buffer containing the RTP packet (including RTP header and payload) */   
 	byte[] buffer;
@@ -41,57 +36,12 @@ public class RtpPacket {
 	/** RTP packet length */   
 	int length;
 
-	/** RTP header length */   
-	//int hdr_len;
-
-
-
 	/** Creates a new RTP packet.
 	  * @param buffer buffer containing the RTP packet 
 	  * @param length packet length */ 
 	public RtpPacket(byte[] buffer, int length) {
-		init(buffer,0,length);
+		this(buffer, 0, length);
 	}
-
-	/** Creates a new RTP packet.
-	  * @param buffer buffer containing the RTP packet 
-	  * @param offset packet offset within the buffer 
-	  * @param length packet length */ 
-	public RtpPacket(byte[] buffer, int offset, int length) {
-		init(buffer,offset,length);
-	}
-
-	/** Inits the RTP packet.
-	  * @param buffer buffer containing the RTP packet 
-	  * @param offset RTP packet offset within the buffer 
-	  * @param length RTP packet length */ 
-	private void init(byte[] buffer, int offset, int length) {
-		this.buffer=buffer;
-		this.offset=offset;
-		//this.length=(length<HDR_LEN)? HDR_LEN : length;
-		this.length=length;
-	}
-
-	/** Creates a new RTP packet. 
-	  * @param pl_type payload type
-	  * @param pl_buf payload buffer
-	  * @param pl_len payload length */ 
-	/*public RtpPacket(int pl_type, byte[] pl_data) {
-		initBuffer(0,pl_data.length);
-		setHeader(pl_type);
-		setPayload(pl_data,0,pl_data.length);
-	}*/
-
-	/** Creates a new RTP packet. 
-	  * @param pl_type payload type
-	  * @param pl_buf payload buffer
-	  * @param pl_off payload offset
-	  * @param pl_len payload length */ 
-	/*public RtpPacket(int pl_type, byte[] pl_buf, int pl_off, int pl_len) {
-		initBuffer(0,pl_len);
-		setHeader(pl_type);
-		setPayload(pl_buf,pl_off,pl_len);
-	}*/
 
 	/** Creates a new RTP packet.
 	  * @param pl_type payload type
@@ -102,7 +52,7 @@ public class RtpPacket {
 	  * @param pl_off payload offset
 	  * @param pl_len payload length */ 
 	public RtpPacket(int pl_type, long ssrc, int seq_num, long timestamp, byte[] pl_buf, int pl_off, int pl_len) {
-		initBuffer(0,pl_len);
+		this(0, pl_len);
 		setHeader(pl_type,ssrc,seq_num,timestamp);
 		setPayload(pl_buf,pl_off,pl_len);
 	}
@@ -117,8 +67,7 @@ public class RtpPacket {
 	  * @param pl_off payload offset
 	  * @param pl_len payload length */ 
 	public RtpPacket(int pl_type, long ssrc, int seq_num, long timestamp, long[] csrc, byte[] pl_buf, int pl_off, int pl_len) {
-		int cc=(csrc==null)? 0 : csrc.length;
-		initBuffer(cc,pl_len);
+		this((csrc == null) ? 0 : csrc.length, pl_len);
 		setHeader(pl_type,ssrc,seq_num,timestamp,csrc);
 		setPayload(pl_buf,pl_off,pl_len);
 	}
@@ -129,7 +78,7 @@ public class RtpPacket {
 	  * @param pl_off payload offset
 	  * @param pl_len payload length */ 
 	public RtpPacket(RtpContext rtp_ctx, byte[] pl_buf, int pl_off, int pl_len) {
-		initBuffer(rtp_ctx.getCC(),pl_len);
+		this(rtp_ctx.getCC(), pl_len);
 		setHeader(rtp_ctx.getPayloadType(),rtp_ctx.getSsrc(),rtp_ctx.getSequenceNumber(),rtp_ctx.getTimestamp(),rtp_ctx.getCsrc());
 		setPayload(pl_buf,pl_off,pl_len);
 	}
@@ -137,12 +86,22 @@ public class RtpPacket {
 	/** Inits the RTP packet buffer. 
 	  * @param cc number of contributing source (CSRC) identifiers
 	  * @param pl_len payload length */ 
-	private void initBuffer(int cc, int pl_len) {
-		length=HDR_LEN+cc*4+pl_len;
-		offset=0;
-		buffer=new byte[length];
+	private RtpPacket(int cc, int pl_len) {
+		this.offset = 0;
+		this.length = HDR_LEN + cc * 4 + pl_len;
+		this.buffer = new byte[length];
 	}
 
+	/** Creates a new RTP packet.
+	  * @param buffer buffer containing the RTP packet 
+	  * @param offset packet offset within the buffer 
+	  * @param length packet length */ 
+	public RtpPacket(byte[] buffer, int offset, int length) {
+		this.buffer=buffer;
+		this.offset=offset;
+		//this.length=(length<HDR_LEN)? HDR_LEN : length;
+		this.length=length;
+	}
 
 	/** Gets the RTP packet buffer.
 	  * @return the buffer containing the RTP packet (including RTP header and payload) */   
@@ -181,11 +140,16 @@ public class RtpPacket {
 	// padding (P): 1 bit
 	// extension (X): 1 bit
 	// CSRC count (CC): 4 bits
+
 	// marker (M): 1 bit
 	// payload type (PT): 7 bits
+
 	// sequence number: 16 bits
+
 	// timestamp: 32 bits
+
 	// SSRC: 32 bits
+
 	// CSRC list: 0 to 15 items, 32 bits each
 
 
@@ -224,7 +188,7 @@ public class RtpPacket {
 	public int getPaddingLength() {
 		if (length<HDR_LEN) return 0; // broken packet
 		// else
-		boolean p=getBit(buffer[offset],5);
+		boolean p=BufferUtil.getBit(buffer[offset],5);
 		if (p) return buffer[offset+length-1];
 		else return 0;
 	}
@@ -239,9 +203,10 @@ public class RtpPacket {
 			int hdr_len=getHeaderLength();
 			for (int i=0; i<padding_len-1; i++) buffer[offset+hdr_len+pl_len+i]=0;
 			buffer[offset+hdr_len+pl_len+padding_len-1]=(byte)padding_len;
-			setBit(true,buffer[offset],5);
+			BufferUtil.setBit(true, buffer, offset, 5);
 		}
-		else setBit(false,buffer[offset],5);
+		else
+			BufferUtil.setBit(false, buffer, offset, 5);
 	}
 
 	/** Whether it has extension (X).
@@ -249,7 +214,7 @@ public class RtpPacket {
 	public boolean hasExtension() {
 		if (length<HDR_LEN) return false; // broken packet
 		// else
-		return getBit(buffer[offset],4);
+		return BufferUtil.getBit(buffer[offset],4);
 	}
 
 	/** Sets extension (X).
@@ -257,7 +222,7 @@ public class RtpPacket {
 	public void setExtension(boolean x) {
 		if (length<HDR_LEN) return; // broken packet
 		// else
-		setBit(x,buffer[offset],4);
+		BufferUtil.setBit(x, buffer, offset, 4);
 	}
 
 	/** Gets the CSRC count (CC).
@@ -281,7 +246,7 @@ public class RtpPacket {
 	public boolean hasMarker() {
 		if (length<HDR_LEN) return false; // broken packet
 		// else
-		return getBit(buffer[offset+1],7);
+		return BufferUtil.getBit(buffer[offset+1],7);
 	}
 
 	/** Sets marker (M).
@@ -289,7 +254,7 @@ public class RtpPacket {
 	public void setMarker(boolean m) {
 		if (length<HDR_LEN) return; // broken packet
 		// else
-		setBit(m,buffer[offset+1],7);
+		BufferUtil.setBit(m, buffer, offset + 1, 7);
 	}
 
 	/** Gets the payload type (PT).
@@ -313,7 +278,7 @@ public class RtpPacket {
 	public int getSequenceNumber() {
 		if (length<HDR_LEN) return 0; // broken packet
 		// else
-		return getInt(buffer,offset+2,offset+4);
+		return BufferUtil.getInt(buffer,offset+2,offset+4);
 	}
 
 	/** Sets the sequence number.
@@ -321,7 +286,7 @@ public class RtpPacket {
 	public void setSequenceNumber(int sn) {
 		if (length<HDR_LEN) return; // broken packet
 		// else
-		setInt(sn,buffer,offset+2,offset+4);
+		BufferUtil.setInt(sn,buffer,offset+2,offset+4);
 	}
 
 	/** Gets the timestamp.
@@ -329,7 +294,7 @@ public class RtpPacket {
 	public long getTimestamp() {
 		if (length<HDR_LEN) return 0; // broken packet
 		// else
-		return getLong(buffer,offset+4,offset+8);
+		return BufferUtil.getLong(buffer,offset+4,offset+8);
 	}
 
 	/** Sets the timestamp.
@@ -337,7 +302,7 @@ public class RtpPacket {
 	public void setTimestamp(long timestamp) {
 		if (length<HDR_LEN) return; // broken packet
 		// else
-		setLong(timestamp,buffer,offset+4,offset+8);
+		BufferUtil.setLong(timestamp,buffer,offset+4,offset+8);
 	}
 	
 	/** Gets the SSRC.
@@ -345,7 +310,7 @@ public class RtpPacket {
 	public long getSsrc() {
 		if (length<HDR_LEN) return 0; // broken packet
 		// else
-		return getLong(buffer,offset+8,offset+12);
+		return BufferUtil.getLong(buffer,offset+8,offset+12);
 	}
 
 	/** Sets the SSRC.
@@ -353,7 +318,7 @@ public class RtpPacket {
 	public void setSsrc(long ssrc) {
 		if (length<HDR_LEN) return; // broken packet
 		// else
-		setLong(ssrc,buffer,offset+8,offset+12);
+		BufferUtil.setLong(ssrc,buffer,offset+8,offset+12);
 	}
 
 	/** Gets the CSRC list.
@@ -363,7 +328,7 @@ public class RtpPacket {
 		// else
 		int cc=getCsrcCount();
 		long[] csrc=new long[cc];
-		for (int i=0; i<cc; i++) csrc[i]=getLong(buffer,offset+HDR_LEN+4*i,offset+HDR_LEN+4*i+2); 
+		for (int i=0; i<cc; i++) csrc[i]=BufferUtil.getLong(buffer,offset+HDR_LEN+4*i,offset+HDR_LEN+4*i+2); 
 		return csrc;
 	}
 
@@ -376,7 +341,7 @@ public class RtpPacket {
 		if (cc>15) cc=15;
 		if (length>=(HDR_LEN+4*cc)) {
 			setCsrcCount(cc);
-			for (int i=0; i<cc; i++) setLong(csrc[i],buffer,offset+HDR_LEN+4*i,offset+HDR_LEN+4*i+2);   
+			for (int i=0; i<cc; i++) BufferUtil.setLong(csrc[i],buffer,offset+HDR_LEN+4*i,offset+HDR_LEN+4*i+2);   
 			//hdr_len=HDR_LEN+4*cc;
 		}
 	}
@@ -469,51 +434,4 @@ public class RtpPacket {
 		setPaddingLength(0);
 	}
 
-
-
-	// *********************** Private and Static ***********************
-
-	/** Gets int value. */
-	static int getInt(byte b) {
-		return ((int)b+256)%256;
-	}
-
-	/** Gets long value. */
-	static long getLong(byte[] data, int begin, int end) {
-		long n=0;
-		for (; begin<end; begin++) {
-			n<<=8;
-			n+=getInt(data[begin]);
-		}
-		return n;
-	}
-
-	/** Sets long value. */
-	static void setLong(long n, byte[] data, int begin, int end) {
-		for (end-- ; end>=begin; end--) {
-			data[end]=(byte)(n%256);
-			n>>=8;
-		}
-	}
-
-	/** Gets Int value. */
-	static int getInt(byte[] data, int begin, int end) {
-		return (int)getLong(data,begin,end);
-	}
-
-	/** Sets Int value. */
-	static void setInt(int n, byte[] data, int begin, int end) {
-		setLong(n,data,begin,end);
-	}
-
-	/** Gets bit value. */
-	static boolean getBit(byte b, int bit) {
-		return (b>>bit)==1;
-	}
-
-	/** Sets bit value. */
-	static void setBit(boolean value, byte b, int bit) {
-		if (value) b=(byte)(b|(1<<bit));
-		else b=(byte)((b|(1<<bit))^(1<<bit));
-	}
 }

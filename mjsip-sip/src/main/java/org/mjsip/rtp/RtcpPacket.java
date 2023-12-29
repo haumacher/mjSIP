@@ -105,7 +105,7 @@ public class RtcpPacket {
 	/** Gets padding length
 	  * @return the number of padding bytes */
 	public int getPaddingLength() {
-		boolean p=RtpPacket.getBit(buffer[offset],5);
+		boolean p=BufferUtil.getBit(buffer[offset],5);
 		if (p) return buffer[offset+getPacketLength()-1];
 		else return 0;
 	}
@@ -116,9 +116,10 @@ public class RtcpPacket {
 		if (padding_len>0)  {
 			for (int i=1; i<padding_len; i++) buffer[offset+getPacketLength()-1-i]=0;
 			buffer[offset+getPacketLength()-1]=(byte)padding_len;
-			RtpPacket.setBit(true,buffer[offset],5);
+			BufferUtil.setBit(true, buffer, offset, 5);
 		}
-		else RtpPacket.setBit(false,buffer[offset],5);
+		else
+			BufferUtil.setBit(false, buffer, offset, 5);
 	}
 
 
@@ -138,13 +139,13 @@ public class RtcpPacket {
 	/** Gets the RTCP packet length.
 	  * @return the RTCP packet length including the header and any padding */   
 	public int getPacketLength() {
-		return (RtpPacket.getInt(buffer,2,4)+1)*4;
+		return (BufferUtil.getInt(buffer,2,4)+1)*4;
 	}
 
 	/** Sets the RTCP packet length.
 	  * @param len the RTCP packet length including the header and any padding */   
 	public void setPacketLength(int len) {
-		RtpPacket.setInt(len/4-1,buffer,2,4);
+		BufferUtil.setInt(len/4-1,buffer,2,4);
 	}
 
 }

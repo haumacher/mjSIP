@@ -91,13 +91,13 @@ public class RrRtcpPacket extends RtcpPacket {
 	/** Gets the SSRC.
 	  * @return the synchronization source identifier (SSRC) for the originator of this SR packet. */
 	public long getSsrc() {
-		return RtpPacket.getLong(buffer,offset+4,offset+8);
+		return BufferUtil.getLong(buffer,offset+4,offset+8);
 	}
 
 	/** Sets the SSRC.
 	  * @param ssrc the synchronization source identifier (SSRC) for the originator of this SR packet. */
 	public void setSsrc(long ssrc) {
-		RtpPacket.setLong(ssrc,buffer,offset+4,offset+8);
+		BufferUtil.setLong(ssrc,buffer,offset+4,offset+8);
 	}
 
 	/** Gets the report blocks.
@@ -177,85 +177,85 @@ public class RrRtcpPacket extends RtcpPacket {
 		/** Sets the synchronization source (SSRC) identifier.
 		  * @param ssrc the SSRC identifier of the source to which the information in this reception report block pertains */
 		public void setSSRC(long ssrc) {
-			RtpPacket.setLong(ssrc,buf,off,off+4);
+			BufferUtil.setLong(ssrc,buf,off,off+4);
 		}
 
 		/** Gets the synchronization source (SSRC) identifier.
 		  * @return the SSRC identifier of the source to which the information in this reception report block pertains */
 		public long getSSRC() {
-			return RtpPacket.getLong(buf,off,off+4);
+			return BufferUtil.getLong(buf,off,off+4);
 		}
 
 		/** Sets fraction lost.
 		  * @param fraction_lost the fraction of RTP data packets lost since the previous SR or RR packet was sent; the fraction loss is defined as the number of packets lost divided by the number of packets expected; it is represented by the integer part after multiplying the loss fraction by 256 (8 bit) */
 		public void setFractionLost(int fraction_lost) {
-			RtpPacket.setInt(fraction_lost,buf,off+4,off+5);
+			BufferUtil.setInt(fraction_lost,buf,off+4,off+5);
 		}
 
 		/** Gets fraction lost.
 		  * @return the fraction of RTP data packets lost since the previous SR or RR packet was sent; the fraction loss is defined as the number of packets lost divided by the number of packets expected; it is represented by the integer part after multiplying the loss fraction by 256 (8 bit) */
 		public int getFractionLost() {
-			return RtpPacket.getInt(buf,off+4,off+5);
+			return BufferUtil.getInt(buf,off+4,off+5);
 		}
 
 		/** Sets cumulative number of packets lost.
 		  * @param packet_lost cumulative number of packets lost that is the total number of RTP data packets that have been lost since the beginning of reception; it is the number of packets expected less the number of packets actually received, where the number of packets received includes any which are late or duplicates */
 		public void setCumulativePacketLost(long packet_lost) {
-			RtpPacket.setLong(packet_lost,buf,off+5,off+8);
+			BufferUtil.setLong(packet_lost,buf,off+5,off+8);
 		}
 
 		/** Gets cumulative number of packets lost.
 		  * @return cumulative number of packets lost that is the total number of RTP data packets that have been lost since the beginning of reception; it is the number of packets expected less the number of packets actually received, where the number of packets received includes any which are late or duplicates */
 		public long getCumulativePacketLost() {
-			return RtpPacket.getLong(buf,off+5,off+8);
+			return BufferUtil.getLong(buf,off+5,off+8);
 		}
 
 		/** Sets the extended highest sequence number received.
 		  * @param highest_sqn the extended highest sequence number received (32bit); the low 16 bits contain the highest sequence number received in an RTP data packet, and the most significant 16 bits extend that sequence number with the corresponding count of sequence number cycles */
 		public void setHighestSqnReceived(long highest_sqn) {
-			RtpPacket.setLong(highest_sqn,buf,off+8,off+12);
+			BufferUtil.setLong(highest_sqn,buf,off+8,off+12);
 		}
 
 		/** Gets the extended highest sequence number received.
 		  * @return the extended highest sequence number received (32bit); the low 16 bits contain the highest sequence number received in an RTP data packet, and the most significant 16 bits extend that sequence number with the corresponding count of sequence number cycles */
 		public long getHighestSqnReceived() {
-			return RtpPacket.getLong(buf,off+8,off+12);
+			return BufferUtil.getLong(buf,off+8,off+12);
 		}
 
 		/** Sets the interarrival jitter.
 		  * @param jitter the interarrival jitter, that is an estimate of the statistical variance of the RTP data packet interarrival time, measured in timestamp units and expressed as an unsigned integer */
 		public void setInterarrivalJitter(long jitter) {
-			RtpPacket.setLong(jitter,buf,off+12,off+16);
+			BufferUtil.setLong(jitter,buf,off+12,off+16);
 		}
 
 		/** Gets the interarrival jitter.
 		  * @return the interarrival jitter, that is an estimate of the statistical variance of the RTP data packet interarrival time, measured in timestamp units and expressed as an unsigned integer */
 		public long getInterarrivalJitter() {
-			return RtpPacket.getLong(buf,off+12,off+16);
+			return BufferUtil.getLong(buf,off+12,off+16);
 		}
 
 		/** Sets last SR timestamp (LSR).
 		  * @param lsr last SR timestamp (LSR), that is the middle 32 bits out of 64 in the NTP timestamp received as part of the most recent RTCP SR packet */
 		public void setLSR(long lsr) {
-			RtpPacket.setLong(lsr,buf,off+16,off+20);
+			BufferUtil.setLong(lsr,buf,off+16,off+20);
 		}
 
 		/** Gets last SR timestamp (LSR).
 		  * @return last SR timestamp (LSR), that is the middle 32 bits out of 64 in the NTP timestamp received as part of the most recent RTCP SR packet */
 		public long getLSR() {
-			return RtpPacket.getLong(buf,off+16,off+20);
+			return BufferUtil.getLong(buf,off+16,off+20);
 		}
 
 		/** Sets delay since last SR (DLSR).
 		  * @param dlsr delay since last SR (DLSR), that is the delay, expressed in units of 1/65536 seconds, between receiving the last SR packet and sending this reception report block */ 
 		public void setDLSR(long dlsr) {
-			RtpPacket.setLong(dlsr,buf,off+20,off+24);
+			BufferUtil.setLong(dlsr,buf,off+20,off+24);
 		}
 
 		/** Gets delay since last SR (DLSR).
 		  * @return delay since last SR (DLSR), that is the delay, expressed in units of 1/65536 seconds, between receiving the last SR packet and sending this reception report block */ 
 		public long getDLSR() {
-			return RtpPacket.getLong(buf,off+20,off+24);
+			return BufferUtil.getLong(buf,off+20,off+24);
 		}
 		
 	}

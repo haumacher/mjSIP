@@ -171,15 +171,15 @@ public class SrRtcpPacket extends RrRtcpPacket {
 		  * @param time the wallclock time (in Java format) when this report is sent */
 		public void setNtpTimestamp(long time) {
 			NtpTimeStamp ts=new NtpTimeStamp(time);
-			RtpPacket.setLong(ts.getNtpSeconds(),buf,off,off+4);
-			RtpPacket.setLong(ts.getNtpFraction(),buf,off+4,off+8);
+			BufferUtil.setLong(ts.getNtpSeconds(),buf,off,off+4);
+			BufferUtil.setLong(ts.getNtpFraction(),buf,off+4,off+8);
 		}
 
 		/** Gets NTP timestamp.
 		  * @return the wallclock time (in Java format) when this report is sent */
 		public long getNtpTimestamp() {
-			long seconds=RtpPacket.getLong(buf,off,off+4);
-			long fraction=RtpPacket.getLong(buf,off+4,off+8);
+			long seconds=BufferUtil.getLong(buf,off,off+4);
+			long fraction=BufferUtil.getLong(buf,off+4,off+8);
 			NtpTimeStamp ts=new NtpTimeStamp(seconds,fraction);
 			return ts.getTime();
 		}
@@ -187,37 +187,37 @@ public class SrRtcpPacket extends RrRtcpPacket {
 		/** Sets RTP timestamp.
 		  * @param rtp_timestamp the same time as the NTP timestamp, but in the same units and with the same random offset as the RTP timestamps in data packets */
 		public void setRtpTimestamp(long rtp_timestamp) {
-			RtpPacket.setLong(rtp_timestamp,buf,off+8,off+12);
+			BufferUtil.setLong(rtp_timestamp,buf,off+8,off+12);
 		}
 
 		/** Gets RTP timestamp.
 		  * @return the same time as the NTP timestamp, but in the same units and with the same random offset as the RTP timestamps in data packets */
 		public long getRtpTimestamp() {
-			return RtpPacket.getLong(buf,off+8,off+12);
+			return BufferUtil.getLong(buf,off+8,off+12);
 		}
 
 		/** Sets packet count.
 		  * @param packet_count the total number of RTP data packets transmitted by the sender since starting transmission up until the time this SR packet was generated */
 		public void setPacketCount(long packet_count) {
-			RtpPacket.setLong(packet_count,buf,off+12,off+16);
+			BufferUtil.setLong(packet_count,buf,off+12,off+16);
 		}
 
 		/** Gets packet count.
 		  * @return the total number of RTP data packets transmitted by the sender since starting transmission up until the time this SR packet was generated */
 		public long getPacketCount() {
-			return RtpPacket.getLong(buf,off+12,off+16);
+			return BufferUtil.getLong(buf,off+12,off+16);
 		}
 
 		/** Sets octect count.
 		  * @param octect_count the total number of payload octets (i.e., not including header or padding) transmitted in RTP data packets by the sender since starting transmission up until the time this SR packet was generated */ 
 		public void setOctectCount(long octect_count) {
-			RtpPacket.setLong(octect_count,buf,off+16,off+20);
+			BufferUtil.setLong(octect_count,buf,off+16,off+20);
 		}
 
 		/** Gets octect count.
 		  * @return the total number of payload octets (i.e., not including header or padding) transmitted in RTP data packets by the sender since starting transmission up until the time this SR packet was generated */ 
 		public long getOctectCount() {
-			return RtpPacket.getLong(buf,off+16,off+20);
+			return BufferUtil.getLong(buf,off+16,off+20);
 		}
 		
 		/** Gets a string representation of this object.

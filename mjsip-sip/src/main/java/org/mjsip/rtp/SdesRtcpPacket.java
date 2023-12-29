@@ -289,7 +289,7 @@ public class SdesRtcpPacket extends RtcpPacket {
 
 		/** Creates a new Chunk. */
 		public Chunk(byte[] buf, int off) {
-			ssrc=RtpPacket.getLong(buf,off,off+4);
+			ssrc=BufferUtil.getLong(buf,off,off+4);
 			int begin=off+4;
 			ArrayList items_list=new ArrayList();
 			while (buf[begin]!=0) {
@@ -347,7 +347,7 @@ public class SdesRtcpPacket extends RtcpPacket {
 		/** Gets the chunk bytes.
 		  * @return the chunk length. */
 		public int getBytes(byte[] buf, int off) {
-			RtpPacket.setLong(ssrc,buf,off,off+4);
+			BufferUtil.setLong(ssrc,buf,off,off+4);
 			int len=4;
 			for (int i=0; i<items.length; i++) {
 				len+=items[i].getBytes(buf,off+len);
