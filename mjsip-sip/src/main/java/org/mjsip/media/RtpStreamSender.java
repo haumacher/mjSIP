@@ -286,6 +286,7 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		if (STATIC_SQN>=0) sqn=STATIC_SQN;
 		if (STATIC_TIMESTAMP>=0) timestamp=STATIC_TIMESTAMP;
 		rtp_packet.setHeader(p_type,ssrc,sqn,timestamp);
+		rtp_packet.setMarker(true);
 
 		long time=0;
 		long time_sync=0;
@@ -342,6 +343,8 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 					else debug_drop_count--;
 					// DEBUG DROP RATE END
 					
+					rtp_packet.setMarker(false);
+
 					// update rtp timestamp (in milliseconds)
 					//long this_packet_time=(num*1000)/byte_rate;
 					long this_packet_time=packet_time*len/payload_size/channels;
