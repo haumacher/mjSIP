@@ -12,6 +12,7 @@ import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.ParserProperties;
+import org.slf4j.LoggerFactory;
 import org.zoolu.util.ConfigFile;
 
 /**
@@ -19,6 +20,8 @@ import org.zoolu.util.ConfigFile;
  */
 public class OptionParser {
 
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(OptionParser.class);
+	
 	/**
 	 * Parses the given command line arguments and fills the given bean objects.
 	 */
@@ -63,6 +66,8 @@ public class OptionParser {
 			}
 			
 			if (file!= null) {
+				LOG.debug("Reading options from: " + file.getAbsolutePath());
+				
 				ConfigFile configFile = new ConfigFile(file);
 				
 				// Parse all arguments again to check for required arguments not given but give
