@@ -3,6 +3,8 @@
  */
 package org.mjsip.ua;
 
+import java.util.concurrent.Executor;
+
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaStreamer;
@@ -52,9 +54,11 @@ public class MediaAgent {
 		return _media;
 	}
 
-	/** Starts a media session */
-	public MediaStreamer startMediaSession(FlowSpec flow_spec) {
-		return _streamerFactory.createMediaStreamer(flow_spec);
+	/** 
+	 * Starts a media session 
+	 */
+	public MediaStreamer startMediaSession(Executor executor, FlowSpec flow_spec) {
+		return _streamerFactory.createMediaStreamer(executor, flow_spec);
 	}
 
 	/**

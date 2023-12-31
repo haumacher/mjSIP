@@ -25,6 +25,7 @@ package org.mjsip.media;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import javax.sound.sampled.AudioFormat;
@@ -110,13 +111,15 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 	/** RTCP */
 	private final RtpControl rtp_control;
 
+	private Executor _executor;
+
 	/**
 	 * Creates a new audio streamer.
-	 * 
 	 * @param flow_spec
 	 *        the flow specification
 	 */
-	public AudioStreamer(FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx, StreamerOptions options) {
+	public AudioStreamer(Executor executor, FlowSpec flow_spec, AudioTransmitter tx, AudioReceiver rx, StreamerOptions options) {
+		_executor = executor;
 		MediaSpec mediaSpec = flow_spec.getMediaSpec();
 
 		int channels = mediaSpec.getChannels();
@@ -260,11 +263,11 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		LOG.info("starting java audio");
 		if (_txHandle != null) {
 			LOG.debug("start sending");
-			_txHandle.start();
+			_txHandle.start(_executor);
 		}
 		if (_rxHandle != null) {
 			LOG.debug("start receiving");
-			_rxHandle.start();
+			_rxHandle.start(_executor);
 		}
 		return true;      
 	}

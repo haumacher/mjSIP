@@ -3,6 +3,8 @@
  */
 package org.mjsip.media.rx;
 
+import java.util.concurrent.Executor;
+
 /**
  * TODO
  *
@@ -14,7 +16,7 @@ public interface AudioRxHandle {
 	 * TODO
 	 *
 	 */
-	void start();
+	void start(Executor executor);
 
 	/**
 	 * TODO

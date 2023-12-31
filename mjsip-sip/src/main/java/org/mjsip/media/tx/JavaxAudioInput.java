@@ -5,6 +5,7 @@ package org.mjsip.media.tx;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executor;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -66,8 +67,8 @@ public class JavaxAudioInput implements AudioTransmitter {
 				remote_port, rtpControl, listener);
 		return new RtpAudioTxHandle(sender) {
 			@Override
-			public void start() {
-				super.start();
+			public void start(Executor executor) {
+				super.start(executor);
 				SimpleAudioSystem.startAudioInputLine();
 			}
 

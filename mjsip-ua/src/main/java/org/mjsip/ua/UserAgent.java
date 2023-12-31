@@ -317,7 +317,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Starting media session: " + flow_spec);
 			}
-			MediaStreamer streamer = _mediaAgent.startMediaSession(flow_spec);
+			MediaStreamer streamer = _mediaAgent.startMediaSession(sip_provider.scheduler(), flow_spec);
 			
 			if (streamer == null) {
 				LOG.warn("No media streamer found for type: " + mediaType);

@@ -3,6 +3,8 @@
  */
 package org.mjsip.ua.streamer;
 
+import java.util.concurrent.Executor;
+
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
 
@@ -21,7 +23,7 @@ public class NoStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
+	public MediaStreamer createMediaStreamer(Executor executor, FlowSpec flow_spec) {
 		return null;
 	}
 

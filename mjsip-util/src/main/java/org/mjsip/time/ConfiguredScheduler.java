@@ -41,6 +41,11 @@ public class ConfiguredScheduler implements Scheduler {
 	public ScheduledThreadPoolExecutor executor() {
 		return executor;
 	}
+	
+	@Override
+	public void execute(Runnable command) {
+		executor.execute(command);
+	}
 
 	/**
 	 * Executor for background tasks that end if the program terminates.

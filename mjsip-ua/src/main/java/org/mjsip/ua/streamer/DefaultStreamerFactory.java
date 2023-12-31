@@ -3,6 +3,8 @@
  */
 package org.mjsip.ua.streamer;
 
+import java.util.concurrent.Executor;
+
 import org.mjsip.media.AudioStreamer;
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
@@ -30,8 +32,8 @@ public class DefaultStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
-		return new AudioStreamer(flow_spec, _tx, _rx, _options);
+	public MediaStreamer createMediaStreamer(Executor executor, FlowSpec flow_spec) {
+		return new AudioStreamer(executor, flow_spec, _tx, _rx, _options);
 	}
 
 }

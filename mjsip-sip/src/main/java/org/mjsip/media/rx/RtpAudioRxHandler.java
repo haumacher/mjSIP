@@ -3,6 +3,8 @@
  */
 package org.mjsip.media.rx;
 
+import java.util.concurrent.Executor;
+
 import org.mjsip.media.RtpStreamReceiver;
 
 /**
@@ -20,8 +22,8 @@ public class RtpAudioRxHandler implements AudioRxHandle {
 	}
 
 	@Override
-	public void start() {
-		_rtpReceiver.start();
+	public void start(Executor executor) {
+		executor.execute(_rtpReceiver);
 	}
 
 	@Override

@@ -40,7 +40,7 @@ import org.zoolu.util.Random;
 /** RtpStreamSender is a generic RTP sender.
   * It takes media from a given InputStream and sends it through RTP packets to a remote destination.
   */
-public class RtpStreamSender extends Thread implements RtpControlledSender {
+public class RtpStreamSender implements Runnable, RtpControlledSender {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RtpStreamSender.class);
 
@@ -116,7 +116,7 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 	long sync_adj=0;
 
 	/** Whether it is running */
-	boolean running=false;   
+	private volatile boolean running = false;
 
 	/** Synchronization source (SSRC) identifier. */
 	//long ssrc=0;
@@ -259,18 +259,15 @@ public class RtpStreamSender extends Thread implements RtpControlledSender {
 		return octect_count;
 	}
 
-
 	/** Whether is running */
 	public boolean isRunning() {
 		return running;
 	}
 
-
 	/** Stops running */
 	public void halt() {
 		running=false;
 	}
-
 
 	/** Runs it in a new Thread. */
 	@Override

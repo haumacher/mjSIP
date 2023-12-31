@@ -38,7 +38,7 @@ import org.zoolu.util.Encoder;
 /** RtpStreamReceiver is a generic RTP receiver.
   * It receives packets from RTP and writes media into a given OutputStream.
   */
-public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
+public class RtpStreamReceiver implements Runnable, RtpControlledReceiver {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RtpStreamReceiver.class);
 	
@@ -79,7 +79,7 @@ public class RtpStreamReceiver extends Thread implements RtpControlledReceiver {
 	private int random_early_drop = 0;
 
 	/** Whether it is running */
-	private boolean running = false;
+	private volatile boolean running = false;
 
 	/** Packet counter (incremented only if packet_drop_rate>0) */
 	private long packet_counter = 0;

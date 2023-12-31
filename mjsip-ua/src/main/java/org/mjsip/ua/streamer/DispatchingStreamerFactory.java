@@ -5,6 +5,7 @@ package org.mjsip.ua.streamer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
@@ -46,13 +47,13 @@ public class DispatchingStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
+	public MediaStreamer createMediaStreamer(Executor executor, FlowSpec flow_spec) {
 		StreamerFactory factory = _factoryByType.get(flow_spec.getMediaType());
 		if (factory == null) {
-			return _defaultStreamerFactory.createMediaStreamer(flow_spec);
+			return _defaultStreamerFactory.createMediaStreamer(executor, flow_spec);
 		}
 		
-		return factory.createMediaStreamer(flow_spec);
+		return factory.createMediaStreamer(executor, flow_spec);
 	}
 
 }

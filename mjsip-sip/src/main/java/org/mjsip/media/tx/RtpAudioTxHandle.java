@@ -4,6 +4,7 @@
 package org.mjsip.media.tx;
 
 import java.net.UnknownHostException;
+import java.util.concurrent.Executor;
 
 import org.mjsip.media.RtpStreamSender;
 import org.zoolu.net.SocketAddress;
@@ -30,8 +31,8 @@ public class RtpAudioTxHandle implements AudioTXHandle {
 	}
 
 	@Override
-	public void start() {
-		_rtpSender.start();
+	public void start(Executor executor) {
+		executor.execute(_rtpSender);
 	}
 
 	@Override

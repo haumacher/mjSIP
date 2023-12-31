@@ -4,6 +4,7 @@
 package org.mjsip.media.rx;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -66,9 +67,9 @@ public class JavaxAudioOutput implements AudioReceiver {
 		RtpStreamReceiver receiver = new RtpStreamReceiver(options, audio_output_stream, additional_decoder, payloadFormat, socket, listener);
 		RtpAudioRxHandler handle = new RtpAudioRxHandler(receiver) {
 			@Override
-			public void start() {
+			public void start(Executor executor) {
 				SimpleAudioSystem.startAudioOutputLine();
-				super.start();
+				super.start(executor);
 			}
 
 			@Override

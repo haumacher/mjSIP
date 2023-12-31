@@ -3,6 +3,7 @@
  */
 package org.mjsip.time;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Service for scheduling tasks.
  */
-public interface Scheduler {
+public interface Scheduler extends Executor {
 
 	/** 
 	 * The {@link ScheduledExecutorService} used for scheduling tasks.
@@ -46,6 +47,11 @@ public interface Scheduler {
 			@Override
 			public ScheduledExecutorService executor() {
 				return executor;
+			}
+
+			@Override
+			public void execute(Runnable command) {
+				executor.execute(command);
 			}
 		};
 	}

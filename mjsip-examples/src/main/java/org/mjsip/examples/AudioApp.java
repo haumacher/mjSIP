@@ -3,6 +3,7 @@ package org.mjsip.examples;
 
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 import org.mjsip.media.AudioStreamer;
 import org.mjsip.media.FlowSpec;
@@ -267,7 +268,13 @@ public class AudioApp {
 			.setRtp(rtcp)
 			.setSyncAdjust(sync_adj)
 			.build();
-		AudioStreamer audio_streamer = new AudioStreamer(fspec, tx, rx, options.build());
+		Executor executor = new Executor() {
+			@Override
+			public void execute(Runnable command) {
+				new Thread(command).start();
+			}
+		};
+		AudioStreamer audio_streamer = new AudioStreamer(executor, fspec, tx, rx, options.build());
 
 		audio_streamer.start();
 

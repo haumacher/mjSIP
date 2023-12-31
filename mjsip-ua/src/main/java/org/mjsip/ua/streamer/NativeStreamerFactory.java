@@ -3,6 +3,8 @@
  */
 package org.mjsip.ua.streamer;
 
+import java.util.concurrent.Executor;
+
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaStreamer;
 import org.mjsip.media.NativeMediaStreamer;
@@ -25,7 +27,7 @@ public class NativeStreamerFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
+	public MediaStreamer createMediaStreamer(Executor executor, FlowSpec flow_spec) {
 		String remote_addr=(_mcastAddr!=null)? _mcastAddr.getAddress().toString() : flow_spec.getRemoteAddress();
 		int remote_port=(_mcastAddr!=null)? _mcastAddr.getPort() : flow_spec.getRemotePort();
 		int local_port=(_mcastAddr!=null)? _mcastAddr.getPort() : flow_spec.getLocalPort();

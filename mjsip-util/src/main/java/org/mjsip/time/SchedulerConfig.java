@@ -14,7 +14,7 @@ import org.mjsip.config.YesNoHandler;
 public class SchedulerConfig {
 
 	@Option(name = "--thread-pool-size")
-	private int _threadPoolSize = 3;
+	private int _threadPoolSize = 5;
 
 	@Option(name = "--use-daemon-treads", handler = YesNoHandler.class)
 	private boolean _daemonThreads = true;

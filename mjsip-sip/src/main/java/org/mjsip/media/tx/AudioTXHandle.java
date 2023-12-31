@@ -4,6 +4,7 @@
 package org.mjsip.media.tx;
 
 import java.net.UnknownHostException;
+import java.util.concurrent.Executor;
 
 import org.mjsip.media.RtpStreamSender;
 import org.mjsip.rtp.RtpControl;
@@ -22,7 +23,7 @@ public interface AudioTXHandle {
 	/**
 	 * Starts the transmission.
 	 */
-	void start();
+	void start(Executor executor);
 
 	/**
 	 * Stops the transmission.
