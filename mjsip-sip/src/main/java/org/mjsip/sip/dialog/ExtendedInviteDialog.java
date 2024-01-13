@@ -254,10 +254,8 @@ public class ExtendedInviteDialog extends org.mjsip.sip.dialog.InviteDialog {
 	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		LOG.trace("onReceivedMessage(): "+msg.getFirstLine().substring(0,msg.toString().indexOf('\r')));
-		if (msg.isResponse()) {
-			super.onReceivedMessage(provider,msg);
-		} else if (msg.isInvite() || msg.isAck() || msg.isCancel() || msg.isBye() || msg.isInfo() || msg.isPrack()
-				|| msg.isUpdate()) {
+		if (msg.isResponse() || msg.isInvite() || msg.isAck() || msg.isCancel() || msg.isBye() || msg.isInfo()
+				|| msg.isPrack() || msg.isUpdate()) {
 			super.onReceivedMessage(provider,msg);
 		} else {
 			TransactionServer t=new TransactionServer(sip_provider,msg,this);
