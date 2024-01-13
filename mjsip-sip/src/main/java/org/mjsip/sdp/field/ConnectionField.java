@@ -26,6 +26,7 @@ package org.mjsip.sdp.field;
 
 
 import org.mjsip.sdp.SdpField;
+import org.zoolu.net.AddressType;
 import org.zoolu.util.Parser;
 
 
@@ -52,7 +53,7 @@ public class ConnectionField extends SdpField {
 	* @param address the address
 	* @param ttl the TTL parameter (or -1)
 	* @param num the number of addresses (or -1) */
-	public ConnectionField(String address_type, String address, int ttl, int num) {
+	public ConnectionField(AddressType address_type, String address, int ttl, int num) {
 		//super('c',null);
 		//value="IN "+address_type+" "+address;
 		//if (ttl>0) value+="/"+ttl;
@@ -63,16 +64,16 @@ public class ConnectionField extends SdpField {
 	/** Creates a new ConnectionField.
 	 * @param address_type address type, e.g. IP4, IP6 (default is IP4)
 	 * @param address the address */
-	public ConnectionField(String address_type, String address) {
+	public ConnectionField(AddressType address_type, String address) {
 		//super('c',"IN "+address_type+" "+address);
 		super('c',getValue(address_type,address,-1,-1));
 	}
 
 	/** Gets the value of the origin field.
 	 * @return a string with the value of the origin field */
-	private static String getValue(String address_type, String address, int ttl, int num) {
+	private static String getValue(AddressType address_type, String address, int ttl, int num) {
 		StringBuffer sb=new StringBuffer();
-		if (address_type == null || address_type.length() == 0)
+		if (address_type == null || address_type == AddressType.DEFAULT)
 			address_type = ConnectionField.addressType(address);
 		sb.append("IN").append(' ').append(address_type);
 		sb.append(' ').append(address);
@@ -84,8 +85,8 @@ public class ConnectionField extends SdpField {
 	/**
 	 * Guessed address type of the given address.
 	 */
-	public static String addressType(String address) {
-		return address.indexOf(':') >= 0 ? "IP6" : "IP4";
+	public static AddressType addressType(String address) {
+		return address.indexOf(':') >= 0 ? AddressType.IP6 : AddressType.IP4;
 	}
 
 	/** Creates a new ConnectionField.
@@ -96,9 +97,9 @@ public class ConnectionField extends SdpField {
 		
 	/** Gets the connection address.
 	 * @return the address type */
-	public String getAddressType() {
-		String type=(new Parser(value)).skipString().getString();
-		return type;
+	public AddressType getAddressType() {
+		String addressType = (new Parser(value)).skipString().getString();
+		return AddressType.fromString(addressType);
 	}
 
 	/** Gets the connection address.

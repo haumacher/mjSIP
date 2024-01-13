@@ -25,10 +25,13 @@ package org.zoolu.net;
 
 
 
+import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -134,76 +137,100 @@ public class IpAddress {
 	
 	
 	/** Detects the default IP address of this host. */
-	public static IpAddress getLocalHostAddress() {
-		IpAddress ip_address=null;
+	public static InetAddress getLocalHostAddress() {
+		return getLocalHostAddress(null);
+	}
+	
+	public static InetAddress getLocalHostAddress(AddressType type) {
+		boolean ipv6 = type == AddressType.IP6;
+		
 		try {
-			// try to get the address used for going to a remote public node
-			DatagramSocket socket=new DatagramSocket();
-			socket.connect(InetAddress.getByName("8.8.8.8"), 9999);
-			ip_address=new IpAddress(socket.getLocalAddress());
-			socket.close();
+			// Try to get an address with internet connection.
+			try (DatagramSocket socket=new DatagramSocket()) {
+				// Use Google DNS server
+				String remote = ipv6 ? "2001:4860:4860::8888" : "8.8.8.8";
+				socket.connect(InetAddress.getByName(remote), 9999);
+				return socket.getLocalAddress();
+			}
+		} catch (IOException ex) {
+			// Ignore.
 		}
-		catch (Exception e) {}
 		
-		if (ip_address==null) {
-			try {
-				Vector<IpAddress> all_ip4_addrs=new Vector<>();
-				Enumeration<NetworkInterface> networks = NetworkInterface.getNetworkInterfaces();
-				while (networks.hasMoreElements()) {
-					NetworkInterface intf = networks.nextElement();
-					Enumeration<InetAddress> iaddrs = intf.getInetAddresses();
-					while (iaddrs.hasMoreElements()) {
-						InetAddress iaddr=iaddrs.nextElement();
-						if (iaddr.getClass().getName().equals("java.net.Inet4Address")) {
-							if (iaddr.isLoopbackAddress()) continue;
-							if (iaddr.isLinkLocalAddress()) continue;
-							if (iaddr.isMulticastAddress()) continue;
-							if (iaddr.getHostAddress().equals("255.255.255.255")) continue;
+		try {
+			int prio = 3;
+			
+			final int linkPrio = 2;
+			final int sitePrio = 1;
+			
+			InetAddress result = null;
+			
+			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+			while (interfaces.hasMoreElements()) {
+				NetworkInterface network = interfaces.nextElement();
+				if (network.isLoopback()) {
+					continue;
+				}
+				if (network.isVirtual()) {
+					continue;
+				}
+				if (!network.isUp()) {
+					continue;
+				}
+				Enumeration<InetAddress> addresses = network.getInetAddresses();
+				while (addresses.hasMoreElements()) {
+					InetAddress address = addresses.nextElement();
+					if (address.isAnyLocalAddress() || address.isLoopbackAddress()  || address.isMulticastAddress()) {
+						continue;
+					}
+					
+					if (ipv6 != (address instanceof Inet6Address)) {
+						continue;
+					}
 
-							all_ip4_addrs.add(new IpAddress(iaddr));
+					try {
+						if (address.isLinkLocalAddress()) {
+							if (prio > linkPrio) {
+								result = normalize(address);
+								prio = linkPrio;
+							}
+							continue;
 						}
-					}
-				}
-				for (int i=0; i<all_ip4_addrs.size(); i++) {
-					IpAddress addr=(IpAddress)all_ip4_addrs.get(i);
-					if (!addr.isPrivateAddress()) {
-						ip_address=addr;
-						break;
-					}
-				}
-				if (ip_address==null) {
-					for (int i=0; i<all_ip4_addrs.size(); i++) {
-						IpAddress addr=(IpAddress)all_ip4_addrs.get(i);
-						if (addr.toString().startsWith("172.")) {
-							ip_address=addr;
-							break;
+						
+						if (address.isSiteLocalAddress()) {
+							if (prio > sitePrio) {
+								result = normalize(address);
+								prio = sitePrio;
+							}
+							continue;
 						}
+
+						result = normalize(address);
+					} catch (UnknownHostException e) {
+						continue;
 					}
-				}
-				if (ip_address==null) {
-					for (int i=0; i<all_ip4_addrs.size(); i++) {
-						IpAddress addr=(IpAddress)all_ip4_addrs.get(i);
-						if (addr.toString().startsWith("192.")) {
-							ip_address=addr;
-							break;
-						}
-					}
-				}
-				if (ip_address==null) {
-					ip_address=(IpAddress)all_ip4_addrs.get(0);
+					
+					return result;
 				}
 			}
-			catch (SocketException e) {}			
-		}
-		if (ip_address==null) {
-			try {
-				ip_address=new IpAddress(InetAddress.getLocalHost());
+			
+			if (result != null) {
+				return result;
 			}
-			catch (java.net.UnknownHostException e) {}
+		} catch (SocketException e1) {
+			// Ignore.
 		}
-		if (ip_address==null) ip_address=new IpAddress("127.0.0.1");
 		
-		return ip_address;
+		try {
+			return InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			// Ignore.
+		}
+
+		return InetAddress.getLoopbackAddress();
+	}
+
+	private static InetAddress normalize(InetAddress address) throws UnknownHostException {
+		return InetAddress.getByAddress(address.getAddress());
 	}
 
 }

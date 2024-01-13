@@ -1,6 +1,8 @@
 package org.mjsip.server;
 
 
+import java.net.InetAddress;
+
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -121,8 +123,8 @@ public class ServerProfile {
 		
 		for (int n = 0, cnt = domainNames.length; n < cnt; n++) {
 			if (domainNames[n].equalsIgnoreCase(SipConfig.AUTO_CONFIGURATION)) {
-				IpAddress host_addr=IpAddress.getLocalHostAddress();
-				domainNames[n] = host_addr.toString();
+				InetAddress host_addr=IpAddress.getLocalHostAddress();
+				domainNames[n] = host_addr.getHostAddress();
 			}
 		}
 		

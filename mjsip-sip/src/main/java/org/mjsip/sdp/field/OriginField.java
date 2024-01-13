@@ -26,6 +26,7 @@ package org.mjsip.sdp.field;
 
 
 import org.mjsip.sdp.SdpField;
+import org.zoolu.net.AddressType;
 import org.zoolu.util.Parser;
 
 
@@ -51,7 +52,7 @@ public class OriginField extends SdpField {
 	 * @param sess_version session version
 	 * @param addrtype address type, e.g. IP4, IP6 (default is IP4)
 	 * @param address the address */
-	public OriginField(String username, String sess_id, String sess_version, String addrtype, String address) {
+	public OriginField(String username, String sess_id, String sess_version, AddressType addrtype, String address) {
 		this(getValue(username, sess_id, sess_version, addrtype, address));
 	}
 
@@ -59,18 +60,19 @@ public class OriginField extends SdpField {
 	 * @param username the name of the owner of the session
 	 * @param addrtype address type, e.g. IP4, IP6 (default is IP4)
 	 * @param address the IPv4 address */
-	public OriginField(String username, String addrtype, String address) {
+	public OriginField(String username, AddressType addrtype, String address) {
 		this(username, null, null, addrtype, address);
 	}
 
 	/** Gets the value of the origin field.
 	 * @return a string with the value of the origin field */
-	private static String getValue(String username, String sess_id, String sess_version, String addrtype, String address) {
+	private static String getValue(String username, String sess_id, String sess_version, AddressType addrtype,
+			String address) {
 		StringBuffer sb=new StringBuffer();
 		if (username==null || username.length()==0) username="-";
 		if (sess_id==null || sess_id.length()==0) sess_id="0";
 		if (sess_version==null || sess_version.length()==0) sess_version="0";
-		if (addrtype == null || addrtype.length() == 0)
+		if (addrtype == null || addrtype == AddressType.DEFAULT)
 			addrtype = ConnectionField.addressType(address);
 		sb.append(username);
 		sb.append(' ').append(sess_id);

@@ -20,10 +20,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.sip.provider;
-
-
 
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.YesNoHandler;
@@ -32,10 +29,9 @@ import org.mjsip.sip.config.IpAddressHandler;
 import org.mjsip.sip.config.SipURIHandler;
 import org.mjsip.sip.message.SipMethods;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 import org.zoolu.net.IpAddress;
 import org.zoolu.util.Configure;
-
-
 
 /**
  * SIP configuration options.
@@ -139,8 +135,14 @@ public class SipConfig implements SipOptions {
 	/** Whether using an alternative transaction id that does not include the 'sent-by' value. */
 	//public boolean alternative_transaction_id=false;
 
-	@Option(name = "--via-addr", usage = "Host via address.")
-	private String _viaAddr = null;
+	@Option(name = "--via-addr", usage = "Host IPv4 address added to the via header.")
+	private String _viaAddr4 = null;
+
+	@Option(name = "--via-addr-v6", usage = "Host IPv6 address used in communication with an IPv6 counterpart in the via header.")
+	private String _viaAddr6 = null;
+
+	@Option(name = "--prefer-ipv4", usage = "Whether to use IPv4 addresses by default.")
+	private boolean _preferIPv4 = false;
 
 	@Option(name = "--host-port", usage = "Local SIP port.")
 	private int _hostPort=0;
@@ -203,8 +205,16 @@ public class SipConfig implements SipOptions {
 			else setOutboundProxy(new SipURI(getOutboundAddr(),getOutboundPort()));
 		}
 		
-		if (getViaAddr() == null || getViaAddr().equalsIgnoreCase(AUTO_CONFIGURATION)) {
-			setViaAddr(IpAddress.getLocalHostAddress().toString());
+		String via4config = getViaAddrIPv4();
+		String via6config = getViaAddrIPv6();
+		boolean hasVia4 = via4config != null && via4config.equalsIgnoreCase(AUTO_CONFIGURATION);
+		boolean hasVia6 = via6config != null && via6config.equalsIgnoreCase(AUTO_CONFIGURATION);
+
+		if (!hasVia4) {
+			setViaAddrIPv4(hasVia6 ? via6config : IpAddress.getLocalHostAddress(AddressType.IP4).getHostAddress());
+		}
+		if (!hasVia6) {
+			setViaAddrIPv6(hasVia4 ? via4config : IpAddress.getLocalHostAddress(AddressType.IP6).getHostAddress());
 		}
 		if (getHostPort() <= 0) {
 			setHostPort(getDefaultPort());
@@ -442,12 +452,34 @@ public class SipConfig implements SipOptions {
 	}
 
 	@Override
-	public String getViaAddr() {
-		return _viaAddr;
+	public String getViaAddr(AddressType type) {
+		switch (type) {
+		case IP4:
+			return getViaAddrIPv4();
+		case IP6:
+			return getViaAddrIPv6();
+		case DEFAULT:
+			break;
+		}
+		return _preferIPv4 ? getViaAddrIPv4() : getViaAddrIPv6();
 	}
 
-	public void setViaAddr(String via_addr) {
-		this._viaAddr = via_addr;
+	@Override
+	public String getViaAddrIPv4() {
+		return _viaAddr4;
+	}
+
+	public void setViaAddrIPv4(String via_addr) {
+		this._viaAddr4 = via_addr;
+	}
+
+	@Override
+	public String getViaAddrIPv6() {
+		return _viaAddr6;
+	}
+
+	public void setViaAddrIPv6(String via_addr) {
+		this._viaAddr6 = via_addr;
 	}
 
 	@Override

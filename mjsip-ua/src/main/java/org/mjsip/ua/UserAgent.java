@@ -34,6 +34,7 @@ import org.mjsip.pool.PortPool;
 import org.mjsip.sdp.MediaDescriptor;
 import org.mjsip.sdp.OfferAnswerModel;
 import org.mjsip.sdp.SdpMessage;
+import org.mjsip.sdp.field.ConnectionField;
 import org.mjsip.sdp.field.MediaField;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
@@ -50,6 +51,7 @@ import org.mjsip.sip.provider.SipProviderListener;
 import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 import org.zoolu.util.VectorUtils;
 
 /** Simple SIP call agent (signaling and media).
@@ -109,9 +111,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	}
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
-	private SdpMessage getSessionDescriptor() {
+	private SdpMessage getSessionDescriptor(AddressType addressType) {
 		String owner=_config.getUser();
-		String media_addr=(_config.getMediaAddr()!=null)? _config.getMediaAddr() : sip_provider.getViaAddress();
+		String mediaAddr = _config.getMediaAddr();
+		String media_addr=(mediaAddr!=null)? mediaAddr : sip_provider.getViaAddress(addressType);
 		SdpMessage sdp=SdpMessage.createSdpMessage(owner, media_addr);
 		for (MediaDesc md : _mediaAgent.getCallMedia()) {
 			sdp.addMediaDescriptor(md.toMediaDescriptor());
@@ -161,8 +164,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void call(NameAddress callee, MediaAgent mediaAgent) {
 		setupMedia(mediaAgent);
 		
+		AddressType addressType = ConnectionField.addressType(callee.getAddress().getSpecificPart());
+		
 		// new call
-		SdpMessage sdp=_config.getNoOffer()? null : getSessionDescriptor();
+		SdpMessage sdp=_config.getNoOffer()? null : getSessionDescriptor(addressType);
 		call(callee,sdp);
 	}
 
@@ -212,7 +217,9 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (call==null) return;
 		
 		// new sdp
-		SdpMessage newSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), call.getRemoteSessionDescriptor());
+		SdpMessage remoteDescriptor = call.getRemoteSessionDescriptor();
+		AddressType addressType = remoteDescriptor.getConnection().getAddressType();
+		SdpMessage newSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(addressType), remoteDescriptor);
 		// accept
 		call.accept(newSdp);
 	}
@@ -497,7 +504,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		}
 		
 		if (_config.getNoOffer()) {
-			SdpMessage answerSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(), remoteSdp);         
+			AddressType addressType = remoteSdp.getAddressType();
+			SdpMessage answerSdp = OfferAnswerModel.matchSdp(getSessionDescriptor(addressType), remoteSdp);         
 			call.confirm2xxWithAnswer(answerSdp);
 		}
 		
@@ -658,7 +666,8 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		LOG.debug("transfer to "+refer_to.toString());
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(_config.getUserURI()),this);
-		call_transfer.call(refer_to,getSessionDescriptor());
+		AddressType addressType = ConnectionField.addressType(refer_to.getAddress().getSpecificPart());
+		call_transfer.call(refer_to,getSessionDescriptor(addressType));
 	}
 
 	/** From ExtendedCallListener. Callback function called when a call transfer is accepted. */

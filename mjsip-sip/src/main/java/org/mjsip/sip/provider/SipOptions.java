@@ -4,6 +4,7 @@
 package org.mjsip.sip.provider;
 
 import org.mjsip.sip.address.SipURI;
+import org.zoolu.net.AddressType;
 import org.zoolu.net.IpAddress;
 
 /**
@@ -152,14 +153,43 @@ public interface SipOptions {
 	 * Use 'auto-configuration' for auto detection, or let it undefined.
 	 * </p>
 	 */
-	String getViaAddr();
+	default String getViaAddr() {
+		return getViaAddr(AddressType.DEFAULT);
+	}
 
 	/**
-	 * Whether automatically sending PRACK messsages for incoming reliable 1xx responses in an
-	 * INVITE dialog. <br>
-	 * Note that if you set <i>true</i>, the PRACK messge are sent automatically without any message
-	 * body. This may be in contrast with a possible offer/answer use of reliable 1xx response and
-	 * PRACK.
+	 * Via IP address or fully-qualified domanin name (FQDN).
+	 * 
+	 * <p>
+	 * Use 'auto-configuration' for auto detection, or let it undefined.
+	 * </p>
+	 */
+	String getViaAddr(AddressType type);
+
+	/**
+	 * Via IPv4 address or fully-qualified domanin name (FQDN).
+	 * 
+	 * <p>
+	 * Use 'auto-configuration' for auto detection, or let it undefined.
+	 * </p>
+	 */
+	String getViaAddrIPv4();
+
+	/**
+	 * Via IPv6 address.
+	 * 
+	 * <p>
+	 * Use 'auto-configuration' for auto detection, or let it undefined.
+	 * </p>
+	 */
+	String getViaAddrIPv6();
+
+	/**
+	 * Whether automatically sending PRACK messsages for incoming reliable 1xx
+	 * responses in an INVITE dialog. <br>
+	 * Note that if you set <i>true</i>, the PRACK messge are sent automatically
+	 * without any message body. This may be in contrast with a possible
+	 * offer/answer use of reliable 1xx response and PRACK.
 	 */
 	boolean isAutoPrack();
 

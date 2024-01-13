@@ -40,6 +40,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageFactory;
 import org.mjsip.time.Scheduler;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
 import org.zoolu.util.Random;
@@ -338,15 +339,20 @@ public class SipProvider implements SipTransportListener {
 		return hasTransport(PROTO_TLS) || hasTransport(PROTO_DTLS); 
 	}
 
-	/** Gets via address. */ 
+	/** Gets via address. */
+	public String getViaAddress(AddressType type) {
+		return _sipConfig.getViaAddr(type);
+	}
+
+	/** Gets via address. */
 	public String getViaAddress() {
-		return _sipConfig.getViaAddr();
-	}    
-	
-	/** Gets host port. */ 
+		return getViaAddress(AddressType.DEFAULT);
+	}
+
+	/** Gets host port. */
 	public int getPort() {
 		return _sipConfig.getHostPort();
-	}       
+	}
 
 	/** Gets tls port. */ 
 	public int getTlsPort() {
@@ -668,7 +674,7 @@ public class SipProvider implements SipTransportListener {
 
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via = new ViaHeader(transport, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
+				ViaHeader via = new ViaHeader(transport, getViaAddress(), getPort());
 				if (_sipConfig.useRport()) {
 					via.setRport();
 				}
@@ -676,7 +682,7 @@ public class SipProvider implements SipTransportListener {
 				msg.addViaHeader(via);
 			}
 			// update the via according to transport information
-			updateViaHeader(msg, transport, _sipConfig.getViaAddr(), _sipConfig.getHostPort(), maddr, ttl);
+			updateViaHeader(msg, transport, getViaAddress(), getPort(), maddr, ttl);
 			
 			LOG.debug("using transport " + transport);
 		}
@@ -775,7 +781,7 @@ public class SipProvider implements SipTransportListener {
 		if (msg.isRequest()) {
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via = new ViaHeader(proto, _sipConfig.getViaAddr(), _sipConfig.getHostPort());
+				ViaHeader via = new ViaHeader(proto, getViaAddress(), getPort());
 				if (_sipConfig.useRport()) {
 					via.setRport();
 				}

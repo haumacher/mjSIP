@@ -31,6 +31,7 @@ import org.mjsip.sdp.field.KeyField;
 import org.mjsip.sdp.field.OriginField;
 import org.mjsip.sdp.field.SessionNameField;
 import org.mjsip.sdp.field.TimeField;
+import org.zoolu.net.AddressType;
 
 
 /**
@@ -123,7 +124,7 @@ public class SdpMessage {
 	 */
 	public static SdpMessage createSdpMessage(String owner, String address) {
 		String nonNullAddress = nonNull(address);
-		String addrtype = ConnectionField.addressType(nonNullAddress);
+		AddressType addrtype = ConnectionField.addressType(nonNullAddress);
 		return new SdpMessage(
 				new OriginField(owner, addrtype, nonNullAddress),
 				new SessionNameField(),
@@ -174,7 +175,7 @@ public class SdpMessage {
 		_phone = par.parseSdpField('p');
 		_connection = par.parseConnectionField();
 		if (_connection == null)
-			_connection = new ConnectionField("IP4", "0.0.0.0");
+			_connection = new ConnectionField(AddressType.IP4, "0.0.0.0");
 		Vector<SdpField> bb = new Vector<>();
 		SdpField b=par.parseSdpField('b');
 		while (b!=null) {
@@ -390,6 +391,11 @@ public class SdpMessage {
 			sb.append(_attributeFields.get(i).toString());
 		for (int i=0; i<_mediaDescriptors.size(); i++) sb.append(_mediaDescriptors.elementAt(i).toString());
 		return sb.toString();
+	}
+
+	public AddressType getAddressType() {
+		AddressType addressType = getConnection().getAddressType();
+		return addressType;
 	}
 	
 }
