@@ -419,11 +419,11 @@ public class RegistrationClient implements TransactionClientListener {
 				// Registration failure
 				String result=code+" "+status.getReason();
 				LOG.info("Registration of " + _contactNAddr + " failed: "+result);
-				if (_loop) {
-					scheduleNextAttempt(_sipProvider.sipConfig().getRegMaxAttemptTimeout());
-				}
 				if (_listener != null) {
 					_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, result);
+				}
+				if (_loop) {
+					scheduleNextAttempt(_sipProvider.sipConfig().getRegMaxAttemptTimeout());
 				}
 			}
 		}
@@ -434,11 +434,11 @@ public class RegistrationClient implements TransactionClientListener {
 	public void onTransTimeout(TransactionClient transaction) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
 			LOG.info("Registration of " + _contactNAddr + " timed out.");
-			if (_loop) {
-				scheduleNextAttempt(nextTimeout());
-			}
 			if (_listener != null) {
 				_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, "Timeout");
+			}
+			if (_loop) {
+				scheduleNextAttempt(nextTimeout());
 			}
 		}
 	}
