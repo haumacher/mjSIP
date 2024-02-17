@@ -216,7 +216,7 @@ public class MD5 extends MessageDigest {
 
 		while(len>=size) {
 			// fill a block
-			for (int i=0; i<size; i++) block[block_offset+i]=buffer[offset+i];
+            if (size > 0) System.arraycopy(buffer, offset, block, block_offset, size);
 
 			// process the block
 			transform(state,block);
@@ -228,7 +228,7 @@ public class MD5 extends MessageDigest {
 			size=block.length-block_offset;
 		}
 		// copy the remaining bytes
-		for (int i=0; i<len; i++) block[block_offset+i]=buffer[offset+i];
+        if (len > 0) System.arraycopy(buffer, offset, block, block_offset, len);
 		block_offset+=len;     
 
 		return this;
