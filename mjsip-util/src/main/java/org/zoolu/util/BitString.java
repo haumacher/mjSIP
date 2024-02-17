@@ -128,7 +128,7 @@ public class BitString {
 	/** Inits the BitString. */
 	private void init(boolean[] buf, int off, int len) {
 		bits=new boolean[len];
-		for (int i=0; i<len; i++) bits[i]=buf[off+i];
+        System.arraycopy(buf, off, bits, 0, len);
 	}
 
 

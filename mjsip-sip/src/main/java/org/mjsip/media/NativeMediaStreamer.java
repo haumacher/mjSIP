@@ -76,7 +76,7 @@ public class NativeMediaStreamer implements MediaStreamer {
 	 
 		String cmds[]=new String[((args!=null)?args.length:0)+1];
 		cmds[0]=command;
-		for (int i=1; i<cmds.length; i++) cmds[i]=args[i-1];
+        System.arraycopy(args, 0, cmds, 1, cmds.length - 1);
 
 		// try to start the media application
 		try {

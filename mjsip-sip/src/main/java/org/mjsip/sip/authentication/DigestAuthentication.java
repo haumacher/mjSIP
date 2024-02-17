@@ -223,8 +223,8 @@ public class DigestAuthentication {
 	private static byte[] cat(byte[] a, byte[] b) {
 		int len=a.length+b.length;
 		byte[ ] c=new byte[len];
-		for (int i=0; i<a.length; i++) c[i]=a[i];
-		for (int i=0; i<b.length; i++) c[i+a.length]=b[i];
+        System.arraycopy(a, 0, c, 0, a.length);
+        System.arraycopy(b, 0, c, a.length, b.length);
 		return c;
 	}
 

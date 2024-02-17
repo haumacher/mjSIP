@@ -119,7 +119,7 @@ public class RrRtcpPacket extends RtcpPacket {
 			byte[] rb_buf=report_blocks[i].getBuffer();
 			int rb_off=report_blocks[i].getBufferOffset();
 			int begin=offset+receptionReportOffset()+REPORT_BLOCK_LEN*i;
-			for (int j=0; j<REPORT_BLOCK_LEN; j++) buffer[begin+j]=rb_buf[rb_off+j];
+            System.arraycopy(rb_buf, rb_off, buffer, begin, REPORT_BLOCK_LEN);
 		}
 	}
 

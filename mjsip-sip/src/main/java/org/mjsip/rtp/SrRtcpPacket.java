@@ -120,7 +120,7 @@ public class SrRtcpPacket extends RrRtcpPacket {
 		byte[] si_buf=sender_info.getBuffer();
 		int si_off=sender_info.getBufferOffset();
 		int begin=offset+HDR_LEN;
-		for (int i=0; i<SENDER_INFO_LEN; i++) buffer[begin+i]=si_buf[si_off+i];
+        System.arraycopy(si_buf, si_off, buffer, begin, SENDER_INFO_LEN);
 	}
 
 
