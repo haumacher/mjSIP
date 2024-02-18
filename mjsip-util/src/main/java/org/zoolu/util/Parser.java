@@ -143,9 +143,11 @@ public class Parser {
 	
 	/** True if char <i>ch</i> is any char of array <i>ca</i> */
 	public static boolean isAnyOf(char[] ca, char ch) {
-		boolean found=false;
-		for (int i=0; i<ca.length; i++) if (ca[i]==ch) { found=true; break; }
-		return found;
+        for (char c : ca)
+            if (c == ch) {
+                return true;
+            }
+		return false;
 	}
 
 	/** Up alpha */
