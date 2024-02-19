@@ -145,7 +145,7 @@ public class MediaDesc {
 		String media=par.getString();
 		int port=par.getInt();
 		String transport=par.getString();
-		Vector<MediaSpec> spec_vector = new Vector<>();
+		List<MediaSpec> specList = new ArrayList<>();
 		if (par.goTo("{").hasMore()) {
 			par.skipChar();
 			int len=par.indexOf("}")-par.getPos();
@@ -154,12 +154,12 @@ public class MediaDesc {
 				char[] delim={ ';', ',' };
 				while (par.skipWSP().hasMore()) {
 					source = par.getWord(delim);
-					if (source != null && source.length() > 0)
-						spec_vector.addElement(MediaSpec.parseMediaSpec(source));
+					if (source != null && !source.isEmpty())
+						specList.add(MediaSpec.parseMediaSpec(source));
 				}
 			}
 		}
-		MediaSpec[] specs = spec_vector.toArray(new MediaSpec[] {});
+		MediaSpec[] specs = specList.toArray(new MediaSpec[] {});
 		return new MediaDesc(media,port,transport,specs);
 	}
 
