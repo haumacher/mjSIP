@@ -25,6 +25,7 @@ package org.mjsip.sdp;
 
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -190,12 +191,12 @@ public class OfferAnswerModel {
 		return answer;
 	}
 
-	private static <T> Vector<T> intersection(Vector<T> l1, Vector<T> l2) {
-		Vector<T> result = new Vector<>();
+	private static <T> List<T> intersection(List<T> l1, List<T> l2) {
+		List<T> result = new ArrayList<>();
 		for (T e2 : l2) {
 			for (T e1 : l1) {
 				if (e2.equals(e1)) {
-					result.addElement(e2);
+					result.add(e2);
 					break;
 				}
 			}
