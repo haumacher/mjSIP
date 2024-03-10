@@ -207,8 +207,8 @@ public class SipConfig implements SipOptions {
 		
 		String via4config = getViaAddrIPv4();
 		String via6config = getViaAddrIPv6();
-		boolean hasVia4 = via4config != null && via4config.equalsIgnoreCase(AUTO_CONFIGURATION);
-		boolean hasVia6 = via6config != null && via6config.equalsIgnoreCase(AUTO_CONFIGURATION);
+		boolean hasVia4 = via4config != null && !via4config.equalsIgnoreCase(AUTO_CONFIGURATION);
+		boolean hasVia6 = via6config != null && !via6config.equalsIgnoreCase(AUTO_CONFIGURATION);
 
 		if (!hasVia4) {
 			setViaAddrIPv4(hasVia6 ? via6config : IpAddress.getLocalHostAddress(AddressType.IP4).getHostAddress());
@@ -459,6 +459,7 @@ public class SipConfig implements SipOptions {
 		case IP6:
 			return getViaAddrIPv6();
 		case DEFAULT:
+			LOG.warn("Using undefined via address type.", new RuntimeException("Stack trace"));
 			break;
 		}
 		return _preferIPv4 ? getViaAddrIPv4() : getViaAddrIPv6();
