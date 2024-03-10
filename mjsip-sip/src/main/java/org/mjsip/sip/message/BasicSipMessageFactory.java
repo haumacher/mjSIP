@@ -66,7 +66,7 @@ import org.mjsip.sip.provider.SipProvider;
 public abstract class BasicSipMessageFactory {
 	
 	/** Default (unknown) via address */
-	static String DEFAULT_VIA_ADDRESS="0.0.0.0";
+	private static final String DEFAULT_VIA_ADDRESS = "0.0.0.0";
 	
 	protected final SipOptions sipConfig;
 

@@ -345,6 +345,11 @@ public class SipProvider implements SipTransportListener {
 	}
 
 	/** Gets via address. */
+	public String getViaAddress(boolean ipV6) {
+		return _sipConfig.getViaAddr(ipV6 ? AddressType.IP6 : AddressType.IP4);
+	}
+
+	/** Gets via address. */
 	public String getViaAddress() {
 		return getViaAddress(AddressType.DEFAULT);
 	}
@@ -674,7 +679,7 @@ public class SipProvider implements SipTransportListener {
 
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via = new ViaHeader(transport, getViaAddress(), getPort());
+				ViaHeader via = new ViaHeader(transport, getViaAddress(nexthop_sip_uri.isIpv6()), getPort());
 				if (_sipConfig.useRport()) {
 					via.setRport();
 				}
@@ -682,7 +687,7 @@ public class SipProvider implements SipTransportListener {
 				msg.addViaHeader(via);
 			}
 			// update the via according to transport information
-			updateViaHeader(msg, transport, getViaAddress(), getPort(), maddr, ttl);
+			updateViaHeader(msg, transport, getViaAddress(SipURI.isIPv6(dest_addr)), getPort(), maddr, ttl);
 			
 			LOG.debug("using transport " + transport);
 		}
@@ -781,7 +786,7 @@ public class SipProvider implements SipTransportListener {
 		if (msg.isRequest()) {
 			// if not present, add via
 			if (!msg.hasViaHeader()) {
-				ViaHeader via = new ViaHeader(proto, getViaAddress(), getPort());
+				ViaHeader via = new ViaHeader(proto, getViaAddress(SipURI.isIPv6(dest_addr)), getPort());
 				if (_sipConfig.useRport()) {
 					via.setRport();
 				}
