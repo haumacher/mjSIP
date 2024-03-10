@@ -80,10 +80,10 @@ public class UAConfig implements UAOptions {
 
 	/** Sender synchronization adjustment, that is the time (in milliseconds) that a frame
 	  * should be sent in advance by the RTP sender, before the nominal time.
-	  * A value less that 0 means no re-synchronization explicitely performed by the RTP sender.
+	  * A value less that 0 means no re-synchronization explicitly performed by the RTP sender.
 	  * <p>
 	  * Note that when using audio capturing, synchronization with the sample rate
-	  * is implicitely performed by the audio capture device and frames are read at constat bit rate.
+	  * is implicitly performed by the audio capture device and frames are read at constant bit rate.
 	  * However, a value of this parameter >=0 (explicit re-synchronization) is suggested
 	  * in order to let the read() method be non-blocking (in the other case
 	  * the UA audio performances seem to decrease). */
