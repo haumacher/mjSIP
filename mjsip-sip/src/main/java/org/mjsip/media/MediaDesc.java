@@ -198,7 +198,7 @@ public class MediaDesc {
 		AttributeField[] rtpmap = descriptor.getAttributes("rtpmap");
 		List<MediaSpec> specs = new ArrayList<>(rtpmap.length);
 
-		Vector<String> avps = mf.getFormatList();
+		List<String> avps = mf.getFormatList();
 		for (String avp : avps) {
 			MediaSpec spec = MediaSpec.getWellKnown(Integer.parseInt(avp));
 			if (spec != null) {

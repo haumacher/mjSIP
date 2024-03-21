@@ -25,8 +25,8 @@ package org.mjsip.sdp.field;
 
 
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import org.mjsip.sdp.SdpField;
 import org.zoolu.util.Parser;
@@ -93,15 +93,15 @@ public class MediaField extends SdpField {
 	}  
 
 	/** Gets the media formats as a Vector of String. */
-	public Vector<String> getFormatList() {
-		Vector<String> formatlist = new Vector<>();
+	public List<String> getFormatList() {
+		List<String> formatlist = new ArrayList<>();
 		Parser par=new Parser(value);
 		par.skipString().skipString().skipString();
 		while (par.hasMore()) {
 			String fmt=par.getString();
-			if (fmt!=null && fmt.length()>0) formatlist.addElement(fmt);
+			if (fmt!=null && !fmt.isEmpty()) formatlist.add(fmt);
 		}
 		return formatlist;
-	}  
+	}
 
 }

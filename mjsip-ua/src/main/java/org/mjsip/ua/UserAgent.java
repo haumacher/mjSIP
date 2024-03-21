@@ -21,6 +21,7 @@
 package org.mjsip.ua;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
@@ -344,13 +345,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	private FlowSpec buildFlowSpec(String mediaType, MediaDescriptor remoteDescriptor, MediaDescriptor matchingDescriptor, FlowSpec.Direction dir, String remote_address) {
 		MediaField mediaField=matchingDescriptor.getMediaField();
 		String transport=mediaField.getTransport();
-		Vector<String> formatList = mediaField.getFormatList();
+		List<String> formatList = mediaField.getFormatList();
 		if (formatList.isEmpty()) {
 			LOG.warn("No matching formats found to establish flow: " + remoteDescriptor);
 			return null;
 		}
 		
-		int avp=Integer.parseInt(formatList.elementAt(0));
+		int avp=Integer.parseInt(formatList.get(0));
 
 		int local_port=mediaField.getPort();
 		int remote_port=remoteDescriptor.getMediaField().getPort();
