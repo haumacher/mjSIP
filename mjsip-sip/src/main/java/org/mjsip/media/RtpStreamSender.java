@@ -116,7 +116,9 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 	long sync_adj=0;
 
 	/** Whether it is running */
-	private volatile boolean running = false;
+	private boolean _running = true;
+
+	private volatile boolean _shouldStop = false;
 
 	/** Synchronization source (SSRC) identifier. */
 	//long ssrc=0;
@@ -260,13 +262,13 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 	}
 
 	/** Whether is running */
-	public boolean isRunning() {
-		return running;
+	public synchronized boolean isRunning() {
+		return _running;
 	}
 
 	/** Stops running */
 	public void halt() {
-		running=false;
+		_shouldStop = true;
 	}
 
 	/** Runs it in a new Thread. */
@@ -296,8 +298,6 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 		//long octect_count=0;
 		long next_report_time=0;
 
-		running=true;
-
 		if (DEBUG)
 			LOG.debug("RTP: localhost:"+rtp_socket.getUdpSocket().getLocalPort()+" --> "+remote_soaddr);
 		if (DEBUG)
@@ -308,8 +308,7 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 
 		Exception error=null;
 		try {
-			while (running) {
-				
+			while (!_shouldStop) {
 				if (time>=next_report_time) {
 					//if (rtp_control!=null) rtp_control.send(new local.net.SrRtcpPacket(rtp_packet.getSsrc(),System.currentTimeMillis(),timestamp,packet_count,octect_count));
 					if (rtp_control!=null) rtp_control.sendReport();
@@ -317,9 +316,17 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 				}
 				//java.util.Arrays.fill(packet_buffer,RTPH_LEN,formatted_len,(byte)0);
 				int len=input_stream.read(packet_buffer,RTPH_LEN,payload_size);
-				// check running state, since the read() method may be blocking..
-				if (!running) break;
-				// else
+				if (len < 0) {
+					if (DEBUG)
+						LOG.debug("Input stream finished.");
+					break;
+				}
+
+				// Check again, since reading the stream may have blocked.
+				if (_shouldStop) {
+					break;
+				}
+
 				if (len>0) {					
 					// apply possible RTP payload format (if required, e.g. in case of AMR)
 					formatted_len=(rtp_payload_format!=null)? rtp_payload_format.setRtpPayloadFormat(packet_buffer,RTPH_LEN,len) : len;
@@ -370,19 +377,17 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 						}
 					}
 				}
-				else
-				if (len<0) {
-					if (DEBUG)
-						LOG.debug("Error reading from InputStream");
-					running=false;
-				}
 			}
 		}
 		catch (Exception e) {
-			running=false;
 			error=e;
 			if (DEBUG) e.printStackTrace();
-		}     
+		} finally {
+			synchronized (this) {
+				_running = false;
+				notifyAll();
+			}
+		}
 
 		//if (DEBUG) println("rtp time:  "+time);
 		//if (DEBUG) println("real time: "+(System.currentTimeMillis()-start_time));
@@ -410,6 +415,12 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 	public long getUdpOctectCounter() {
 		if (rtp_socket!=null) return rtp_socket.getUdpSocket().getSenderOctectCounter();
 		else return 0;
+	}
+
+	public synchronized void join() throws InterruptedException {
+		while (_running) {
+			wait();
+		}
 	}
 
 }

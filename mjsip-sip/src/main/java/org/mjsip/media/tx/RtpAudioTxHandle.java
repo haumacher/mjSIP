@@ -41,6 +41,11 @@ public class RtpAudioTxHandle implements AudioTXHandle {
 	}
 
 	@Override
+	public void join() throws InterruptedException {
+		_rtpSender.join();
+	}
+
+	@Override
 	public void setRemoteSoAddress(SocketAddress remote_soaddr) throws UnknownHostException {
 		getRtpSender().setRemoteSoAddress(remote_soaddr);
 	}

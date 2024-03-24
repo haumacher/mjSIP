@@ -37,4 +37,9 @@ public interface AudioTXHandle {
 	 */
 	void setRemoteSoAddress(SocketAddress remote_soaddr) throws UnknownHostException;
 
+	/**
+	 * Waits until the current transmission has completed.
+	 */
+	void join() throws InterruptedException;
+
 }

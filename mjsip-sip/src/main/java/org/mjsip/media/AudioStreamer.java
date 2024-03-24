@@ -326,4 +326,11 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			LOG.info("Exception.", error);
 	}
 
+	/**
+	 * Waits until the current transmission has completed.
+	 */
+	public void join() throws InterruptedException {
+		_txHandle.join();
+	}
+
 }
