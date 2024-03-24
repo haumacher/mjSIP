@@ -59,6 +59,7 @@ public class AudioApp {
 		println("   --debug-drop-rate <time> sender drops packets every <time> millisecs");
 		println("   --debug-drop-time <time> sender drops packets for a duration of <time> millisecs");
 		println("   --stereo          whether using stereo");
+		println("   --stopWhenTransmitted  whether to stop the program, when all audio has been sent.");
 	}
 
 
@@ -88,7 +89,9 @@ public class AudioApp {
 		
 		boolean rtcp=false;
 		Builder options = StreamerOptions.builder();
-				
+		
+		boolean stopWhenTransmitted = false;
+		
 		try {
 			for (int i=0; i<args.length; i++) {
 				String param;
@@ -202,6 +205,11 @@ public class AudioApp {
 					continue;
 				}
 				// else
+				if (args[i].startsWith(param="--stopWhenTransmitted"))  {
+					stopWhenTransmitted=true;
+					continue;
+				}
+				// else
 				println("\nUnknown option: "+args[i]);
 				println("Use -h for a complete list of options.");
 				System.exit(0);
@@ -274,15 +282,35 @@ public class AudioApp {
 				new Thread(command).start();
 			}
 		};
-		AudioStreamer audio_streamer = new AudioStreamer(executor, fspec, tx, rx, options.build());
+		
+		boolean stopWhenFinished = stopWhenTransmitted;
+		AudioStreamer audio_streamer = new AudioStreamer(executor, fspec, tx, rx, options.build()) {
+			@Override
+			public void onRtpStreamSenderTerminated(RtpStreamSender rs, Exception error) {
+				super.onRtpStreamSenderTerminated(rs, error);
+				
+				if (stopWhenFinished) {
+					halt();
+				}
+			}
+		};
 
 		audio_streamer.start();
 
-		println("Press 'Return' to stop.");
-		try {  System.in.read();  } catch (IOException e) {};
-		audio_streamer.halt();
-		try {  Thread.sleep(1000);  } catch (Exception e) {};
-		System.exit(0);
+		if (stopWhenFinished) {
+			try {
+				audio_streamer.join();
+				try {  Thread.sleep(1000);  } catch (Exception e) {};
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} else {
+			println("Press 'Return' to stop.");
+			try {  System.in.read();  } catch (IOException e) {};
+			audio_streamer.halt();
+			try {  Thread.sleep(1000);  } catch (Exception e) {};
+			System.exit(0);
+		}
 	}
 
 
