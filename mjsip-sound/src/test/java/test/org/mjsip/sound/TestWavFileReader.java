@@ -1,5 +1,6 @@
 package test.org.mjsip.sound;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -19,10 +20,10 @@ import org.mjsip.sound.WavFileReader;
 /**
  * Test case for {@link WavFileReader}.
  */
-public class TestWavFileReader {
+class TestWavFileReader {
 	
 	@Test
-	public void testRead() throws IOException, UnsupportedAudioFileException {
+	void testRead() throws IOException, UnsupportedAudioFileException {
 		float sampleRate = 8000;
 		int sampleSizeInBits = 8;
 		int channels = 1;
@@ -44,13 +45,15 @@ public class TestWavFileReader {
 		assertEquals(42, audioInputStream.read());
 	}
 
-	private void assertFormat(AudioFormat expected, AudioInputStream given) {
-		assertEquals(expected.getChannels(), given.getFormat().getChannels());
-		assertEquals(expected.getEncoding(), given.getFormat().getEncoding());
-		assertEquals(expected.getFrameRate(), given.getFormat().getFrameRate());
-		assertEquals(expected.getFrameSize(), given.getFormat().getFrameSize());
-		assertEquals(expected.getSampleRate(), given.getFormat().getSampleRate());
-		assertEquals(expected.getSampleSizeInBits(), given.getFormat().getSampleSizeInBits());
+	private static void assertFormat(AudioFormat expected, AudioInputStream given) {
+		AudioFormat format = given.getFormat();
+		assertAll(() -> assertEquals(expected.getChannels(), format.getChannels()),
+				() -> assertEquals(expected.getEncoding(), format.getEncoding()),
+				() -> assertEquals(expected.getFrameRate(), format.getFrameRate()),
+				() -> assertEquals(expected.getFrameSize(), format.getFrameSize()),
+				() -> assertEquals(expected.getSampleRate(), format.getSampleRate()),
+				() -> assertEquals(expected.getSampleSizeInBits(), format.getSampleSizeInBits())
+		);
 	}
 
 }

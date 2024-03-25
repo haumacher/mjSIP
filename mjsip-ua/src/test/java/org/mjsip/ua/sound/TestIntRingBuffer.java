@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
-public class TestIntRingBuffer {
+class TestIntRingBuffer {
 	
 	@Test
-	public void testWrite() {
+	void testWrite() {
 		IntRingBuffer buffer = new IntRingBuffer(3);
 		
 		Assertions.assertTrue(buffer.empty());
@@ -45,7 +45,7 @@ public class TestIntRingBuffer {
 	}
 
 	@Test
-	public void testRandom() {
+	void testRandom() {
 		int limit = 20;
 		IntRingBuffer buffer = new IntRingBuffer(limit);
 		

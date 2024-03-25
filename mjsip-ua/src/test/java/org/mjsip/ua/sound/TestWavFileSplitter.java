@@ -19,13 +19,13 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for {@link WavFileSplitter}
  */
-public class TestWavFileSplitter {
-	
+class TestWavFileSplitter {
+
 	/**
 	 * Tests splitting a real-world recording.
 	 */
 	@Test
-	public void testSplit() throws IOException, UnsupportedAudioFileException {
+	void testSplit() throws IOException, UnsupportedAudioFileException {
 		File output = new File("./target/TestWavFileSplitter");
 		clear(output);
 		output.mkdirs();

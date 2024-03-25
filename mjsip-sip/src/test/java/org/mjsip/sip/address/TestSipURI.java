@@ -16,24 +16,24 @@ import org.junit.jupiter.api.Test;
  * Test for {@link SipURI} parsing.
  */
 @SuppressWarnings("javadoc")
-public class TestSipURI {
+class TestSipURI {
 
 	@Test
-	public void testCreate() {
+	void testCreate() {
 		SipURI uri = new SipURI("alice", "foobar", "phoneblock.net", 55060, false, Collections.singletonMap("p", "v"),
 				null);
 		Assertions.assertEquals("sip:alice:foobar@phoneblock.net:55060;p=v", uri.toString());
 	}
 
 	@Test
-	public void testCreateIPv6() {
+	void testCreateIPv6() {
 		SipURI uri = new SipURI("alice", "foobar", "fe80::43c6:1e57:8a59:ce55", 55060, false,
 				Collections.singletonMap("p", "v"), null);
 		Assertions.assertEquals("sip:alice:foobar@[fe80::43c6:1e57:8a59:ce55]:55060;p=v", uri.toString());
 	}
 
 	@Test
-	public void testParse() {
+	void testParse() {
 		SipURI uri = SipURI.parseSipURI("host.only");
 		Assertions.assertEquals("sip", uri.getScheme());
 		Assertions.assertFalse(uri.isSecure());
@@ -41,7 +41,7 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testSip() {
+	void testSip() {
 		SipURI uri = SipURI.parseSipURI("sip:host.only");
 		Assertions.assertEquals("sip", uri.getScheme());
 		Assertions.assertFalse(uri.isSecure());
@@ -49,7 +49,7 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testParseSips() {
+	void testParseSips() {
 		SipURI uri = SipURI.parseSipURI("sips:host.only");
 		Assertions.assertEquals("sips", uri.getScheme());
 		Assertions.assertTrue(uri.isSecure());
@@ -57,14 +57,14 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testParsePort() {
+	void testParsePort() {
 		SipURI uri = SipURI.parseSipURI("host.only:5060");
 		Assertions.assertEquals("host.only", uri.getHost());
 		Assertions.assertEquals(5060, uri.getPort());
 	}
 
 	@Test
-	public void testParseUser() {
+	void testParseUser() {
 		SipURI uri = SipURI.parseSipURI("foo@host.only:5060");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("host.only", uri.getHost());
@@ -72,7 +72,7 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testParsePassword() {
+	void testParsePassword() {
 		SipURI uri = SipURI.parseSipURI("foo:secure@host.only:5060");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("secure", uri.getPassword());
@@ -81,7 +81,7 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testParsePasswordWithoutPort() {
+	void testParsePasswordWithoutPort() {
 		SipURI uri = SipURI.parseSipURI("foo:secure@host.only");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("secure", uri.getPassword());
@@ -90,15 +90,15 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testParseParamWithoutValue() {
+	void testParseParamWithoutValue() {
 		SipURI uri = SipURI.parseSipURI("host.only;param");
 		Assertions.assertEquals("host.only", uri.getHost());
 		Assertions.assertTrue(uri.hasParameter("param"));
-		Assertions.assertEquals(null, uri.getParameter("param"));
+        Assertions.assertNull(uri.getParameter("param"));
 	}
 
 	@Test
-	public void testParseParam() {
+	void testParseParam() {
 		SipURI uri = SipURI.parseSipURI("host.only;key=value");
 		Assertions.assertEquals("host.only", uri.getHost());
 		Assertions.assertTrue(uri.hasParameter("key"));
@@ -106,27 +106,27 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testIPv6() {
+	void testIPv6() {
 		SipURI uri = SipURI.parseSipURI("[fe80::43c6:1e57:8a59:ce55]");
 		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 	}
 
 	@Test
-	public void testIPv6WithPort() {
+	void testIPv6WithPort() {
 		SipURI uri = SipURI.parseSipURI("[fe80::43c6:1e57:8a59:ce55]:5060");
 		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 		Assertions.assertEquals(5060, uri.getPort());
 	}
 
 	@Test
-	public void testIPv6WithUser() {
+	void testIPv6WithUser() {
 		SipURI uri = SipURI.parseSipURI("foo@[fe80::43c6:1e57:8a59:ce55]");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
 	}
 
 	@Test
-	public void testIPv6WithPortAndUser() {
+	void testIPv6WithPortAndUser() {
 		SipURI uri = SipURI.parseSipURI("foo:secure@[fe80::43c6:1e57:8a59:ce55]:5060");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("secure", uri.getPassword());
@@ -135,7 +135,7 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testIPv6WithUserAndParam() {
+	void testIPv6WithUserAndParam() {
 		SipURI uri = SipURI.parseSipURI("foo@[fe80::43c6:1e57:8a59:ce55]:5060;key0=value0;key1");
 		Assertions.assertEquals("foo", uri.getUserName());
 		Assertions.assertEquals("fe80::43c6:1e57:8a59:ce55", uri.getHost());
@@ -145,7 +145,7 @@ public class TestSipURI {
 	}
 
 	@Test
-	public void testRandom() {
+	void testRandom() {
 		Random rnd = new Random(42);
 		for (int n = 0; n < 1024; n++) {
 			StringBuilder buffer = new StringBuilder();
@@ -160,7 +160,7 @@ public class TestSipURI {
 		}
 	}
 
-	public static TestPart[] PARTS = { new TestUser(), new TestHost(), new TestPort(), new TestParam(),
+	private static final TestPart[] PARTS = { new TestUser(), new TestHost(), new TestPort(), new TestParam(),
 			new TestHeader() };
 
 	static abstract class TestPart {

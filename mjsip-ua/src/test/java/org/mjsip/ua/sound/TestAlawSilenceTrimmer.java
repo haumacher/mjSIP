@@ -20,13 +20,13 @@ import org.mjsip.sound.ToneGenerator;
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
-public class TestAlawSilenceTrimmer {
+class TestAlawSilenceTrimmer {
 
 	/**
 	 * Test loudness analysis with synthetic tones. 
 	 */
 	@Test
-	public void testSinDbLimits() {
+	void testSinDbLimits() {
 		int frequency = 1000;
 		int sampleRate = 16000;
 		
@@ -80,7 +80,7 @@ public class TestAlawSilenceTrimmer {
 	 * Test silence trimming with a real world recording.
 	 */
 	@Test
-	public void testWav() throws IOException, UnsupportedAudioFileException {
+	void testWav() throws IOException, UnsupportedAudioFileException {
 		try (AudioInputStream in = AudioFile.getAudioFileInputStream("./src/test/fixtures/test-alaw.wav")) {
 			AudioFormat format = in.getFormat();
 			try (OutputStream out = AudioFile.getAudioFileOutputStream("./target/test-alaw-trimmed.wav", format)) {

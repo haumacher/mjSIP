@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 /**
  * Test case for {@link AudioApp}.
  */
-public class TestAudioApp {
+class TestAudioApp {
 	
 	@Test
-	public void testSendReceive() throws IOException {
+	void testSendReceive() throws IOException {
 		File rx = File.createTempFile("rx-audio", ".wav");
 		
 		AudioApp.main(new String[] {

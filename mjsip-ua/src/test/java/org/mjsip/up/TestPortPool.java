@@ -12,22 +12,22 @@ import org.mjsip.pool.PortPool.Exhausted;
  * Test case for {@link PortPool}
  */
 @SuppressWarnings("javadoc")
-public class TestPortPool {
+class TestPortPool {
 	
 	@Test
-	public void testSingletonPool() {
+	void testSingletonPool() {
 		PortPool pool = new PortPool(10, 1);
 		
 		Assertions.assertTrue(pool.isAvailable());
 		Assertions.assertEquals(10, pool.allocate());
 		Assertions.assertFalse(pool.isAvailable());
-		assertFailExhausted(pool);
+		Assertions.assertThrows(Exhausted.class, pool::allocate, "Allocating from an exhausted pool must fail.");
 		pool.release(10);
 		Assertions.assertTrue(pool.isAvailable());
 	}
 
 	@Test
-	public void testPool() {
+	void testPool() {
 		PortPool pool = new PortPool(10, 3);
 		
 		Assertions.assertTrue(pool.isAvailable());
@@ -38,15 +38,6 @@ public class TestPortPool {
 		pool.release(10);
 		Assertions.assertEquals(10, pool.allocate());
 		Assertions.assertTrue(pool.isAvailable());
-	}
-
-	private void assertFailExhausted(PortPool pool) {
-		try {
-			pool.allocate();
-			Assertions.fail("Allocating from an exhausted pool must fail.");
-		} catch (Exhausted ex) {
-			// Expected.
-		}
 	}
 	
 }

@@ -24,10 +24,10 @@ import org.zoolu.sound.codec.G711;
 /**
  * Test generating, and transforming WAV files.
  */
-public class TestSimpleAudioSystem {
+class TestSimpleAudioSystem {
 
 	@Test
-	public void testToneWavLinearSigned() throws IOException, UnsupportedAudioFileException {
+	void testToneWavLinearSigned() throws IOException, UnsupportedAudioFileException {
 		int sampleRate = 16000;
 		int sampleSize = 2;
 		boolean bigEndian = false;
@@ -45,7 +45,7 @@ public class TestSimpleAudioSystem {
 	}
 
 	@Test
-	public void testToneWavAlaw() throws IOException, UnsupportedAudioFileException {
+	void testToneWavAlaw() throws IOException, UnsupportedAudioFileException {
 		int sampleRate = 16000;
 		int sampleSize = 2;
 		int duration = 1;

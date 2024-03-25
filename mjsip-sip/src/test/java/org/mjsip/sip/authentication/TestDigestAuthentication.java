@@ -11,10 +11,10 @@ import org.mjsip.sip.header.AuthorizationHeader;
  * Test for {@link DigestAuthentication}.
  */
 @SuppressWarnings("javadoc")
-public class TestDigestAuthentication {
+class TestDigestAuthentication {
 
 	@Test
-	public void testResponse() {
+	void testResponse() {
 		AuthorizationHeader ah = new AuthorizationHeader(
 				"Digest username=\"Mufasa\", "
 				+ "realm=\"testrealm@host.com\", " 

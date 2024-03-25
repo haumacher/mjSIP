@@ -5,15 +5,17 @@ package test.org.mjsip.sip.header;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mjsip.sip.header.ViaHeader;
 
 /**
  * Test for {@link ViaHeader}.
  */
-public class TestViaHeader {
+class TestViaHeader {
 
 	@Test
-	public void testParse() {
+	void testParse() {
 		ViaHeader header = ViaHeader
 				.parse("SIP/2.0/UDP [2001:9e8:2050:becc:7eff:4dff:fe57:1a5a]:5060;branch=z9hG4bK0D731C24CCBB2565");
 
@@ -27,7 +29,7 @@ public class TestViaHeader {
 	}
 
 	@Test
-	public void testWhiteSpace() {
+	void testWhiteSpace() {
 		ViaHeader header = ViaHeader
 				.parse("SIP/2.0/UDP   phoneblock.net	: 	5060   ;  branch =    z9hG4bK0D731C24CCBB2565    ");
 
@@ -35,17 +37,18 @@ public class TestViaHeader {
 	}
 
 	@Test
-	public void testNoPort() {
+	void testNoPort() {
 		doTestValue("SIP/2.0/UDP phoneblock.net;branch=z9hG4bK0D731C24CCBB2565");
 	}
 
-	@Test
-	public void testRPort() {
-		doTestValue("SIP/2.0/UDP phoneblock.net;branch=z9hG4bK0D731C24CCBB2565;rport");
-		doTestValue("SIP/2.0/UDP phoneblock.net;rport;branch=z9hG4bK0D731C24CCBB2565");
+	@ParameterizedTest
+	@ValueSource(strings = {"SIP/2.0/UDP phoneblock.net;branch=z9hG4bK0D731C24CCBB2565;rport",
+			"SIP/2.0/UDP phoneblock.net;rport;branch=z9hG4bK0D731C24CCBB2565"})
+	void testRPort(String value) {
+		doTestValue(value);
 	}
 
-	private void doTestValue(String value) {
+	private static void doTestValue(String value) {
 		ViaHeader header = ViaHeader.parse(value);
 		Assertions.assertEquals(value, header.getValue());
 	}
