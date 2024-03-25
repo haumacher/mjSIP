@@ -12,10 +12,10 @@ import org.zoolu.net.IpAddress;
 /**
  * Test case for {@link IpAddress}.
  */
-public class TestIpAddress {
+class TestIpAddress {
 
 	@Test
-	public void testAutoConfig() throws UnknownHostException {
+	void testAutoConfig() throws UnknownHostException {
 		InetAddress ipv4 = IpAddress.getLocalHostAddress(AddressType.IP4);
 		InetAddress ipv6 = IpAddress.getLocalHostAddress(AddressType.IP6);
 		

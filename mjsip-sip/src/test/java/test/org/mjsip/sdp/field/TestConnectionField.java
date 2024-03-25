@@ -11,10 +11,10 @@ import org.zoolu.net.AddressType;
 /**
  * Test for {@link ConnectionField}
  */
-public class TestConnectionField {
+class TestConnectionField {
 
 	@Test
-	public void testParse() {
+	void testParse() {
 		ConnectionField field = new ConnectionField("IN IP6 2001:9e8:2050:becc:7eff:4dff:fe57:1a5a");
 
 		Assertions.assertEquals(AddressType.IP6, field.getAddressType());
