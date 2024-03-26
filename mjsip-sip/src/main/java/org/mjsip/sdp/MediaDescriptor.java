@@ -26,7 +26,6 @@ package org.mjsip.sdp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import org.mjsip.sdp.field.ConnectionField;
 import org.mjsip.sdp.field.MediaField;
@@ -56,11 +55,11 @@ public class MediaDescriptor {
 	/** Connection field ('c') */
 	private final ConnectionField c;
 
-	/** Vector of attribute fileds ('a') */
+	/** List of attribute fileds ('a') */
 	private final List<AttributeField> av;
 
 	/** Creates a new MediaDescriptor with m=<i>media</i> and c=<i>connection</i>,
-	  * with attributes 'a' equals to <i>attributes</i> (Vector of AttributeField).
+	  * with attributes 'a' equals to <i>attributes</i> (List of AttributeField).
 	  * @param media the MediaField
 	  * @param connection the ConnectionField, or null if no ConnectionField
 	  * is present in the MediaDescriptor
@@ -98,11 +97,11 @@ public class MediaDescriptor {
 	} 
 
 	/** Adds a new attributes.
-	  * @param attributes a vector o new attribute fields (Vector of <code>AttributeField</code>)
+	  * @param attributes a List o new attribute fields (List of <code>AttributeField</code>)
 	  * @return this MediaDescriptor */
-	public MediaDescriptor addAttributes(Vector<AttributeField> attributes) {
+	public MediaDescriptor addAttributes(List<AttributeField> attributes) {
 		for (int i = 0; i < attributes.size(); i++)
-			addAttribute(attributes.elementAt(i));
+			addAttribute(attributes.get(i));
 		return this;
 	} 
 
@@ -132,10 +131,10 @@ public class MediaDescriptor {
 	  * @param a_name the attribute name
 	  * @return an array of attributes */
 	public AttributeField[] getAttributes(String a_name) {
-		Vector<AttributeField> v = new Vector<>(av.size());
+		List<AttributeField> v = new ArrayList<>(av.size());
 		for (int i=0; i<av.size(); i++) {
 			AttributeField a = av.get(i);
-			if (a.getAttributeName().equals(a_name)) v.addElement(a);
+			if (a.getAttributeName().equals(a_name)) v.add(a);
 		}
 		return v.toArray(new AttributeField[] {});
 	} 
@@ -153,7 +152,7 @@ public class MediaDescriptor {
 	/**
 	 * Looks up the {@link MediaDescriptor} with the given media type from the given list.
 	 */
-	public static MediaDescriptor withType(Vector<MediaDescriptor> mediaDescriptors, String mediaType) {
+	public static MediaDescriptor withType(List<MediaDescriptor> mediaDescriptors, String mediaType) {
 		for (MediaDescriptor md : mediaDescriptors) {
 			if (md.getMediaField().getMediaType().equals(mediaType)) {
 				return md;
