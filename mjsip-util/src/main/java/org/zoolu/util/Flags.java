@@ -70,13 +70,13 @@ public class Flags {
 
 	
 	/** Arguments to be parsed (ArrayList&lt;String&gt;) */
-	ArrayList args;
+	ArrayList<String> args;
 
 	/** Option list (ArrayList&lt;Option&gt;) */
-	ArrayList options=new ArrayList();
+	ArrayList<Option> options=new ArrayList<>();
 
 	/** Parameter list (ArrayList&lt;Option&gt;) */
-	ArrayList params=new ArrayList();
+	ArrayList<Option> params=new ArrayList<>();
 	
 	/** Whether '--not' option is enabled */
 	boolean not_option=false;
@@ -93,7 +93,7 @@ public class Flags {
 	 */
 	public Flags(String program, String[] args) {
 		_program = program;
-		this.args=new ArrayList(Arrays.asList(args));
+		this.args=new ArrayList<>(Arrays.asList(args));
 
 		while (getBoolean("--skip", null)) {
 			// skip
@@ -171,7 +171,7 @@ public class Flags {
 			// parameter
 			if (description!=null && param!=null) params.add(new Option(tag,param,description));
 			if (args.size()>0) {
-				String value=(String)args.get(0);
+				String value=args.get(0);
 				args.remove(0);
 				return value;				
 			}
@@ -182,7 +182,7 @@ public class Flags {
 			for (int i=0; i<args.size(); i++) {
 				if (args.get(i).equals(tag)) {
 					args.remove(i);
-					String value=(String)args.get(i);
+					String value=args.get(i);
 					args.remove(i);
 					return value;
 				}
@@ -206,7 +206,7 @@ public class Flags {
 				args.remove(i);
 				String[] tuple=new String[len];
 				for (int k=0; k<len; k++) {
-					tuple[k]=(String)args.get(i);
+					tuple[k]= args.get(i);
 					args.remove(i);
 				}
 				return tuple;
@@ -295,7 +295,7 @@ public class Flags {
 	 * @return the strings that has not been parsed */
 	public String[] getRemainingStrings(boolean optional, String param, String description) {
 		if (description!=null && param!=null) params.add(new Option(optional?OPTIONAL_PARAM:null,param,description));
-		String[] ss=(String[])args.toArray(new String[]{});
+		String[] ss=args.toArray(new String[]{});
 		args.clear();
 		return ss;
 	}
@@ -314,13 +314,13 @@ public class Flags {
 		//int oplen_max=0;
 		int oplen_max=nopt.getTag().length();
 		for (int i=0; i<options.size(); i++) {
-			Option o=(Option)options.get(i);
+			Option o= options.get(i);
 			int len=o.getTag().length();
 			if (o.getParam()!=null) len+=1+o.getParam().length();
 			if (len>oplen_max) oplen_max=len;
 		}
 		for (int i=0; i<params.size(); i++) {
-			Option p=(Option)params.get(i);
+			Option p= params.get(i);
 			int len=p.getParam().length();
 			if (len>oplen_max) oplen_max=len;
 		}
@@ -328,18 +328,18 @@ public class Flags {
 		if (params.size()>0) {
 			sb.append("\r\n").append(TAB1).append("where:");			
 			for (int i=0; i<params.size(); i++) {
-				Option p=(Option)params.get(i);
+				Option p= params.get(i);
 				sb.append("\r\n").append(TAB2).append(p.toString(oplen_max,TAB3));
 			}	
 		}
 		// options
 		if (options.size()>0) {
 			sb.append("\r\n").append(TAB1).append("Options:");
-			Option[] sorted_options=(Option[])options.toArray(new Option[]{});
-			Arrays.sort(sorted_options,new Comparator(){
+			Option[] sorted_options=options.toArray(new Option[]{});
+			Arrays.sort(sorted_options,new Comparator<Option>(){
 				@Override
-				public int compare(Object o1, Object o2) {
-					return ((Option)o1).getTag().compareTo(((Option)o2).getTag());
+				public int compare(Option o1, Option o2) {
+					return o1.getTag().compareTo(o2.getTag());
 				}
 			});
 			for (int i=0; i<sorted_options.length; i++) {
@@ -364,7 +364,7 @@ public class Flags {
 		else
 			sb.append("Usage: java ").append(_program).append(" [options]");
 		for (int i=0; i<params.size(); i++) {
-			Option p=(Option)params.get(i);
+			Option p= params.get(i);
 			if (p.getTag()==OPTIONAL_PARAM) sb.append(" [").append(p.getParam()).append("]");
 			else sb.append(" ").append(p.getParam());
 		}
