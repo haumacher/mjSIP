@@ -1089,7 +1089,7 @@ public class SipProvider implements SipTransportListener {
 	  * It is implemented in the form "localid@host".
 	  * Call-id must be considered case-sensitive and is compared byte-by-byte. */
 	public String pickCallId() {
-		return pickCallId(getViaAddress());
+		return pickCallId(getViaAddress(false));
 	}   
 
 
