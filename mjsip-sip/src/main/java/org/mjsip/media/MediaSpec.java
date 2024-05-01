@@ -120,7 +120,7 @@ public class MediaSpec {
 
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(avp);
 		if (codec!=null) sb.append(" ").append(codec).append(" ").append(sample_rate).append(" ").append(packet_size).append(" ").append(channels);
 		return sb.toString();
