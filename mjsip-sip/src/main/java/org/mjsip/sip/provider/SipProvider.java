@@ -364,32 +364,29 @@ public class SipProvider implements SipTransportListener {
 		return (sip_transports.containsKey(PROTO_TLS)) ? sip_transports.get(PROTO_TLS).getLocalPort() : 0;
 	}       
 
-	/** Gets a valid SIP or SIPS contact address.
-	  * @return a SIP or SIPS contact URI for this SIP provider. A SIPS URI is returned if TLS (or DTLS) transport is supported */
-	public NameAddress getContactAddress() {
-		return getContactAddress(null,hasSecureTransport());
+	/**
+	 * Gets a valid SIP or SIPS contact address.
+	 * 
+	 * @param addressType The preferred type of address to use.
+	 * @return a SIP or SIPS contact URI for this SIP provider. A SIPS URI is
+	 *         returned if TLS (or DTLS) transport is supported
+	 */
+	public NameAddress getContactAddress(String user, AddressType addressType) {
+		return getContactAddress(user, hasSecureTransport(), addressType);
 	}
 
-	/** Gets a valid SIP or SIPS contact address.
-	  * @return a SIP or SIPS contact URI for this SIP provider. A SIPS URI is returned if TLS (or DTLS) transport is supported */
-	public NameAddress getContactAddress(String user) {
-		return getContactAddress(user,hasSecureTransport());
-	}
-
-	/** Gets a valid SIP or SIPS contact address.
-	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
-	  * @return a SIP or SIPS contact URI for this SIP provider */
-	public NameAddress getContactAddress(boolean secure) {
-		return getContactAddress(null,secure);
-	}
-
-	/** Gets a valid SIP or SIPS contact address.
-	  * @param user local user's name
-	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
-	  * @return a SIP or SIPS contact URI for this SIP provider */
-	public NameAddress getContactAddress(String user, boolean secure) {
-		SipURI uri = (getPort() != _sipConfig.getDefaultPort()) ? new SipURI(user, getViaAddress(), getPort())
-				: new SipURI(user, getViaAddress());
+	/**
+	 * Gets a valid SIP or SIPS contact address.
+	 * 
+	 * @param user        local user's name
+	 * @param secure      whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
+	 * @param addressType The preferred type of address to use.
+	 * @return a SIP or SIPS contact URI for this SIP provider
+	 */
+	public NameAddress getContactAddress(String user, boolean secure, AddressType addressType) {
+		SipURI uri = (getPort() != _sipConfig.getDefaultPort()) 
+				? new SipURI(user, getViaAddress(addressType), getPort())
+				: new SipURI(user, getViaAddress(addressType));
 		if (secure) {
 			if (!hasSecureTransport()) return null;
 			// else
@@ -649,7 +646,7 @@ public class SipProvider implements SipTransportListener {
 			
 			SipURI nexthop_sip_uri=null;
 			if (nexthop_uri.isSipURI()) {
-				nexthop_sip_uri=SipURI.createSipURI(nexthop_uri);
+				nexthop_sip_uri = nexthop_uri.toSipURI();
 			}
 			else
 			if (nexthop_uri.isTelURI()) {

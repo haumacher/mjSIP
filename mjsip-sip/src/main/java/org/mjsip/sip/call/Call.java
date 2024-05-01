@@ -28,7 +28,6 @@ import org.mjsip.sdp.SdpMessage;
 import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipNameAddress;
-import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.dialog.InviteDialog;
 import org.mjsip.sip.dialog.InviteDialogListener;
 import org.mjsip.sip.header.MultipleHeader;
@@ -36,6 +35,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 
 
 /** Class Call implements SIP calls.
@@ -191,7 +191,11 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		LOG.debug("calling "+callee);
 		dialog=new InviteDialog(sip_provider,dialogListener);
 		if (caller==null) caller=from_naddr;
-		NameAddress caller_contact=getContactAddress(SipNameAddress.isSIPS(callee));
+		GenericURI calleeAddress = callee.getAddress();
+		AddressType addressType = calleeAddress.isSipURI() 
+				? calleeAddress.toSipURI().getAddressType()
+				: AddressType.DEFAULT;
+		NameAddress caller_contact=getContactAddress(SipNameAddress.isSIPS(callee), addressType);
 		if (sdp!=null) local_sdp=sdp;
 		if (local_sdp!=null) dialog.invite(callee,caller,caller_contact,local_sdp);
 		else dialog.inviteWithoutOffer(callee,caller,caller_contact);
@@ -254,7 +258,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	public void accept(SdpMessage sdp) {
 		local_sdp=sdp;
 		if (dialog!=null) {
-			NameAddress callee_contact=getContactAddress(dialog.isSecure());
+			NameAddress callee_contact = getContactAddress(dialog.isSecure(), sdp.getOrigin().getAddressType());
 			dialog.accept(callee_contact,local_sdp);
 		}
 		changeState(CallState.C_ACTIVE);
@@ -326,14 +330,19 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 		}
 	}
 	
-	/** Gets a local SIP or SIPS contact address.
-	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP). */
-	protected NameAddress getContactAddress(boolean secure) {
+	/**
+	 * Gets a local SIP or SIPS contact address.
+	 * 
+	 * @param secure      whether returning a SIPS or SIP URI (true=SIPS,
+	 *                    false=SIP).
+	 * @param addressType The type of address to prefer.
+	 */
+	protected NameAddress getContactAddress(boolean secure, AddressType addressType) {
 		if (contact_naddr!=null) return contact_naddr;
 		// else
 		GenericURI uri=from_naddr.getAddress();
-		String user=(uri.isSipURI())? SipURI.createSipURI(uri).getUserName() : null;
-		return sip_provider.getContactAddress(user,secure);
+		String user = (uri.isSipURI()) ? uri.toSipURI().getUserName() : null;
+		return sip_provider.getContactAddress(user, secure, addressType);
 	}
 
 

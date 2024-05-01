@@ -29,6 +29,7 @@ import java.util.Hashtable;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.time.Scheduler;
+import org.zoolu.net.AddressType;
 import org.zoolu.net.IpAddress;
 
 /**
@@ -77,11 +78,11 @@ public class ConnectedSipProvider extends SipProvider {
 	}
 
 	/** Gets a valid SIP or SIPS contact address.
-	  * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
-	  * @param user local user's name
+	 * @param user local user's name
+	 * @param secure whether returning a SIPS or SIP URI (true=SIPS, false=SIP)
 	  * @return a SIP or SIPS contact URI for this SIP provider */
 	@Override
-	public NameAddress getContactAddress(String user, boolean secure) {
+	public NameAddress getContactAddress(String user, boolean secure, AddressType addressType) {
 		for (Enumeration i=connections.elements(); i.hasMoreElements(); ) {
 			SipTransportConnection conn=(SipTransportConnection)i.nextElement();
 			String proto=conn.getProtocol();
@@ -96,7 +97,7 @@ public class ConnectedSipProvider extends SipProvider {
 			}
 		}
 		// else
-		return super.getContactAddress(user,secure);
+		return super.getContactAddress(user,secure, addressType);
 	}
 		
 }

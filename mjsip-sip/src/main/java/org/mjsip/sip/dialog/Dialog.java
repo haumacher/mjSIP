@@ -138,7 +138,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		
 		boolean secure_old=secure;
 		
-		update(is_client,sip_provider,msg);
+		update(is_client, msg);
 			
 		if (LOG.isDebugEnabled()) {
 			if (secure_old != secure) {

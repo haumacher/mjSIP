@@ -23,6 +23,7 @@
 package org.mjsip.sip.call;
 
 import org.mjsip.sdp.SdpMessage;
+import org.mjsip.sip.address.GenericURI;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipNameAddress;
 import org.mjsip.sip.dialog.ExtendedInviteDialog;
@@ -33,6 +34,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipResponses;
 import org.mjsip.sip.provider.SipProvider;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 
 /** Class ExtendedCall implements a SIP call.
   * <p>
@@ -122,7 +124,13 @@ public class ExtendedCall extends Call {
 		else dialog=new ExtendedInviteDialog(sip_provider,dialogListener);
 		if (caller==null) caller=from_naddr;
 		if (sdp!=null) local_sdp=sdp;
-		NameAddress caller_contact=getContactAddress(SipNameAddress.isSIPS(callee));
+
+		GenericURI calleeAddress = callee.getAddress();
+		AddressType addressType = calleeAddress.isSipURI() 
+				? calleeAddress.toSipURI().getAddressType()
+				: AddressType.DEFAULT;
+
+		NameAddress caller_contact = getContactAddress(SipNameAddress.isSIPS(callee), addressType);
 		if (local_sdp!=null) dialog.invite(callee,caller,caller_contact,local_sdp);
 		else dialog.inviteWithoutOffer(callee,caller,caller_contact);
 		changeState(CallState.C_OUTGOING);

@@ -72,7 +72,7 @@ public class RegisteringUserAgent extends UserAgent {
 
 		// keep-alive
 		if (keepalive_time>0) {
-			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : SipURI.createSipURI(rc.getTargetAOR().getAddress());
+			SipURI target_uri=(sip_provider.hasOutboundProxy())? sip_provider.getOutboundProxy() : rc.getTargetAOR().getAddress().toSipURI();
 			String target_host=target_uri.getHost();
 			int target_port=target_uri.getPort();
 			if (target_port<0) target_port=sip_provider.sipConfig().getDefaultPort();

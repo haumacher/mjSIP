@@ -148,7 +148,7 @@ public class Registrar extends ServerEngine {
 			LOG.info("request-URI is not a SIP URI");
 			return targets;
 		}
-		SipURI sip_uri=SipURI.createSipURI(request_uri);
+		SipURI sip_uri=request_uri.toSipURI();
 		String username=sip_uri.getUserName();
 		if (username==null) {
 			LOG.info("no username found");
@@ -201,7 +201,7 @@ public class Registrar extends ServerEngine {
 			LOG.info("ToHeader missed: message discarded");
 			return sip_provider.messageFactory().createResponse(msg,SipResponses.BAD_REQUEST,null,null);  
 		}         
-		SipURI dest_sip_uri=SipURI.createSipURI(th.getNameAddress().getAddress());
+		SipURI dest_sip_uri=th.getNameAddress().getAddress().toSipURI();
 		String user=dest_sip_uri.getUserName()+"@"+dest_sip_uri.getHost();
 
 		int exp_secs=server_profile.expires;

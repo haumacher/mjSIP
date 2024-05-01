@@ -108,8 +108,9 @@ public class OriginField extends SdpField {
 
 	/** Gets the address type.
 	 * @return the address type */
-	public String getAddressType() {
-		return (new Parser(value)).skipString().skipString().skipString().skipString().getString();
+	public AddressType getAddressType() {
+		return AddressType
+				.fromString((new Parser(value)).skipString().skipString().skipString().skipString().getString());
 	}
 
   /** Gets the address.

@@ -79,6 +79,7 @@ import org.mjsip.ua.streamer.DispatchingStreamerFactory;
 import org.mjsip.ua.streamer.NativeStreamerFactory;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 import org.zoolu.util.Archive;
 
 
@@ -286,7 +287,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			this.setLocation((screenSize.width - frameSize.width)/2 - 40, (screenSize.height - frameSize.height)/2 - 40);
 			this.setResizable(false);
 	
-			this.setTitle(sip_provider.getContactAddress(_uaConfig.getUser()).toString());
+			this.setTitle(sip_provider.getContactAddress(_uaConfig.getUser(), AddressType.DEFAULT).toString());
 			this.addWindowListener(new java.awt.event.WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) { exit(); }
@@ -620,7 +621,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	/** When registration failed. */
 	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		this.setTitle(sip_provider.getContactAddress(_uaConfig.getUser()).toString());
+		this.setTitle(sip_provider.getContactAddress(_uaConfig.getUser(), AddressType.DEFAULT).toString());
 	}
 
 

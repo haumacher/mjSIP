@@ -45,6 +45,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.transaction.TransactionClient;
 import org.mjsip.sip.transaction.TransactionClientListener;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 
 /**
  * Registers (once or periodically) a contact address with a registrar server.
@@ -136,8 +137,12 @@ public class RegistrationClient implements TransactionClientListener {
 		NameAddress contact_naddr;
 		{
 			GenericURI to_uri = toNAddr.getAddress();
-			String user=(to_uri.isSipURI())? SipURI.createSipURI(to_uri).getUserName() : null;
-			contact_naddr=new NameAddress(sip_provider.getContactAddress(user));
+			if (to_uri.isSipURI()) {
+				SipURI sipURI = to_uri.toSipURI();
+				contact_naddr=new NameAddress(sip_provider.getContactAddress(sipURI.getUserName(), sipURI.getAddressType()));
+			} else {
+				contact_naddr=new NameAddress(sip_provider.getContactAddress(null, AddressType.DEFAULT));
+			}
 		}
 
 		if (SipNameAddress.isSIPS(contact_naddr)) {

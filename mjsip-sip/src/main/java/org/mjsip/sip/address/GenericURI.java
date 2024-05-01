@@ -63,6 +63,15 @@ public abstract class GenericURI {
 	/** Whether it is a SIP or SIPS URI. */
 	public abstract boolean isSipURI();
 
+	/**
+	 * Converts this URI to a {@link SipURI}.
+	 * 
+	 * <p>
+	 * Note: Must only be called if {@link #isSipURI()} is <code>true</code>.
+	 * </p>
+	 */
+	public abstract SipURI toSipURI();
+
 	/** Whether it is a TEL URI. */
 	public abstract boolean isTelURI();
 

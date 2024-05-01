@@ -216,22 +216,11 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 	  * That is whether the current dialog should be secured. */
 	public boolean isSecure() { return secure; }
 
-
 	/** Updates empty attributes (tags, route set) and mutable attributes (cseqs, contacts), based on a new message.
 	  * @param is_client indicates whether the Dialog is acting as transaction client for the current message.
-	  * @param sip_provider the SIP provider used to get node address for updating the route set
-	  * @param msg the message that is used to update the Dialog state */
-	public void update(boolean is_client, SipProvider sip_provider, SipMessage msg) {
-		update(is_client,sip_provider.getViaAddress(),sip_provider.getPort(),msg);
-	}
-
-
-	/** Updates empty attributes (tags, route set) and mutable attributes (cseqs, contacts), based on a new message.
-	  * @param is_client indicates whether the Dialog is acting as transaction client for the current message.
-	  * @param via_addr the via address of this node, used to update the route set
 	  * @param host_port the via address of this node, used to update the route set
 	  * @param msg the message that is used to update the Dialog state */
-	public void update(boolean is_client, String via_addr, int host_port, SipMessage msg) {
+	public void update(boolean is_client, SipMessage msg) {
 		
 		// update call_id
 		if (call_id==null) call_id=msg.getCallIdHeader().getCallId();
@@ -310,16 +299,18 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 		// REMOVE THE LOCAL NODE FROM THE ROUTE SET (ELIMINATE FIRST-HOP LOOP)
 		if (sip_provider.sipConfig().isOnDialogRoute()) {
 			if (route!=null && route.size()>0) {
-				GenericURI uri=((NameAddress)route.elementAt(0)).getAddress();
-				SipURI sip_uri=(uri.isSipURI())? SipURI.createSipURI(uri) : null; 
-				if (sip_uri!=null && sip_uri.getHost().equals(via_addr) && sip_uri.getPort()==host_port) {
+				GenericURI uri = route.elementAt(0).getAddress();
+				SipURI sip_uri = (uri.isSipURI()) ? uri.toSipURI() : null;
+				if (sip_uri != null && sip_uri.getHost().equals(sip_provider.getViaAddress(sip_uri.isIpv6()))
+						&& sip_uri.getPort() == sip_provider.getPort()) {
 					route.removeElementAt(0);
 				}
 			}
 			if (route!=null && route.size()>0) {
-				GenericURI uri=((NameAddress)route.elementAt(route.size()-1)).getAddress();
-				SipURI sip_uri=(uri.isSipURI())? SipURI.createSipURI(uri) : null; 
-				if (sip_uri!=null && sip_uri.getHost().equals(via_addr) && sip_uri.getPort()==host_port) {
+				GenericURI uri = route.elementAt(route.size() - 1).getAddress();
+				SipURI sip_uri = (uri.isSipURI()) ? uri.toSipURI() : null;
+				if (sip_uri != null && sip_uri.getHost().equals(sip_provider.getViaAddress(sip_uri.isIpv6()))
+						&& sip_uri.getPort() == sip_provider.getPort()) {
 					route.removeElementAt(route.size()-1);
 				}
 			}
@@ -327,7 +318,7 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 		// update secure
 		if (!secure && msg.isRequest()) {
 			GenericURI request_uri=msg.getRequestLine().getAddress();
-			if (request_uri.isSipURI() && SipURI.createSipURI(request_uri).isSecure()
+			if (request_uri.isSipURI() && request_uri.toSipURI().isSecure()
 					&& msg.getViaHeader().getTransport().equalsIgnoreCase("tls")) {
 				secure=true;
 			}

@@ -176,7 +176,7 @@ public class Proxy extends Registrar {
 			MultipleHeader mr=msg.getRoutes();
 			GenericURI route=(new RouteHeader(mr.getTop())).getNameAddress().getAddress();
 			if (route.isSipURI()) {
-				SipURI sip_route=SipURI.createSipURI(route);
+				SipURI sip_route=route.toSipURI();
 				if (isResponsibleFor(sip_route.getHost(),sip_route.getPort())) {
 					mr.removeTop();
 					if (mr.size()>0) msg.setRoutes(mr);
@@ -199,14 +199,14 @@ public class Proxy extends Registrar {
 		if (msg.hasRouteHeader()) {
 			GenericURI route=msg.getRouteHeader().getNameAddress().getAddress();
 			if (route.isSipURI()) {
-				SipURI sip_route=SipURI.createSipURI(route);
+				SipURI sip_route=route.toSipURI();
 				if (sip_route.hasTransport()) proto=sip_route.getTransport();
 			}
 		}
 		else {
 			GenericURI request_uri=msg.getRequestLine().getAddress();
 			if (request_uri.isSipURI()) {
-				SipURI request_sip_uri=SipURI.createSipURI(request_uri);
+				SipURI request_sip_uri=request_uri.toSipURI();
 				if (request_sip_uri.hasTransport()) proto=request_sip_uri.getTransport();
 				else
 				if (request_sip_uri.isSecure()) proto=SipProvider.PROTO_TLS;
@@ -310,7 +310,7 @@ public class Proxy extends Registrar {
 		LOG.trace("inside getAuthPrefixBasedProxyingTarget(uri)");
 		if (!request_uri.isSipURI())  return null;
 		// else
-		SipURI sip_uri=SipURI.createSipURI(request_uri);
+		SipURI sip_uri=request_uri.toSipURI();
 		String username=sip_uri.getUserName();
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else
@@ -335,7 +335,7 @@ public class Proxy extends Registrar {
 		LOG.trace("inside getPrefixBasedProxyingTarget(uri)");
 		if (!request_uri.isSipURI())  return null;
 		// else
-		SipURI sip_uri=SipURI.createSipURI(request_uri);
+		SipURI sip_uri=request_uri.toSipURI();
 		String username=sip_uri.getUserName();
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else

@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import org.zoolu.net.AddressType;
+
 /**
  * SIP and SIPS URIs.
  * 
@@ -187,13 +189,6 @@ public class SipURI extends GenericURI {
 	}
 
 	/**
-	 * Converts the given URI to a {@link SipURI}.
-	 */
-	public static SipURI createSipURI(GenericURI uri) {
-		return parseSipURI(uri.toString());
-	}
-
-	/**
 	 * Parses a {@link SipURI} in the format
 	 * <code>sip[s]:user:password@host:port;uri-parameters?headers</code>.
 	 */
@@ -231,6 +226,13 @@ public class SipURI extends GenericURI {
 	 */
 	public boolean isIpv6() {
 		return _ipv6;
+	}
+
+	/**
+	 * The {@link AddressType} of this address.
+	 */
+	public AddressType getAddressType() {
+		return isIpv6() ? AddressType.IP6 : AddressType.IP4;
 	}
 
 	/** Gets port of SipURI; returns -1 if port is not specidfied. */
@@ -382,6 +384,11 @@ public class SipURI extends GenericURI {
 	@Override
 	public boolean isSipURI() {
 		return true;
+	}
+
+	@Override
+	public SipURI toSipURI() {
+		return this;
 	}
 
 	@Override

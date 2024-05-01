@@ -78,7 +78,7 @@ public class SipMangler {
 		GenericURI request_uri=msg.getRequestLine().getAddress();
 		if (!request_uri.isSipURI()) return false;
 		// else
-		SipURI sip_uri=SipURI.createSipURI(request_uri);
+		SipURI sip_uri=request_uri.toSipURI();
 		String username=sip_uri.getUserName();
 		return (username!=null && username.startsWith(magic_cookie));
 	}
@@ -90,7 +90,7 @@ public class SipMangler {
 		GenericURI request_uri=msg.getRequestLine().getAddress();
 		if (!request_uri.isSipURI()) return msg;
 		// else
-		SipURI sip_uri=SipURI.createSipURI(request_uri);
+		SipURI sip_uri=request_uri.toSipURI();
 		String username=sip_uri.getUserName();
 		if (username!=null && username.startsWith(magic_cookie)) {
 			sip_uri=unstuffUri(sip_uri);
@@ -142,7 +142,7 @@ public class SipMangler {
 			NameAddress name_address=ch.getNameAddress();
 			GenericURI contact_uri=name_address.getAddress();
 			if (contact_uri.isSipURI()) {
-				SipURI sip_uri=SipURI.createSipURI(contact_uri);
+				SipURI sip_uri=contact_uri.toSipURI();
 				// do not mangle already mangled URIs
 				//String username=contact_uri.getUserName();
 				/*if (username==null || !username.startsWith(magic_cookie))*/ {
@@ -166,7 +166,7 @@ public class SipMangler {
 			NameAddress name_address=ch.getNameAddress();
 			GenericURI contact_uri=name_address.getAddress();
 			if (contact_uri.isSipURI()) {
-				SipURI sip_uri=SipURI.createSipURI(contact_uri);
+				SipURI sip_uri=contact_uri.toSipURI();
 				String username=sip_uri.getUserName();
 				if (username!=null && username.startsWith(magic_cookie)) {
 					sip_uri=unstuffUri(sip_uri);

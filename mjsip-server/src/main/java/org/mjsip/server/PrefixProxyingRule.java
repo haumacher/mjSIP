@@ -58,7 +58,7 @@ class PrefixProxyingRule implements ProxyingRule {
 	public SipURI getNexthop(GenericURI uri) {
 		if (!uri.isSipURI()) return null;
 		// else
-		SipURI sip_uri=SipURI.createSipURI(uri);
+		SipURI sip_uri=uri.toSipURI();
 		String username=sip_uri.getUserName();
 		if ((username!=null && username.startsWith(prefix)) || prefix.equalsIgnoreCase(DEFAULT_PREFIX)) {
 			return new SipURI(username,nexthop.getAddress().toString(),nexthop.getPort());

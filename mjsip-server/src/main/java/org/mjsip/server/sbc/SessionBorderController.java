@@ -161,7 +161,7 @@ public class SessionBorderController extends Proxy {
 				if (route_list.size()>0) {
 					GenericURI route=(new RouteHeader((Header)route_list.elementAt(0))).getNameAddress().getAddress();
 					if (route.isSipURI()) {
-						SipURI sip_route=SipURI.createSipURI(route); 
+						SipURI sip_route=route.toSipURI(); 
 						if (isResponsibleFor(sip_route.getHost(),sip_route.getPort())) index++;
 					}
 				}
@@ -170,7 +170,7 @@ public class SessionBorderController extends Proxy {
 				if (route_list.size()>index) {
 					GenericURI route=(new RouteHeader((Header)route_list.elementAt(index))).getNameAddress().getAddress();
 					if (route.isSipURI()) {
-						SipURI sip_route=SipURI.createSipURI(route);
+						SipURI sip_route=route.toSipURI();
 						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():sip_provider.sipConfig().getDefaultPort());
 						already_on_route=route_soaddr.equals(sbc_profile.backendProxy);
 					}
@@ -233,7 +233,7 @@ public class SessionBorderController extends Proxy {
 				GenericURI uri=ch.getNameAddress().getAddress();
 				if (!uri.isSipURI()) continue;
 				// else
-				SipURI sip_uri=SipURI.createSipURI(uri);
+				SipURI sip_uri=uri.toSipURI();
 				String host=sip_uri.getHost();
 				int port=sip_uri.getPort();
 				if (port<=0) port=sip_provider.sipConfig().getDefaultPort();

@@ -95,6 +95,11 @@ public class GenericURIImpl extends GenericURI {
 	}
 
 	@Override
+	public SipURI toSipURI() {
+		return SipURI.parseSipURI(uri);
+	}
+
+	@Override
 	public boolean isTelURI() {
 		String scheme=getScheme();
 		return scheme.equals(SCHEME_TEL);
