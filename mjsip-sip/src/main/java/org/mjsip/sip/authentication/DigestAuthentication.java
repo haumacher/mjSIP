@@ -83,7 +83,7 @@ public class DigestAuthentication {
 	/** Gets a String representation of the object. */
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append("method=").append(method).append("\n");
 		sb.append("username=").append(username).append("\n");
 		sb.append("passwd=").append(passwd).append("\n");
@@ -141,7 +141,7 @@ public class DigestAuthentication {
 	  */
 	public String getResponse() {
 		String secret=HEX(MD5(A1()));
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (nonce!=null) sb.append(nonce);
 		sb.append(":");
 		if (qop!=null) {
@@ -162,7 +162,7 @@ public class DigestAuthentication {
 	  * <p> KD(secret, data) = H(concat(secret, ":", data))
 	  */
 	private byte[] KD(String secret, String data) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(secret).append(":").append(data);
 		return MD5(sb.toString());
 	}
@@ -176,7 +176,7 @@ public class DigestAuthentication {
 	  * <br>   A1 = H( unq(username) ":" unq(realm) ":" passwd ) ":" unq(nonce) ":" unq(cnonce)
 	  */
 	private byte[] A1() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (username!=null) sb.append(username);
 		sb.append(":");
 		if (realm!=null) sb.append(realm);
@@ -187,7 +187,7 @@ public class DigestAuthentication {
 			return sb.toString().getBytes();
 		}
 		else {
-			StringBuffer sb2=new StringBuffer();
+			StringBuilder sb2=new StringBuilder();
 			sb2.append(":");
 			if (nonce!=null) sb2.append(nonce); 
 			sb2.append(":");
@@ -205,7 +205,7 @@ public class DigestAuthentication {
 	  * <br>   A2 = Method ":" digest-uri ":" H(entity-body)
 	  */
 	private String A2() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(method);
 		sb.append(":");
 		if (uri!=null) sb.append(uri);

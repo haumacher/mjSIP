@@ -361,7 +361,7 @@ public class SdpMessage {
 	@Override
 	public String toString() {
 		//String str=v.toString()+o.toString()+s.toString();
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (_version!=null) sb.append(_version.toString());
 		if (_origin != null)
 			sb.append(_origin.toString());

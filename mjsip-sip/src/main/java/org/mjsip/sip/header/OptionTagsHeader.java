@@ -40,7 +40,7 @@ public abstract class OptionTagsHeader extends LegacyHeader {
 	protected OptionTagsHeader(String header, Vector option_tags) {
 		super(header,null);
 		if (option_tags!=null && option_tags.size()>0) {
-			StringBuffer sb=new StringBuffer((String)option_tags.elementAt(0));
+			StringBuilder sb=new StringBuilder((String)option_tags.elementAt(0));
 			for (int i=1; i<option_tags.size(); i++) sb.append(',').append((String)option_tags.elementAt(i));
 			value=sb.toString();
 		}
@@ -51,7 +51,7 @@ public abstract class OptionTagsHeader extends LegacyHeader {
 	protected OptionTagsHeader(String header, String[] option_tags) {
 		super(header,null);
 		if (option_tags!=null && option_tags.length>0) {
-			StringBuffer sb=new StringBuffer(option_tags[0]);
+			StringBuilder sb=new StringBuilder(option_tags[0]);
 			for (int i=1; i<option_tags.length; i++) sb.append(',').append(option_tags[i]);
 			value=sb.toString();
 		}

@@ -280,7 +280,7 @@ public abstract class BasicSipMessage {
 	/** Gets string representation of Message. */
 	@Override
 	public String toString() {
-		StringBuffer str=getMessageHeader();
+		StringBuilder str=getMessageHeader();
 		if (body != null)
 			str.append(getStringBody());
 		return str.toString();
@@ -302,8 +302,8 @@ public abstract class BasicSipMessage {
 
 
 	/** Gets the message header. */
-	private StringBuffer getMessageHeader() {
-		StringBuffer sb=new StringBuffer();
+	private StringBuilder getMessageHeader() {
+		StringBuilder sb=new StringBuilder();
 		if (request_line!=null) sb.append(request_line.toString());
 		else if (status_line!=null) sb.append(status_line.toString());
 		for (int i = 0; i < headers.size(); i++)

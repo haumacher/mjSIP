@@ -454,7 +454,7 @@ public class ByteUtils {
 	  * @param str the formatted hexadecimal string
 	  * @return the unformatted hexadecimal string */
 	public static String trimHexString(String str) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		char c;
 		for (int i=0; i<str.length(); i++) if (isHexDigit(c=str.charAt(i))) sb.append(c);
 		return sb.toString();
@@ -649,7 +649,7 @@ public class ByteUtils {
 	 * @param len the length of the array
 	 * @return the binary string */
 	public static String bytesToBinString(byte[] buf, int off, int len) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		int end=off+len;
 		for (int i=off; i<end; i++) {
 			int b=buf[i];

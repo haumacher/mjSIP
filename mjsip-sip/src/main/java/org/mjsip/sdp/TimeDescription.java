@@ -68,7 +68,7 @@ public class TimeDescription {
 	  * @return the string representation */
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(t.toString());
 		if (rv!=null) for (int i=0; i<rv.length; i++) sb.append(rv[i].toString());
 		return sb.toString();

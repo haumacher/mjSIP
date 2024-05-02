@@ -72,7 +72,7 @@ public class ConnectionField extends SdpField {
 	/** Gets the value of the origin field.
 	 * @return a string with the value of the origin field */
 	private static String getValue(AddressType address_type, String address, int ttl, int num) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (address_type == null || address_type == AddressType.DEFAULT)
 			address_type = ConnectionField.addressType(address);
 		sb.append("IN").append(' ').append(address_type);

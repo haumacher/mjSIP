@@ -182,7 +182,7 @@ public class SipMangler {
 
 	/** Stuffes a String. */
 	private static String stuffString(String str) {
-		StringBuffer stuffed=new StringBuffer();
+		StringBuilder stuffed=new StringBuilder();
 		for (int i=0; i<str.length(); ) {
 			char c=str.charAt(i++);
 			switch (c) {
@@ -198,7 +198,7 @@ public class SipMangler {
 
 	/** Untuffes a String. */
 	private static String unstuffString(String str) {
-		StringBuffer unstuffed=new StringBuffer();
+		StringBuilder unstuffed=new StringBuilder();
 		for (int i=0; i<str.length(); ) {
 			char c=str.charAt(i++);
 			if (c==ESC) {

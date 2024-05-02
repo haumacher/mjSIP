@@ -141,7 +141,7 @@ public class NtpTimeStamp implements Comparable {
 	/** Gets a string representation of this object. */
 	 @Override
 	public String toString()
-	 {  StringBuffer sb=new StringBuffer();
+	 {  StringBuilder sb=new StringBuilder();
 		 sb.append(Long.toHexString(seconds));
 		 sb.append('.');
 		 sb.append(Long.toHexString(fraction));

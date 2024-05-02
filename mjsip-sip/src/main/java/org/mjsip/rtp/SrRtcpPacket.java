@@ -224,7 +224,7 @@ public class SrRtcpPacket extends RrRtcpPacket {
 		  * @return a string representing this object. */
 		@Override
 		public String toString() {
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			sb.append("NTP time: ");
 			sb.append(org.zoolu.util.DateFormat.formatYyyyMMddHHmmssSSS(new java.util.Date(getNtpTimestamp())));
 			sb.append(", RTP time: ");

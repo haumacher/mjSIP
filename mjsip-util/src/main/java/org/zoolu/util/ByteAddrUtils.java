@@ -76,7 +76,7 @@ public class ByteAddrUtils {
 
 	/** Converts a portion of an array of bytes into a string of hexadecimal 4-byte words. */
 	public static String asHex4Bytes(byte[] buf, int off, int len) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		for (int i=0; i<len; i+=4) {
 			int res=len-i;
 			sb.append(ByteUtils.asHex(buf,off+i,((res<4)?res:4)));
@@ -95,7 +95,7 @@ public class ByteAddrUtils {
 
 	/** Converts a portion of an array of bytes  representing a data packet into a hex string. */
 	public static String asHexEthernetPacket(byte[] buf, int off, int len) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(ByteUtils.asHex(buf,off,6));
 		sb.append(' ').append(ByteUtils.asHex(buf,off+6,6));
 		sb.append(' ').append(ByteUtils.asHex(buf,off+12,2));
