@@ -107,7 +107,7 @@ public class NameAddress {
 	/** Gets string representation of this object. */
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (hasDisplayName()) sb.append('\"').append(name).append("\" <").append(uri).append('>');
 		else sb.append('<').append(uri).append('>');
 		return sb.toString();

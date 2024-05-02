@@ -308,7 +308,7 @@ public class Flags {
 
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		final Option nopt=new Option(" !",null,"inverts the next option");
 		// compute option-param part width
 		//int oplen_max=0;
@@ -358,7 +358,7 @@ public class Flags {
 	 * @param program the main class
 	 * @return a string like "Usage: java program [options] ..." */
 	public String toUsageString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (FIRST_PARAMS_THEN_OPTIONS || options.size() == 0)
 			sb.append("Usage: java ").append(_program);
 		else
@@ -418,7 +418,7 @@ public class Flags {
 		 * @param oplen minimum number of character of the 'opt-param' part
 		 * @param sep separator between the 'opt-param' part and the 'description' part */
 		public String toString(int oplen, String sep) {
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			if (tag!=PARAM && tag!=OPTIONAL_PARAM) {
 				sb.append(tag);
 				if (param!=null) sb.append(" ");

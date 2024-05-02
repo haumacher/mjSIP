@@ -510,7 +510,7 @@ public abstract class ServerEngine implements SipProviderListener {
 
 	/** Picks the token used for loop detection. */
 	private String pickLoopTag(SipMessage msg) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(msg.getRequestLine().getAddress().toString());
 		//sb.append(msg.getToHeader().getTag());
 		sb.append(msg.getFromHeader().getTag());

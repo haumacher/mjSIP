@@ -379,7 +379,7 @@ public class BitString {
 	/** Gets a string representation of this object. */
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		for (int i=0; i<length(); i++) sb.append((bitAt(i))?'1':'0');
 		return sb.toString();
 	}

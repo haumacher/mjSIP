@@ -398,7 +398,7 @@ public class SipURI extends GenericURI {
 
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		sb.append((_secure) ? SIPS_COLON : SIP_COLON);
 
@@ -409,14 +409,14 @@ public class SipURI extends GenericURI {
 
 	@Override
 	public String getSpecificPart() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		appendSpecific(sb);
 
 		return sb.toString();
 	}
 
-	private void appendSpecific(StringBuffer sb) {
+	private void appendSpecific(StringBuilder sb) {
 		if (_user != null) {
 			sb.append(_user);
 

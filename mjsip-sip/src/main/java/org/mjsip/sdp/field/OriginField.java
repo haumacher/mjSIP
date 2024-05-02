@@ -68,7 +68,7 @@ public class OriginField extends SdpField {
 	 * @return a string with the value of the origin field */
 	private static String getValue(String username, String sess_id, String sess_version, AddressType addrtype,
 			String address) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		if (username==null || username.length()==0) username="-";
 		if (sess_id==null || sess_id.length()==0) sess_id="0";
 		if (sess_version==null || sess_version.length()==0) sess_version="0";

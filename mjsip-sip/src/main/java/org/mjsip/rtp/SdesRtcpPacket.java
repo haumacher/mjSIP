@@ -143,7 +143,7 @@ public class SdesRtcpPacket extends RtcpPacket {
 	  * @return a string representing this object. */
 	@Override
 	public String toString() {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		Chunk[] chunks=getChunks();
 		for (int i=0; i<chunks.length; i++) sb.append(chunks[i].toString());
 		return sb.toString();
@@ -263,7 +263,7 @@ public class SdesRtcpPacket extends RtcpPacket {
 		  * @return a string representing this object. */
 		@Override
 		public String toString() {
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			sb.append("type=");
 			sb.append(type);
 			sb.append(",value=");
@@ -365,7 +365,7 @@ public class SdesRtcpPacket extends RtcpPacket {
 		  * @return a string representing this object. */
 		@Override
 		public String toString() {
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			sb.append("ssrc=");
 			sb.append(ssrc);
 			sb.append(",items=[");

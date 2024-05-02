@@ -72,7 +72,7 @@ public abstract class ListHeader extends LegacyHeader {
 
 	/** Sets the list of tokens. */
 	public void setElements(Vector elements) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		for (int i=0; i<elements.size(); i++) {
 			if (i>0) sb.append(","); 
 			sb.append((String)elements.elementAt(i));
@@ -82,10 +82,10 @@ public abstract class ListHeader extends LegacyHeader {
 
 	/** Sets the list of tokens. */
 	public void setElements(String[] elements) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		for (int i=0; i<elements.length; i++) {
 			if (i>0) sb.append(","); 
-			sb.append((String)elements[i]);
+			sb.append(elements[i]);
 		}
 		value=sb.toString();
 	}

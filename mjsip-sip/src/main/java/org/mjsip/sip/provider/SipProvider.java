@@ -1035,7 +1035,7 @@ public class SipProvider implements SipTransportListener {
 	/** Picks an unique branch value based on a SIP message.
 	  * This value could also be used as transaction ID */
 	public String pickBranch(SipMessage msg) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append(msg.getRequestLine().getAddress().toString());
 		sb.append(getViaAddress()+getPort());
 		ViaHeader top_via=msg.getViaHeader();
@@ -1165,7 +1165,7 @@ public class SipProvider implements SipTransportListener {
 			return "";
 		}
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Enumeration<String> e = sip_transports.keys(); e.hasMoreElements();) {
 			sb.append("/").append(e.nextElement());
 		}

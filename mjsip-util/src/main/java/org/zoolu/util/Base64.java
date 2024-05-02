@@ -63,8 +63,8 @@ public class Base64 {
 
 	/** Encodes in base64 a given array of bytes. */
 	public static String encode(byte[] input) {
-		
-		StringBuffer sb=new StringBuffer();
+
+		StringBuilder sb=new StringBuilder();
 
 		int len_floor3=((input.length)/3)*3;
 		for (int i=0; i<len_floor3; ) {
@@ -100,7 +100,7 @@ public class Base64 {
  
 	/** Justifies a string fitting a given line length. */
 	public static String justify(String str, int len) {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		char[] buff=str.toCharArray();
 		int begin=0;
 		int end=len; 
