@@ -28,6 +28,7 @@ package org.mjsip.sip.provider;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 
 import org.mjsip.sip.message.SipMessage;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SipTransportCO.class);
 
 	/** Table of active connections (Hashtable of <code>ConnectionId</code>,<code>SipTransportConnection</code>) */
-	protected Hashtable connections;
+	protected Hashtable<ConnectionId, SipTransportConnection> connections;
 
 	/** SipTransport listener */
 	protected SipTransportListener listener=null;
@@ -67,7 +68,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	public SipTransportCO(int local_port, int nmax_connections)
 			throws IOException {
 		this.nmax_connections=nmax_connections;
-		connections=new Hashtable();
+		connections=new Hashtable<>();
 		this_conn_listener=new SipTransportConnectionListener() {
 			@Override
 			public void onReceivedMessage(SipTransportConnection conn, SipMessage msg) {
@@ -143,7 +144,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			if (connections.containsKey(connection_id))
 			try {
 				LOG.debug("already active connection found for connection-id "+connection_id);
-				SipTransportConnection conn=(SipTransportConnection)connections.get(connection_id);
+				SipTransportConnection conn=connections.get(connection_id);
 				LOG.debug("sending data through already active connection "+conn);
 				//conn.sendMessage(msg);
 				sendMessage(conn,msg);
@@ -204,7 +205,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			}
 			// else
 			LOG.debug("active connection found matching "+connection_id);
-			SipTransportConnection conn=(SipTransportConnection)connections.get(connection_id);
+			SipTransportConnection conn=connections.get(connection_id);
 			//conn.sendMessage(msg);
 			sendMessage(conn,msg);
 			return conn;
@@ -228,8 +229,8 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 		// close all connections
 		if (connections!=null) {
 			LOG.trace("connections are going down");
-			for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {
-				SipTransportConnection c=(SipTransportConnection)e.nextElement();
+			for (Enumeration<SipTransportConnection> e=connections.elements(); e.hasMoreElements(); ) {
+				SipTransportConnection c=e.nextElement();
 				c.halt();
 			}
 			//connections=null;
@@ -276,7 +277,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			if (connections.containsKey(connection_id)) {
 				// remove the previous connection
 				LOG.info("Adding already established connection, replacing ID: " + connection_id);
-				SipTransportConnection old_conn=(SipTransportConnection)connections.get(connection_id);
+				SipTransportConnection old_conn=connections.get(connection_id);
 				old_conn.halt();
 				connections.remove(connection_id);
 			}
@@ -286,8 +287,8 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 				LOG.info("Reached maximum number of connections, removing unused connections.");
 				long older_time=System.currentTimeMillis();
 				ConnectionId older_id=null;
-				for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {
-					SipTransportConnection co=(SipTransportConnection)e.nextElement();
+				for (Enumeration<SipTransportConnection> e=connections.elements(); e.hasMoreElements(); ) {
+					SipTransportConnection co= e.nextElement();
 					if (co.getLastTimeMillis()<older_time) older_id=new ConnectionId(co);
 				}
 				if (older_id!=null) removeConnection(older_id);
@@ -297,10 +298,12 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			//connection_id=new ConnectionId(conn);
 			//conn=(SipTransportConnection)connections.get(connection_id);
 			// DEBUG log:
-			LOG.trace("active connenctions:");
-			for (Enumeration e=connections.keys(); e.hasMoreElements(); ) {
-				ConnectionId id=(ConnectionId)e.nextElement();
-				LOG.trace("connection-id="+id+": "+((SipTransportConnection)connections.get(id)).toString());
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("active connenctions:");
+				for (Map.Entry<ConnectionId, SipTransportConnection> e : connections.entrySet() ) {
+					ConnectionId id= e.getKey();
+					LOG.trace("connection-id="+id+": "+(e.getValue()).toString());
+				}
 			}
 		}
 		// END SYNCHRONIZATION      
@@ -313,14 +316,16 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 		synchronized (connections) {
 			
 			if (connections.containsKey(connection_id)) {
-				SipTransportConnection conn=(SipTransportConnection)connections.get(connection_id);
+				SipTransportConnection conn=connections.get(connection_id);
 				connections.remove(connection_id);
 				conn.halt();
 				// DEBUG log:
-				LOG.trace("active connenctions:");
-				for (Enumeration e=connections.elements(); e.hasMoreElements(); ) {
-					SipTransportConnection co=(SipTransportConnection)e.nextElement();
-					LOG.trace("conn "+co.toString());
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("active connenctions:");
+					for (Enumeration<SipTransportConnection> e=connections.elements(); e.hasMoreElements(); ) {
+						SipTransportConnection co= e.nextElement();
+						LOG.trace("conn "+co.toString());
+					}
 				}
 			}
 		}
