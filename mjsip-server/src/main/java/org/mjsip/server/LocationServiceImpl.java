@@ -296,44 +296,47 @@ public class LocationServiceImpl implements LocationService {
 	
 	/** Loads the database */
 	private void load() {
-		if (file_name==null) return;
+		if (file_name == null) return;
 		// else
-		BufferedReader in=null;
-		changed=false;
-		try { in = new BufferedReader(new FileReader(file_name)); }
-		catch (FileNotFoundException e) {
-			LOG.warn("file \""+file_name+"\" not found: created new empty DB");
-			return;
-		}   
-		String user=null;
-		while (true) {
-			String line=null;
-			try { line=in.readLine(); }
-				catch (Exception e) { e.printStackTrace(); System.exit(0); }   
-			if (line==null)
-				break;
-			if (line.startsWith("#"))
-				continue;
-			if (line.startsWith("To")) {
-				Parser par=new Parser(line);
-				user=par.skipString().getString();
-				addUser(user);
-				continue;
-			}
-			if (line.startsWith(SipHeaders.Contact)) {
-				SipParser par=new SipParser(line);
-				NameAddress name_address=((SipParser)par.skipString()).getNameAddress();
-				String expire_value=par.goTo("expires=").skipN(8).getStringUnquoted();
-				if (expire_value.equalsIgnoreCase("NEVER")) addUserStaticContact(user,name_address);
-				else {
-					Date expire_time=(new SipParser(expire_value)).getDate(); 
-					addUserContact(user,name_address,expire_time);
+		changed = false;
+		try (BufferedReader in = new BufferedReader(new FileReader(file_name))) {
+			String user = null;
+			while (true) {
+				String line = null;
+				try {
+					line = in.readLine();
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(0);
 				}
-				Date date=getUserContactExpirationDate(user,name_address.getAddress().toString());
-				continue;
-			}  
+				if (line == null)
+					break;
+				if (line.startsWith("#"))
+					continue;
+				if (line.startsWith("To")) {
+					Parser par = new Parser(line);
+					user = par.skipString().getString();
+					addUser(user);
+					continue;
+				}
+				if (line.startsWith(SipHeaders.Contact)) {
+					SipParser par = new SipParser(line);
+					NameAddress name_address = ((SipParser) par.skipString()).getNameAddress();
+					String expire_value = par.goTo("expires=").skipN(8).getStringUnquoted();
+					if (expire_value.equalsIgnoreCase("NEVER")) addUserStaticContact(user, name_address);
+					else {
+						Date expire_time = (new SipParser(expire_value)).getDate();
+						addUserContact(user, name_address, expire_time);
+					}
+					Date date = getUserContactExpirationDate(user, name_address.getAddress().toString());
+					continue;
+				}
+			}
+		} catch (FileNotFoundException e) {
+			LOG.warn("file \"" + file_name + "\" not found: created new empty DB");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		try { in.close(); } catch (Exception e) { e.printStackTrace(); } 
 	}
  
  
@@ -341,17 +344,13 @@ public class LocationServiceImpl implements LocationService {
 	private synchronized void save() {
 		if (file_name==null) return;
 		// else
-		BufferedWriter out=null;
 		changed=false;
-		try {
-			out=new BufferedWriter(new FileWriter(file_name));
+		try (BufferedWriter out = new BufferedWriter(new FileWriter(file_name))){
 			out.write(this.toString());
-			out.close();
-		}
+        }
 		catch (IOException e) {
 			LOG.warn("error trying to write on file \""+file_name+"\"", e);
-			return;
-		}
+        }
 	}
 	
 }

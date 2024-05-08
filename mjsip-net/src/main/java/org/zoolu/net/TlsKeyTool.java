@@ -61,10 +61,9 @@ public class TlsKeyTool {
 
 	/** Imports a private key. */
 	public static Key importPrivateKey(String file_name) throws Exception {
-		InputStream is=new FileInputStream(file_name);
-		Key key=importPrivateKey(is);
-		is.close();
-		return key;
+		try (InputStream is=new FileInputStream(file_name)) {
+            return importPrivateKey(is);
+		}
 	}
 
 
