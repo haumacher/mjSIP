@@ -24,6 +24,7 @@
 package org.zoolu.net;
 
 
+import java.io.Closeable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -31,7 +32,7 @@ import java.net.DatagramSocket;
 /** UdpSocket provides a uniform interface to UDP transport protocol,
   * regardless J2SE or J2ME is used.
   */
-public class UdpSocket {
+public class UdpSocket implements Closeable {
 	
 
 	/** DatagramSocket */
@@ -72,6 +73,7 @@ public class UdpSocket {
 	}
 	
 	/** Closes this datagram socket. */
+	@Override
 	public void close() {
 		socket.close();
 	}

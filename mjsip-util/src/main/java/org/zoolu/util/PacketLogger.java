@@ -1,6 +1,7 @@
 package org.zoolu.util;
 
 
+import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,7 +11,7 @@ import java.io.Writer;
 
 /** Packet logger.
   */
-public class PacketLogger {
+public class PacketLogger implements Closeable {
 	
 	/** Default logger */
 	protected static PacketLogger DEFAULT_LOGGER=null;
@@ -62,6 +63,7 @@ public class PacketLogger {
 
 
 	/** From class Writer. Close the stream, flushing it first. */
+	@Override
 	public void close() throws IOException {
 		if (out!=null) out.close();
 		out=null;

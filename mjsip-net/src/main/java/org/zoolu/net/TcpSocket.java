@@ -25,6 +25,7 @@ package org.zoolu.net;
 
 
 //import java.net.InetAddress;
+import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -33,7 +34,7 @@ import java.net.Socket;
 /** TcpSocket provides a uniform interface to TCP transport protocol,
   * regardless J2SE or J2ME is used.
   */
-public class TcpSocket {
+public class TcpSocket implements Closeable {
 	
 	/** Socket */
 	Socket socket;
@@ -88,6 +89,7 @@ public class TcpSocket {
 	}
 	
 	/** Closes this socket. */
+	@Override
 	public void close() throws java.io.IOException {
 		socket.close();
 	}

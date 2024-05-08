@@ -23,6 +23,7 @@ package org.mjsip.ua.clip;
 
 
 
+import java.io.Closeable;
 import java.io.File;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 /** Plays an audio file or AudioInputStream.
   */
-public class AudioClipPlayer implements LineListener  {
+public class AudioClipPlayer implements LineListener, Closeable {
 	
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AudioClipPlayer.class);
 
@@ -256,6 +257,7 @@ public class AudioClipPlayer implements LineListener  {
 
 
 	/** Close it. */
+	@Override
 	public void close() {
 		clip.close();
 		clip=null;
@@ -283,14 +285,15 @@ public class AudioClipPlayer implements LineListener  {
 
 		AtomicBoolean stopped = new AtomicBoolean(false);
 
-		AudioClipPlayer p = new AudioClipPlayer(args[0], player -> stopped.set(true));
-		p.play();
-		try {
-			while (!stopped.get()) {
-				Thread.sleep(1000);
+		try(AudioClipPlayer p = new AudioClipPlayer(args[0], player -> stopped.set(true))) {
+			p.play();
+			try {
+				while (!stopped.get()) {
+					Thread.sleep(1000);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 }
