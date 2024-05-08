@@ -118,12 +118,10 @@ public class TlsServerFactory {
 
 	/** Inits supported and enabled protocol versions. */
 	private void initSupportedProtocols() {
-		try {
-			SSLServerSocket ssl_server=(SSLServerSocket)ssl_factory.createServerSocket();
+		try (SSLServerSocket ssl_server=(SSLServerSocket)ssl_factory.createServerSocket()){
 			if (supported_protocols==null) supported_protocols=ssl_server.getSupportedProtocols();
 			if (enabled_protocols==null) enabled_protocols=ssl_server.getEnabledProtocols();
-			ssl_server.close();
-		}
+        }
 		catch (Exception e) {  e.printStackTrace();  }
 	}
 

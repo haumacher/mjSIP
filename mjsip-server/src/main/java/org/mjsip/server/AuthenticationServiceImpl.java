@@ -163,62 +163,58 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	
 	/** Loads the database */
 	public void load() {
-		BufferedReader in=null;
-		changed=false;
-		try { in = new BufferedReader(new FileReader(filename)); }
-		catch (FileNotFoundException e) {
-			LOG.warn("file \""+filename+"\" not found: created new empty DB");
-			return;
-		}   
-		String user=null;
-		byte[] key=NULL_ARRAY;
-		while (true) {
-			String line=null;
-			try { line=in.readLine(); } catch (Exception e) { e.printStackTrace(); System.exit(0); }   
+		changed = false;
+		try (BufferedReader in = new BufferedReader(new FileReader(filename))){
+			String user = null;
+			byte[] key = NULL_ARRAY;
+			while (true) {
+				String line = null;
+				try {
+					line = in.readLine();
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(0);
+				}
 
-			if (line==null)
-				break;
+				if (line == null)
+					break;
 
-			Parser par=new Parser(line);
+				Parser par = new Parser(line);
 
-			if (line.startsWith("#"))
-				continue;         
-			if (line.startsWith("user")) {
-				if (user!=null) addUser(user,key);
-				user=par.goTo('=').skipChar().getString();  
-				key=NULL_ARRAY;
-				continue;
+				if (line.startsWith("#"))
+					continue;
+				if (line.startsWith("user")) {
+					if (user != null) addUser(user, key);
+					user = par.goTo('=').skipChar().getString();
+					key = NULL_ARRAY;
+					continue;
+				}
+				if (line.startsWith("key")) {
+					key = Base64.decode(par.goTo('=').skipChar().getString());
+					continue;
+				}
+				if (line.startsWith("passwd")) {
+					key = par.goTo('=').skipChar().getString().getBytes();
+					continue;
+				}
 			}
-			if (line.startsWith("key")) {
-				key=Base64.decode(par.goTo('=').skipChar().getString());         
-				continue;
-			}
-			if (line.startsWith("passwd")) {
-				key=par.goTo('=').skipChar().getString().getBytes();         
-				continue;
-			}
+			if (user != null) addUser(user, key);
+		} catch (FileNotFoundException e) {
+			LOG.warn("file \"" + filename + "\" not found: created new empty DB");
+        } catch (IOException e) {
+			e.printStackTrace();
 		}
-		if (user!=null) addUser(user,key);
-
-		try {
-			in.close();
-		}
-		catch (Exception e) { e.printStackTrace(); } 
 	}
 
 	/** Saves the database */
 	public synchronized void save() {
-		BufferedWriter out=null;
 		changed=false;
-		try {
-			out=new BufferedWriter(new FileWriter(filename));
+		try (BufferedWriter out= new BufferedWriter(new FileWriter(filename))){
 			out.write(this.toString());
-			out.close();
-		}
+        }
 		catch (IOException e) {
 			LOG.warn("error trying to write on file \""+filename+"\"", e);
-			return;
-		}
+        }
 	}
 
 	/** Gets the String value of this Object.

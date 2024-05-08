@@ -127,11 +127,9 @@ public class TlsSocketFactory {
 
 	/** Inits supported and enabled protocol versions. */
 	private void initSupportedProtocols() {
-		try {
-			SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket();
+		try (SSLSocket ssl_socket=(SSLSocket)ssl_factory.createSocket()) {
 			if (supported_protocols==null) supported_protocols=ssl_socket.getSupportedProtocols();
 			if (enabled_protocols==null) enabled_protocols=ssl_socket.getEnabledProtocols();
-			ssl_socket.close();
 		}
 		catch (Exception e) {  e.printStackTrace();  }
 	}
