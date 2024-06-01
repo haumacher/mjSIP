@@ -141,7 +141,7 @@ public class SipConfig implements SipOptions {
 	@Option(name = "--via-addr-v6", usage = "Host IPv6 address used in communication with an IPv6 counterpart in the via header.")
 	private String _viaAddr6 = null;
 
-	@Option(name = "--prefer-ipv4", usage = "Whether to use IPv4 addresses by default.")
+	@Option(name = "--prefer-ipv4", handler = YesNoHandler.class, usage = "Whether to use IPv4 addresses by default.")
 	private boolean _preferIPv4 = false;
 
 	@Option(name = "--host-port", usage = "Local SIP port.")
