@@ -136,8 +136,7 @@ public class UdpRelay extends Thread {
 	@Override
 	public void run() {
 		//System.out.println("DEBUG: starting UdpRelay "+toString()+" (it expires after "+alive_to+" sec)");     
-		try    {
-			UdpSocket socket=new UdpSocket(local_port);
+		try (UdpSocket socket=new UdpSocket(local_port)) {
 			byte []buf=new byte[MAX_PKT_SIZE];
 									
 			socket.setSoTimeout(socket_to);
