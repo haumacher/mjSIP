@@ -128,6 +128,7 @@ public class AudioFile {
 					AudioInputStream audioInputStream = new AudioInputStream(new FileInputStream(tmp), audio_format,
 							tmp.length());
 					AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(file_name));
+					audioInputStream.close();
 
 					tmp.delete();
 		    	}
