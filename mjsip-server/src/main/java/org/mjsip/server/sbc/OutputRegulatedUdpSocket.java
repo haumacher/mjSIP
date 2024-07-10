@@ -48,7 +48,7 @@ public class OutputRegulatedUdpSocket extends UdpSocket {
 	long last_departure=0; 
 
 	/** Packet buffer */
-	Vector buffer=new Vector();
+	Vector<UdpPacket> buffer=new Vector<>();
 
 	private Scheduler _scheduler; 
 
@@ -106,7 +106,7 @@ public class OutputRegulatedUdpSocket extends UdpSocket {
 	/** Sends an UDP packet from this socket. */ 
 	synchronized private void sendRegulated(UdpPacket pkt) throws java.io.IOException {
 		long now=System.currentTimeMillis();
-		if (buffer.size()==0 && now>=(last_departure+inter_time))  {
+		if (buffer.isEmpty() && now>=(last_departure+inter_time))  {
 			super.send(pkt);
 			last_departure=now;
 		}
@@ -123,7 +123,7 @@ public class OutputRegulatedUdpSocket extends UdpSocket {
 
 	/** Sends the first UdpPacket in queue. */ 
 	synchronized private void sendTop() throws java.io.IOException {
-		UdpPacket pkt=(UdpPacket)buffer.elementAt(0);
+		UdpPacket pkt=buffer.elementAt(0);
 		buffer.removeElementAt(0);
 		super.send(pkt);
 		last_departure=System.currentTimeMillis();
