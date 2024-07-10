@@ -226,8 +226,8 @@ public class SipMessage extends BasicSipMessage {
 	/** Gets a MultipleHeader of Contacts.
 	  * @return all contacts (MultipleHeader of <code>ContactHeader</code>) */
 	public MultipleHeader getContacts() {
-		Vector v=getHeaders(SipHeaders.Contact);
-		if (v.size()>0) return new MultipleHeader(v);
+		Vector<Header> v=getHeaders(SipHeaders.Contact);
+		if (!v.isEmpty()) return new MultipleHeader(v);
 		else return null;
 	}   
 	/** Adds ContactHeader.
@@ -276,8 +276,8 @@ public class SipMessage extends BasicSipMessage {
 	/** Gets all Via header fields.
 	  * @return all Via header fields (MultipleHeader of <code>ViaHeader</code>) */
 	public MultipleHeader getVias() {
-		Vector v=getHeaders(SipHeaders.Via);
-		if (v.size()>0) return new MultipleHeader(v);
+		Vector<Header> v=getHeaders(SipHeaders.Via);
+		if (!v.isEmpty()) return new MultipleHeader(v);
 		else return null;
 	}
 	/** Adds a ViaHeader at the top.
@@ -326,8 +326,8 @@ public class SipMessage extends BasicSipMessage {
 	/** Gets all Route header fields.
 	  * @return all routes (MultipleHeader of <code>RouteHeader</code>) */
 	public MultipleHeader getRoutes() {
-		Vector v=getHeaders(SipHeaders.Route);
-		if (v.size()>0) return new MultipleHeader(v);
+		Vector<Header> v=getHeaders(SipHeaders.Route);
+		if (!v.isEmpty()) return new MultipleHeader(v);
 		else return null;
 	}
 	/** Adds a RouteHeader at the top.
@@ -375,8 +375,8 @@ public class SipMessage extends BasicSipMessage {
 	/** Gets all Record-Route header fields.
 	  * @return all routes (MultipleHeader of <code>RecordRouteHeader</code>) */
 	public MultipleHeader getRecordRoutes() {
-		Vector v=getHeaders(SipHeaders.Record_Route);
-		if (v.size()>0) return new MultipleHeader(v);
+		Vector<Header> v=getHeaders(SipHeaders.Record_Route);
+		if (!v.isEmpty()) return new MultipleHeader(v);
 		else return null;
 	}
 	/** Adds a RecordRouteHeader at the top.
@@ -418,8 +418,8 @@ public class SipMessage extends BasicSipMessage {
 	/** Gets all Service-Route header fields.
 	  * @return all service routes (MultipleHeader of <code>ServiceRouteHeader</code>) */
 	public MultipleHeader getServiceRoutes() {
-		Vector v=getHeaders(SipHeaders.ServiceRoute);
-		if (v.size()>0) return new MultipleHeader(v);
+		Vector<Header> v=getHeaders(SipHeaders.ServiceRoute);
+		if (!v.isEmpty()) return new MultipleHeader(v);
 		else return null;
 	}
 	/** Sets Service-Route header fields.
