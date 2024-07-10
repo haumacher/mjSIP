@@ -105,9 +105,9 @@ public class AddressResolverKeepAlive extends AddressResolver {
 		// enumerate expired binding
 		long now=(new Date()).getTime();
 		Vector aux=new Vector();
-		for (Enumeration e=time_table.keys(); e.hasMoreElements(); ) {
-			String key=(String)e.nextElement();
-			long expire=((Long)time_table.get(key)).longValue();
+		for (Enumeration<String> e=time_table.keys(); e.hasMoreElements(); ) {
+			String key= e.nextElement();
+			long expire= time_table.get(key).longValue();
 			if (expire<now) aux.addElement(key);
 		}
 		// remove expired binding
