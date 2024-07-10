@@ -98,7 +98,7 @@ public class SessionBorderController extends Proxy {
 	MediaGw media_gw;
 
 	/** Sip keep-alive daemons for registered users. */
-	Hashtable keepalive_daemons=null;
+	Hashtable<String, SipKeepAlive> keepalive_daemons=null;
 
 	/** Maximum time between two handovers (in milliseconds). */
 	//long handover_time=5000;
@@ -114,7 +114,7 @@ public class SessionBorderController extends Proxy {
 		this.sip_provider=sip_provider;
 		this.sbc_profile=sbc_profile;
 		
-		if (sbc_profile.keepaliveTime>0 && !sbc_profile.keepaliveAggressive) keepalive_daemons=new Hashtable();
+		if (sbc_profile.keepaliveTime>0 && !sbc_profile.keepaliveAggressive) keepalive_daemons=new Hashtable<>();
 		if (sbc_profile.mediaAddr==null || sbc_profile.mediaAddr.equals("0.0.0.0")) sbc_profile.mediaAddr=sip_provider.getViaAddress();
 		
 		media_gw = new MediaGw(sip_provider.scheduler(), portPool, sbc_profile);
@@ -153,13 +153,13 @@ public class SessionBorderController extends Proxy {
 			SocketAddress via_soaddr=new SocketAddress(via.getHost(),(via.hasPort())?via.getPort():sip_provider.sipConfig().getDefaultPort());
 			// pass to the backend_proxy only requests that are not coming from it
 			if (!via_soaddr.equals(sbc_profile.backendProxy)) {
-				Vector route_list;
+				Vector<Header> route_list;
 				if (req.hasRouteHeader()) route_list=req.getRoutes().getHeaders();
-				else route_list=new Vector();
+				else route_list=new Vector<>();
 				int index=0; 
 				// skip the route for the present SBC
 				if (route_list.size()>0) {
-					GenericURI route=(new RouteHeader((Header)route_list.elementAt(0))).getNameAddress().getAddress();
+					GenericURI route=(new RouteHeader(route_list.elementAt(0))).getNameAddress().getAddress();
 					if (route.isSipURI()) {
 						SipURI sip_route=route.toSipURI(); 
 						if (isResponsibleFor(sip_route.getHost(),sip_route.getPort())) index++;
@@ -168,7 +168,7 @@ public class SessionBorderController extends Proxy {
 				// check if the backend_proxy is already the next hop
 				boolean already_on_route=false;
 				if (route_list.size()>index) {
-					GenericURI route=(new RouteHeader((Header)route_list.elementAt(index))).getNameAddress().getAddress();
+					GenericURI route=(new RouteHeader(route_list.elementAt(index))).getNameAddress().getAddress();
 					if (route.isSipURI()) {
 						SipURI sip_route=route.toSipURI();
 						SocketAddress route_soaddr=new SocketAddress(sip_route.getHost(),(sip_route.hasPort())?sip_route.getPort():sip_provider.sipConfig().getDefaultPort());
@@ -227,9 +227,9 @@ public class SessionBorderController extends Proxy {
 	//** Updates the SIP keep alive daemons. */
 	private SipMessage updateKeepAlive(SipMessage resp) {
 		if (resp.hasContactHeader()) {
-			Vector c_headers=resp.getContacts().getHeaders();
+			Vector<Header> c_headers=resp.getContacts().getHeaders();
 			for (int i=0; i<c_headers.size(); i++) {
-				ContactHeader ch=new ContactHeader((Header)c_headers.elementAt(i));
+				ContactHeader ch=new ContactHeader(c_headers.elementAt(i));
 				GenericURI uri=ch.getNameAddress().getAddress();
 				if (!uri.isSipURI()) continue;
 				// else
@@ -243,7 +243,7 @@ public class SessionBorderController extends Proxy {
 					SipKeepAlive keepalive;
 					String key=soaddr.toString();
 					if (keepalive_daemons.containsKey(key)) {
-						keepalive=(SipKeepAlive)keepalive_daemons.get(key);
+						keepalive=keepalive_daemons.get(key);
 						if (!keepalive.isRunning()) {
 							keepalive_daemons.remove(key);
 							keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepaliveTime);
@@ -262,7 +262,7 @@ public class SessionBorderController extends Proxy {
 				else {
 					String key=soaddr.toString();
 					if (keepalive_daemons.containsKey(key)) {
-						SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
+						SipKeepAlive keepalive=keepalive_daemons.get(key);
 						keepalive_daemons.remove(key);
 						keepalive.halt();
 						LOG.debug("KeepAlive: halt: "+soaddr);
