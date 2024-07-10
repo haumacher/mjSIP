@@ -151,10 +151,10 @@ public abstract class ServerEngine implements SipProviderListener {
 		if (location_service==null) location_service=new LocationServiceImpl(profile.locationDb);   
 		// do clean all?
 		if (profile.cleanLocationDb)  {
-			for (Enumeration u=location_service.getUsers(); u.hasMoreElements(); ) {
-				String user=(String)u.nextElement();
-				for (Enumeration c=location_service.getUserContactURIs(user); c.hasMoreElements(); ) {
-					String contact=(String)c.nextElement();
+			for (Enumeration<String> u=location_service.getUsers(); u.hasMoreElements(); ) {
+				String user= u.nextElement();
+				for (Enumeration<String> c=location_service.getUserContactURIs(user); c.hasMoreElements(); ) {
+					String contact= c.nextElement();
 					if (!location_service.isUserContactStatic(user,contact)) location_service.removeUserContact(user,contact);
 				}
 			}
@@ -164,10 +164,10 @@ public abstract class ServerEngine implements SipProviderListener {
 		else {
 			// remove all expired contacts
 			boolean changed=false;    
-			for (Enumeration u=location_service.getUsers(); u.hasMoreElements(); ) {
-				String user=(String)u.nextElement();
-				for (Enumeration c=location_service.getUserContactURIs(user); c.hasMoreElements(); ) {
-					String contact=(String)c.nextElement();
+			for (Enumeration<String> u=location_service.getUsers(); u.hasMoreElements(); ) {
+				String user= u.nextElement();
+				for (Enumeration<String> c=location_service.getUserContactURIs(user); c.hasMoreElements(); ) {
+					String contact= c.nextElement();
 					if ((changed=location_service.isUserContactExpired(user,contact))==true) location_service.removeUserContact(user,contact);
 				}
 				// Note: uncomment the next line, if you want that 'unbound' users (i.e. without registered contacts) are automatically removed
