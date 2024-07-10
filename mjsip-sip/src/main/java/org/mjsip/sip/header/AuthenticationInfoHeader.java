@@ -50,7 +50,7 @@ public class AuthenticationInfoHeader extends AuthenticationHeader {
 	/** Creates a new AuthenticationInfoHeader
 	  * specifing the <i>auth_scheme</i> and the vector of authentication parameters.
 	  * <p> <i>auth_param</i> is a vector of String of the form <i>parm_name</i> "=" <i>parm_value</i> */
-	public AuthenticationInfoHeader(Vector auth_params) {
+	public AuthenticationInfoHeader(Vector<String> auth_params) {
 		super(SipHeaders.Authentication_Info,"",auth_params);
 	}
 	
@@ -93,12 +93,12 @@ public class AuthenticationInfoHeader extends AuthenticationHeader {
 	/** Gets a String Vector of parameter names.
 	  * @return Returns a String Vector of all parameter names or null if no parameter is present. */
 	@Override
-	public Vector getParameterNames() {
+	public Vector<String> getParameterNames() {
 		char[] name_separators={'=', ' ', '\t'};
 		SipParser par=new SipParser(value);
 		//par.skipString(); // skip the auth_scheme
 		par.skipWSPCRLF();
-		Vector names=new Vector();
+		Vector<String> names=new Vector<>();
 		while (par.hasMore()) {
 			String name=par.getWord(name_separators);
 			names.addElement(name);
