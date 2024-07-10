@@ -60,7 +60,7 @@ public class ReliableProvisionalResponder {
 	InviteTransactionServer invite_ts;
 	
 	/** Queue of response messages to be sent */
-	Vector responses=new Vector();
+	Vector<SipMessage> responses=new Vector<>();
 	
 	/** Retransmission timeout */
 	ScheduledFuture<?> retransmission_to = null;
@@ -116,8 +116,8 @@ public class ReliableProvisionalResponder {
 	 * @param prack the received PRACK */
 	public synchronized void processPrack(SipProvider sip_provider, SipMessage prack) {
 		LOG.debug("processPrack()");
-		if (responses.size()>0) {
-			SipMessage resp=(SipMessage)responses.elementAt(0);
+		if (!responses.isEmpty()) {
+			SipMessage resp=responses.elementAt(0);
 			CSeqHeader sh=resp.getCSeqHeader();
 			RAckHeader rh=prack.getRAckHeader();
 			if (rh!=null && rh.getCSeqSequenceNumber()==sh.getSequenceNumber() && rh.getCSeqMethod().equals(sh.getMethod()) && rh.getRAckSequenceNumber()==resp.getRSeqHeader().getSequenceNumber()) {
@@ -136,7 +136,7 @@ public class ReliableProvisionalResponder {
 	/** Whether there are some responses that have not been confirmed yet though a PRACK message.
 	  * @return true if one or more responses are still waiting for a confirmation */
 	public boolean hasPendingResponses() {
-		return responses.size()>0;
+		return !responses.isEmpty();
 	}
 
 
@@ -160,17 +160,17 @@ public class ReliableProvisionalResponder {
 				this::onTransactionTimeout);
 
 		scheduleRetransmission(sipConfig.getRetransmissionTimeout());
-		SipMessage resp=(SipMessage)responses.elementAt(0);
+		SipMessage resp=responses.elementAt(0);
 		invite_ts.respondWith(resp); 
 	}  
 
 	private synchronized void onTransactionTimeout() {
 		LOG.info("Transaction timeout expired");
 		stopResponseRetransmission();
-		SipMessage resp=(SipMessage)responses.elementAt(0);
+		SipMessage resp=responses.elementAt(0);
 		responses.removeElementAt(0);
 		if (listener!=null) listener.onReliableProvisionalResponseTimeout(this,resp);
-		if (responses.size()>0) sendNextResponse();
+		if (!responses.isEmpty()) sendNextResponse();
 	}
 
 	private synchronized void onRetransmissionTimeout() {
@@ -178,7 +178,7 @@ public class ReliableProvisionalResponder {
 
 		scheduleRetransmission(sip_provider.retransmissionSlowdown(retransmissionTimeout));
 
-		SipMessage resp=(SipMessage)responses.elementAt(0);
+		SipMessage resp=responses.elementAt(0);
 		invite_ts.respondWith(resp);
 	}
 
