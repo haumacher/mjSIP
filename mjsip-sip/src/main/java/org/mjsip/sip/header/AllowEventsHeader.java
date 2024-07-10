@@ -39,12 +39,12 @@ public class AllowEventsHeader extends ListHeader {
 	}
 
 	/** Gets list of events (as Vector of Strings). */
-	public Vector getEvents() {
+	public Vector<String> getEvents() {
 		return super.getElements();
 	}
 
 	/** Sets the list of events. */
-	public void setEvents(Vector events) {
+	public void setEvents(Vector<String> events) {
 		super.setElements(events);
 	}
 
