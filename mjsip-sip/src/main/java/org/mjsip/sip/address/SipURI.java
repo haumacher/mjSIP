@@ -304,7 +304,7 @@ public class SipURI extends GenericURI {
 	}
 
 	@Override
-	public Vector getParameterNames() {
+	public Vector<String> getParameterNames() {
 		return new Vector<>(_params.keySet());
 	}
 
