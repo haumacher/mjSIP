@@ -22,7 +22,7 @@ final class StringList extends Configure {
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StringList.class);
 
 	/** The list */
-	Vector list;
+	Vector<String> list;
 
 	/** File name */
 	File file=null;
@@ -33,7 +33,7 @@ final class StringList extends Configure {
 
 	/** Costructs a new StringList from the specified <i>file</i> */
 	public StringList(File file) {
-		list=new Vector();
+		list=new Vector<>();
 		this.file=file;
 		load();
 	}
@@ -41,7 +41,7 @@ final class StringList extends Configure {
 
 	/** Costructs a new StringList from the specified URL <i>url</i> */
 	public StringList(URL url) {
-		list=new Vector();
+		list=new Vector<>();
 		file_url=url;
 		load();
 	}
@@ -80,14 +80,14 @@ final class StringList extends Configure {
 	}
 
 	/** Gets elements */
-	public Vector getElements() {
+	public Vector<String> getElements() {
 		return list;
 	}
 
 
 	/** Gets the element at positon i */
 	public String elementAt(int i) {
-		return (String)list.elementAt(i);
+		return list.elementAt(i);
 	}
 
 
@@ -151,11 +151,11 @@ final class StringList extends Configure {
 
 	/** Converts the entire object into lines (to be saved into the config file) */
 	protected String toLines() {
-		String str="";
+		StringBuilder str= new StringBuilder();
 		for (int i=0; i<list.size(); i++)      {
-			String elem=(String)list.elementAt(i);
-			str+=elem+"\n";
+			String elem=list.elementAt(i);
+			str.append(elem).append("\n");
 		}
-		return str;
+		return str.toString();
 	}   
 }
