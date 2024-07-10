@@ -51,13 +51,13 @@ public class AddressResolverKeepAlive extends AddressResolver {
 	long keepalive_time;
 
 	/** Sip keep-alive daemons */
-	Hashtable keepalive_daemons=null;
+	Hashtable<String, SipKeepAlive> keepalive_daemons=null;
 	
 	/** Costructs an empty AddressResolverKeepAlive */
 	public AddressResolverKeepAlive(SipProvider sip_provider, long refresh_time, long keepalive_time) {
 		super(sip_provider, refresh_time);
 		this.keepalive_time=keepalive_time;
-		keepalive_daemons=new Hashtable();
+		keepalive_daemons=new Hashtable<>();
 	}
 
 	
@@ -67,8 +67,8 @@ public class AddressResolverKeepAlive extends AddressResolver {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
 			if (keepalive_daemons.containsKey(key)) {
-				if (!((SocketAddress)binding_table.get(key)).equals(actual_soaddr)) {
-					SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
+				if (!binding_table.get(key).equals(actual_soaddr)) {
+					SipKeepAlive keepalive=keepalive_daemons.get(key);
 					keepalive.setDestSoAddress(actual_soaddr);
 					LOG.debug("KeepAlive: change dest: "+actual_soaddr);
 				}
@@ -89,7 +89,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
 			if (keepalive_daemons.containsKey(key)) {
-				SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
+				SipKeepAlive keepalive=keepalive_daemons.get(key);
 				keepalive_daemons.remove(key);
 				keepalive.halt();
 				LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
@@ -104,7 +104,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 	protected void onTimeout() {
 		// enumerate expired binding
 		long now=(new Date()).getTime();
-		Vector aux=new Vector();
+		Vector<String> aux=new Vector<>();
 		for (Enumeration<String> e=time_table.keys(); e.hasMoreElements(); ) {
 			String key= e.nextElement();
 			long expire= time_table.get(key).longValue();
@@ -112,8 +112,8 @@ public class AddressResolverKeepAlive extends AddressResolver {
 		}
 		// remove expired binding
 		for (int i=0; i<aux.size(); i++) {
-			String key=(String)aux.elementAt(i);
-			SipKeepAlive keepalive=(SipKeepAlive)keepalive_daemons.get(key);
+			String key= aux.elementAt(i);
+			SipKeepAlive keepalive= keepalive_daemons.get(key);
 			keepalive_daemons.remove(key);
 			keepalive.halt();
 			LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
