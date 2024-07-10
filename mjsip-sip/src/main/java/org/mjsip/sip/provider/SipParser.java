@@ -343,12 +343,12 @@ public class SipParser extends Parser {
 		
 	/** Gets a String Vector of parameter names.
 	  * @return Returns a String Vector of all parameter names or null if no parameter is present. */
-	public Vector getParameterNames()  {
+	public Vector<String> getParameterNames()  {
 		String name;
-		Vector params=new Vector();
+		Vector<String> params=new Vector<>();
 		while (hasMore()) {
 			name=getWord(param_separators);
-			if (name.length()>0) params.addElement(new String(name));
+			if (!name.isEmpty()) params.addElement(name);
 			goToSkippingQuoted(';');
 			if (hasMore()) skipChar(); // skip ';'
 		}
