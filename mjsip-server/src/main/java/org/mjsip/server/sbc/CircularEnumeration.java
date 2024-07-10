@@ -31,18 +31,18 @@ import java.util.Vector;
   * A CircularEnumeration is created from a Vector of Objects. It implements only one
   * the nextElement() method.
   */
-public class CircularEnumeration {
+public class CircularEnumeration<E> {
 	
-	Vector v;
+	Vector<E> v;
 	int i;
 
-	public CircularEnumeration(Vector vector) {
+	public CircularEnumeration(Vector<E> vector) {
 		v=vector;
 		i=0;
 	}  
 
-	public Object nextElement() {
-		if (v==null || v.size()==0) return null;
+	public E nextElement() {
+		if (v==null || v.isEmpty()) return null;
 		if (i==v.size()) i=0;
 		return v.elementAt(i++);
 	}
