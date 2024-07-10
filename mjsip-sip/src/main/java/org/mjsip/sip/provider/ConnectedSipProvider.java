@@ -43,7 +43,7 @@ import org.zoolu.net.IpAddress;
 public class ConnectedSipProvider extends SipProvider {
 
 	/** The semi-permanet connections, one for each connection-oriented porotocol (Hastable<String proto, SipTransportConnection transport_connection>) */
-	Hashtable connections=new Hashtable();
+	Hashtable<String, SipTransportConnection> connections=new Hashtable<>();
 
 	/**
 	 * Creates a {@link ConnectedSipProvider}.
@@ -62,7 +62,7 @@ public class ConnectedSipProvider extends SipProvider {
 		if (proxy_port<=0) proxy_port=5060;
 		String proxy_proto=(sipConfig().getOutboundProxy().hasTransport())? sipConfig().getOutboundProxy().getTransport() : null;
 		
-		for (Enumeration i=sip_transports.elements(); i.hasMoreElements(); ) {
+		for (Enumeration<SipTransport> i=sip_transports.elements(); i.hasMoreElements(); ) {
 			try {
 				SipTransportCO sip_transport=(SipTransportCO)i.nextElement();
 				sip_transport.setForceSentBy(true);
@@ -83,8 +83,8 @@ public class ConnectedSipProvider extends SipProvider {
 	  * @return a SIP or SIPS contact URI for this SIP provider */
 	@Override
 	public NameAddress getContactAddress(String user, boolean secure, AddressType addressType) {
-		for (Enumeration i=connections.elements(); i.hasMoreElements(); ) {
-			SipTransportConnection conn=(SipTransportConnection)i.nextElement();
+		for (Enumeration<SipTransportConnection> i=connections.elements(); i.hasMoreElements(); ) {
+			SipTransportConnection conn= i.nextElement();
 			String proto=conn.getProtocol();
 			if (secure==isSecureTransport(proto)) {
 				String local_addr=conn.getLocalAddress().toString();
