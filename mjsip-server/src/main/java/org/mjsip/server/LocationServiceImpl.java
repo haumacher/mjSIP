@@ -62,7 +62,7 @@ public class LocationServiceImpl implements LocationService {
 	boolean changed=false;
 	
 	/** Users bindings. Set of pairs of { (String)user , (UserBindingInfo)binding }. */
-	Hashtable users;
+	Hashtable<String, UserBindingInfo> users;
 	
 
 	
@@ -71,7 +71,7 @@ public class LocationServiceImpl implements LocationService {
 		this.file_name=file_name;
 		if (file_name == null)
 			LOG.warn("no file has been provided for location DB: only temporary memory (RAM) will be used.");
-		users=new Hashtable();
+		users=new Hashtable<>();
 		load();
 	}
 
@@ -95,7 +95,7 @@ public class LocationServiceImpl implements LocationService {
 	/** Returns an enumeration of the users in this database.
 	  * @return the list of user names as an Enumeration of String */
 	@Override
-	public Enumeration getUsers() {
+	public Enumeration<String> getUsers() {
 		return users.keys();
 	}
 		
@@ -144,12 +144,12 @@ public class LocationServiceImpl implements LocationService {
 	  * @return the String value */
 	@Override
 	public String toString() {
-		String str="";
-		for (Enumeration i=getUserBindings(); i.hasMoreElements(); ) {
-			UserBindingInfo u=(UserBindingInfo)i.nextElement();
-			str+=u.toString();
+		StringBuilder str= new StringBuilder();
+		for (Enumeration<UserBindingInfo> i=getUserBindings(); i.hasMoreElements(); ) {
+			UserBindingInfo u= i.nextElement();
+			str.append(u.toString());
 		}
-		return str;
+		return str.toString();
 	}
 
 
@@ -198,7 +198,7 @@ public class LocationServiceImpl implements LocationService {
 	  * @param user the user name
 	  * @return the list of contact URIs as Enumeration of String */
 	@Override
-	public Enumeration getUserContactURIs(String user) {
+	public Enumeration<String> getUserContactURIs(String user) {
 		if (!hasUser(user)) return null;
 		//else
 		changed=true;
@@ -286,11 +286,11 @@ public class LocationServiceImpl implements LocationService {
 	
 	/** Adds a user record in the database */
 	private UserBindingInfo getUserBindingInfo(String user) {
-		return (UserBindingInfo)users.get(user);  
+		return users.get(user);
 	}
 
 	/** Returns an enumeration of the values in this database */
-	private Enumeration getUserBindings() {
+	private Enumeration<UserBindingInfo> getUserBindings() {
 		return users.elements();
 	}
 	
@@ -371,14 +371,14 @@ class UserBindingInfo {
 	String name;
 	
 	/** Hashtable of ContactHeader with String as key. */
-	Hashtable contact_list;
+	Hashtable<String, ContactHeader> contact_list;
 
 
 	/** Costructs a new UserBindingInfo for user <i>name</i>.
 	  * @param name the user name */
 	public UserBindingInfo(String name) {
 		this.name=name;
-		contact_list=new Hashtable();
+		contact_list=new Hashtable<>();
 	}
 	
 	/** Gets the user name.
@@ -389,7 +389,7 @@ class UserBindingInfo {
   
 	/** Gets the user contacts.
 	  * @return the user contacts as an Enumeration of String */
-	public Enumeration getContacts() {
+	public Enumeration<String> getContacts() {
 		return contact_list.keys();
 	}
 
@@ -422,7 +422,7 @@ class UserBindingInfo {
 	  * @param uri the contact URI (String) 
 	  * @return the contact NameAddress, or null if the contact is not present */
 	public NameAddress getNameAddress(String uri) {
-		if (contact_list.containsKey(uri)) return ((ContactHeader)contact_list.get(uri)).getNameAddress();
+		if (contact_list.containsKey(uri)) return (contact_list.get(uri)).getNameAddress();
 		else return null;
 	}
 
@@ -430,7 +430,7 @@ class UserBindingInfo {
 	  * @param uri the contact URI (String) 
 	  * @return true if the contact is expired or contact does not exist */
 	public boolean isExpired(String uri) {
-		if (contact_list.containsKey(uri)) return ((ContactHeader)contact_list.get(uri)).isExpired();
+		if (contact_list.containsKey(uri)) return (contact_list.get(uri)).isExpired();
 		else return true;
 	}
 	
@@ -438,7 +438,7 @@ class UserBindingInfo {
 	  * @param uri the contact URI (String) 
 	  * @return the expire Date */
 	public Date getExpirationDate(String uri) {
-		if (contact_list.containsKey(uri)) return ((ContactHeader)contact_list.get(uri)).getExpiresDate();
+		if (contact_list.containsKey(uri)) return (contact_list.get(uri)).getExpiresDate();
 		else return null;
 	}
 
@@ -453,13 +453,13 @@ class UserBindingInfo {
 	  * @return the String value */
 	@Override
 	public String toString() {
-		String str="To: "+name+"\r\n";
-		for (Enumeration i=getContacts(); i.hasMoreElements(); ) {
-			ContactHeader ch=(ContactHeader)contact_list.get(i.nextElement());
+		StringBuilder str= new StringBuilder("To: "+name+"\r\n");
+		for (Enumeration<String> i=getContacts(); i.hasMoreElements(); ) {
+			ContactHeader ch= contact_list.get(i.nextElement());
 			if (ch.getExpiresDate().getTime()>=LocationServiceImpl.NEVER) (ch=new ContactHeader(ch)).removeExpires().setParameter("expires","\"NEVER\"");
-			str+=ch.toString();
+			str.append(ch);
 		}
-		return str;
+		return str.toString();
 	}
 }
 

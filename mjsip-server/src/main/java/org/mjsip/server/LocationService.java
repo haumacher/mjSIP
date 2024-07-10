@@ -60,7 +60,7 @@ public interface LocationService extends Repository {
 	/** Gets the user contacts that are not expired.
 	  * @param user the user name
 	  * @return the list of contact URIs as Enumeration of String */
-	public Enumeration getUserContactURIs(String user);
+	public Enumeration<String> getUserContactURIs(String user);
 
 	/** Removes a contact.
 	  * @param user the user name

@@ -42,7 +42,7 @@ public interface Repository {
 	
 	/** Returns an enumeration of the users in this database.
 	  * @return the list of user names as an Enumeration of String */
-	public Enumeration getUsers();
+	public Enumeration<String> getUsers();
 		
 	/** Whether a user is present in the database and can be used as key.
 	  * @param user the user name
