@@ -45,7 +45,7 @@ public abstract class ListHeader extends LegacyHeader {
 	}
 
 	/** Creates a new ListHeader. */
-	public ListHeader(String hname, Vector elements) {
+	public ListHeader(String hname, Vector<String> elements) {
 		super(hname,null);
 		setElements(elements);
 	}
@@ -58,8 +58,8 @@ public abstract class ListHeader extends LegacyHeader {
 
 
 	/** Gets list of tokens (as Vector of Strings). */
-	public Vector getElements() {
-		Vector elements=new Vector();
+	public Vector<String> getElements() {
+		Vector<String> elements=new Vector<>();
 		Parser par=new Parser(value);
 		char[] delim={ ',' };
 		while (par.hasMore()) {
@@ -71,11 +71,11 @@ public abstract class ListHeader extends LegacyHeader {
 	}
 
 	/** Sets the list of tokens. */
-	public void setElements(Vector elements) {
+	public void setElements(Vector<String> elements) {
 		StringBuilder sb=new StringBuilder();
 		for (int i=0; i<elements.size(); i++) {
 			if (i>0) sb.append(","); 
-			sb.append((String)elements.elementAt(i));
+			sb.append(elements.elementAt(i));
 		}
 		value=sb.toString();
 	}
@@ -92,7 +92,7 @@ public abstract class ListHeader extends LegacyHeader {
 
 	/** Adds a new token to the elements list. */
 	public void addElement(String elem) {
-		if (value==null || value.length()==0) value=elem;
+		if (value==null || value.isEmpty()) value=elem;
 		else value+=", "+elem;
 	}
 }
