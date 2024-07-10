@@ -23,32 +23,32 @@ public class CallLoggerImpl implements CallLogger {
 	static final int MAX_SIZE=10000;
 
 	/** Table : (String)call_id --> (Long)invite date. */
-	Hashtable invite_dates;
+	Hashtable<String, Date> invite_dates;
 	/** Table : (String)call_id --> (Long)2xx date. */
-	Hashtable accepted_dates;
+	Hashtable<String, Date> accepted_dates;
 	/** Table : (String)call_id --> (Long)4xx date. */
-	Hashtable refused_dates;
+	Hashtable<String, Date> refused_dates;
 	/** Table : (String)call_id --> (Long)bye date. */
-	Hashtable bye_dates;
+	Hashtable<String, Date> bye_dates;
 	
 	/** Table : (String)call_id --> (String)caller. */
-	Hashtable callers;
+	Hashtable<String, String> callers;
 	/** Table : (String)call_id --> (String)callee. */
-	Hashtable callees;
+	Hashtable<String, String> callees;
 
 	/** Set : (String)call_id. */
-	Vector calls;
+	Vector<String> calls;
 
 	/** Costructs a new CallLoggerImpl.
 	  */
 	public CallLoggerImpl(String filename) {
-		invite_dates=new Hashtable();
-		accepted_dates=new Hashtable();
-		refused_dates=new Hashtable();
-		bye_dates=new Hashtable();   
-		calls=new Vector();
-		callers=new Hashtable();
-		callees=new Hashtable();
+		invite_dates=new Hashtable<>();
+		accepted_dates=new Hashtable<>();
+		refused_dates=new Hashtable<>();
+		bye_dates=new Hashtable<>();
+		calls=new Vector<>();
+		callers=new Hashtable<>();
+		callees=new Hashtable<>();
 		
 		LOG.info("Date \tCall-Id \tStatus \tCaller \tCallee \tSetup Time \tCall Time");
 	}
@@ -110,10 +110,10 @@ public class CallLoggerImpl implements CallLogger {
 
 	/** Insters/updates a call-state table.
 	  */
-	private void insert(Hashtable table, String call_id, Date time) {
+	private void insert(Hashtable<String, Date> table, String call_id, Date time) {
 		if (!invite_dates.containsKey(call_id) && !accepted_dates.containsKey(call_id) && !refused_dates.containsKey(call_id) && !bye_dates.containsKey(call_id)); {
 			if (calls.size()>=MAX_SIZE)  {
-				String call_0=(String)calls.elementAt(0);
+				String call_0=calls.elementAt(0);
 				invite_dates.remove(call_0);
 				accepted_dates.remove(call_0);
 				refused_dates.remove(call_0);
@@ -140,9 +140,9 @@ public class CallLoggerImpl implements CallLogger {
 	/** Prints a call report.
 	  */
 	private void calllog(String call_id) {
-		Date invite_time=(Date)invite_dates.get(call_id);
-		Date accepted_time=(Date)accepted_dates.get(call_id);
-		Date bye_time=(Date)bye_dates.get(call_id);
+		Date invite_time=invite_dates.get(call_id);
+		Date accepted_time=accepted_dates.get(call_id);
+		Date bye_time=bye_dates.get(call_id);
 		if (invite_time!=null && accepted_time!=null && bye_time!=null) 
 			//call_logger.log(DateFormat.formatHHMMSS(invite_time)+"\t"+call_id+"\tCALL \t"+callers.get(call_id)+"\t"+callees.get(call_id)+"\t"+(accepted_time.getTime()-invite_time.getTime())+"\t"+(bye_time.getTime()-accepted_time.getTime()));
 			LOG.info(DateFormat.formatYyyyMMddHHmmssSSS(invite_time) + "\t" + call_id + "\tCALL \t"
