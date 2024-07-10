@@ -43,14 +43,14 @@ public class AuthorizationHeader extends AuthenticationHeader {
 	/** Creates a new AuthorizationHeader
 	  * specifing the <i>auth_scheme</i> and the vector of authentication parameters.
 	  * <p> <i>auth_param</i> is a vector of String of the form <i>parm_name</i> "=" <i>parm_value</i> */
-	public AuthorizationHeader(String auth_scheme, Vector auth_params) {
+	public AuthorizationHeader(String auth_scheme, Vector<String> auth_params) {
 		this(SipHeaders.Authorization, auth_scheme, auth_params);
 	}
 
 	/**
 	 * Creates a {@link AuthorizationHeader}.
 	 */
-	public AuthorizationHeader(String name, String auth_scheme, Vector auth_params) {
+	public AuthorizationHeader(String name, String auth_scheme, Vector<String> auth_params) {
 		super(name, auth_scheme, auth_params);
 	}
 
