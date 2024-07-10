@@ -130,7 +130,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		}*/
 
 		// message targets
-		Vector targets=getTargets(msg);
+		Vector<String> targets=getTargets(msg);
 
 		if (targets.isEmpty()) {
 			// prefix-based forwarding
@@ -149,7 +149,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 
 		LOG.debug("message will be forwarded to "+targets.size()+" user's contact(s)"); 
 		for (int i=0; i<targets.size(); i++)  {
-			SipURI target_uri=SipURI.parseSipURI((String)(targets.elementAt(i)));
+			SipURI target_uri=SipURI.parseSipURI((targets.elementAt(i)));
 			SipMessage request=new SipMessage(msg);
 			request.removeRequestLine();
 			request.setRequestLine(new RequestLine(msg.getRequestLine().getMethod(),target_uri));
@@ -162,8 +162,8 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			//printLog("DEBUG: processLocalRequest()\r\n"+tc.getRequestMessage().toString(),LogWriter.LEVEL_LOWER);
 			state.addClient(ts,tc);
 		}
-		HashSet clients=state.getClients(ts);
-		for (Iterator i=clients.iterator(); i.hasNext(); ) ((TransactionClient)i.next()).request();
+		HashSet<Transaction> clients=state.getClients(ts);
+		for (Iterator<Transaction> i=clients.iterator(); i.hasNext(); ) ((TransactionClient)i.next()).request();
 	}
 
 	
@@ -255,7 +255,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		// updates the non-2xx final response
 		state.setFinalResponse(ts,resp);
 		// if there are no more pending clients, sends the final response
-		HashSet clients=state.getClients(ts);
+		HashSet<Transaction> clients=state.getClients(ts);
 		if (clients.isEmpty()) {
 			LOG.trace("only this t_client remained: send the response");
 			resp=state.getFinalResponse(ts);
@@ -279,15 +279,15 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			if (!state.hasServer(ts)) return;
 			//else
 			// cancel all other pending transaction clients
-			HashSet clients=state.getClients(ts);
+			HashSet<Transaction> clients=state.getClients(ts);
 			//printLog("Cancel pending clients..",LogWriter.LEVEL_LOW);
 			// cancel ONLY INVITE transaction clients
 			if (transaction.getTransactionMethod().equals(SipMethods.INVITE)) {
 				//LOG.trace("Cancelling "+clients.size()+" pending clients");
 				LOG.trace(clients.size()+" pending clients");
 				int canc_counter=0;
-				for (Iterator i=clients.iterator(); i.hasNext(); ) {
-					Transaction tc=(Transaction)i.next();
+				for (Iterator<Transaction> i=clients.iterator(); i.hasNext(); ) {
+					Transaction tc= i.next();
 					// cancel ONLY transaction clients that has (only) received a provisional response
 					if (tc.isProceeding()) {
 						SipMessage cancel=sip_provider.messageFactory().createCancelRequest(tc.getRequestMessage());
@@ -311,7 +311,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 		TransactionServer ts=state.getServer(transaction);
 		state.removeClient(transaction);
 		if (ts==null) return;
-		HashSet clients=state.getClients(ts);
+		HashSet<Transaction> clients=state.getClients(ts);
 		if (clients==null) return;
 		if (clients.isEmpty()) {
 			LOG.trace("responding..");

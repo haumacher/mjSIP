@@ -45,7 +45,7 @@ public class RecvInfoHeader extends ListHeader {
 	}
 
 	/** Creates a new RecvInfoHeader. */
-	public RecvInfoHeader(Vector packages) {
+	public RecvInfoHeader(Vector<String> packages) {
 		super(SipHeaders.Recv_Info,packages);
 	}
 
@@ -56,12 +56,12 @@ public class RecvInfoHeader extends ListHeader {
 
 
 	/** Gets list of packages (as Vector of Strings). */
-	public Vector getPackages() {
+	public Vector<String> getPackages() {
 		return super.getElements();
 	}
 
 	/** Sets the list of methods. */
-	public void setPackages(Vector packages) {
+	public void setPackages(Vector<String> packages) {
 		super.setElements(packages);
 	}
 

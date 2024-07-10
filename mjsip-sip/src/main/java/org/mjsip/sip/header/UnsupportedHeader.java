@@ -36,7 +36,7 @@ public class UnsupportedHeader extends OptionTagsHeader {
 
 	/** Creates a new UnsupportedHeader.
 	  * @param option_tags Vector (of <code>String</code>) of option-tags. */
-	public UnsupportedHeader(Vector option_tags) {
+	public UnsupportedHeader(Vector<String> option_tags) {
 		super(SipHeaders.Unsupported,option_tags);
 	}
 

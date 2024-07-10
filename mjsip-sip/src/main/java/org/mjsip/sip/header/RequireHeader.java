@@ -36,7 +36,7 @@ public class RequireHeader extends OptionTagsHeader {
 
 	/** Creates a new RequireHeader.
 	  * @param option_tags Vector (of <code>String</code>) of option-tags. */
-	public RequireHeader(Vector option_tags) {
+	public RequireHeader(Vector<String> option_tags) {
 		super(SipHeaders.Require,option_tags);
 	}
 

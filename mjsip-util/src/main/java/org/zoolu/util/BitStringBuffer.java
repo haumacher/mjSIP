@@ -40,20 +40,20 @@ import java.util.Vector;
 public class BitStringBuffer {
 	
 	/** Buffer of BitString (Vector<BitStrnig>) */
-	Vector buffer;
+	Vector<BitString> buffer;
 
 
 
 	/** Creates a new BitStringBuffer. */
 	public BitStringBuffer() {
-		buffer=new Vector();
+		buffer=new Vector<>();
 	}
 
 
 	/** Gets the total number of bits. */
 	public synchronized int length() {
 		int len=0;
-		for (int i=0; i<buffer.size(); i++) len+=((BitString)(buffer.elementAt(i))).length();
+		for (int i=0; i<buffer.size(); i++) len+= buffer.elementAt(i).length();
 		return len;
 	}
 
@@ -90,7 +90,7 @@ public class BitStringBuffer {
 		BitStringBuffer bb=new BitStringBuffer();
 		int index=0, i=0;
 		while (index<begin) {
-			BitString bitstr=(BitString)buffer.elementAt(i++);
+			BitString bitstr=buffer.elementAt(i++);
 			int len_i=bitstr.length();
 			index+=len_i;
 			if (index>begin) {
@@ -99,7 +99,7 @@ public class BitStringBuffer {
 			}
 		}
 		while (index<end) {
-			BitString bitstr=(BitString)buffer.elementAt(i++);
+			BitString bitstr=buffer.elementAt(i++);
 			int len_i=bitstr.length();
 			index+=len_i;
 			if (index<=end) bb.append(bitstr);
@@ -141,13 +141,13 @@ public class BitStringBuffer {
 		BitStringBuffer bb=new BitStringBuffer();
 		if (n>=length()) {
 			bb.buffer=buffer;
-			buffer=new Vector();
+			buffer=new Vector<>();
 			return bb;
 		}
 		// else
 		int len=0;
 		while (len<n) {
-			BitString bitstr=(BitString)buffer.elementAt(0);
+			BitString bitstr=buffer.elementAt(0);
 			if (len+bitstr.length()<=n) {
 				bb.append(bitstr);
 				len+=bitstr.length();
@@ -169,7 +169,7 @@ public class BitStringBuffer {
 		BitString bit_string=new BitString(len);
 		int index=0;
 		for (int i=0; i<buffer.size(); i++) {
-			BitString str_i=(BitString)buffer.elementAt(i);
+			BitString str_i=buffer.elementAt(i);
 			bit_string.setBits(str_i,index);
 			index+=str_i.length();
 		} 

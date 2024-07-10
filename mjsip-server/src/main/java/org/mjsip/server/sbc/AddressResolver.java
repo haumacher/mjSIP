@@ -56,10 +56,10 @@ public class AddressResolver {
 	long expire_time;
 
 	/** Binding table */
-	Hashtable binding_table;
+	Hashtable<String, SocketAddress> binding_table;
 
 	/** Time table */
-	Hashtable time_table;
+	Hashtable<String, Long> time_table;
 
 	/** Refresh timer */
 	ScheduledFuture<?> timer;
@@ -73,8 +73,8 @@ public class AddressResolver {
 		this.sip_provider = sip_provider;
 		this.refresh_time=refresh_time;
 		expire_time=refresh_time/2;
-		binding_table=new Hashtable();
-		time_table=new Hashtable();
+		binding_table=new Hashtable<>();
+		time_table=new Hashtable<>();
 		
 		timer=sip_provider.scheduler().schedulerWithFixedDelay(refresh_time, this::onTimeout);
 	}
@@ -86,7 +86,7 @@ public class AddressResolver {
 
 
 	/** Gets list of all reference SocketAddresses */
-	public Enumeration getAllSocketAddresses() {
+	public Enumeration<String> getAllSocketAddresses() {
 		return binding_table.keys();
 	}
 
@@ -104,9 +104,9 @@ public class AddressResolver {
 	public void updateBinding(SocketAddress refer_soaddr, SocketAddress actual_soaddr) {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
-			Long expire=new Long((new Date()).getTime()+expire_time);
+			long expire= new Date().getTime() + expire_time;
 			if (binding_table.containsKey(key)) {
-				if (!((SocketAddress)binding_table.get(key)).equals(actual_soaddr)) {
+				if (!binding_table.get(key).equals(actual_soaddr)) {
 					LOG.info("change BINDING "+refer_soaddr+" >> "+actual_soaddr);
 					binding_table.remove(key);
 					binding_table.put(key,actual_soaddr);
@@ -144,7 +144,7 @@ public class AddressResolver {
 	public SocketAddress getSocketAddress(SocketAddress refer_soaddr) {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
-			if (binding_table.containsKey(key)) return (SocketAddress)binding_table.get(key);
+			if (binding_table.containsKey(key)) return binding_table.get(key);
 		}
 		return null;
 	}
@@ -155,15 +155,15 @@ public class AddressResolver {
 		// enumerate expired binding
 		LOG.debug("refresh all address bindings:");         
 		long now=(new Date()).getTime();
-		Vector aux=new Vector();
-		for (Enumeration e=time_table.keys(); e.hasMoreElements(); ) {
-			String key=(String)e.nextElement();
-			long expire=((Long)time_table.get(key)).longValue();
+		Vector<String> aux=new Vector<>();
+		for (Enumeration<String> e=time_table.keys(); e.hasMoreElements(); ) {
+			String key= e.nextElement();
+			long expire=(time_table.get(key)).longValue();
 			if (expire<now) aux.addElement(key);
 		}
 		// remove expired binding
 		for (int i=0; i<aux.size(); i++) {
-			String key=(String)aux.elementAt(i);
+			String key= aux.elementAt(i);
 			LOG.info("remove BINDING for "+key);         
 			binding_table.remove(key);
 			time_table.remove(key);

@@ -30,7 +30,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	boolean changed=false;
 	
 	/** Users AAA DB. Set of pairs of { (String)user , (UserAuthInfo)binding }. */
-	Hashtable users;
+	Hashtable<String, UserAuthInfo> users;
 
 	/** Void byte array. */
 	private static final byte[] NULL_ARRAY=new byte[0];
@@ -39,7 +39,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/** Creates a new AuthenticationService. */
 	public AuthenticationServiceImpl(String file_name) {
 		filename=file_name;
-		users=new Hashtable();
+		users=new Hashtable<>();
 		load();
 	}
 
@@ -63,7 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/** Returns an enumeration of the users in this database.
 	  * @return the list of user names as an Enumeration of String */
 	@Override
-	public Enumeration getUsers() {
+	public Enumeration<String> getUsers() {
 		return users.keys();
 	}
 	
@@ -153,11 +153,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	
 	/** Gets the record of the user */
 	private UserAuthInfo getUserAuthInfo(String user) {
-		return (UserAuthInfo)users.get(user);  
+		return users.get(user);
 	}
 	
 	/** Returns an enumeration of the values in this database */
-	private Enumeration getUserAuthInfos() {
+	private Enumeration<UserAuthInfo> getUserAuthInfos() {
 		return users.elements();
 	}
 	
@@ -222,8 +222,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Override
 	public String toString() {
 		String str="";
-		for (Enumeration e=getUserAuthInfos(); e.hasMoreElements(); ) {
-			UserAuthInfo ur=(UserAuthInfo)e.nextElement();
+		for (Enumeration<UserAuthInfo> e=getUserAuthInfos(); e.hasMoreElements(); ) {
+			UserAuthInfo ur= e.nextElement();
 			str+=ur.toString();
 			//str+="\r\n";
 		}

@@ -36,7 +36,7 @@ public class SupportedHeader extends OptionTagsHeader {
 
 	/** Creates a new SupportedHeader.
 	  * @param option_tags Vector (of <code>String</code>) of option-tags. */
-	public SupportedHeader(Vector option_tags) {
+	public SupportedHeader(Vector<String> option_tags) {
 		super(SipHeaders.Supported,option_tags);
 	}
 

@@ -204,10 +204,10 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 
 	/** Sets the route set.
 	  * @param r the route set (Vector of <code>NameAddress</code>) */
-	public void setRoute(Vector r) { route=r; }
+	public void setRoute(Vector<NameAddress> r) { route=r; }
 	/** Gets the route set.
 	  * @return the route set (Vector of <code>NameAddress</code>) */
-	public Vector getRoute() { return route; }
+	public Vector<NameAddress> getRoute() { return route; }
 
 	/** Sets the secure flag.
 	  * It indicates whether the current dialog should be secured. */
@@ -266,34 +266,34 @@ public class DialogInfo/* extends org.zoolu.util.MonitoredObject*/ {
 		// update route
 		if (is_client) {
 			if (msg.isRequest() && msg.hasRouteHeader() && route==null) {
-				Vector rh=msg.getRoutes().getHeaders();
+				Vector<Header> rh=msg.getRoutes().getHeaders();
 				int size=rh.size();
-				route=new Vector(size);
+				route=new Vector<>(size);
 				for (int i=0; i<size; i++)
-					route.addElement((new RouteHeader((Header)rh.elementAt(i))).getNameAddress());
+					route.addElement((new RouteHeader(rh.elementAt(i))).getNameAddress());
 			}
 			if (msg.isResponse() && msg.hasRecordRouteHeader()) {
-				Vector rrh=msg.getRecordRoutes().getHeaders();
+				Vector<Header> rrh=msg.getRecordRoutes().getHeaders();
 				int size=rrh.size();
-				route=new Vector(size);
+				route=new Vector<>(size);
 				for (int i=0; i<size; i++)
-					route.insertElementAt(new RecordRouteHeader((Header)rrh.elementAt(size-1-i)).getNameAddress(),i);
+					route.insertElementAt(new RecordRouteHeader(rrh.elementAt(size-1-i)).getNameAddress(),i);
 			}
 		}
 		else {
 			if (msg.isRequest() && msg.hasRouteHeader() && route==null) {
-				Vector reverse_rh=msg.getRoutes().getHeaders();
+				Vector<Header> reverse_rh=msg.getRoutes().getHeaders();
 				int size=reverse_rh.size();
-				route=new Vector(size);
+				route=new Vector<>(size);
 				for (int i=0; i<size; i++)
-					route.insertElementAt(new RouteHeader((Header)reverse_rh.elementAt(size-1-i)).getNameAddress(),i); 
+					route.insertElementAt(new RouteHeader(reverse_rh.elementAt(size-1-i)).getNameAddress(),i);
 			}
 			if (msg.isRequest() && msg.hasRecordRouteHeader()) {
-				Vector rrh=msg.getRecordRoutes().getHeaders();
+				Vector<Header> rrh=msg.getRecordRoutes().getHeaders();
 				int size=rrh.size();
-				route=new Vector(size);
+				route=new Vector<>(size);
 				for (int i=0; i<size; i++)
-					route.insertElementAt(new RecordRouteHeader((Header)rrh.elementAt(i)).getNameAddress(),i);
+					route.insertElementAt(new RecordRouteHeader(rrh.elementAt(i)).getNameAddress(),i);
 			}
 		}
 		// REMOVE THE LOCAL NODE FROM THE ROUTE SET (ELIMINATE FIRST-HOP LOOP)

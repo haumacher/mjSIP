@@ -128,7 +128,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	JPanel jPanel2 = new JPanel();
 	JPanel jPanel3 = new JPanel();
 	JPanel jPanel4 = new JPanel();
-	JComboBox jComboBox1 = new JComboBox();
+	JComboBox<String> jComboBox1 = new JComboBox<>();
 	BorderLayout borderLayout1 = new BorderLayout();
 	BorderLayout borderLayout2 = new BorderLayout();
 	JPanel jPanel5 = new JPanel();
@@ -274,7 +274,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 			}
 		}
 		else buddy_list=new StringList(new File(_uiConfig.buddyListFile));
-		jComboBox1=new JComboBox(buddy_list.getElements());
+		jComboBox1=new JComboBox<>(buddy_list.getElements());
 
 		// init frame
 		try {

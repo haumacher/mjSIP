@@ -291,14 +291,14 @@ public class SdesRtcpPacket extends RtcpPacket {
 		public Chunk(byte[] buf, int off) {
 			ssrc=BufferUtil.getLong(buf,off,off+4);
 			int begin=off+4;
-			ArrayList items_list=new ArrayList();
+			ArrayList<SdesItem> items_list=new ArrayList<>();
 			while (buf[begin]!=0) {
 				SdesItem item=new SdesItem(buf,begin);
 				items_list.add(item);
 				begin+=item.getLength();
 			}
 			items=new SdesItem[items_list.size()];
-			for (int i=0; i<items.length; i++) items[i]=(SdesItem)items_list.get(i);
+			for (int i=0; i<items.length; i++) items[i]= items_list.get(i);
 		}
 
 

@@ -44,7 +44,7 @@ public class AllowHeader extends ListHeader {
 	}
 
 	/** Creates a new AllowHeader. */
-	public AllowHeader(Vector elements) {
+	public AllowHeader(Vector<String> elements) {
 		super(SipHeaders.Allow,elements);
 	}
 
@@ -55,12 +55,12 @@ public class AllowHeader extends ListHeader {
 
 
 	/** Gets list of methods (as Vector of Strings). */
-	public Vector getMethods() {
+	public Vector<String> getMethods() {
 		return super.getElements();
 	}
 
 	/** Sets the list of methods. */
-	public void setMethod(Vector methods) {
+	public void setMethod(Vector<String> methods) {
 		super.setElements(methods);
 	}
 

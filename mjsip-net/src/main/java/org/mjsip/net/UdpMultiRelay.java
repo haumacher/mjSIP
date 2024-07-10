@@ -54,7 +54,7 @@ public class UdpMultiRelay extends Thread {
 	SocketAddress src_soaddr=null;  
 
 	/** Destination sockets (Vector<UdpConnectedSocket>), where packets have to be sent to */
-	Vector dest_sockets;  
+	Vector<UdpConnectedSocket> dest_sockets;
 
   /** Whether sending all packets to a remote node using the same socket where the remote node sends its packet to (per-destinaiotn outgoing socket). */
 	boolean one2one;
@@ -78,7 +78,7 @@ public class UdpMultiRelay extends Thread {
 	  * @param one2one whether sending all packets to a remote node using the same socket where the remote node sends its packet to (per-destinaiotn outgoing socket)
 	  * @param filtered whether filtering packet directed to local socket's remote address
 	  * @param listener listener of UdpMultiRelay events */
-	public UdpMultiRelay(UdpConnectedSocket socket, Vector dest_sockets, boolean one2one, boolean filtered, UdpMultiRelayListener listener) {
+	public UdpMultiRelay(UdpConnectedSocket socket, Vector<UdpConnectedSocket> dest_sockets, boolean one2one, boolean filtered, UdpMultiRelayListener listener) {
 		init(socket,dest_sockets,one2one,filtered,listener);
 		start();
 	}
@@ -89,7 +89,7 @@ public class UdpMultiRelay extends Thread {
 	  * @param one2one whether sending all packets to a remote node using the same socket where the remote node sends its packet to (per-destinaiotn outgoing socket)
 	  * @param filtered whether filtering packet directed to local socket's remote address
 	  * @param listener listener of UdpMultiRelay events */
-	private void init(UdpConnectedSocket socket, Vector dest_sockets, boolean one2one, boolean filtered, UdpMultiRelayListener listener) {
+	private void init(UdpConnectedSocket socket, Vector<UdpConnectedSocket> dest_sockets, boolean one2one, boolean filtered, UdpMultiRelayListener listener) {
 		this.listener=listener;
 		this.socket=socket;     
 		this.dest_sockets=dest_sockets;
@@ -105,7 +105,7 @@ public class UdpMultiRelay extends Thread {
 
 	/** Gets the destination sockets where packets have to be sent to.
 	  * @return a Vector of <code>UdpConnectedSocket</code> containing all destination sockets */
-	public Vector getDestSockets() {
+	public Vector<UdpConnectedSocket> getDestSockets() {
 		return dest_sockets;
 	}
 
@@ -169,7 +169,7 @@ public class UdpMultiRelay extends Thread {
 
 				for (int i=0; i<dest_sockets.size(); i++) {
 					try {
-						UdpConnectedSocket dest_socket=(UdpConnectedSocket)dest_sockets.elementAt(i);         
+						UdpConnectedSocket dest_socket=dest_sockets.elementAt(i);
 						if (!filtered || !dest_socket.equals(socket)) {
 							if (one2one) dest_socket.send(packet);
 							else socket.sendTo(packet,dest_socket.getRemoteAddress());

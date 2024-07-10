@@ -81,9 +81,9 @@ public abstract class ParametricHeader extends LegacyHeader {
 	 
 	/** Gets a String Vector of parameter names.
 	  * @return Returns a String Vector of all parameter names or null if no parameter is present. */
-	public Vector getParameterNames()  {
+	public Vector<String> getParameterNames()  {
 		int index=indexOfFirstSemi();
-		if (index<0) return new Vector();
+		if (index<0) return new Vector<>();
 		return (new SipParser((new Parser(getValue(),index)).skipChar().skipWSP())).getParameterNames();
 	}
 

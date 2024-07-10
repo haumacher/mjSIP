@@ -377,13 +377,13 @@ public class Parser {
 	//********************** Vectors/arrays **********************
 
 	/** Gets all integers */
-	public Vector getIntVector() {
+	public Vector<Integer>  getIntVector() {
 		return getIntVector(null);
 	}
 	/** Gets all integers separated by any char belonging to <i>separators</i> */
-	public Vector getIntVector(char[] separators) {
-		Vector list=new Vector();
-		do { list.addElement(((separators==null)? new Integer(getString()) : new Integer(getWord(separators)))); } while (hasMore());
+	public Vector<Integer> getIntVector(char[] separators) {
+		Vector<Integer> list=new Vector<>();
+		do { list.addElement(((separators==null)? Integer.valueOf(getString()) : Integer.valueOf(getWord(separators)))); } while (hasMore());
 		return list;
 	}
 	/** Gets all integers */
@@ -393,19 +393,19 @@ public class Parser {
 	/** Gets all integers separated by any char belonging to <i>separators</i>.
 	  * If <i>separators</i> is null, characters space, tab, CR, and LF are used as separators. */
 	public int[] getIntArray(char[] separators) {
-		Vector list=getIntVector(separators);
+		Vector<Integer> list=getIntVector(separators);
 		int[] array=new int[list.size()];
-		for (int i=0; i<list.size(); i++) array[i]=((Integer)list.elementAt(i)).intValue();
+		for (int i=0; i<list.size(); i++) array[i]= list.elementAt(i).intValue();
 		return array;
 	}
 	/** Gets all longs */
-	public Vector getLongVector() {
+	public Vector<Long> getLongVector() {
 		return getLongVector(null);
 	}
 	/** Gets all longs separated by any char belonging to <i>separators</i> */
-	public Vector getLongVector(char[] separators) {
-		Vector list=new Vector();
-		do { list.addElement(((separators==null)? new Long(getString()) : new Long(getWord(separators)))); } while (hasMore());
+	public Vector<Long> getLongVector(char[] separators) {
+		Vector<Long> list=new Vector<>();
+		do { list.addElement(((separators==null)? Long.valueOf(getString()) : Long.valueOf(getWord(separators)))); } while (hasMore());
 		return list;
 	}
 	/** Gets all longs */
@@ -415,19 +415,19 @@ public class Parser {
 	/** Gets all longs separated by any char belonging to <i>separators</i>.
 	  * If <i>separators</i> is null, characters space, tab, CR, and LF are used as separators. */
 	public long[] getLongArray(char[] separators) {
-		Vector list=getLongVector(separators);
+		Vector<Long> list=getLongVector(separators);
 		long[] array=new long[list.size()];
-		for (int i=0; i<list.size(); i++) array[i]=((Long)list.elementAt(i)).longValue();
+		for (int i=0; i<list.size(); i++) array[i]= list.elementAt(i).longValue();
 		return array;
 	}
 	/** Gets all doubles */
-	public Vector getDoubleVector() {
+	public Vector<Double> getDoubleVector() {
 		return getDoubleVector(null);
 	}
 	/** Gets all doubles separated by any char belonging to <i>separators</i> */
-	public Vector getDoubleVector(char[] separators) {
-		Vector list=new Vector();
-		do { list.addElement(((separators==null)? new Double(getString()) : new Double(getWord(separators)))); } while (hasMore());
+	public Vector<Double> getDoubleVector(char[] separators) {
+		Vector<Double> list=new Vector<>();
+		do { list.addElement(((separators==null)? Double.valueOf(getString()) : Double.valueOf(getWord(separators)))); } while (hasMore());
 		return list;
 	}
 	/** Gets all doubles */
@@ -437,19 +437,19 @@ public class Parser {
 	/** Gets all doubles separated by any char belonging to <i>separators</i>.
 	  * If <i>separators</i> is null, characters space, tab, CR, and LF are used as separators. */
 	public double[] getDoubleArray(char[] separators) {
-		Vector list=getDoubleVector(separators);
+		Vector<Double> list=getDoubleVector(separators);
 		double[] array=new double[list.size()];
-		for (int i=0; i<list.size(); i++) array[i]=((Double)list.elementAt(i)).doubleValue();
+		for (int i=0; i<list.size(); i++) array[i]=(list.elementAt(i)).doubleValue();
 		return array;
 	}
 	/** Gets all strings */
-	public Vector getStringVector() {
+	public Vector<String> getStringVector() {
 		return getWordVector(null);
 	}
 	/** Gets all strings of chars separated by any char belonging to <i>separators</i>.
 	  * If <i>separators</i> is null, characters space, tab, CR, and LF are used as separators. */
-	public Vector getWordVector(char[] separators) {
-		Vector list=new Vector();
+	public Vector<String> getWordVector(char[] separators) {
+		Vector<String> list=new Vector<>();
 		while (hasMore()) { list.addElement(((separators==null)? getString() : getWord(separators))); }
 		return list;
 	}
@@ -459,9 +459,9 @@ public class Parser {
 	}
 	/** Gets all strings of chars separated by any char belonging to <i>separators</i> */
 	public String[] getWordArray(char[] separators) {
-		Vector list=getWordVector(separators);
+		Vector<String> list=getWordVector(separators);
 		String[] array=new String[list.size()];
-		for (int i=0; i<list.size(); i++) array[i]=(String)list.elementAt(i);
+		for (int i=0; i<list.size(); i++) array[i]= list.elementAt(i);
 		return array;
 	}
 

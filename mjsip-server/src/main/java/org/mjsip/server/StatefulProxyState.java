@@ -40,20 +40,20 @@ import org.mjsip.sip.transaction.TransactionServer;
 public class StatefulProxyState {
 	
 	/** Mapping between t_clients and t_servers, as table of (TransactionId)t_client-->(TransactionServer)t_server */
-	Hashtable c_server;
+	Hashtable<SipId, TransactionServer> c_server;
 	/** Mapping between t_servers and their t_clients, as table of (TransactionId)t_server-->(HashSet)t_clients */
-	Hashtable s_clients;  
+	Hashtable<SipId, HashSet<Transaction>> s_clients;
 	/** Mapping between t_servers and their response messages, as table of (TransactionId)t_server-->(Message)resp */
-	Hashtable s_response;
+	Hashtable<SipId, SipMessage> s_response;
 	private SipProvider sip_provider;
 
 	
 	/** Creates the StatefulProxyState */
 	public StatefulProxyState(SipProvider sip_provider) {
 		this.sip_provider = sip_provider;
-		if (c_server==null) c_server=new Hashtable();
-		if (s_clients==null) s_clients=new Hashtable();
-		if (s_response==null) s_response=new Hashtable();
+		if (c_server==null) c_server=new Hashtable<>();
+		if (s_clients==null) s_clients=new Hashtable<>();
+		if (s_response==null) s_response=new Hashtable<>();
 	}
 
 	/** Adds a new server <i>ts</i> */
@@ -61,7 +61,7 @@ public class StatefulProxyState {
 		//printlog("addServer(ts)",LogWriter.LEVEL_LOW);
 		if (hasServer(ts)) return;
 		SipId sid=ts.getTransactionId();
-		s_clients.put(sid,new HashSet());
+		s_clients.put(sid,new HashSet<>());
 		SipMessage request=new SipMessage(ts.getRequestMessage());
 		//printlog("creating a possible server 408 final response",LogWriter.LEVEL_LOW);
 		SipMessage resp=sip_provider.messageFactory().createResponse(request,SipResponses.REQUEST_TIMEOUT,null,null);
@@ -75,8 +75,8 @@ public class StatefulProxyState {
 		//printlog("addClient(ts,tc)",LogWriter.LEVEL_LOW);
 		c_server.put(tc.getTransactionId(),ts);
 		SipId sid=ts.getTransactionId();
-		HashSet clients=(HashSet)s_clients.get(sid);
-		if (clients==null) clients=new HashSet();
+		HashSet<Transaction> clients= s_clients.get(sid);
+		if (clients==null) clients=new HashSet<>();
 		clients.add(tc);
 		s_clients.put(sid,clients);
 		SipMessage request=new SipMessage(ts.getRequestMessage());
@@ -89,16 +89,16 @@ public class StatefulProxyState {
 	/** Removes a client. */
 	public synchronized void removeClient(TransactionClient tc) {
 		SipId cid=tc.getTransactionId();
-		TransactionServer ts=(TransactionServer)c_server.get(cid);
+		TransactionServer ts= c_server.get(cid);
 		if (ts==null) return;
 		c_server.remove(cid);
 		SipId sid=ts.getTransactionId();
-		HashSet clients=(HashSet)s_clients.get(sid);
+		HashSet<Transaction> clients=s_clients.get(sid);
 		if (clients==null) return;
 		Transaction target=null;
 		Transaction tc_i;
-		for (Iterator i=clients.iterator(); i.hasNext(); )
-			if ((tc_i=(Transaction)i.next()).getTransactionId().equals(cid)) target=tc_i;
+		for (Iterator<Transaction> i=clients.iterator(); i.hasNext(); )
+			if ((tc_i= i.next()).getTransactionId().equals(cid)) target=tc_i;
 		if (target!=null) clients.remove(target);
 	}
 	
@@ -106,7 +106,7 @@ public class StatefulProxyState {
 	public synchronized void clearClients(TransactionServer ts) {
 		SipId sid=ts.getTransactionId();
 		s_clients.remove(sid);
-		s_clients.put(sid,new HashSet());
+		s_clients.put(sid,new HashSet<>());
 	}
 
 	/** Whether there is a server <i>ts</i>. */
@@ -124,12 +124,12 @@ public class StatefulProxyState {
 
 	/** Gets the server bound to client <i>tc</i> */
 	public synchronized TransactionServer getServer(TransactionClient tc) {
-		return (TransactionServer)c_server.get(tc.getTransactionId());
+		return c_server.get(tc.getTransactionId());
 	}
 
 	/** Gets all clients bound to server <i>ts</i>. */
-	public synchronized HashSet getClients(TransactionServer ts) {
-		return (HashSet)s_clients.get(ts.getTransactionId());
+	public synchronized HashSet<Transaction> getClients(TransactionServer ts) {
+		return s_clients.get(ts.getTransactionId());
 	}
 		
 	/** Sets the final response for server <i>ts</i>. */
@@ -141,7 +141,7 @@ public class StatefulProxyState {
 	 
 	/** Gets the final response for server <i>ts</i>. */
 	public synchronized SipMessage getFinalResponse(TransactionServer ts) {
-		return (SipMessage)s_response.get(ts.getTransactionId());
+		return s_response.get(ts.getTransactionId());
 	}
 	
 	/** Gets the number of active servers. */

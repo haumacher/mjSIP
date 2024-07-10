@@ -41,7 +41,7 @@ public class ProxyAuthenticateHeader extends WwwAuthenticateHeader {
 	/** Creates a new ProxyAuthenticateHeader
 	  * specifing the <i>auth_scheme</i> and the vector of authentication parameters.
 	  * <p> <i>auth_param</i> is a vector of String of the form <i>parm_name</i> "=" <i>parm_value</i> */
-	public ProxyAuthenticateHeader(String auth_scheme, Vector auth_params) {
+	public ProxyAuthenticateHeader(String auth_scheme, Vector<String> auth_params) {
 		super(SipHeaders.Proxy_Authenticate, auth_scheme, auth_params);
 	}
 }

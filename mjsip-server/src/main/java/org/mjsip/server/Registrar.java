@@ -133,10 +133,10 @@ public class Registrar extends ServerEngine {
 
 	/** Gets the request's targets.
 	  * @return a vector of target URIs (Vector of <code>String</code>). */
-	protected Vector getTargets(SipMessage msg) {
+	protected Vector<String>  getTargets(SipMessage msg) {
 		LOG.trace("inside getTargets(msg)");
 
-		Vector targets=new Vector();
+		Vector<String> targets=new Vector<>();
 		
 		if (location_service==null) {
 			LOG.info("Location service is not active");
@@ -164,11 +164,11 @@ public class Registrar extends ServerEngine {
 
 		GenericURI to_uri=msg.getToHeader().getNameAddress().getAddress();
 		
-		Enumeration e=location_service.getUserContactURIs(user);
+		Enumeration<String> e=location_service.getUserContactURIs(user);
 		LOG.trace("message targets: ");  
 		for (int i=0; e.hasMoreElements(); i++) {
 			// if exipred, remove the contact URI
-			String contact=(String)e.nextElement();
+			String contact= e.nextElement();
 			if (location_service.isUserContactExpired(user,contact)) {
 				location_service.removeUserContact(user,contact);
 			LOG.trace("target"+i+" expired: contact URI removed");
@@ -182,7 +182,7 @@ public class Registrar extends ServerEngine {
 		// for SIPS request-uri remove non-SIPS targets
 		if (request_uri.equals(GenericURI.SCHEME_SIPS)) {
 			for (int i=0; i<targets.size(); i++) {
-				SipURI uri=SipURI.parseSipURI((String)targets.elementAt(i));
+				SipURI uri=SipURI.parseSipURI(targets.elementAt(i));
 				if (!uri.isSecure()) {
 					LOG.info(uri.toString()+" has not SIPS scheme: skipped");
 					targets.removeElementAt(i--);
@@ -240,9 +240,9 @@ public class Registrar extends ServerEngine {
 			LOG.debug("no contact found: fetching bindings..");
 			SipMessage resp=sip_provider.messageFactory().createResponse(msg,SipResponses.OK,null,null);  
 			// add current contacts
-			Vector v=new Vector();
-			for (Enumeration e=location_service.getUserContactURIs(user); e.hasMoreElements(); ) {
-				String contact=(String)e.nextElement();
+			Vector<Header> v=new Vector<>();
+			for (Enumeration<String> e=location_service.getUserContactURIs(user); e.hasMoreElements(); ) {
+				String contact= e.nextElement();
 				int expires=(int)(location_service.getUserContactExpirationDate(user,contact).getTime()-System.currentTimeMillis())/1000;
 				if (expires>0) {
 					// not expired
@@ -251,20 +251,20 @@ public class Registrar extends ServerEngine {
 					v.addElement(ch);
 				}
 			}
-			if (v.size()>0) resp.setContacts(new MultipleHeader(v));
+			if (!v.isEmpty()) resp.setContacts(new MultipleHeader(v));
 			return resp;
 		}
 		// else     
 
-		Vector contacts=msg.getContacts().getHeaders();
+		Vector<Header> contacts=msg.getContacts().getHeaders();
 		SipMessage resp=sip_provider.messageFactory().createResponse(msg,SipResponses.OK,null,null);  
 
-		ContactHeader ch_0=new ContactHeader((Header)contacts.elementAt(0));
+		ContactHeader ch_0=new ContactHeader(contacts.elementAt(0));
 		if (ch_0.isStar()) {
 			LOG.trace("ContactHeader is star");
-			Vector resp_contacts=new Vector();
-			for (Enumeration e=location_service.getUserContactURIs(user); e.hasMoreElements();)  {
-				String contact=(String)(e.nextElement());
+			Vector<Header> resp_contacts=new Vector<>();
+			for (Enumeration<String> e=location_service.getUserContactURIs(user); e.hasMoreElements();)  {
+				String contact= e.nextElement();
 				if (!location_service.isUserContactStatic(user,contact))  {
 					NameAddress name_address=location_service.getUserContactNameAddress(user,contact);
 					// update db
@@ -282,12 +282,12 @@ public class Registrar extends ServerEngine {
 					resp_contacts.addElement(ch_i);
 				}
 			}
-			if (resp_contacts.size()>0) resp.setContacts(new MultipleHeader(resp_contacts));
+			if (!resp_contacts.isEmpty()) resp.setContacts(new MultipleHeader(resp_contacts));
 		}
 		else {
-			Vector resp_contacts=new Vector();
+			Vector<Header> resp_contacts=new Vector<>();
 			for (int i=0; i<contacts.size(); i++)      {
-				ContactHeader ch_i=new ContactHeader((Header)contacts.elementAt(i));
+				ContactHeader ch_i=new ContactHeader(contacts.elementAt(i));
 				NameAddress name_address=ch_i.getNameAddress();     
 				String contact=name_address.getAddress().toString();     
 				int exp_secs_i=exp_secs;
@@ -309,7 +309,7 @@ public class Registrar extends ServerEngine {
 				ch_i.setExpires(exp_secs_i);
 				resp_contacts.addElement(ch_i);
 			}
-			if (resp_contacts.size()>0) resp.setContacts(new MultipleHeader(resp_contacts));
+			if (!resp_contacts.isEmpty()) resp.setContacts(new MultipleHeader(resp_contacts));
 		}
 
 		location_service.sync();  

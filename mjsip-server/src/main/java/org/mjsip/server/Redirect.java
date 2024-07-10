@@ -57,7 +57,7 @@ public class Redirect extends Registrar {
 		LOG.debug("inside processRequestToLocalUser(msg)");
 		
 		// message targets
-		Vector contacts=getTargets(msg);
+		Vector<String> contacts=getTargets(msg);
 
 		if (contacts.isEmpty()) {
 			LOG.info("No target found, message discarded");

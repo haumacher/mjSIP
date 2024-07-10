@@ -64,10 +64,10 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	//String media_addr=null;
 
 	/** Hashtable of pending Masquerades referred by call_id|leg|media (i.e., call_id|leg|media --> masq) */
-	Hashtable masq_table;
+	Hashtable<String, Masquerade> masq_table;
 
 	/** Hashtable of established call_id. */
-	HashSet call_set;
+	HashSet<String> call_set;
 
 	private Scheduler _scheduler;
 
@@ -78,8 +78,8 @@ public class MediaGw implements SymmetricUdpRelayListener {
 		_scheduler = scheduler;
 		this.sbc_profile=sbc_profile;
 		_portPool=portPool;
-		masq_table=new Hashtable();
-		call_set=new HashSet();
+		masq_table=new Hashtable<>();
+		call_set=new HashSet<>();
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			LOG.info("media-id: "+key);
 			if (masq_table.containsKey(key)) {
 				// get masq
-				Masquerade masq=(Masquerade)masq_table.get(key);
+				Masquerade masq=masq_table.get(key);
 				masq_addr=masq.getMasqSoaddr().getAddress().toString();
 				masq_port[i]=masq.getMasqSoaddr().getPort();
 			}
@@ -143,8 +143,8 @@ public class MediaGw implements SymmetricUdpRelayListener {
 				if (!call_set.contains(call_id)) {
 					LOG.info("creating new MediaGW");
 					for (int i=0; i<mediaTypes.length; i++) {
-						Masquerade masq_left=(Masquerade)masq_table.get(call_id+"-caller"+"-"+mediaTypes[i]);
-						Masquerade masq_right=(Masquerade)masq_table.get(call_id+"-callee"+"-"+mediaTypes[i]);
+						Masquerade masq_left=masq_table.get(call_id+"-caller"+"-"+mediaTypes[i]);
+						Masquerade masq_right=masq_table.get(call_id+"-callee"+"-"+mediaTypes[i]);
 						createSymmetricUdpRelay(masq_left,masq_right);
 					}
 					call_set.add(call_id);

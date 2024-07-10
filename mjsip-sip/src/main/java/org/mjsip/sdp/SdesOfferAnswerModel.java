@@ -88,7 +88,7 @@ public class SdesOfferAnswerModel /*extends OfferAnswerModel*/ {
 	  * According to RFC4568 only one 'crypto' is generated in case of success.
 	  * @return Returns a Vector of AttributeFields. The size of such Vector is 1 if succeeded,
 	  * or 0 if falied (no matching found between SDPs according to RFC4568). */
-	public static Vector makeCryptoAttributeProduct(MediaDescriptor start_md, MediaDescriptor offer_md) {
+	public static Vector<CryptoAttributeField> makeCryptoAttributeProduct(MediaDescriptor start_md, MediaDescriptor offer_md) {
 		// select the 'crypto' attributes
 		AttributeField[] start_attrs=start_md.getAttributes("crypto");
 		AttributeField[] offer_attrs=offer_md.getAttributes("crypto");
@@ -107,7 +107,7 @@ public class SdesOfferAnswerModel /*extends OfferAnswerModel*/ {
 				}
 			}
 		}
-		Vector answer_attr_list=new Vector();
+		Vector<CryptoAttributeField> answer_attr_list=new Vector<>();
 		if (answer_cf!=null) answer_attr_list.addElement(answer_cf);
 		if (DEBUG_LOOPBACK_MODE) System.out.println("DEBUG: CRYPTO: "+answer_cf);
 		return answer_attr_list;

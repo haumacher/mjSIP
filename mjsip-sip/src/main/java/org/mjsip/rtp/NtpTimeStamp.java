@@ -53,7 +53,7 @@ package org.mjsip.rtp;
   * (Network Time Protocol (Version 3) Specification, Implementation and Analysis), and
   * RFC 2030 (Simple Network Time Protocol (SNTP) Version 4 for IPv4, IPv6 and OSI).
   */
-public class NtpTimeStamp implements Comparable {
+public class NtpTimeStamp implements Comparable<NtpTimeStamp> {
 	
 
 	/* Integer part of NTP seconds (from January 1, 1900) */
@@ -116,11 +116,10 @@ public class NtpTimeStamp implements Comparable {
 
 
 	/** From interface Comparable. Compares this object with the specified object for order.
-	  * @param obj the Object to be compared
+	  * @param ts the Object to be compared
 	  * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object */
 	@Override
-	public int compareTo(Object obj) throws ClassCastException {
-		NtpTimeStamp ts=(NtpTimeStamp)obj;
+	public int compareTo(NtpTimeStamp ts) throws ClassCastException {
 		return (int)(getNtpTime()-ts.getNtpTime());
 	}
 

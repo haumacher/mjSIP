@@ -1267,10 +1267,10 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 		}
 		// OPTIONAL EXTENSIONS
 		if (invite.hasRequireHeader()) {
-			Vector remote_required_option_tags=invite.getRequireHeader().getAllOptionTags();
-			Vector unsupported_option_tags=new Vector();
+			Vector<String> remote_required_option_tags=invite.getRequireHeader().getAllOptionTags();
+			Vector<String> unsupported_option_tags=new Vector<>();
 			for (int i=0; i<remote_required_option_tags.size(); i++) {
-				String option_tag=(String)remote_required_option_tags.elementAt(i);
+				String option_tag= remote_required_option_tags.elementAt(i);
 				if (!isExtensionSupported(option_tag)) unsupported_option_tags.addElement(option_tag);
 			}
 			if (unsupported_option_tags.size()>0) {
