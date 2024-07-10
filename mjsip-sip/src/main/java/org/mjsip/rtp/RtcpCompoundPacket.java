@@ -96,14 +96,14 @@ public class RtcpCompoundPacket {
 	/** Gets the RTCP packets componing the compound packet. */
 	public RtcpPacket[] getRtcpPackets() {
 		int index=0;
-		Vector aux=new Vector();
+		Vector<RtcpPacket> aux=new Vector<>();
 		while (index<length) {
 			RtcpPacket rp=new RtcpPacket(buffer,offset+index);
 			index+=rp.getPacketLength();
 			aux.addElement(rp);
 		}
 		RtcpPacket[] rtcp_packets=new RtcpPacket[aux.size()];
-		for (int i=0; i<rtcp_packets.length; i++) rtcp_packets[i]=(RtcpPacket)aux.elementAt(i);
+		for (int i=0; i<rtcp_packets.length; i++) rtcp_packets[i]=aux.elementAt(i);
 		return rtcp_packets;
 	}
 
