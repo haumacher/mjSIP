@@ -36,7 +36,7 @@ public class ProxyRequireHeader extends OptionTagsHeader {
 
 	/** Creates a new ProxyRequireHeader.
 	  * @param option_tags Vector (of <code>String</code>) of option-tags. */
-	public ProxyRequireHeader(Vector option_tags) {
+	public ProxyRequireHeader(Vector<String> option_tags) {
 		super(SipHeaders.Proxy_Require,option_tags);
 	}
 

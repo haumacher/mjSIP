@@ -37,11 +37,11 @@ public abstract class OptionTagsHeader extends LegacyHeader {
 	
 	/** Creates a new OptionTagsHeader.
 	  * @param option_tags Vector (of <code>String</code>) of option-tags. */
-	protected OptionTagsHeader(String header, Vector option_tags) {
+	protected OptionTagsHeader(String header, Vector<String> option_tags) {
 		super(header,null);
 		if (option_tags!=null && option_tags.size()>0) {
-			StringBuilder sb=new StringBuilder((String)option_tags.elementAt(0));
-			for (int i=1; i<option_tags.size(); i++) sb.append(',').append((String)option_tags.elementAt(i));
+			StringBuilder sb=new StringBuilder(option_tags.elementAt(0));
+			for (int i=1; i<option_tags.size(); i++) sb.append(',').append(option_tags.elementAt(i));
 			value=sb.toString();
 		}
 	}
@@ -69,11 +69,11 @@ public abstract class OptionTagsHeader extends LegacyHeader {
 	}
 
 	/** Gets all option-tags. */
-	public Vector getAllOptionTags() {
+	public Vector<String> getAllOptionTags() {
 		if (value==null) return null;
 		// else
 		final char[] COMMA={','};
-		Vector option_tags=new Vector();
+		Vector<String> option_tags=new Vector<>();
 		for (Parser par=new Parser(value); par.hasMore(); ) {
 			String option_tag=par.getWord(COMMA).trim();
 			if (option_tag.length()>0) option_tags.addElement(option_tag);
@@ -83,8 +83,8 @@ public abstract class OptionTagsHeader extends LegacyHeader {
 
 	/** Whether a given option-tag is present. */
 	public boolean hasOptionTag(String option_tag) {
-		Vector option_tags=getAllOptionTags();
-		for (int i=0; option_tags!=null && i<option_tags.size(); i++) if (((String)option_tags.elementAt(i)).equals(option_tag)) return true;
+		Vector<String> option_tags=getAllOptionTags();
+		for (int i=0; option_tags!=null && i<option_tags.size(); i++) if (option_tags.elementAt(i).equals(option_tag)) return true;
 		// else
 		return false;
 	}
