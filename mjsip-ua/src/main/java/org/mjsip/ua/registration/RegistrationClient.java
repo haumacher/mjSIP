@@ -111,7 +111,7 @@ public class RegistrationClient implements TransactionClientListener {
 	/** Registration timeout */
 	ScheduledFuture<?> _registrationTimer;
 
-	private final GenericURI _routeUri;
+	private final SipURI _routeUri;
 
 	/**
 	 * Creates a {@link RegistrationClient}.
@@ -135,15 +135,21 @@ public class RegistrationClient implements TransactionClientListener {
 		_routeUri = regConfig.getRoute();
 
 		NameAddress contact_naddr;
+		String userName;
+		AddressType defaultAddressType;
 		{
 			GenericURI to_uri = toNAddr.getAddress();
 			if (to_uri.isSipURI()) {
 				SipURI sipURI = to_uri.toSipURI();
-				contact_naddr=new NameAddress(sip_provider.getContactAddress(sipURI.getUserName(), sipURI.getAddressType()));
+				userName = sipURI.getUserName();
+				defaultAddressType = sipURI.getAddressType();
 			} else {
-				contact_naddr=new NameAddress(sip_provider.getContactAddress(null, AddressType.DEFAULT));
+				userName = null;
+				defaultAddressType = AddressType.DEFAULT;
 			}
 		}
+		AddressType contactAddressType = _routeUri != null ? _routeUri.getAddressType() : defaultAddressType;
+		contact_naddr=new NameAddress(sip_provider.getContactAddress(userName, contactAddressType));
 
 		if (SipNameAddress.isSIPS(contact_naddr)) {
 			// change scheme of to-uri, from-uri, and request-uri to SIPS
