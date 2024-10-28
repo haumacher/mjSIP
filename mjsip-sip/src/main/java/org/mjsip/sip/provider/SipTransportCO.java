@@ -214,9 +214,12 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	}
 
 
-	/** Sends a message thruogh a given connection.
-	  * @param conn the connection.
-	  * @param msg the message to be sent */
+	/**
+	 * Sends a message through a given connection.
+	 * 
+	 * @param conn the connection.
+	 * @param msg  the message to be sent
+	 */
 	private void sendMessage(SipTransportConnection conn, SipMessage msg) throws IOException  {
 		if (force_sent_by) SipProvider.updateViaHeader(msg,conn.getProtocol(),conn.getLocalAddress().toString(),conn.getLocalPort());
 		conn.sendMessage(msg);
