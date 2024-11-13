@@ -148,6 +148,15 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<tagNameFormat>mjsip-@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
