@@ -42,6 +42,13 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<connection>scm:git:https://github.com/haumacher/mjSIP.git</connection>
+		<developerConnection>scm:git:https://github.com/haumacher/mjSIP.git</developerConnection>
+		<url>https://github.com/haumacher/mjSIP</url>
+		<tag>master</tag>
+	</scm>
+
 	<modules>
 		<module>mjsip-util</module>
 		<module>mjsip-net</module>
