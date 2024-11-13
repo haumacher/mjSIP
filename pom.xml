@@ -47,6 +47,19 @@
 		<tag>1.9.0</tag>
 	</scm>
 
+	<distributionManagement>
+		<repository>
+			<id>tl-ossrh</id>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</distributionManagement>
+
 	<modules>
 		<module>mjsip-util</module>
 		<module>mjsip-net</module>
