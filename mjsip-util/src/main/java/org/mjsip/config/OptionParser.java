@@ -7,11 +7,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.NamedOptionDef;
+import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.ParserProperties;
+import org.kohsuke.args4j.spi.OptionHandler;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.ConfigFile;
 
@@ -34,9 +38,36 @@ public class OptionParser {
 		}
 		
 		try {
+			List<String> envArgs = new ArrayList<>();
+			for (OptionHandler<?> option : parser.getOptions()) {
+				OptionDef optionDef = option.option;
+				if (optionDef instanceof NamedOptionDef) {
+					NamedOptionDef namedOption = (NamedOptionDef) optionDef;
+					
+					String name = namedOption.name();
+					String value = getValueFromEnvironment(name);
+					if (value == null) {
+						for (String alias : namedOption.aliases()) {
+							value = getValueFromEnvironment(alias);
+							if (value != null) {
+								break;
+							}
+						}
+					}
+					
+					if (value != null) {
+						envArgs.add(name);
+						envArgs.add(value);
+					}
+				}
+			}
+
 			CmdLineException problem = null;
 			try {
-				parser.parseArgument(args);
+				// First try, use options form environment and command line. 
+				Collection<String> arguments = new ArrayList<>(envArgs);
+				arguments.addAll(Arrays.asList(args));
+				parser.parseArgument(arguments);
 			} catch (CmdLineException ex) {
 				// Happens, when required configurations are not given on the command line.
 				problem = ex;
@@ -94,6 +125,19 @@ public class OptionParser {
 		}
 		
 		return metaConfig;
+	}
+
+	public static String getValueFromEnvironment(String optionName) {
+		if (!optionName.startsWith("--")) {
+			return null;
+		}
+
+		String env = optionName.substring(2).replace('-', '_').toUpperCase();
+		String value = System.getenv(env);
+		if (value != null) {
+			LOG.info("Using '" + optionName + "' from environment: " + env + "=" + value);
+		}
+		return value;
 	}
 
 }
