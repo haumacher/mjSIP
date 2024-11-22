@@ -111,9 +111,13 @@ public class OptionParser {
 				
 				ConfigFile configFile = new ConfigFile(file);
 				
-				// Parse all arguments again to check for required arguments not given but give
-				// precedence to arguments given on the command line.
+				// Parse all arguments again to check for required arguments not given and to
+				// allow overwriting configuration file arguments with environment and command
+				// line.
+				// Use the following precedence order: Arguments in the configuration file (lowest),
+				// arguments from the environment, arguments given on the command line (highest).
 				Collection<String> arguments = new ArrayList<>(configFile.toArguments());
+				arguments.addAll(envArgs);
 				arguments.addAll(Arrays.asList(args));
 				
 				parser.parseArgument(arguments);
