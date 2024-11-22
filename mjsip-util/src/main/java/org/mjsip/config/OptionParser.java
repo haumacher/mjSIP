@@ -63,6 +63,7 @@ public class OptionParser {
 			}
 
 			CmdLineException problem = null;
+			boolean invalidValueGiven = false;
 			try {
 				// First try, use options form environment and command line. 
 				Collection<String> arguments = new ArrayList<>(envArgs);
@@ -71,13 +72,18 @@ public class OptionParser {
 			} catch (CmdLineException ex) {
 				// Happens, when required configurations are not given on the command line.
 				problem = ex;
+				String message = ex.getMessage();
+				invalidValueGiven = message != null && message.contains(" is not a valid value for ");
+				if (invalidValueGiven) {
+					LOG.warn("{}. Reading from environment/command line aborted", message);
+				}
 			}
 			
 			String argFile = metaConfig.configFile;
 			
 			File file;
 			if (argFile != null && !argFile.isBlank()) {
-				if ("none".equals(argFile.toLowerCase())) {
+				if ("none".equalsIgnoreCase(argFile)) {
 					file = null;
 				} else {
 					file = new File(argFile);
@@ -87,7 +93,7 @@ public class OptionParser {
 					}
 				}
 			} else if (defaultConfigFile != null) {
-				String fileName = System.getProperty("user.home") + "/" + defaultConfigFile;
+				String fileName = System.getProperty("user.home") + File.pathSeparator + defaultConfigFile;
 				file = new File(fileName);
 				if (!file.exists()) {
 					file = null;
@@ -97,13 +103,21 @@ public class OptionParser {
 			}
 			
 			if (file!= null) {
-				LOG.debug("Reading options from: " + file.getAbsolutePath());
+				if (invalidValueGiven) {
+					LOG.warn("Reading options from: {}", file.getAbsolutePath());
+				} else {
+					LOG.debug("Reading options from: {}", file.getAbsolutePath());
+				}
 				
 				ConfigFile configFile = new ConfigFile(file);
 				
-				// Parse all arguments again to check for required arguments not given but give
-				// precedence to arguments given on the command line.
+				// Parse all arguments again to check for required arguments not given and to
+				// allow overwriting configuration file arguments with environment and command
+				// line.
+				// Use the following precedence order: Arguments in the configuration file (lowest),
+				// arguments from the environment, arguments given on the command line (highest).
 				Collection<String> arguments = new ArrayList<>(configFile.toArguments());
+				arguments.addAll(envArgs);
 				arguments.addAll(Arrays.asList(args));
 				
 				parser.parseArgument(arguments);
@@ -135,7 +149,7 @@ public class OptionParser {
 		String env = optionName.substring(2).replace('-', '_').toUpperCase();
 		String value = System.getenv(env);
 		if (value != null) {
-			LOG.info("Using '" + optionName + "' from environment: " + env + "=" + value);
+			LOG.info("Using '{}' from environment: {}={}", optionName, env, value);
 		}
 		return value;
 	}
