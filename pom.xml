@@ -49,8 +49,9 @@
 
 	<distributionManagement>
 		<repository>
-			<id>tl-ossrh</id>
-			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>github</id>
+			<name>GitHub haumacher/mjSIP Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/haumacher/mjSIP</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -221,5 +222,6 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		
 	</build>
 </project>
