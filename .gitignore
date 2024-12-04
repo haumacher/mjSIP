@@ -1,3 +1,4 @@
 /bin/
 /classes/
 /lib/*.jar
+/target/
