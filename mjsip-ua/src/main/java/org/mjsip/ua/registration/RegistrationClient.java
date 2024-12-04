@@ -20,6 +20,7 @@
  */
 package org.mjsip.ua.registration;
 
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
 
@@ -247,6 +248,9 @@ public class RegistrationClient implements TransactionClientListener {
 				LOG.debug("Unregistering {} from {}", _contactNAddr, _registrarUri);
 			}
 		}
+		
+		// where is the Accept header ? 
+		System.out.printf("XX\nXX\nXX Allowed Methods: %s", req.getAcceptHeader() != null ? req.getAcceptHeader().getParameters() : "n/a" );
 		
 		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
