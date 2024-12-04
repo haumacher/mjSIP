@@ -102,7 +102,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** Changes the call state */
 	protected void changeStatus(String state) {
 		call_state=state;
-		LOG.debug("state: "+call_state); 
+		LOG.debug("state: {}", call_state); 
 	}
 
 	/** Checks the call state */
@@ -150,7 +150,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 
 	/** Makes a new call */
 	public void call(String target_uri) {
-		LOG.info("CALLING " + target_uri);
+		LOG.info("CALLING {}", target_uri);
 		ua.call(target_uri, mediaAgent());
 		changeStatus(UA_OUTGOING_CALL);
 	}
@@ -271,7 +271,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		if (_uiConfig.redirectTo!=null) {
 			// redirect the call
 			ua.redirect(_uiConfig.redirectTo);
-			LOG.info("call redirected to "+_uiConfig.redirectTo);
+			LOG.info("call redirected to {}",_uiConfig.redirectTo);
 		}         
 		else
 		if (_uiConfig.acceptTime>=0) {
@@ -281,7 +281,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		}
 		else          {
 			changeStatus(UA_INCOMING_CALL);
-			LOG.info("incoming call from "+caller.toString());
+			LOG.info("incoming call from {}", caller.toString());
 			LOG.info("accept? [yes/no]");
 		}
 	}
@@ -289,13 +289,13 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** When an ougoing call is stated to be in progress */
 	@Override
 	public void onUaCallProgress(UserAgent ua) {
-		
+		// noop
 	}
 
 	/** When an ougoing call is remotly ringing */
 	@Override
 	public void onUaCallRinging(UserAgent ua) {
-		
+		// noop
 	}
 
 	/** When an ougoing call has been accepted */
@@ -311,7 +311,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** When a call has been transferred */
 	@Override
 	public void onUaCallTransferred(UserAgent ua) {
-		
+		// noop
 	}
 
 	/** When an incoming call has been cancelled */
@@ -350,13 +350,13 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	/** When registration succeeded. */
 	@Override
 	public void onUaRegistrationSucceeded(UserAgent ua, String result) {
-		LOG.info("Registration succeeded: "+result); 
+		LOG.info("Registration succeeded: {}", result); 
 	}
 
 	/** When registration failed. */
 	@Override
 	public void onUaRegistrationFailed(UserAgent ua, String result) {
-		LOG.error("Registration failed: "+result); 
+		LOG.error("Registration failed: {}", result); 
 	}
 	
 
@@ -373,7 +373,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules a re-inviting after <i>delay_time</i> secs. It simply changes the contact address. */
 	void reInvite(final int delay_time) {
-		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
+		LOG.info("AUTOMATIC RE-INVITING/MODIFING: {} secs", delay_time); 
 		if (delay_time==0) ua.modify(null);
 		else
 			sip_provider.scheduler().schedule(delay_time*1000L, () -> ua.modify(null));
@@ -391,7 +391,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules a call-transfer after <i>delay_time</i> secs. */
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
-		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
+		LOG.info("AUTOMATIC REFER/TRANSFER: {} secs", delay_time);
 		if (delay_time==0) ua.transfer(transfer_to);
 		else
 			sip_provider.scheduler().schedule(delay_time*1000L, () -> ua.transfer(transfer_to));
@@ -408,7 +408,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules an automatic answer after <i>delay_time</i> secs. */
 	void automaticAccept(final int delay_time) {
-		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
+		LOG.info("AUTOMATIC ANSWER: {} secs", delay_time);
 		if (delay_time==0) accept();
 		else
 			sip_provider.scheduler().schedule(delay_time*1000L, this::accept);
@@ -425,7 +425,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules an automatic hangup after <i>delay_time</i> secs. */
 	void automaticHangup(final int delay_time) {
-		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
+		LOG.info("AUTOMATIC HANGUP: {} secs", delay_time);
 		if (delay_time==0) hangup();
 		else
 			sip_provider.scheduler().schedule(delay_time*1000L, this::hangup);
@@ -433,7 +433,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 	
 	/** Schedules an automatic re-call after <i>delay_time</i> secs. */
 	void automaticCall(final int delay_time, final String remote_uri) {
-		LOG.info("AUTOMATIC RE-CALL: "+delay_time+" secs");
+		LOG.info("AUTOMATIC RE-CALL: {} secs", delay_time);
 		if (delay_time==0) call(remote_uri);
 		else
 			sip_provider.scheduler().schedule(delay_time*1000L, () -> call(remote_uri));

@@ -459,7 +459,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	 *        See {@link SipResponses}.
 	 */
 	public void refuse(int code, String reason) {
-		LOG.debug("inside refuse("+code+","+((reason!=null)?reason:SipResponses.reasonOf(code))+")");
+		LOG.debug("inside refuse({},{})", code, (reason != null) ? reason : SipResponses.reasonOf(code));
 		respond(code,reason,null,null,null);
 	}
 
@@ -472,7 +472,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	 *        See {@link SipResponses}.
 	 */
 	public void redirect(int code, String reason, NameAddress contact) {
-		LOG.debug("inside redirect("+code+","+reason+","+contact.toString()+")");
+		LOG.debug("inside redirect({},{},{})", code, reason, contact);
 		respond(code,reason,contact,null,null);
 	}
 
@@ -490,7 +490,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	 *        the message body to be included within the response message, or <i>null</i>
 	 */
 	public void respond(int code, String reason, NameAddress contact, String content_type, byte[] body) {
-		LOG.debug("inside respond("+code+","+reason+")");
+		LOG.debug("inside respond({},{})", code, reason);
 		if (statusIs(DialogStatus.D_INVITED) || statusIs(DialogStatus.D_ReINVITED)) {
 			SipMessage resp=sipMessageFactory.createResponse(invite_req,code,reason,contact);
 			resp.setBody(content_type,body);
@@ -501,7 +501,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 			respond(resp);
 		}
 		else {
-			LOG.warn("Dialog isn't in \"invited\" state: cannot respond ("+code+"/"+getStatus()+"/"+getDialogID()+")");
+			LOG.warn("Dialog isn't in \"invited\" state: cannot respond ({}/{}/{})", code, getStatus(), getDialogID());
 		}
 	}
 
@@ -1073,7 +1073,7 @@ public class InviteDialog extends Dialog implements TransactionClientListener, I
 	  * removes the listener from SipProvider, and fires <i>onClose(this,msg)</i>. */
 	@Override
 	public void onTransFailureResponse(TransactionClient tc, SipMessage msg) {
-		LOG.debug("inside onTransFailureResponse("+tc.getTransactionId()+",msg)");
+		LOG.debug("inside onTransFailureResponse({},{})", tc.getTransactionId(), msg);
 		if (tc.getTransactionMethod().equals(SipMethods.INVITE)) {
 			if (!verifyStatus("INVITE failure response requires INVITING state.",
 					statusIs(DialogStatus.D_INVITING) || statusIs(DialogStatus.D_ReINVITING))) {

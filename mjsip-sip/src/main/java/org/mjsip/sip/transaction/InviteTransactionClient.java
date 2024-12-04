@@ -71,7 +71,7 @@ public class InviteTransactionClient extends TransactionClient {
 		this.transaction_id=transaction_id;
 		this.ack=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
-		LOG.info("new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: {}", transaction_id);
 	}   
 
 	
@@ -159,7 +159,8 @@ public class InviteTransactionClient extends TransactionClient {
 
 			scheduleRetransmission(sip_provider.sipConfig().getRetransmissionTimeout());
 		}
-		else LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
+		else
+			LOG.trace("No retransmissions for reliable transport ({})", connection_id);
 	}
 
 	/** Terminates the transaction. */

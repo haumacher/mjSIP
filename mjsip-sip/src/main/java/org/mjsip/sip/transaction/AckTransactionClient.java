@@ -49,7 +49,7 @@ public class AckTransactionClient extends Transaction {
 		request=new SipMessage(ack);
 		transaction_listener=listener;
 		transaction_id=SipId.createTransactionClientId(request);
-		LOG.info("new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: {}", transaction_id);
 	}
 	
 	/** Starts the AckTransactionClient and sends the ACK request. */
