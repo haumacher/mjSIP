@@ -452,6 +452,33 @@ public class SipConfig implements SipOptions {
 	}
 
 	@Override
+	/**
+	 * Implements {@link SipOptions#getViaAddr()}
+	 * 
+	 * <ul>
+	 * <li>IP4 != null && preferIP4 => IP4</li>
+	 * <li>IP4 != null && IP6 == null => IP4</li>
+	 * <li>IP6 != null && !preferIP4 => IP6</li>
+	 * <li>IP6 != null && IP4 == null => IP6</li>
+	 * <li>else we cal the default method which causes an error</li>
+	 * </ul>
+	 * 
+	 * Unfortunately the behavior of this function is not clearly defined in
+	 * SipOptions Interface.
+	 * 
+	 * @return the vai address according to the rules described above
+	 */
+	public String getViaAddr() {
+		if (_viaAddr4 != null && (_preferIPv4 || _viaAddr6 == null)) {
+			return getViaAddr(AddressType.IP4);
+		} else if (_viaAddr6 != null) {
+			return getViaAddr(AddressType.IP6);
+		} else {
+			return SipOptions.super.getViaAddr();
+		}
+	}
+
+	@Override
 	public String getViaAddr(AddressType type) {
 		switch (type) {
 		case IP4:
