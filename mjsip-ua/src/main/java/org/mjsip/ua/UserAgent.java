@@ -656,7 +656,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
 		LOG.debug("onCallTransfer()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.debug("transfer to {}", refer_to.toString());
+		LOG.debug("transfer to {}", refer_to);
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(_config.getUserURI()),this);
 		AddressType addressType = ConnectionField.addressType(refer_to.getAddress().getSpecificPart());
