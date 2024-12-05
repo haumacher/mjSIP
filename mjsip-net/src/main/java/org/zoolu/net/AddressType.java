@@ -4,7 +4,20 @@ package org.zoolu.net;
  * Choice of addresses.
  */
 public enum AddressType {
-	DEFAULT, IP4, IP6;
+	/**
+	 * Select either an IPv4 or IPv6 address depending on the context.
+	 */
+	DEFAULT, 
+	
+	/**
+	 * Use an IPv4 address.
+	 */
+	IP4, 
+	
+	/**
+	 * Use an IPv6 address.
+	 */
+	IP6;
 
 	public static AddressType fromString(String type) {
 		switch (type.toUpperCase()) {

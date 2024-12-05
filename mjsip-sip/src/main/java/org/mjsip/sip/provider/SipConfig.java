@@ -452,6 +452,11 @@ public class SipConfig implements SipOptions {
 	}
 
 	@Override
+	public boolean getPreferIPv4() {
+		return _preferIPv4;
+	}
+
+	@Override
 	public String getViaAddr(AddressType type) {
 		switch (type) {
 		case IP4:
@@ -459,10 +464,16 @@ public class SipConfig implements SipOptions {
 		case IP6:
 			return getViaAddrIPv6();
 		case DEFAULT:
-			LOG.warn("Using undefined via address type.", new RuntimeException("Stack trace"));
-			break;
+			if (_viaAddr4 != null && (_preferIPv4 || _viaAddr6 == null)) {
+				return _viaAddr4;
+			} else if (_viaAddr6 != null) {
+				return _viaAddr6;
+			} else {
+				// Consistent with the other via address getters.
+				return null;
+			}
 		}
-		return _preferIPv4 ? getViaAddrIPv4() : getViaAddrIPv6();
+		throw new IllegalStateException("No such address type: " + type);
 	}
 
 	@Override

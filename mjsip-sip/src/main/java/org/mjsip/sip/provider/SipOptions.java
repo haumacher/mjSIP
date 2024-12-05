@@ -147,27 +147,45 @@ public interface SipOptions {
 	String getUaInfo();
 
 	/**
-	 * Via IP address or fully-qualified domanin name (FQDN).
+	 * Whether to prefer an IPv4 address over an IPv6 address, if both are given but
+	 * no special address type is requested.
+	 * 
+	 * @see AddressType#DEFAULT
+	 */
+	boolean getPreferIPv4();
+
+	/**
+	 * The default via IP address or fully-qualified domain name (FQDN).
 	 * 
 	 * <p>
-	 * Use 'auto-configuration' for auto detection, or let it undefined.
+	 * An address is selected with the following rules:
 	 * </p>
+	 * 
+	 * <ul>
+	 * <li>IP4 != null && preferIP4 => IP4</li>
+	 * <li>IP4 != null && IP6 == null => IP4</li>
+	 * <li>IP6 != null && !preferIP4 => IP6</li>
+	 * <li>IP6 != null && IP4 == null => IP6</li>
+	 * <li>else an error is thrown</li>
+	 * </ul>
+	 * 
+	 * @return The default via address according to the rules described above
+	 * 
+	 * @see #getViaAddrIPv4()
+	 * @see #getViaAddrIPv6()
+	 * @see #getPreferIPv4()
 	 */
 	default String getViaAddr() {
 		return getViaAddr(AddressType.DEFAULT);
 	}
 
 	/**
-	 * Via IP address or fully-qualified domanin name (FQDN).
-	 * 
-	 * <p>
-	 * Use 'auto-configuration' for auto detection, or let it undefined.
-	 * </p>
+	 * Via IP address of the given address type.
 	 */
 	String getViaAddr(AddressType type);
 
 	/**
-	 * Via IPv4 address or fully-qualified domanin name (FQDN).
+	 * Via IPv4 address or fully-qualified domain name (FQDN).
 	 * 
 	 * <p>
 	 * Use 'auto-configuration' for auto detection, or let it undefined.
