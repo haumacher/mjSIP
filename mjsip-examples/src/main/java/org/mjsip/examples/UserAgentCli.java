@@ -281,7 +281,7 @@ public class UserAgentCli implements UserAgentListenerAdapter {
 		}
 		else          {
 			changeStatus(UA_INCOMING_CALL);
-			LOG.info("incoming call from {}", caller.toString());
+			LOG.info("incoming call from {}", caller);
 			LOG.info("accept? [yes/no]");
 		}
 	}
