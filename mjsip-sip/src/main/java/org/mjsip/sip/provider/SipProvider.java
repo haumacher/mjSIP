@@ -164,7 +164,7 @@ public class SipProvider implements SipTransportListener {
 	/** Inits logs. */ 
 	private void initLog() {
 		LOG.info("SipStack: {}", SipStack.release);
-		LOG.info("SipProvider: {}", toString());
+		LOG.info("SipProvider: {}", this);
 	}
 
 	/**
@@ -851,16 +851,21 @@ public class SipProvider implements SipTransportListener {
 
 	/** Sends the <i>msg</i> message using the specified transport connection. */
 	/*
-	 * public ConnectionId sendMessage(SipMessage msg, ConnectionId conn_id) { if (log_all_packets
-	 * || msg.getLength()>MIN_MESSAGE_LENGTH) LOG.info("Sending message through conn "+conn_id);
-	 * LOG.trace("message to send:."+MESSAGE_BEGIN_DELIMITER+msg.toString()+MESSAGE_END_DELIMITER);
-	 * SipTransportConnection conn=null; for (Enumeration e=sip_transports.elements();
-	 * e.hasMoreElements() && conn==null; ) { SipTransport transp=(SipTransport)e.nextElement(); if
-	 * (isReliableTransport(transp)) conn=((SipTransportCO)transp).sendMessage(msg,conn_id); } if
-	 * (conn!=null) { // logs String proto=conn.getProtocol();
-	 * LOG.debug("SipProvider: sendMessage(msg,conn): conn: "+conn);
-	 * LOG.debug("SipProvider: sendMessage(msg,conn): remote_addr: "+conn.getRemoteAddress());
-	 * String dest_addr=conn.getRemoteAddress().toString(); int dest_port=conn.getRemotePort();
+	 * public ConnectionId sendMessage(SipMessage msg, ConnectionId conn_id) { if
+	 * (log_all_packets || msg.getLength()>MIN_MESSAGE_LENGTH)
+	 * LOG.info("Sending message through conn "+conn_id);
+	 * LOG.trace("message to send:."+MESSAGE_BEGIN_DELIMITER+msg.toString()+
+	 * MESSAGE_END_DELIMITER); SipTransportConnection conn=null; for (Enumeration
+	 * e=sip_transports.elements(); e.hasMoreElements() && conn==null; ) {
+	 * SipTransport transp=(SipTransport)e.nextElement(); if
+	 * (isReliableTransport(transp))
+	 * conn=((SipTransportCO)transp).sendMessage(msg,conn_id); } if (conn!=null) {
+	 * // logs String proto=conn.getProtocol();
+	 * LOG.debug("SipProvider: sendMessage(msg,conn): conn: {}", conn);
+	 * LOG.debug("SipProvider: sendMessage(msg,conn): remote_addr: {}",
+	 * conn.getRemoteAddress()); String
+	 * dest_addr=conn.getRemoteAddress().toString(); int
+	 * dest_port=conn.getRemotePort();
 	 * logMessage(proto,dest_addr,dest_port,msg.getLength(),msg,"sent");
 	 * 
 	 * return new ConnectionId(conn); } else { return sendMessage(msg); } }

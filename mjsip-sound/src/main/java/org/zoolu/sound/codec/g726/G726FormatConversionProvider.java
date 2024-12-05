@@ -83,7 +83,7 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	@Override
 	public AudioFormat.Encoding[] getTargetEncodings(final AudioFormat source_format) {
 		if (DEBUG)
-			LOG.debug("getTargetEncodings(): source_format="+source_format.toString());
+			LOG.debug("getTargetEncodings(): source_format={}", source_format);
 
 		if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED)) {
 			return G726_ENCODING;
@@ -108,9 +108,9 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	@Override
 	public AudioFormat[] getTargetFormats(final AudioFormat.Encoding target_encoding, final AudioFormat source_format) {
 		if (DEBUG)
-			LOG.debug("getTargetFormats(): target_encoding="+target_encoding.toString());
+			LOG.debug("getTargetFormats(): target_encoding={}", target_encoding);
 		if (DEBUG)
-			LOG.debug("getTargetFormats(): source_format="+source_format.toString());
+			LOG.debug("getTargetFormats(): source_format={}", source_format);
 
 		/*if (source_format.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) && target_encoding instanceof G726Encoding) {
 			
@@ -192,9 +192,9 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	@Override
 	public AudioInputStream getAudioInputStream(final AudioFormat.Encoding target_encoding, final AudioInputStream source_stream) {
 		if (DEBUG)
-			LOG.debug("getAudioInputStream(): target_encoding="+target_encoding.toString());
+			LOG.debug("getAudioInputStream(): target_encoding={}", target_encoding);
 		if (DEBUG)
-			LOG.debug("getAudioInputStream(): source format="+source_stream.getFormat().toString());
+			LOG.debug("getAudioInputStream(): source format={}", source_stream.getFormat());
 
 		if (isConversionSupported(target_encoding,source_stream.getFormat())) {
 			AudioFormat[] formats=getTargetFormats(target_encoding,source_stream.getFormat());
@@ -237,9 +237,9 @@ public class G726FormatConversionProvider extends FormatConversionProvider {
 	@Override
 	public AudioInputStream getAudioInputStream(final AudioFormat target_format, final AudioInputStream source_stream) {
 		if (DEBUG)
-			LOG.debug("getAudioInputStream(): target_format="+target_format.toString());
+			LOG.debug("getAudioInputStream(): target_format={}", target_format);
 		if (DEBUG)
-			LOG.debug("getAudioInputStream(): source format="+source_stream.getFormat().toString());
+			LOG.debug("getAudioInputStream(): source format={}", source_stream.getFormat());
 		
 		if (isConversionSupported(target_format,source_stream.getFormat())) {
 			AudioFormat[] formats=getTargetFormats(target_format.getEncoding(),source_stream.getFormat());

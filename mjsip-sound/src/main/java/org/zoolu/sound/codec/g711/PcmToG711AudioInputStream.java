@@ -46,7 +46,7 @@ class PcmToG711AudioInputStream extends BufferedAudioInputStream {
 		g711_encoding=target_format.getEncoding();
 		
 		if (g711_encoding!=G711Encoding.G711_ULAW && g711_encoding!=G711Encoding.G711_ALAW) {
-			LOG.error("unknown G711 encoding type: " + g711_encoding.toString());
+			LOG.error("unknown G711 encoding type: {}", g711_encoding);
 		}
 
 		aux_buffer=new byte[2*BUFFER_SIZE];

@@ -41,7 +41,7 @@ public class AudioFileTransmitter implements AudioTransmitter {
 			RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_encoder, long packet_time,
 			int packet_size, String remote_addr, int remote_port, RtpStreamSenderListener listener, RtpControl rtpControl) throws IOException {
 		try {
-			LOG.info("Streaming audio from file " + _audioFile + " format: " + audio_format);
+			LOG.info("Streaming audio from file {} format: {}", _audioFile, audio_format);
 			AudioInputStream audioIn = AudioFile.getAudioFileInputStream(_audioFile, audio_format);
 			RtpStreamSender sender = new RtpStreamSender(options, audioIn, true, payload_type, payloadFormat, sample_rate,
 					channels, packet_time, packet_size, additional_encoder, udp_socket, remote_addr, remote_port, rtpControl, listener);

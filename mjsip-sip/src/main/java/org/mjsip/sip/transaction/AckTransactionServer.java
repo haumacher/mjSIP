@@ -98,7 +98,7 @@ public class AckTransactionServer extends Transaction {
 		//{  retransmission_to=new Timer(retransmission_to.getTime(),this);
 		//   retransmission_to.start();
 		//}
-		LOG.info("new transaction-id: "+transaction_id.toString());
+		LOG.info("new transaction-id: {}", transaction_id);
 	}    
 
 	/** Starts the AckTransactionServer. */
@@ -133,7 +133,8 @@ public class AckTransactionServer extends Transaction {
 				if (transaction_listener!=null) transaction_listener.onTransAck(this,msg);
 				transaction_listener=null;
 			}*/
-			else LOG.warn(msg.getRequestLine().getMethod()+" method erroneously passed to this trasaction");
+			else
+				LOG.warn("{} method erroneously passed to this trasaction", msg.getRequestLine().getMethod());
 		}
 	}
 

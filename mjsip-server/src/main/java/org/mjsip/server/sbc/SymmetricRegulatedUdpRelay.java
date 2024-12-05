@@ -63,13 +63,13 @@ public class SymmetricRegulatedUdpRelay extends SymmetricUdpRelay {
 		try {
 			//left_udp=new UdpProvider(new OutputRegulatedUdpSocket(left_port,inter_time),0,this);
 			left_udp=new InputRegulatedUdpProvider(new UdpSocket(left_port),0,inter_time,this);
-			LOG.info("udp interfce: "+left_udp.toString()+" started");    
-			LOG.info("udp interfce regulated with "+inter_time+" millisecs of minimum inter-packet departure time");    
+			LOG.info("udp interfce: {} started", left_udp);    
+			LOG.info("udp interfce regulated with {} millisecs of minimum inter-packet departure time", inter_time);    
 	
 			//right_udp=new UdpProvider(new OutputRegulatedUdpSocket(right_port,inter_time),0,this);
 			right_udp=new InputRegulatedUdpProvider(new UdpSocket(right_port),0,inter_time,this);
-			LOG.info("udp interfce: "+right_udp.toString()+" started");
-			LOG.info("udp interfce regulated with "+inter_time+" millisecs of minimum inter-packet departure time");    
+			LOG.info("udp interfce: {} started", right_udp);
+			LOG.info("udp interfce regulated with {} millisecs of minimum inter-packet departure time", inter_time);    
 		}   
 		catch (Exception e) {
 			LOG.info("Exception.", e);

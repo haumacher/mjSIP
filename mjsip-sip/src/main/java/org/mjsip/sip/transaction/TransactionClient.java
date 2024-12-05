@@ -75,7 +75,7 @@ public class TransactionClient extends Transaction {
 	void init(TransactionClientListener listener, SipId transaction_id) {
 		this.transaction_listener=listener;
 		this.transaction_id=transaction_id;
-		LOG.debug("new transaction-id: " + transaction_id.toString());
+		LOG.debug("new transaction-id: {}", transaction_id);
 	}
 
 
@@ -158,7 +158,7 @@ public class TransactionClient extends Transaction {
 
 	private void startTransactionTimeout() {
 		long timeout = sip_provider.sipConfig().getTransactionTimeout();
-		LOG.debug("Starting transaction timeout: " + timeout + "ms");
+		LOG.debug("Starting transaction timeout: {}ms", timeout);
 
 		transaction_to = sip_provider.scheduler().schedule(timeout, this::onTransactionTimeout);
 	}
@@ -178,7 +178,7 @@ public class TransactionClient extends Transaction {
 
 	private void startClearingTimeout() {
 		long timeout = sip_provider.sipConfig().getClearingTimeout();
-		LOG.debug("Starting clearing timeout: " + timeout + "ms");
+		LOG.debug("Starting clearing timeout: {}ms", timeout);
 		clearing_to = sip_provider.scheduler().schedule(timeout, this::onClearingTimeout);
 	}
 

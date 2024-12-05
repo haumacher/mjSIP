@@ -70,13 +70,13 @@ public class AddressResolverKeepAlive extends AddressResolver {
 				if (!binding_table.get(key).equals(actual_soaddr)) {
 					SipKeepAlive keepalive=keepalive_daemons.get(key);
 					keepalive.setDestSoAddress(actual_soaddr);
-					LOG.debug("KeepAlive: change dest: "+actual_soaddr);
+					LOG.debug("KeepAlive: change dest: {}", actual_soaddr);
 				}
 			}
 			else {
 				SipKeepAlive keepalive=new SipKeepAlive(sip_provider,actual_soaddr,keepalive_time);
 				keepalive_daemons.put(key,keepalive);
-				LOG.debug("KeepAlive: start: "+actual_soaddr);
+				LOG.debug("KeepAlive: start: {}", actual_soaddr);
 			}
 		}
 		super.updateBinding(refer_soaddr,actual_soaddr);
@@ -92,7 +92,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 				SipKeepAlive keepalive=keepalive_daemons.get(key);
 				keepalive_daemons.remove(key);
 				keepalive.halt();
-				LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
+				LOG.debug("KeepAlive: halt: {}", keepalive.getDestSoAddress());
 			}
 		}
 		super.removeBinding(refer_soaddr);
@@ -116,7 +116,7 @@ public class AddressResolverKeepAlive extends AddressResolver {
 			SipKeepAlive keepalive= keepalive_daemons.get(key);
 			keepalive_daemons.remove(key);
 			keepalive.halt();
-			LOG.debug("KeepAlive: halt: "+keepalive.getDestSoAddress().toString());
+			LOG.debug("KeepAlive: halt: {}", keepalive.getDestSoAddress());
 		}
 		super.onTimeout();
 	}

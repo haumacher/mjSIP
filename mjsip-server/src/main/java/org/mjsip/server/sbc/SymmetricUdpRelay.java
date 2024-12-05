@@ -104,10 +104,10 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 
 		try {
 			left_udp=new UdpProvider(new UdpSocket(left_port),0,this);
-			LOG.info("udp interfce: "+left_udp.toString()+" started");    
+			LOG.info("udp interfce: {} started", left_udp);    
 	
 			right_udp=new UdpProvider(new UdpSocket(right_port),0,this);
-			LOG.info("udp interfce: "+right_udp.toString()+" started");
+			LOG.info("udp interfce: {} started", right_udp);
 		}   
 		catch (Exception e) {
 			LOG.info("Exception.", e);
@@ -157,7 +157,7 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 	
 	/** Sets a new left peer SocketAddress. */
 	public void setLeftSoAddress(SocketAddress left_soaddr) {
-		LOG.info("left soaddr "+this.left_soaddr+" becomes "+left_soaddr);
+		LOG.info("left soaddr {} becomes {}", this.left_soaddr, left_soaddr);
 		this.left_soaddr=left_soaddr;
 		last_left_change=System.currentTimeMillis();
 	}
@@ -169,7 +169,7 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 
 	/** Sets a new right peer SocketAddress. */
 	public void setRightSoAddress(SocketAddress right_soaddr) {
-		LOG.info("right soaddr "+this.right_soaddr+" becomes "+right_soaddr);
+		LOG.info("right soaddr {} becomes {}", this.right_soaddr, right_soaddr);
 		this.right_soaddr=right_soaddr;
 		last_right_change=System.currentTimeMillis();
 	}
@@ -228,7 +228,9 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 			try {
 				udp.send(packet);
 			}
-			catch (java.io.IOException e) { }
+			catch (java.io.IOException e) {
+				// noop
+			}
 		}
 	}
 
@@ -236,8 +238,8 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 	/** When UdpProvider stops receiving UDP datagrams. */
 	@Override
 	public void onServiceTerminated(UdpProvider udp_service, Exception error) {
-		LOG.info("udp "+udp_service.toString()+" terminated");
-		if (error!=null) LOG.debug("udp "+udp_service.toString()+" exception:\n"+error.toString());
+		LOG.info("udp {} terminated", udp_service);
+		if (error!=null) LOG.debug("udp {} exception:\n{}", udp_service, error.getMessage());
 		udp_service.getUdpSocket().close();
 		if (!isRunning() && listener!=null) listener.onSymmetricUdpRelayTerminated(this);
 	}
@@ -252,7 +254,7 @@ public class SymmetricUdpRelay implements UdpProviderListener {
 		}
 		else {
 			timer=null;
-			LOG.info("relay inactive for more than "+relay_time+"ms");
+			LOG.info("relay inactive for more than {} ms", relay_time);
 			halt();
 		}
 	}

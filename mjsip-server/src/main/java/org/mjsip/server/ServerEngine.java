@@ -125,7 +125,7 @@ public abstract class ServerEngine implements SipProviderListener {
 		sip_provider.addSelectiveListener(SipId.ANY_METHOD,this);
 			 
 		// LOCAL DOMAINS
-		LOG.info("Domains="+getLocalDomains());
+		LOG.info("Domains={}", getLocalDomains());
 
 		// LOCATION SERVICE
 		String location_service_class=profile.locationService;
@@ -140,12 +140,12 @@ public abstract class ServerEngine implements SipProviderListener {
 				location_service=(LocationService)constructor.newInstance(parameters);
 			}
 			catch (NoSuchMethodException e) {
-				LOG.debug("Exception." + e);
+				LOG.debug("Exception.", e);
 				location_service=(LocationService)myclass.newInstance();
 			}
 		}
 		catch (Exception e) {
-			LOG.info("Error trying to use location service '" + location_service_class + "': use default class.", e);
+			LOG.info("Error trying to use location service '{}': use default class.", location_service_class, e);
 		}
 		// use default location service
 		if (location_service==null) location_service=new LocationServiceImpl(profile.locationDb);   
@@ -159,7 +159,7 @@ public abstract class ServerEngine implements SipProviderListener {
 				}
 			}
 			location_service.sync();
-			LOG.debug("LocationService \""+profile.locationDb+"\": cleaned\r\n");
+			LOG.debug("LocationService \"{}\": cleaned\r\n", profile.locationDb);
 		}
 		else {
 			// remove all expired contacts
@@ -175,8 +175,7 @@ public abstract class ServerEngine implements SipProviderListener {
 			}
 			if (changed) location_service.sync();
 		}  
-		LOG.debug("LocationService ("+profile.authenticationService+"): size="+location_service.size()+"\r\n"+location_service.toString());
-		LOG.debug("LocationService ("+profile.authenticationService+"): size="+location_service.size()+"\r\n"+location_service.toString());
+		LOG.debug("LocationService ({}): size={}\r\n{}",profile.authenticationService, location_service.size(), location_service);
 
 		// AUTHENTICATION SERVICE
 		if (server_profile.doAuthentication || server_profile.doProxyAuthentication) {
@@ -194,17 +193,16 @@ public abstract class ServerEngine implements SipProviderListener {
 					authentication_service=(AuthenticationService)constructor.newInstance(parameters);
 				}
 				catch (NoSuchMethodException e) {
-					LOG.debug("Exception." + e);
+					LOG.debug("Exception.", e);
 					authentication_service=(AuthenticationService)myclass.newInstance();
 				}
 			}
 			catch (Exception e) {
-				LOG.info("Error trying to use authentication service '" + authentication_service_class
-						+ "': use default class.", e);
+				LOG.info("Error trying to use authentication service '{}': use default class.", authentication_service_class, e);
 			}
 			// use default authentication service
 			if (authentication_service==null) authentication_service=new AuthenticationServiceImpl(server_profile.authenticationDb);
-			LOG.debug("AuthenticationService ("+profile.authenticationService+"): size="+authentication_service.size()+"\r\n"+authentication_service.toString());
+			LOG.debug("AuthenticationService ({}): size={}\r\n{}", profile.authenticationService, authentication_service.size(), authentication_service.toString());
 			
 			// now, init the proper authentication server
 			String authentication_server_class=profile.authenticationScheme;
@@ -219,19 +217,18 @@ public abstract class ServerEngine implements SipProviderListener {
 					as=(AuthenticationServer)constructor.newInstance(parameters);
 				}
 				catch (NoSuchMethodException e) {
-					LOG.debug("Exception." + e);
+					LOG.debug("Exception.", e);
 					as=(AuthenticationServer)myclass.newInstance();
 				}
 			}
 			catch (Exception e) {
-				LOG.warn("Error trying to use authentication server '" + authentication_server_class
-						+ "': use default class.", 1);
+				LOG.warn("Error trying to use authentication server '{}': use default class.",authentication_server_class, e);
 			}
 			// use default authentication service
 			if (as == null)
 				as = new AuthenticationServerImpl(sip_provider, realm, authentication_service);
-			LOG.debug("AuthenticationServer: scheme: "+profile.authenticationScheme);
-			LOG.debug("AuthenticationServer: realm: "+profile.authenticationRealm);
+			LOG.debug("AuthenticationServer: scheme: {}", profile.authenticationScheme);
+			LOG.debug("AuthenticationServer: realm: {}", profile.authenticationRealm);
 		}
 		else as=null;
 
@@ -288,7 +285,7 @@ public abstract class ServerEngine implements SipProviderListener {
 					
 					// update the target
 					target=msg.getRequestLine().getAddress();
-					LOG.trace("new recipient: "+target.toString());
+					LOG.trace("new recipient: {}", target);
 					
 					// check again if this server is the target
 					//this_is_target=matchesDomainName(target.getHost(),target.getPort());
@@ -312,7 +309,7 @@ public abstract class ServerEngine implements SipProviderListener {
 			
 			// check whether the request is coming from a user belonging to a domain the server is responsible for
 			boolean is_from_this_domain=isResponsibleFor(msg.getFromHeader().getNameAddress().getAddress());
-			LOG.trace("is from local doamin? "+((is_from_this_domain)?"yes":"no"));
+			LOG.trace("is from local doamin? {}", is_from_this_domain);
 
 			if (is_for_this_domain && (target.isSipURI() && !target.toSipURI().hasUserName())) {
 				LOG.trace("the recipient is this server");
@@ -494,7 +491,7 @@ public abstract class ServerEngine implements SipProviderListener {
 		// Proxy-Authorization
 
 		if (err_code>0) {
-			LOG.info("Message validation failed ("+err_code+" "+SipResponses.reasonOf(err_code)+"), message discarded");
+			LOG.info("Message validation failed ({} {}), message discarded", err_code, SipResponses.reasonOf(err_code));
 			return sip_provider.messageFactory().createResponse(msg,err_code,null,null);
 		}
 		else return null;

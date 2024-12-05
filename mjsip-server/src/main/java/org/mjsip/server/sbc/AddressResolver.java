@@ -107,19 +107,19 @@ public class AddressResolver {
 			long expire= new Date().getTime() + expire_time;
 			if (binding_table.containsKey(key)) {
 				if (!binding_table.get(key).equals(actual_soaddr)) {
-					LOG.info("change BINDING "+refer_soaddr+" >> "+actual_soaddr);
+					LOG.info("change BINDING {} >> {}", refer_soaddr, actual_soaddr);
 					binding_table.remove(key);
 					binding_table.put(key,actual_soaddr);
 				}
 				else {
-					LOG.debug("update BINDING "+refer_soaddr+" >> "+actual_soaddr);
+					LOG.debug("update BINDING {} >> {}", refer_soaddr, actual_soaddr);
 					// do not change binding_table
 				}
 				time_table.remove(key);
 				time_table.put(key,expire);
 			}
 			else {
-				LOG.info("add BINDING "+refer_soaddr+" >> "+actual_soaddr);
+				LOG.info("add BINDING {} >> {}", refer_soaddr, actual_soaddr);
 				binding_table.put(key,actual_soaddr);
 				time_table.put(key,expire);
 			}
@@ -132,7 +132,7 @@ public class AddressResolver {
 		if (refer_soaddr!=null) {
 			String key=refer_soaddr.toString();
 			if (binding_table.containsKey(key)) {
-				LOG.info("remove BINDING for "+refer_soaddr);
+				LOG.info("remove BINDING for {}", refer_soaddr);
 				binding_table.remove(key);
 				time_table.remove(key);
 			}
@@ -164,7 +164,7 @@ public class AddressResolver {
 		// remove expired binding
 		for (int i=0; i<aux.size(); i++) {
 			String key= aux.elementAt(i);
-			LOG.info("remove BINDING for "+key);         
+			LOG.info("remove BINDING for {}", key);         
 			binding_table.remove(key);
 			time_table.remove(key);
 		}

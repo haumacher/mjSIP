@@ -51,9 +51,18 @@ class PcmToAmrAudioInputStream extends BufferedAudioInputStream {
 			return amr_encoder.encode(pcm_buffer,0,pcm_buffer.length,buffer,0);
 		}
 		catch (java.io.IOException e) {
-			if (DEBUG) {  if (DEBUG) {
-				LOG.debug("innerRead(): "+e);
-			}  e.printStackTrace();  System.exit(0);  }
+			if (DEBUG) {
+				/*
+				 * 
+				 * TODO looks a bit strange
+				 * In DEBUG mode we want an error in this function to end the whole program,
+				 * after some logging
+				 * 
+				 * but in any other mode we want this function silently return -1.    
+				 */
+				LOG.debug("innerRead()", e);
+				System.exit(0);  
+			}
 			return -1;
 		}
 	}

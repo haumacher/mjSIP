@@ -149,7 +149,7 @@ public class AudioClipPlayer implements LineListener, Closeable {
 
 	/** Sets the volume gain, between -1 (min) and +1 (max). Value 0 corrisponds to the original volume level. */
 	public AudioClipPlayer setVolumeGain(float volume) {
-		LOG.debug("set clip volume gain (linear): " + volume);
+		LOG.debug("set clip volume gain (linear): {}", volume);
 		// try to set the overall gain of the line
 		try {
 			FloatControl vc=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
@@ -158,7 +158,7 @@ public class AudioClipPlayer implements LineListener, Closeable {
 				double linear_min=Math.exp((vc.getMinimum()/10)*Math.log(10));   
 				double linear_level=(volume>=0)? volume*(linear_max-1)+1 : 1+volume*(1-linear_min);
 				double level=10*Math.log(linear_level)/Math.log(10);
-				LOG.debug("set clip volume gain (dB): " + level);
+				LOG.debug("set clip volume gain (dB): {}", level);
 				vc.setValue((float)level);
 			}
 		}
@@ -177,7 +177,7 @@ public class AudioClipPlayer implements LineListener, Closeable {
 			FloatControl vc=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
 			if(vc!=null) {
 				float level=vc.getValue();
-				LOG.debug("get clip volume (dB): " + level);
+				LOG.debug("get clip volume (dB): {}", level);
 				double linear_max=Math.exp((vc.getMaximum()/10)*Math.log(10));
 				double linear_min=Math.exp((vc.getMinimum()/10)*Math.log(10));
 				double linear_level=Math.exp((level/10)*Math.log(10));

@@ -168,7 +168,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	/** Changes the call state */
 	protected void changeStatus(String state) {
 		call_state=state;
-		LOG.debug("state: "+call_state); 
+		LOG.debug("state: {}", call_state); 
 	}
 
 	/** Checks the call state */
@@ -395,7 +395,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 
 		if (_uiConfig.callTo!=null) {
 			// ########## make a call with the remote URI
-			LOG.info("UAC: CALLING " + _uiConfig.callTo);
+			LOG.info("UAC: CALLING {}", _uiConfig.callTo);
 			jComboBox1.setSelectedItem(null);
 			comboBoxEditor1.setItem(_uiConfig.callTo.toString());
 			display.setText("CALLING "+_uiConfig.callTo);
@@ -487,7 +487,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 		}
 
 		if (name==null) {
-			LOG.debug("No SIP URI recognized in: "+(String)comboBoxEditor1.getItem());
+			LOG.debug("No SIP URI recognized in: {}", (String)comboBoxEditor1.getItem());
 			return;
 		}
 
@@ -638,7 +638,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules a re-inviting after <i>delay_time</i> secs. It simply changes the contact address. */
 	void reInvite(final int delay_time) {
-		LOG.info("AUTOMATIC RE-INVITING/MODIFING: "+delay_time+" secs"); 
+		LOG.info("AUTOMATIC RE-INVITING/MODIFING: {} secs", delay_time); 
 		if (delay_time==0) ua.modify(null);
 		else
 			sip_provider.scheduler().schedule((long) (delay_time*1000), ()->ua.modify(null));
@@ -656,7 +656,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules a call-transfer after <i>delay_time</i> secs. */
 	void callTransfer(final NameAddress transfer_to, final int delay_time) {
-		LOG.info("AUTOMATIC REFER/TRANSFER: "+delay_time+" secs");
+		LOG.info("AUTOMATIC REFER/TRANSFER: {} secs", delay_time);
 		if (delay_time==0) ua.transfer(transfer_to);
 		else
 			sip_provider.scheduler().schedule((long) (delay_time*1000), () -> ua.transfer(transfer_to));
@@ -674,7 +674,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules an automatic answer after <i>delay_time</i> secs. */
 	void automaticAccept(final int delay_time) {
-		LOG.info("AUTOMATIC ANSWER: "+delay_time+" secs");
+		LOG.info("AUTOMATIC ANSWER: {} secs", delay_time);
 		if (delay_time==0) jButton1_actionPerformed();
 		else
 			sip_provider.scheduler().schedule((long) (delay_time*1000), this::jButton1_actionPerformed);
@@ -692,7 +692,7 @@ public class UserAgentGui extends JFrame implements UserAgentListenerAdapter {
 	}*/
 	/** Schedules an automatic hangup after <i>delay_time</i> secs. */
 	void automaticHangup(final int delay_time) {
-		LOG.info("AUTOMATIC HANGUP: "+delay_time+" secs");
+		LOG.info("AUTOMATIC HANGUP: {} secs", delay_time);
 		if (delay_time==0) jButton2_actionPerformed();
 		else
 			sip_provider.scheduler().schedule((long) (delay_time*1000), this::jButton2_actionPerformed);

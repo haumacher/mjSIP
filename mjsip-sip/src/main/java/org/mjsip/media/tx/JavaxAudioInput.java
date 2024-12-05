@@ -58,7 +58,7 @@ public class JavaxAudioInput implements AudioTransmitter {
 			final AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
 			AudioInputStream rawInput = SimpleAudioSystem.getInputStream(baseFormat);
 			AudioInputStream converter = ConverterAudioSystem.convertAudioInputStream(codec, sample_rate, rawInput);
-			LOG.info("send x-format: " + converter.getFormat());
+			LOG.info("send x-format: {}", converter.getFormat());
 			audioIn = converter;
 		}
 

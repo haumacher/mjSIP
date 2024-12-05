@@ -199,7 +199,7 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 		if (rtp_control != null) {
 			rtp_control.setRtpSender(this);
 		}
-		LOG.info("Created RTP stream sender: " + src_socket + " --> " + remote_soaddr);
+		LOG.info("Created RTP stream sender: {} --> {}", src_socket, remote_soaddr);
 	}          
 
 	/** Gets the local port. */
@@ -299,9 +299,9 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 		long next_report_time=0;
 
 		if (DEBUG)
-			LOG.debug("RTP: localhost:"+rtp_socket.getUdpSocket().getLocalPort()+" --> "+remote_soaddr);
+			LOG.debug("RTP: localhost:{} --> {}", rtp_socket.getUdpSocket().getLocalPort(), remote_soaddr);
 		if (DEBUG)
-			LOG.debug("RTP: sending pkts of "+(formatted_len)+" bytes of RTP payload");
+			LOG.debug("RTP: sending pkts of {} bytes of RTP payload", formatted_len);
 
 		// DEBUG DROP RATE
 		int debug_drop_count=0;

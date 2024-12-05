@@ -137,7 +137,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
  
 	/** When the delivery successes. */
 	private void onDeliverySuccess(TransactionClient tc, String result) {
-		LOG.info("Message successfully delivered ("+result+").");
+		LOG.info("Message successfully delivered ({}).", result);
 		SipMessage req=tc.getRequestMessage();
 		NameAddress recipient=req.getToHeader().getNameAddress();
 		String subject=null;
@@ -147,7 +147,7 @@ public class MessageAgent implements SipProviderListener, TransactionClientListe
 
 	/** When the delivery fails. */
 	private void onDeliveryFailure(TransactionClient tc, String result) {
-		LOG.info("Message delivery failed ("+result+").");
+		LOG.info("Message delivery failed ({}).", result);
 		SipMessage req=tc.getRequestMessage();
 		NameAddress recipient=req.getToHeader().getNameAddress();
 		String subject=null;

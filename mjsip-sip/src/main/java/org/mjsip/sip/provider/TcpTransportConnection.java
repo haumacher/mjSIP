@@ -198,7 +198,7 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 	/** When new data is received through the TcpConnection. */
 	private void processReceivedData(TcpConnection tcp_conn, byte[] data, int len) {
-		LOG.debug("Received " + len + " bytes of data.");
+		LOG.debug("Received {} bytes of data.", len);
 		last_time=System.currentTimeMillis();
 
 		buffer.append(data,0,len);

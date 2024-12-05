@@ -88,7 +88,7 @@ public class AnsweringMachine extends RegisteringMultipleUAS {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller,
 					MediaDesc[] media_descs) {
-				LOG.info("Incomming call from: " + callee.getAddress());
+				LOG.info("Incomming call from: {}", callee.getAddress());
 				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), _streamerFactory));
 			}
 		};
@@ -98,7 +98,7 @@ public class AnsweringMachine extends RegisteringMultipleUAS {
 	 * The main entry point.
 	 */
 	public static void main(String[] args) throws UnsupportedAudioFileException, IOException {
-		LOG.info(AnsweringMachine.class.getSimpleName() + " " + SipStack.version);
+		LOG.info("{} {}", AnsweringMachine.class.getSimpleName(), SipStack.version);
 
 		SipConfig sipConfig = new SipConfig();
 		UAConfig uaConfig = new UAConfig();
@@ -115,7 +115,7 @@ public class AnsweringMachine extends RegisteringMultipleUAS {
 
 		if (mediaConfig.getSendFile() != null) {
 			AudioFileFormat audioFormat = AudioSystem.getAudioFileFormat(new File(mediaConfig.getSendFile()));
-			LOG.info("Announcement file format: " + audioFormat);
+			LOG.info("Announcement file format: {}", audioFormat);
 		}
 
 		StreamerFactory streamerFactory = ExampleStreamerFactory.createStreamerFactory(mediaConfig, uaConfig);

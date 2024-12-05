@@ -57,7 +57,7 @@ public abstract class Configure {
 			readFrom(new FileReader(file));
 		}
 		catch (Exception e) {
-			LOG.warn("error reading file \""+file+"\"", e);
+			LOG.warn("error reading file ({})", file, e);
 			return;
 		}
 	}
@@ -72,7 +72,7 @@ public abstract class Configure {
 			readFrom(new InputStreamReader(url.openStream()));
 		}
 		catch (Exception e) {
-			LOG.warn("error reading from \""+url+"\"", e);
+			LOG.warn("error reading from ({})", url, e);
 			return;
 		}
 	}

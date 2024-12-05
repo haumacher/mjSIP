@@ -104,7 +104,7 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 		// logs
 		String foot_print=msg.getFirstLine();
 		if (foot_print==null) foot_print="NOT a SIP message\r\n";
-		LOG.info("Sending message ("+msg.getLength()+" bytes): "+foot_print);
+		LOG.info("Sending message ({} bytes): {}",msg.getLength(), foot_print);
 		String refer_addr=dest_addr;
 		int refer_port=dest_port;
 		if (msg.isResponse()) {
@@ -126,12 +126,12 @@ public class ExtendedSipProvider extends org.mjsip.sip.provider.SipProvider {
 		//}
 		if (address_resolver.contains(refer_soaddr)) {
 			dest_soaddr=address_resolver.getSocketAddress(refer_soaddr);
-			LOG.info("CHANGING DESTINATION "+refer_soaddr+" >> "+dest_soaddr);
+			LOG.info("CHANGING DESTINATION {} >> {}", refer_soaddr, dest_soaddr);
 			dest_addr=dest_soaddr.getAddress().toString();
 			dest_port=dest_soaddr.getPort();
 		}
 		else {
-			LOG.info("destination unchanged: "+dest_soaddr);
+			LOG.info("destination unchanged: {}", dest_soaddr);
 		}
 		
 		return super.sendRawMessage(msg,proto,dest_addr,dest_port,ttl);

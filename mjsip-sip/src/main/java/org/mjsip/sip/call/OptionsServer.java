@@ -103,7 +103,7 @@ public class OptionsServer implements SipProviderListener {
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond to OPTIONS request
 		if (msg.isRequest() && msg.isOptions()) {
-			LOG.info("OptionsServer: " + "responding to a new OPTIONS request");
+			LOG.info("OptionsServer: responding to a new OPTIONS request");
 			SipMessage resp = sip_provider.messageFactory().createResponse(msg, SipResponses.OK, null, null);
 			if (allow!=null) resp.setAllowHeader(new AllowHeader(allow));
 			if (accept!=null) resp.setAcceptHeader(new AcceptHeader(accept));

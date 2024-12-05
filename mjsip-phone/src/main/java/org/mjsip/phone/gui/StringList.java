@@ -68,7 +68,7 @@ final class StringList extends Configure {
 			writeTo(new FileWriter(file));
 		}
 		catch (IOException e) {
-			LOG.error("Failed writing file \""+file+"\"", e);
+			LOG.error("Failed writing file ({})", file, e);
 		}         
 	}
 

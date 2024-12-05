@@ -8,6 +8,7 @@ import java.util.Vector;
 import org.mjsip.sip.header.StatusLine;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMethods;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zoolu.util.DateFormat;
 
@@ -39,8 +40,9 @@ public class CallLoggerImpl implements CallLogger {
 	/** Set : (String)call_id. */
 	Vector<String> calls;
 
-	/** Costructs a new CallLoggerImpl.
-	  */
+	/** 
+	 * Costructs a new CallLoggerImpl.
+	 */
 	public CallLoggerImpl(String filename) {
 		invite_dates=new Hashtable<>();
 		accepted_dates=new Hashtable<>();
@@ -128,27 +130,31 @@ public class CallLoggerImpl implements CallLogger {
 	}
 
 
-	/** Prints a generic event log.
-	  */
+	/** 
+	 * Prints a generic event log.
+	 * 
+	 * FIXME mybe this function partially replicates things {@link Logger} does
+	 */
 	private void eventlog(Date time, String call_id, String event, String caller, String callee) {
 		//call_logger.log(DateFormat.formatHHMMSS(time)+"\t"+call_id+"\t"+event+"\t"+caller+"\t"+callee);
-		LOG.info(DateFormat.formatYyyyMMddHHmmssSSS(time) + "\t" + call_id + "\t" + event + "\t" + caller + "\t"
-				+ callee);
+		LOG.info("{}\t{}\t{}\t{}\t{]", DateFormat.formatYyyyMMddHHmmssSSS(time), call_id, event, caller, callee);
 	}
 
 
-	/** Prints a call report.
-	  */
+	/** 
+	 * Prints a call report.
+	 */
 	private void calllog(String call_id) {
 		Date invite_time=invite_dates.get(call_id);
 		Date accepted_time=accepted_dates.get(call_id);
 		Date bye_time=bye_dates.get(call_id);
 		if (invite_time!=null && accepted_time!=null && bye_time!=null) 
 			//call_logger.log(DateFormat.formatHHMMSS(invite_time)+"\t"+call_id+"\tCALL \t"+callers.get(call_id)+"\t"+callees.get(call_id)+"\t"+(accepted_time.getTime()-invite_time.getTime())+"\t"+(bye_time.getTime()-accepted_time.getTime()));
-			LOG.info(DateFormat.formatYyyyMMddHHmmssSSS(invite_time) + "\t" + call_id + "\tCALL \t"
-					+ callers.get(call_id) + "\t" + callees.get(call_id) + "\t"
-					+ (accepted_time.getTime() - invite_time.getTime()) + "\t"
-					+ (bye_time.getTime() - accepted_time.getTime()));
+			LOG.info("{}\t{}\tCALL \t{}\t{}\t{}\t{}",
+					DateFormat.formatYyyyMMddHHmmssSSS(invite_time), call_id, callers.get(call_id), callees.get(call_id),
+					(accepted_time.getTime() - invite_time.getTime()),
+					(bye_time.getTime() - accepted_time.getTime())
+				);
 	}
 
 }

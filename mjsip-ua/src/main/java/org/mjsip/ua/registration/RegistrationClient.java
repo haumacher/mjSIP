@@ -249,9 +249,6 @@ public class RegistrationClient implements TransactionClientListener {
 			}
 		}
 		
-		// where is the Accept header ? 
-		System.out.printf("XX\nXX\nXX Allowed Methods: %s", req.getAcceptHeader() != null ? req.getAcceptHeader().getParameters() : "n/a" );
-		
 		TransactionClient t=new TransactionClient(_sipProvider,req,this);
 		t.request(); 
 	}

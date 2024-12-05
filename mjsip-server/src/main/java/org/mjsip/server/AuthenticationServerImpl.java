@@ -164,18 +164,18 @@ public class AuthenticationServerImpl implements AuthenticationServer {
 						
 					if (!is_authorized) {
 						err_resp=sip_provider.messageFactory().createResponse(msg,SipResponses.FORBIDDEN,null,null);
-						LOG.info("Login error: Authentication of '" + user + "' failed");
+						LOG.info("Login error: Authentication of '{}' failed", user);
 					}
 					else {
 						// authentication/authorization successed
-						LOG.info("Authentication of '"+user+"' successed");
+						LOG.info("Authentication of '{}' successed", user);
 					}
 				}
 				else {
 					// authentication/authorization failed
 					int result=400; // response code 400 ("Bad request")
 					err_resp=sip_provider.messageFactory().createResponse(msg,result,null,null);
-					LOG.info("Authentication method '"+scheme+"' not supported.");
+					LOG.info("Authentication method '{}' not supported.", scheme);
 				}
 			}
 			else {

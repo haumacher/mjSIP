@@ -63,7 +63,7 @@ public class MiniJukebox extends UserAgentCli {
 
 	/** From UserAgentListener. When a new call is incoming */
 	public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller) {
-		LOG.info("incoming call from "+caller.toString());
+		LOG.info("incoming call from {}", caller);
 		String audio_file=callee.getAddress().getParameter(PARAM_RESOURCE);
 		if (audio_file!=null) {
 			if (new File(audio_file).isFile()) {

@@ -147,7 +147,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			return;
 		}
 
-		LOG.debug("message will be forwarded to "+targets.size()+" user's contact(s)"); 
+		LOG.debug("message will be forwarded to {} user's contact(s)", targets.size()); 
 		for (int i=0; i<targets.size(); i++)  {
 			SipURI target_uri=SipURI.parseSipURI((targets.elementAt(i)));
 			SipMessage request=new SipMessage(msg);
@@ -229,7 +229,7 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 	/** Sends a server final response */
 	protected void sendStatefulServerResponse(TransactionServer ts, SipMessage resp) {
 		LOG.debug("inside sendStatefulServerResponse(msg)");
-	LOG.debug("Server response: "+resp.getStatusLine().toString());
+	LOG.debug("Server response: {}", resp.getStatusLine());
 		ts.respondWith(resp);
 	}   
 
@@ -263,8 +263,8 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			if (resp.hasViaHeader()) ts.respondWith(resp); else ts.terminate();
 			state.removeServer(ts);
 		}
-		LOG.trace("t_clients still active: "+state.numOfClients());
-		LOG.trace("t_servers still active: "+state.numOfClients());
+		LOG.trace("t_clients still active: {}", state.numOfClients());
+		LOG.trace("t_servers still active: {}", state.numOfServers());
 	}
 
 	/** Process success response */
@@ -283,8 +283,8 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			//printLog("Cancel pending clients..",LogWriter.LEVEL_LOW);
 			// cancel ONLY INVITE transaction clients
 			if (transaction.getTransactionMethod().equals(SipMethods.INVITE)) {
-				//LOG.trace("Cancelling "+clients.size()+" pending clients");
-				LOG.trace(clients.size()+" pending clients");
+				//LOG.trace("Cancelling {} pending clients", clients.size());
+				LOG.trace("{} pending clients", clients.size());
 				int canc_counter=0;
 				for (Iterator<Transaction> i=clients.iterator(); i.hasNext(); ) {
 					Transaction tc= i.next();
@@ -296,12 +296,12 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 						canc_counter++;
 					}
 				}
-				LOG.trace("Cancelled "+canc_counter+" clients in \"proceeding\" state");
+				LOG.trace("Cancelled {} clients in \"proceeding\" state", canc_counter);
 			}
 			state.removeServer(ts);
 		}
-		LOG.trace("t_clients still active: "+state.numOfClients());
-		LOG.trace("t_servers still active: "+state.numOfServers());
+		LOG.trace("t_clients still active: {}", state.numOfClients());
+		LOG.trace("t_servers still active: {}", state.numOfServers());
 	}
 
 
@@ -322,8 +322,8 @@ public class StatefulProxy extends Proxy implements TransactionClientListener {
 			else ts.terminate();
 			state.removeServer(ts);
 		}      
-		LOG.trace("t_clients still active: "+state.numOfClients());
-		LOG.trace("t_servers still active: "+state.numOfClients());
+		LOG.trace("t_clients still active: {}", state.numOfClients());
+		LOG.trace("t_servers still active: {}", state.numOfServers());
 	}
 
 	// ******************* TransactionClient callback methods *******************
