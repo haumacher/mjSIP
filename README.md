@@ -52,7 +52,8 @@ as published by the Free Software Foundation.
 The project's original home page is at: http://mjsip.org/
  
 There are several independent forks of the project on Github:
- 
+
+* https://github.com/mjsip/mjSIP - A new release (1.9) from the original author published to GitHub after this fork was created. Unfortunatelly [not very  responsive](https://github.com/mjsip/mjSIP/issues/1). 
 * https://github.com/VovaSokol/mjsip (1.8) - Added support for Opus and H264 codec.
 * https://github.com/mrichardsdb/mjsip (1.8) - Turned into a maven project.
 * https://github.com/inckie/mjsip (1.8)
