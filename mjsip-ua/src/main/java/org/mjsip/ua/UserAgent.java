@@ -289,13 +289,13 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		
 		if (LOG.isDebugEnabled()) {
 			for (MediaDescriptor desc : localMedia) {
-				LOG.debug("Local media: " + desc);
+				LOG.debug("Local media: {}", desc);
 			}
 			for (MediaDescriptor desc : remoteMedia) {
-				LOG.debug("Remote media: " + desc);
+				LOG.debug("Remote media: {}", desc);
 			}
 			for (MediaDescriptor desc : matchingMedia) {
-				LOG.debug("Matching media: " + desc);
+				LOG.debug("Matching media: {}", desc);
 			}
 		}
 		
@@ -322,13 +322,11 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 				existing.halt();
 			}
 			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Starting media session: " + flow_spec);
-			}
+			LOG.debug("Starting media session: {}", flow_spec);
 			MediaStreamer streamer = _mediaAgent.startMediaSession(sip_provider.scheduler(), flow_spec);
 			
 			if (streamer == null) {
-				LOG.warn("No media streamer found for type: " + mediaType);
+				LOG.warn("No media streamer found for type: {}", mediaType);
 				continue;
 			}
 			 
@@ -347,7 +345,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		String transport=mediaField.getTransport();
 		List<String> formatList = mediaField.getFormatList();
 		if (formatList.isEmpty()) {
-			LOG.warn("No matching formats found to establish flow: " + remoteDescriptor);
+			LOG.warn("No matching formats found to establish flow: {}", remoteDescriptor);
 			return null;
 		}
 		
@@ -361,7 +359,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		if (local_port!=0 && remote_port!=0 && media_spec!=null) {
 			return new FlowSpec(mediaType,media_spec,local_port,remote_address,remote_port, dir);
 		} else {
-			LOG.warn("No matching media found (local_port="+local_port+", remote_port="+remote_port+", remoteDescriptor="+remoteDescriptor+").");
+			LOG.warn("No matching media found (local_port={}, remote_port={}, remoteDescriptor={}).", local_port, remote_port, remoteDescriptor);
 			return null;
 		}
 	}
@@ -421,14 +419,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallInvite(Call call, NameAddress callee, NameAddress caller, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallInvite()");
 		if (this.call!=null && !this.call.getState().isClosed()) {
-			LOG.debug("Busy, refusing incoming call from: " + invite.getFromUser());
+			LOG.debug("Busy, refusing incoming call from: {}", invite.getFromUser());
 			call.refuse();
 			return;
 		}
    
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Incoming call from: " + invite.getFromUser());
-		}
+		LOG.debug("Incoming call from: {}", invite.getFromUser());
 		this.call=(ExtendedCall)call;
 		call.ring();
 
@@ -446,7 +442,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallModify(Call call, SdpMessage remoteSdp, SipMessage invite) {
 		LOG.debug("onCallModify()");
 		if (call!=this.call) {
-			LOG.warn("Modify of unknown call received: " + call.getCallId());  
+			LOG.warn("Modify of unknown call received: {}", call.getCallId());  
 			return;  
 		}
 		LOG.debug("Received RE-INVITE/MODIFY.");
@@ -497,12 +493,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	@Override
 	public void onCallAccepted(Call call, SdpMessage remoteSdp, SipMessage resp) {
 		if (call != this.call && call != call_transfer) {
-			LOG.debug("Ignoring accept for unknown call: " + call.getRemoteSessionDescriptor().getOrigin().getValue());  
+			LOG.debug("Ignoring accept for unknown call: {}", call.getRemoteSessionDescriptor().getOrigin().getValue());  
 			return;  
 		}
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Call accepted: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
-		}
+		LOG.debug("Call accepted: {}", call.getRemoteSessionDescriptor().getOrigin().getValue());
 		
 		if (_config.getNoOffer()) {
 			AddressType addressType = remoteSdp.getAddressType();
@@ -523,12 +517,10 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	@Override
 	public void onCallConfirmed(Call call, SdpMessage sdp, SipMessage ack) {
 		if (call != this.call) {
-			LOG.debug("Ignoring conform of unknown call: " + call.getRemoteSessionDescriptor().getOrigin().getValue());  
+			LOG.debug("Ignoring conform of unknown call: {}", call.getRemoteSessionDescriptor().getOrigin().getValue());  
 			return;
 		}
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Call confirmed: " + call.getRemoteSessionDescriptor().getOrigin().getValue());
-		}
+		LOG.debug("Call confirmed: {}", call.getRemoteSessionDescriptor().getOrigin().getValue());
 
 		if (listener!=null) listener.onUaCallConfirmed(this);
 		
@@ -548,7 +540,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallModifyRefused(Call call, String reason, SipMessage resp) {
 		LOG.debug("onCallReInviteRefused()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.debug("RE-INVITE-REFUSED ("+reason+")/CALL");
+		LOG.debug("RE-INVITE-REFUSED ({})/CALL", reason);
 		if (listener!=null) listener.onUaCallFailed(this,reason);
 	}
 
@@ -557,7 +549,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallRefused(Call call, String reason, SipMessage resp) {
 		LOG.debug("onCallRefused()");
 		if (call!=this.call && call!=call_transfer) {  LOG.debug("NOT the current call");  return;  }
-		LOG.debug("REFUSED ("+reason+")");
+		LOG.debug("REFUSED ({})", reason);
 		if (call==call_transfer) {
 			this.call.notify(resp);
 			call_transfer=null;
@@ -572,7 +564,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallRedirected(Call call, String reason, Vector contact_list, SipMessage resp) {
 		LOG.debug("onCallRedirected()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.debug("REDIRECTION ("+reason+")");
+		LOG.debug("REDIRECTION ({})", reason);
 		NameAddress first_contact=NameAddress.parse((String)contact_list.elementAt(0));
 		call.call(first_contact); 
 	}
@@ -639,7 +631,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 		super.onDtmfInfo(call, msg, dtmf);
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Received DTMF info: " + dtmf);
+			LOG.debug("Received DTMF info: {}", dtmf);
 		}
 		
 		if (listener!=null) listener.onDtmfInfo(this, dtmf);
@@ -664,7 +656,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, SipMessage refer) {
 		LOG.debug("onCallTransfer()");
 		if (call!=this.call) {  LOG.debug("NOT the current call");  return;  }
-		LOG.debug("transfer to "+refer_to.toString());
+		LOG.debug("transfer to {}", refer_to);
 		call.acceptTransfer();
 		call_transfer=new ExtendedCall(sip_provider,new SipUser(_config.getUserURI()),this);
 		AddressType addressType = ConnectionField.addressType(refer_to.getAddress().getSpecificPart());

@@ -118,7 +118,7 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			int dest_port=mediaField.getPort();
 						
 			String key=call_id+"-"+leg+"-"+mediaTypes[i];
-			LOG.info("media-id: "+key);
+			LOG.info("media-id: {}", key);
 			if (masq_table.containsKey(key)) {
 				// get masq
 				Masquerade masq=masq_table.get(key);
@@ -133,7 +133,9 @@ public class MediaGw implements SymmetricUdpRelayListener {
 			}
 		}
 		// mangle sdp
-		for (int i=0; i<mediaTypes.length; i++) LOG.info("mangle body: media="+mediaTypes[i]+" masq_port="+masq_port[i]);
+		for (int i=0; i<mediaTypes.length; i++) {
+			LOG.info("mangle body: media={} masq_port={}", mediaTypes[i], masq_port[i]);
+		}
 		msg=SipMangler.mangleBody(msg,masq_addr,mediaTypes,masq_port);
 
 		// creates the actual media relay (SymmetricUdpRelay) when both media legs are available
@@ -178,20 +180,20 @@ public class MediaGw implements SymmetricUdpRelayListener {
 				symm_relay = new InterceptingUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), left_intercept_port, sink_soaddr, right_intercept_port, sink_soaddr,
 						sbc_profile.doActiveInterception, sbc_profile.relayTimeout, this);
-				LOG.debug("IMGW started: "+symm_relay);
+				LOG.debug("IMGW started: {}", symm_relay);
 			}
 			else
 			if (sbc_profile.interpacketTime>0) {
 				// symmetric regulated UDP relay
 				symm_relay = new SymmetricRegulatedUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), sbc_profile.relayTimeout, sbc_profile.interpacketTime, this);
-				LOG.debug("MGW started: "+symm_relay);
+				LOG.debug("MGW started: {}", symm_relay);
 			}
 			else {
 				// simple symmetric UDP relay
 				symm_relay = new SymmetricUdpRelay(scheduler(), left_port, masq_left.getPeerSoaddr(), right_port,
 						masq_right.getPeerSoaddr(), sbc_profile.relayTimeout, this);
-				LOG.debug("MGW started: "+symm_relay);
+				LOG.debug("MGW started: {}", symm_relay);
 			}
 
 			return symm_relay;
@@ -208,33 +210,33 @@ public class MediaGw implements SymmetricUdpRelayListener {
 	/** When left peer address changes. */
 	@Override
 	public void onSymmetricUdpRelayLeftPeerChanged(SymmetricUdpRelay symm_relay, SocketAddress soaddr) {
-		LOG.info("change left peer soaddr "+soaddr);
+		LOG.info("change left peer soaddr {}", soaddr);
 		// handover?
 		long htime=sbc_profile.handoverTime;
 		if (htime>0 && (System.currentTimeMillis()+htime)<symm_relay.getLastLeftChangeTime()) return;
 		// else
 		symm_relay.setLeftSoAddress(soaddr);
-		LOG.info("MGW change L: " + symm_relay);
+		LOG.info("MGW change L: {}", symm_relay);
 	}
 
 
 	/** When right peer address changes. */
 	@Override
 	public void onSymmetricUdpRelayRightPeerChanged(SymmetricUdpRelay symm_relay, SocketAddress soaddr) {
-		LOG.debug("change right peer soaddr "+soaddr);
+		LOG.debug("change right peer soaddr {}", soaddr);
 		// handover?
 		long htime=sbc_profile.handoverTime;
 		if (htime>0 && (System.currentTimeMillis()+htime)<symm_relay.getLastRightChangeTime()) return;
 		// else
 		symm_relay.setRightSoAddress(soaddr);
-		LOG.info("MGW change R: " + symm_relay);
+		LOG.info("MGW change R: {}", symm_relay);
 	}
 
 
 	/** When it stops relaying UDP datagrams (both directions). */
 	@Override
 	public void onSymmetricUdpRelayTerminated(SymmetricUdpRelay symm_relay) {
-		LOG.debug("MGW terminated: "+symm_relay);
+		LOG.debug("MGW terminated: {}", symm_relay);
 	}
 	
 }

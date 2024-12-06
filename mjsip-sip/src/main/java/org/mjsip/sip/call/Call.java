@@ -132,7 +132,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param state the new state value */
 	protected void changeState(int state) {
 		call_state.setState(state);
-		LOG.debug("changed call state: "+call_state.toString());
+		LOG.debug("changed call state: {}", call_state);
 	}
 
 	/** Gets the current invite dialog. */
@@ -188,7 +188,7 @@ public class Call/* extends org.zoolu.util.MonitoredObject*/ {
 	  * @param caller the caller address
 	  * @param sdp the session descriptor */
 	public void call(NameAddress callee, NameAddress caller, SdpMessage sdp) {
-		LOG.debug("calling "+callee);
+		LOG.debug("calling {}", callee);
 		dialog=new InviteDialog(sip_provider,dialogListener);
 		if (caller==null) caller=from_naddr;
 		GenericURI calleeAddress = callee.getAddress();

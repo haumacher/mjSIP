@@ -127,9 +127,9 @@ public class ReliableProvisionalResponder {
 				if (listener!=null) listener.onReliableProvisionalResponseConfirmation(this,resp,prack);
 				if (retransmission_to==null && hasPendingResponses()) sendNextResponse();
 			}
-			else LOG.warn(prack.getRequestLine().getMethod()+" confirmation received for past response?");
+			else LOG.warn("{} confirmation received for past response?", prack.getRequestLine().getMethod());
 		}
-		else LOG.warn(prack.getRequestLine().getMethod()+" no provisional response waiting for confirmation has been found");
+		else LOG.warn("{} no provisional response waiting for confirmation has been found", prack.getRequestLine().getMethod());
 	}
 
 

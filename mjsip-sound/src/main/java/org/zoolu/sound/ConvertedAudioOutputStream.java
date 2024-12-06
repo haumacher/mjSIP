@@ -79,10 +79,10 @@ class ConvertedAudioOutputStream extends AudioOutputStream {
 		}
 		converted_input_stream=converter.getAudioInputStream(final_output_stream.getFormat(),audio_input_stream);
 
-		if (DEBUG)
-			LOG.debug("input codec: "+format);
-		if (DEBUG)
-			LOG.debug("output codec: "+final_output_stream.getFormat());
+		if (DEBUG) {
+			LOG.debug("input codec: {}", format);
+			LOG.debug("output codec: {}", final_output_stream.getFormat());
+		}
 		if (converted_input_stream==null) {
 			throw new IOException("Failed while getting a transcoded AudioOuputStream of format:"+format+", for an AudioOuputStream with format: "+final_output_stream.getFormat()+".");
 		}

@@ -66,8 +66,7 @@ public class CancelServer implements SipProviderListener {
 	public void onReceivedMessage(SipProvider sip_provider, SipMessage msg) {
 		// respond to CANCEL request
 		if (msg.isRequest() && msg.isCancel()) {
-			LOG.info(
-					"CancelServer: " + "responding to CANCEL request with 481 \"Call Leg/Transaction Does Not Exist\"");
+			LOG.info("CancelServer: responding to CANCEL request with 481 \"Call Leg/Transaction Does Not Exist\"");
 			SipMessage resp = sip_provider.messageFactory().createResponse(msg,
 					SipResponses.CALL_TRANSACTION_DOES_NOT_EXIST, null, null);
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);

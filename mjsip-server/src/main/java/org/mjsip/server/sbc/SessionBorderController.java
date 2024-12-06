@@ -248,14 +248,14 @@ public class SessionBorderController extends Proxy {
 							keepalive_daemons.remove(key);
 							keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepaliveTime);
 							keepalive_daemons.put(key,keepalive);
-							LOG.debug("KeepAlive: restart: "+soaddr+" ("+time+"secs)");
+							LOG.debug("KeepAlive: restart: {} ({}secs)", soaddr, time);
 						}
-						else LOG.debug("KeepAlive: update: "+soaddr+" ("+time+"secs)");
+						else LOG.debug("KeepAlive: update: {} ({}secs)", soaddr, time);
 					}
 					else {
 						keepalive=new SipKeepAlive(sip_provider,soaddr,sbc_profile.keepaliveTime);
 						keepalive_daemons.put(key,keepalive);
-						LOG.debug("KeepAlive: start: "+soaddr+" ("+time+"secs)");
+						LOG.debug("KeepAlive: start: {} ({}secs)", soaddr, time);
 					}
 					keepalive.setExpirationTime(((long)time)*1000);
 				}
@@ -265,7 +265,7 @@ public class SessionBorderController extends Proxy {
 						SipKeepAlive keepalive=keepalive_daemons.get(key);
 						keepalive_daemons.remove(key);
 						keepalive.halt();
-						LOG.debug("KeepAlive: halt: "+soaddr);
+						LOG.debug("KeepAlive: halt: {}", soaddr);
 					}
 				}
 			}

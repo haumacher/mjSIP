@@ -128,7 +128,7 @@ public class RtpStreamReceiver implements Runnable, RtpControlledReceiver {
 		this.sequence_check = silence_padding || options.sequenceCheck();
 		this.ssrc_check = options.ssrcCheck();
 
-		LOG.info("Created RTP stream receiver: " + socket + " <-- " + remote_soaddr);
+		LOG.info("Created RTP stream receiver: {} <-- {}", socket, remote_soaddr);
 	}
 
 	/** Gets the local port. */
@@ -223,9 +223,9 @@ public class RtpStreamReceiver implements Runnable, RtpControlledReceiver {
 		running=true;    
 
 		if (DEBUG)
-			LOG.debug("RTP: localhost:" + rtp_socket.getUdpSocket().getLocalPort() + " <-- remotesocket");
+			LOG.debug("RTP: localhost:{} <-- remotesocket", rtp_socket.getUdpSocket().getLocalPort());
 		if (DEBUG)
-			LOG.debug("RTP: receiving pkts of MAXIMUM " + buffer.length + " bytes");
+			LOG.debug("RTP: receiving pkts of MAXIMUM {} bytes", buffer.length);
 
 		Exception error=null;
 		try {

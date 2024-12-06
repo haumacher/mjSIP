@@ -96,9 +96,9 @@ class SourceLineAudioOutputStream extends AudioOutputStream {
 		
 		converted_input_stream=AudioSystem.getAudioInputStream(source_line.getFormat(),audio_input_stream);
 		if (DEBUG)
-			LOG.debug("input codec: "+format.toString());
+			LOG.debug("input codec: {}", format);
 		if (DEBUG)
-			LOG.debug("output codec: "+source_line.getFormat().toString());
+			LOG.debug("output codec: {}", source_line.getFormat());
 		if (converted_input_stream==null) {
 			throw new IOException("Failed while getting a transcoded AudioInputStream from AudioSystem for input codec: "+format.toString()+", and output codec: "+source_line.getFormat().toString()+".");
 		}

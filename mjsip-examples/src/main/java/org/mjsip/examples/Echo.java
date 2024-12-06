@@ -96,7 +96,7 @@ public class Echo extends RegisteringMultipleUAS {
 			NameAddress sender=msg.getFromHeader().getNameAddress();
 			String content_type=msg.getContentTypeHeader().getContentType();
 			byte[] content=msg.getBody();
-			LOG.info("message received: "+new String(content));
+			LOG.info("message received: {}", new String(content)); //not so nice, but if you want the bytes as characters ...
 			// respond
 			TransactionServer ts=new TransactionServer(sip_provider,msg,null);
 			ts.respondWith(SipResponses.OK);

@@ -110,17 +110,17 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** When a new incoming connection is established */ 
 	private void processIncomingConnection(TcpServer tcp_server, TcpSocket socket) {
-		LOG.debug("incoming connection from "+socket.getAddress()+":"+socket.getPort());
+		LOG.debug("incoming connection from {}:{}", socket.getAddress(), socket.getPort());
 		if (tcp_server==this.tcp_server) {
 			try {
 				SipTransportConnection conn = new TcpTransportConnection(socket, this_conn_listener);
-				LOG.debug("tcp connection " + conn + " opened");
+				LOG.debug("tcp connection {} opened", conn);
 				addConnection(conn);
 				if (listener != null)
 					listener.onIncomingTransportConnection(this,
 							new SocketAddress(socket.getAddress(), socket.getPort()));
 			} catch (IOException ex) {
-				LOG.info("Handling incoming connection failed: " + ex.getMessage());
+				LOG.info("Handling incoming connection failed: {}", ex.getMessage());
 			}
 		}
 	}
@@ -128,7 +128,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** From TcpServerListener. When TcpServer terminates. */
 	private void processServerTerminated(TcpServer tcp_server, Exception error)  {
-		LOG.debug("tcp server "+tcp_server+" terminated");
+		LOG.debug("tcp server {} terminated", tcp_server);
 	}
 
 

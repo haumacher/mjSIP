@@ -71,7 +71,7 @@ public abstract class RegisteringMultipleUAS extends MultipleUAS implements Regi
 	 */
 	@Override
 	protected void onInviteReceived(SipMessage msg) {
-		LOG.info("Received INVITE from: " + msg.getFromHeader().getNameAddress());
+		LOG.info("Received INVITE from: {}", msg.getFromHeader().getNameAddress());
 		
 		AutoHangup autoHangup;
 		UserAgentListener listener = createCallHandler(msg);
@@ -97,13 +97,13 @@ public abstract class RegisteringMultipleUAS extends MultipleUAS implements Regi
 	/** From RegistrationClientListener. When a UA has been successfully (un)registered. */
 	@Override
 	public void onRegistrationSuccess(RegistrationClient rc, NameAddress target, NameAddress contact, int expires, int renewTime, String result) {
-		LOG.info("Registration success: expires="+expires+": "+result);
+		LOG.info("Registration success: expires= {}:{}", expires, result);
 	}
 
 	/** From RegistrationClientListener. When a UA failed on (un)registering. */
 	@Override
 	public void onRegistrationFailure(RegistrationClient rc, NameAddress target, NameAddress contact, String result) {
-		LOG.info("Registration failure: "+result);
+		LOG.info("Registration failure: {}", result);
 	}
 
 	/**

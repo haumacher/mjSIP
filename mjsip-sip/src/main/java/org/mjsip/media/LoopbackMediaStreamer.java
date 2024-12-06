@@ -21,7 +21,7 @@ public class LoopbackMediaStreamer implements MediaStreamer {
 	public LoopbackMediaStreamer(FlowSpec flow_spec) {
 		try {
 			udp_relay=new UdpRelay(flow_spec.getLocalPort(),flow_spec.getRemoteAddress(),flow_spec.getRemotePort(),null);
-		LOG.trace("relay "+udp_relay.toString()+" started");
+			LOG.trace("relay {} started", udp_relay.toString());
 		}
 		catch (Exception e) {
 			LOG.info("Exception.", e);
@@ -53,7 +53,7 @@ public class LoopbackMediaStreamer implements MediaStreamer {
 
 	/** From UdpRelayListener. When the remote source address changes. */
 	public void onUdpRelaySourceChanged(UdpRelay udp_relay, String remote_src_addr, int remote_src_port) {
-		LOG.info("UDP relay: remote address changed: "+remote_src_addr+":"+remote_src_port);
+		LOG.info("UDP relay: remote address changed: {}:{}", remote_src_addr, remote_src_port);
 	}
 
 	/** From UdpRelayListener. When UdpRelay stops relaying UDP datagrams. */

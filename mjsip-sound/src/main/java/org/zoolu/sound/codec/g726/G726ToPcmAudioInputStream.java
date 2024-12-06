@@ -61,7 +61,7 @@ class G726ToPcmAudioInputStream extends BufferedAudioInputStream {
 			size=5;
 		}
 		else {
-			LOG.error("unknown G726 encoding type: " + g726_encoding.toString());
+			LOG.error("unknown G726 encoding type: {}", g726_encoding);
 		}
 
 		aux_buffer=new byte[size];

@@ -39,7 +39,7 @@ public class AudioFileReceiver implements AudioReceiver {
 			CodecType codec,
 			int payload_type, RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_decoder, RtpStreamReceiverListener listener)
 			throws IOException, UnsupportedAudioFileException {
-		LOG.info("Storing audio stream to file " + _audioFile + " format: " + audio_format);
+		LOG.info("Storing audio stream to file {} format: {}", _audioFile, audio_format);
 		OutputStream output_stream = AudioFile.getAudioFileOutputStream(_audioFile, audio_format);
 		RtpStreamReceiver receiver = new RtpStreamReceiver(options, output_stream, additional_decoder, payloadFormat,
 				socket, listener) {
@@ -50,7 +50,7 @@ public class AudioFileReceiver implements AudioReceiver {
 				try {
 					output_stream.close();
 				} catch (IOException ex) {
-					LOG.error("Closing audio stream failed: " + _audioFile, ex);
+					LOG.error("Closing audio stream failed: {}", _audioFile, ex);
 				}
 			}
 		};

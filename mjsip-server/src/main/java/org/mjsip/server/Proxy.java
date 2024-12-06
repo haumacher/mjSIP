@@ -112,7 +112,7 @@ public class Proxy extends Registrar {
 			return;
 		}           
 		
-		LOG.debug("message will be forwarded to "+targets.size()+" user's contact(s)"); 
+		LOG.debug("message will be forwarded to {} user's contact(s)", targets.size()); 
 		for (int i=0; i<targets.size(); i++)  {
 			SipURI target_uri=SipURI.parseSipURI(targets.elementAt(i));
 			SipMessage request=new SipMessage(msg);
@@ -277,11 +277,12 @@ public class Proxy extends Registrar {
 			ProxyingRule rule=(ProxyingRule)server_profile.authenticatedDomainProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
-				LOG.debug("domain-based authenticated forwarding: "+rule.toString()+": YES");
-				LOG.debug("target="+nexthop.toString());
+				LOG.debug("domain-based authenticated forwarding: {}; YES",rule);
+				LOG.debug("target={}",nexthop);
 				return nexthop;
 			}
-			else LOG.debug("domain-based authenticated forwarding: "+rule.toString()+": NO");
+			else 
+				LOG.debug("domain-based authenticated forwarding: {}:NO",rule);
 		}
 		return null;
 	}
@@ -295,11 +296,11 @@ public class Proxy extends Registrar {
 			ProxyingRule rule=(ProxyingRule)server_profile.domainProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
-				LOG.debug("domain-based forwarding: "+rule.toString()+": YES");
-				LOG.debug("target="+nexthop.toString());
+				LOG.debug("domain-based forwarding: {}: YES", rule);
+				LOG.debug("target={}", nexthop);
 				return nexthop;
 			}
-			else LOG.debug("domain-based forwarding: "+rule.toString()+": NO");
+			else LOG.debug("domain-based forwarding: {}: NO", rule);
 		}
 		return null;
 	}
@@ -315,16 +316,16 @@ public class Proxy extends Registrar {
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else
 		// authenticated rules
-		LOG.trace("authenticated prefix-based rules: "+server_profile.authenticatedPhoneProxyingRules.length);
+		LOG.trace("authenticated prefix-based rules: {}", server_profile.authenticatedPhoneProxyingRules.length);
 		for (int i=0; i<server_profile.authenticatedPhoneProxyingRules.length; i++) {
 			ProxyingRule rule=(ProxyingRule)server_profile.authenticatedPhoneProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
-				LOG.debug("prefix-based authenticated forwarding: "+rule.toString()+": YES");
-				LOG.debug("target="+nexthop.toString());
+				LOG.debug("prefix-based authenticated forwarding: {}: YES", rule);
+				LOG.debug("target={}", nexthop);
 				return nexthop;
 			}
-			else LOG.debug("prefix-based authenticated forwarding: "+rule.toString()+": NO");
+			else LOG.debug("prefix-based authenticated forwarding: {}: NO", rule);
 		}
 		return null;
 	}
@@ -340,16 +341,16 @@ public class Proxy extends Registrar {
 		if (username==null || !isPhoneNumber(username))  return null;
 		// else
 		// non-authenticated rules
-		LOG.trace("prefix-based rules: "+server_profile.phoneProxyingRules.length);
+		LOG.trace("prefix-based rules: {}", server_profile.phoneProxyingRules.length);
 		for (int i=0; i<server_profile.phoneProxyingRules.length; i++) {
 			ProxyingRule rule=(ProxyingRule)server_profile.phoneProxyingRules[i];
 			SipURI nexthop=rule.getNexthop(request_uri);
 			if (nexthop!=null) {
-				LOG.debug("prefix-based forwarding: "+rule.toString()+": YES");
-				LOG.debug("target="+nexthop.toString());
+				LOG.debug("prefix-based forwarding: {}: YES", rule);
+				LOG.debug("target= {}", nexthop.toString());
 				return nexthop;
 			}
-			else LOG.debug("prefix-based forwarding: "+rule.toString()+": NO");
+			else LOG.debug("prefix-based forwarding: {}: NO", rule);
 		}
 		return null;
 	}

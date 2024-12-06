@@ -140,7 +140,7 @@ public class TcpConnection extends Thread {
 	/** Stops running. */
 	public void halt() {
 		if (!stop) {
-			LOG.debug("Stopping TCP connection to: " + socket);
+			LOG.debug("Stopping TCP connection to: {}", socket);
 			stop = true;
 		}
 	}
@@ -152,7 +152,7 @@ public class TcpConnection extends Thread {
 			ostream.write(buff,offset,len);
 			ostream.flush();
 
-			LOG.debug("Sent " + len + " bytes to: " + socket);
+			LOG.debug("Sent {} bytes to: {}", len , socket);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class TcpConnection extends Thread {
 	/** Runs the tcp receiver. */
 	@Override
 	public void run() {
-		LOG.debug("Starting connection handler for: " + socket);
+		LOG.debug("Starting connection handler for: {}", socket);
 		
 		byte[] buff=new byte[BUFFER_SIZE];
 		long expire=0;
@@ -187,7 +187,7 @@ public class TcpConnection extends Thread {
 					}
 				}
 				if (len<0) {
-					LOG.debug("Connection closed: " + socket);
+					LOG.debug("Connection closed: {}", socket);
 					stop=true;
 				} else if (len > 0) {
 					if (listener!=null) listener.onReceivedData(this,buff,len);
@@ -196,7 +196,7 @@ public class TcpConnection extends Thread {
 			}
 		}
 		catch (IOException e) {
-			LOG.info("TCP connection terminated: " + e.getMessage());
+			LOG.info("TCP connection terminated: {}", e.getMessage());
 			error=e;
 			stop=true;
 		}
@@ -206,7 +206,7 @@ public class TcpConnection extends Thread {
 		if (listener!=null) listener.onConnectionTerminated(this,error);
 		listener=null;
 
-		LOG.debug("Connection handler terminated for: " + socket);
+		LOG.debug("Connection handler terminated for: {}", socket);
 	} 
 
  

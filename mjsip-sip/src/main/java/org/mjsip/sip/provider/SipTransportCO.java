@@ -143,26 +143,26 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			
 			if (connections.containsKey(connection_id))
 			try {
-				LOG.debug("already active connection found for connection-id "+connection_id);
+				LOG.debug("already active connection found for connection-id {}", connection_id);
 				SipTransportConnection conn=connections.get(connection_id);
-				LOG.debug("sending data through already active connection "+conn);
+				LOG.debug("sending data through already active connection {}", conn);
 				//conn.sendMessage(msg);
 				sendMessage(conn,msg);
 				return connection_id;
 			}
 			catch (Exception e) {
-				LOG.warn("error using previous connection with connection-id " + connection_id, e);
+				LOG.warn("error using previous connection with connection-id {}", connection_id, e);
 				removeConnection(connection_id);
 			}
 			// no active connection
-			LOG.debug("no active connection for "+connection_id);
+			LOG.debug("no active connection for {}", connection_id);
 			if (!manual) {
 				// AUTOMATIC CONN MODE
-				LOG.debug("open "+getProtocol()+" connection to "+dest_ipaddr+":"+dest_port);
+				LOG.debug("open " + getProtocol() + " connection to {}:{}", dest_ipaddr, dest_port);
 				try {
 					SipTransportConnection conn=addConnection(dest_ipaddr,dest_port);
 					if (conn!=null) {
-						LOG.debug("sending data through connection "+conn);
+						LOG.debug("sending data through connection {}", conn);
 						//conn.sendMessage(msg);
 						sendMessage(conn,msg);
 						return new ConnectionId(conn);
@@ -173,7 +173,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 					}
 				}
 				catch (Exception e) {
-					LOG.warn("Exception: " + e);
+					LOG.warn("Exception", e);
 					return null;
 				}
 			}
@@ -204,7 +204,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 				throw new IOException("no active connection found matching connection-id "+connection_id);
 			}
 			// else
-			LOG.debug("active connection found matching "+connection_id);
+			LOG.debug("active connection found matching {}", connection_id);
 			SipTransportConnection conn=connections.get(connection_id);
 			//conn.sendMessage(msg);
 			sendMessage(conn,msg);
@@ -253,7 +253,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 		//System.out.println("DEBUG: SipTransportCO: connection terminated");
 		ConnectionId connection_id=new ConnectionId(conn);
 		removeConnection(connection_id);
-		LOG.debug("connection " + conn + " terminated", error);
+		LOG.debug("connection {} terminated", conn, error);
 		if (listener!=null) listener.onTransportConnectionTerminated(this,new SocketAddress(conn.getRemoteAddress(),conn.getRemotePort()),error);
 	}
 
@@ -262,7 +262,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	public SipTransportConnection addConnection(IpAddress remote_ipaddr, int remote_port) throws IOException {
 		SipTransportConnection conn=createTransportConnection(new SocketAddress(remote_ipaddr,remote_port));
 		if (conn!=null)  {
-			LOG.debug("connection " + conn + " opened");
+			LOG.debug("connection {} opened", conn);
 			addConnection(conn);
 		}
 		else
@@ -279,7 +279,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 			
 			if (connections.containsKey(connection_id)) {
 				// remove the previous connection
-				LOG.info("Adding already established connection, replacing ID: " + connection_id);
+				LOG.info("Adding already established connection, replacing ID: {}", connection_id);
 				SipTransportConnection old_conn=connections.get(connection_id);
 				old_conn.halt();
 				connections.remove(connection_id);
@@ -305,7 +305,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 				LOG.trace("active connenctions:");
 				for (Map.Entry<ConnectionId, SipTransportConnection> e : connections.entrySet() ) {
 					ConnectionId id= e.getKey();
-					LOG.trace("connection-id="+id+": "+(e.getValue()).toString());
+					LOG.trace("connection-id={}:{}", id, e.getValue());
 				}
 			}
 		}
@@ -327,7 +327,7 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 					LOG.trace("active connenctions:");
 					for (Enumeration<SipTransportConnection> e=connections.elements(); e.hasMoreElements(); ) {
 						SipTransportConnection co= e.nextElement();
-						LOG.trace("conn "+co.toString());
+						LOG.trace("conn {}", co);
 					}
 				}
 			}

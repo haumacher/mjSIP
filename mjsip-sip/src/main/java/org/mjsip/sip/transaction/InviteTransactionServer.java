@@ -116,7 +116,7 @@ public class InviteTransactionServer extends TransactionServer {
 		auto_trying=sip_provider.sipConfig().isAutoTrying();
 		// init the timer just to set the timeout value and label, without listener (never started)
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("new transaction-id: " + transaction_id.toString());
+			LOG.debug("new transaction-id: {}", transaction_id);
 		}
 	}   
 
@@ -164,7 +164,7 @@ public class InviteTransactionServer extends TransactionServer {
 				//end_to.start();
 			}
 			else {
-				LOG.trace("No retransmissions for reliable transport ("+connection_id+")");
+				LOG.trace("No retransmissions for reliable transport ({})", connection_id);
 				//onTimeout(end_to);
 			}
 			end_to = sip_provider.scheduler().schedule(sip_provider.sipConfig().getTransactionTimeout(),

@@ -114,10 +114,10 @@ public class AMR {
 			System.loadLibrary("amr-64");
 		}
 		catch (Error e_64) {
-			LOG.info("Error loading 64 bit lib: " + e_64.getMessage());
+			LOG.info("Error loading 64 bit lib: {}", e_64.getMessage());
 			try { System.loadLibrary("amr-32"); }
 			catch (Error e_32) {
-				LOG.info("Error loading 32 bit lib: " + e_32.getMessage());
+				LOG.info("Error loading 32 bit lib: {}", e_32.getMessage());
 				System.loadLibrary("amr");
 			}
 		}
@@ -170,7 +170,7 @@ public class AMR {
 		try {
 			if (decoder==0) decoder=initDecoder();
 			if (decoder!=0 && inbuf!=null && frame!=null) decode(decoder,inbuf,frame,0);
-			else LOG.debug("decode("+decoder+","+inbuf+","+frame+",0): Invalid parameter(s).");
+			else LOG.debug("decode({},{},{},0): Invalid parameter(s).", decoder, inbuf, frame);
 		}
 		catch (Throwable t) {  t.printStackTrace();  }
 	}

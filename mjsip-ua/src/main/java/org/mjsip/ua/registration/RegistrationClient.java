@@ -20,6 +20,7 @@
  */
 package org.mjsip.ua.registration;
 
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.ScheduledFuture;
 
@@ -236,15 +237,15 @@ public class RegistrationClient implements TransactionClientListener {
 			req.setAuthorizationHeader(ah);
 		}
 		if (body!=null) {
-			LOG.debug("Register body type: " + content_type + "; length: " + body.length + " bytes");
+			LOG.debug("Register body type: {}; length: {} bytes", content_type, body.length);
 			req.setBody(content_type,body);
 		}
 		
 		if (LOG.isDebugEnabled()) {
 			if (expire_time > 0) {
-				LOG.debug("Registering " + _contactNAddr + " (expiry " + expire_time + " secs) at " + _registrarUri);
+				LOG.debug("Registering {} (expiry {} secs) at {}", _contactNAddr, expire_time, _registrarUri);
 			} else {
-				LOG.debug("Unregistering " + _contactNAddr + " from " + _registrarUri);
+				LOG.debug("Unregistering {} from {}", _contactNAddr, _registrarUri);
 			}
 		}
 		
@@ -405,7 +406,7 @@ public class RegistrationClient implements TransactionClientListener {
 				req.addViaHeader(vh);
 				WwwAuthenticateHeader wah=resp.getWwwAuthenticateHeader();
 				String qop_options=wah.getQopOptionsParam();
-				//LOG.debug("qop-options: "+qop_options);
+				//LOG.debug("qop-options: {}", qop_options);
 				_qop=(qop_options!=null)? "auth" : null;
 				AuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),wah,_qop,null,0,null,_username,_passwd)).getAuthorizationHeader();
 				req.setAuthorizationHeader(ah);
@@ -420,7 +421,7 @@ public class RegistrationClient implements TransactionClientListener {
 				req.setCSeqHeader(req.getCSeqHeader().incSequenceNumber());
 				ProxyAuthenticateHeader pah=resp.getProxyAuthenticateHeader();
 				String qop_options=pah.getQopOptionsParam();
-				//LOG.debug("qop-options: "+qop_options);
+				//LOG.debug("qop-options: {}", qop_options);
 				_qop=(qop_options!=null)? "auth" : null;
 				ProxyAuthorizationHeader ah=(new DigestAuthentication(SipMethods.REGISTER,req.getRequestLine().getAddress().toString(),pah,_qop,null,0,null,_username,_passwd)).getProxyAuthorizationHeader();
 				req.setProxyAuthorizationHeader(ah);
@@ -429,7 +430,7 @@ public class RegistrationClient implements TransactionClientListener {
 			} else {
 				// Registration failure
 				String result=code+" "+status.getReason();
-				LOG.info("Registration of " + _contactNAddr + " failed: "+result);
+				LOG.info("Registration of {} failed: {}",_contactNAddr, result);
 				if (_listener != null) {
 					_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, result);
 				}
@@ -444,7 +445,7 @@ public class RegistrationClient implements TransactionClientListener {
 	@Override
 	public void onTransTimeout(TransactionClient transaction) {
 		if (transaction.getTransactionMethod().equals(SipMethods.REGISTER)) {
-			LOG.info("Registration of " + _contactNAddr + " timed out.");
+			LOG.info("Registration of {} timed out.", _contactNAddr);
 			if (_listener != null) {
 				_listener.onRegistrationFailure(this, _toNAddr, _contactNAddr, "Timeout");
 			}
@@ -472,7 +473,7 @@ public class RegistrationClient implements TransactionClientListener {
 
 		_attemptTimer = _sipProvider.scheduler().schedule(timeout, this::onAttemptTimeout);
 
-		LOG.info("Waiting " + (timeout / 1000) + "s for next registration of " + _contactNAddr + ".");
+		LOG.info("Waiting {}ms for next registration of {}.", timeout,  _contactNAddr);
 	}
 
 

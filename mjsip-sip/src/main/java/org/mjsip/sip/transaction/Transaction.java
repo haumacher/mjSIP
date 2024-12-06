@@ -118,7 +118,7 @@ public abstract class Transaction/* extends org.zoolu.util.MonitoredObject */ im
 	protected void changeStatus(int newstatus) {
 		status=newstatus;
 		//transaction_listener.onChangedTransactionStatus(status);
-		LOG.debug("changed transaction state: "+getStatus());
+		LOG.debug("changed transaction state: {}", getStatus());
 	}
 	
 	/** Whether the internal status is equal to <i>st</i> */

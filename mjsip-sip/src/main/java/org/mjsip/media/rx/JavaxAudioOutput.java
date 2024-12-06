@@ -61,7 +61,7 @@ public class JavaxAudioOutput implements AudioReceiver {
 			final AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
 			audio_output_stream = ConverterAudioSystem.convertAudioOutputStream(codec, sample_rate,
 					SimpleAudioSystem.getOutputStream(baseFormat));
-			LOG.info("recv x-format: " + audio_output_stream.getFormat());
+			LOG.info("recv x-format: {}", audio_output_stream.getFormat());
 		}
 
 		RtpStreamReceiver receiver = new RtpStreamReceiver(options, audio_output_stream, additional_decoder, payloadFormat, socket, listener);

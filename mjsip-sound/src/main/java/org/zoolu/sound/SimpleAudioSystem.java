@@ -94,7 +94,7 @@ public class SimpleAudioSystem {
 			AudioFormat.Encoding[] codecs=AudioSystem.getTargetEncodings(base_format);
 			String codec_list="";
 			for (int i=0; i<codecs.length; i++) codec_list+=" "+codecs[i].toString();
-			LOG.debug("Input: Supported codecs:"+codec_list);
+			LOG.debug("Input: Supported codecs: {}", codec_list);
 		}
 		// check if the input line with the selected format is supported
 		DataLine.Info lineInfo=new DataLine.Info(TargetDataLine.class,base_format,INTERNAL_BUFFER_SIZE);
@@ -106,11 +106,11 @@ public class SimpleAudioSystem {
 			//target_line=(TargetDataLine)AudioSystem.getLine(lineInfo);
 			target_line=selectTargetDataLine(lineInfo,-1);
 			if (DEBUG)
-				LOG.debug("Input: TargetDataLine: "+target_line.getFormat());
+				LOG.debug("Input: TargetDataLine: {}", target_line.getFormat());
 			target_line.open(base_format,INTERNAL_BUFFER_SIZE);
 		}
 		catch (Exception e) {
-			LOG.error("Exception when trying to init audio input: "+e.getMessage(), e);
+			LOG.error("Exception when trying to init audio input: {}", e.getMessage(), e);
 		}
 	}
 	
@@ -123,13 +123,13 @@ public class SimpleAudioSystem {
 			Mixer m=AudioSystem.getMixer(mi);
 			Line.Info[] line_infos=m.getTargetLineInfo();
 			if(line_infos.length>=1 && line_infos[0].getLineClass().equals(TargetDataLine.class)) {
-				LOG.info("Input: --- TargetDataLine["+i+"]: "+mi.getName());
+				LOG.info("Input: --- TargetDataLine[{}]: {}", i, mi.getName());
 			}
 		}
 		if (line_index>=0) {
 			Mixer m=AudioSystem.getMixer(mixer_infos[line_index]);
 			TargetDataLine target_line=(TargetDataLine)m.getLine(m.getTargetLineInfo()[0]);
-			LOG.info("Input: --- Selected TargetDataLine #"+line_index+": "+mixer_infos[line_index].getName());
+			LOG.info("Input: --- Selected TargetDataLine #{}:{}", line_index, mixer_infos[line_index].getName());
 			return target_line;
 		}
 		else {
@@ -155,7 +155,7 @@ public class SimpleAudioSystem {
 			AudioFormat.Encoding[] codecs=AudioSystem.getTargetEncodings(base_format);
 			String codec_list=""; 
 			for (int i=0; i<codecs.length; i++) codec_list+=" "+codecs[i].toString();
-			LOG.debug("Output: Supported codecs:"+codec_list);
+			LOG.debug("Output: Supported codecs: {}", codec_list);
 		}
 
 		DataLine.Info lineInfo=new DataLine.Info(SourceDataLine.class, base_format, INTERNAL_BUFFER_SIZE);
@@ -167,11 +167,11 @@ public class SimpleAudioSystem {
 		try {
 			source_line=(SourceDataLine)AudioSystem.getLine(lineInfo);
 			if (DEBUG)
-				LOG.debug("Output: SourceDataLine: "+source_line.getFormat());
+				LOG.debug("Output: SourceDataLine: {}", source_line.getFormat());
 			source_line.open(base_format,INTERNAL_BUFFER_SIZE);
 		}
 		catch (Exception e) {
-			LOG.error("Exception when trying to init audio output: "+e.getMessage(), e);
+			LOG.error("Exception when trying to init audio output: {}", e.getMessage(), e);
 		}
 	}
 
@@ -311,7 +311,7 @@ public class SimpleAudioSystem {
 		if (source_line==null) {
 			//debug("DEBUG: getOutputStream(): audio output line is initialized using the default sample rate "+DEFAULT_AUDIO_FORMAT.getSampleRate());
 			//initAudioOutputLine(DEFAULT_AUDIO_FORMAT.getSampleRate());
-			LOG.debug("DEBUG: getOutputStream(): audio output line is initialized using sample rate "+format.getSampleRate());
+			LOG.debug("DEBUG: getOutputStream(): audio output line is initialized using sample rate {}", format.getSampleRate());
 			initAudioOutputLine(format.getSampleRate(),format.getChannels());
 		}
 		else
@@ -327,7 +327,7 @@ public class SimpleAudioSystem {
 				audio_output_stream=new SourceLineAudioOutputStream(format,source_line);
 			}
 			catch (Exception e) {
-				LOG.error("Audio init error: impossible to get audio output stream of type ["+format+"] from source line of type ["+source_line.getFormat()+"]", e);
+				LOG.error("Audio init error: impossible to get audio output stream of type [{}] from source line of type [{}]", format, source_line.getFormat(), e);
 			}
 		}
 		else {

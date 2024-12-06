@@ -114,7 +114,7 @@ public class Registrar extends ServerEngine {
 		if (msg.isAck()) {
 			// Ignore.
 		} else {
-			LOG.info("Ignoring proxy request to: " + msg.getToHeader().getValue());
+			LOG.info("Ignoring proxy request to: {}", msg.getToHeader().getValue());
 			sip_provider.sendMessage(sip_provider.messageFactory().createResponse(msg,SipResponses.NOT_FOUND,null,null));
 		}
 	}
@@ -155,10 +155,10 @@ public class Registrar extends ServerEngine {
 			return targets;
 		}
 		String user=username+"@"+sip_uri.getHost();
-		LOG.debug("user: "+user); 
+		LOG.debug("user: {}", user); 
 			  
 		if (!location_service.hasUser(user)) {
-			LOG.info("user "+user+" not found");
+			LOG.info("user {} not found", user);
 			return targets;
 		}
 
@@ -171,12 +171,12 @@ public class Registrar extends ServerEngine {
 			String contact= e.nextElement();
 			if (location_service.isUserContactExpired(user,contact)) {
 				location_service.removeUserContact(user,contact);
-			LOG.trace("target"+i+" expired: contact URI removed");
+			LOG.trace("target {} expired: contact URI removed", i);
 			}
 			// otherwise add the URI to the target list
 			else {
 				targets.addElement(contact);
-				LOG.trace("target"+i+"="+targets.elementAt(i));
+				LOG.trace("target {}={}", i, targets.elementAt(i));
 			}
 		}
 		// for SIPS request-uri remove non-SIPS targets
@@ -184,7 +184,7 @@ public class Registrar extends ServerEngine {
 			for (int i=0; i<targets.size(); i++) {
 				SipURI uri=SipURI.parseSipURI(targets.elementAt(i));
 				if (!uri.isSecure()) {
-					LOG.info(uri.toString()+" has not SIPS scheme: skipped");
+					LOG.info("{} has not SIPS scheme: skipped", uri.toString());
 					targets.removeElementAt(i--);
 				}
 			}
@@ -219,10 +219,10 @@ public class Registrar extends ServerEngine {
 		if (!location_service.hasUser(user)) {
 			if (server_profile.registerNewUsers) {
 				location_service.addUser(user);
-				LOG.info("new user '"+user+"' added");
+				LOG.info("new user '{}' added", user);
 			} 
 			else {
-				LOG.info("user '"+user+"' unknown: message discarded.");
+				LOG.info("user '{}' unknown: message discarded.", user);
 				return sip_provider.messageFactory().createResponse(msg,SipResponses.NOT_FOUND,null,null);  
 			}
 		}
@@ -269,13 +269,13 @@ public class Registrar extends ServerEngine {
 					NameAddress name_address=location_service.getUserContactNameAddress(user,contact);
 					// update db
 					location_service.removeUserContact(user,contact);
-					LOG.trace("contact removed: "+contact);
+					LOG.trace("contact removed: {}", contact);
 					if (exp_secs>0) {
 						Date exp_date=new Date(System.currentTimeMillis()+((long)exp_secs)*1000);
 						location_service.addUserContact(user,name_address,exp_date);
 						//DateFormat df=new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",Locale.ITALIAN);
 						//printLog("contact added: "+uri+"; expire: "+df.format(location_service.getUserContactExpire(user,url)),LogWriter.LEVEL_LOW);
-						LOG.trace("contact added: "+contact+"; expire: "+DateFormat.formatEEEddMMMyyyyhhmmss(location_service.getUserContactExpirationDate(user,contact)));
+						LOG.trace("contact added: {}; expire: {}", contact, DateFormat.formatEEEddMMMyyyyhhmmss(location_service.getUserContactExpirationDate(user,contact)));
 					}
 					ContactHeader ch_i=new ContactHeader(name_address.getAddress());
 					ch_i.setExpires(exp_secs);
@@ -304,7 +304,7 @@ public class Registrar extends ServerEngine {
 				if (exp_secs_i>0) {
 					Date exp_date=new Date(System.currentTimeMillis()+((long)exp_secs)*1000);
 					location_service.addUserContact(user,name_address,exp_date);
-					LOG.info("registration of user "+user+" updated");
+					LOG.info("registration of user '{}' updated", user);
 				}           
 				ch_i.setExpires(exp_secs_i);
 				resp_contacts.addElement(ch_i);

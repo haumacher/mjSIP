@@ -90,7 +90,7 @@ public class TransactionServer extends Transaction {
 		this.response=null;
 		// init the timer just to set the timeout value and label, without listener (never started)
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Starting transaction " + transaction_id.toString() + ": " + request);
+			LOG.debug("Starting transaction {}:{}", transaction_id, request);
 		}
 	}  
 
@@ -119,7 +119,7 @@ public class TransactionServer extends Transaction {
 	/** Sends a response message */
 	public void respondWith(SipMessage resp) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Transaction " + transaction_id.toString() + " response: " + resp);
+			LOG.debug("Transaction {} response: {}", transaction_id, resp);
 		}
 
 		response=resp;
@@ -155,7 +155,7 @@ public class TransactionServer extends Transaction {
 	@Override
 	public void onReceivedMessage(SipProvider provider, SipMessage msg) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Transaction " + transaction_id.toString() + ": " + msg);
+			LOG.debug("Transaction {}:{}", transaction_id, msg);
 		}
 
 		if (msg.isRequest()) {
@@ -182,7 +182,7 @@ public class TransactionServer extends Transaction {
 
 	protected void onClearingTimeout() {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Transaction timeout reached: " + transaction_id.toString());
+			LOG.debug("Transaction timeout reached: {}", transaction_id);
 		}
 		doTerminate();
 	}   
@@ -200,7 +200,7 @@ public class TransactionServer extends Transaction {
 			changeStatus(STATE_TERMINATED);
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Transaction terminated: " + transaction_id.toString());
+				LOG.debug("Transaction terminated: {}", transaction_id);
 			}
 		}
 	}

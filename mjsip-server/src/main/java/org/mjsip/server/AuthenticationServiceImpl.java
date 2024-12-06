@@ -200,7 +200,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			}
 			if (user != null) addUser(user, key);
 		} catch (FileNotFoundException e) {
-			LOG.warn("file \"" + filename + "\" not found: created new empty DB");
+			LOG.warn("file \"{}\" not found: created new empty DB", filename);
         } catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -213,7 +213,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			out.write(this.toString());
         }
 		catch (IOException e) {
-			LOG.warn("error trying to write on file \""+filename+"\"", e);
+			LOG.warn("error trying to write on file \"{}\"", filename, e);
         }
 	}
 

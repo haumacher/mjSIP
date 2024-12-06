@@ -71,22 +71,22 @@ public class MessageAgentCli implements MessageAgentListener {
 	public void onMaReceivedMessage(MessageAgent ma, NameAddress sender, NameAddress recipient, String subject, String content_type, String content) {
 		remote_user=sender;
 		LOG.info("NEW MESSAGE:");
-		LOG.info("From: " + sender);
+		LOG.info("From: {}", sender);
 		if (subject != null)
-			LOG.info("Subject: " + subject);
-		LOG.info("Content: " + content);
+			LOG.info("Subject: {}", subject);
+		LOG.info("Content: {}", content);
 	}
 
 	/** When a message delivery successes. */
 	@Override
 	public void onMaDeliverySuccess(MessageAgent ma, NameAddress recipient, String subject, String result) {
-		//LOG.info("Delivery success: "+result);
+		//LOG.info("Delivery success: {}", result);
 	}
 
 	/** When a message delivery fails. */
 	@Override
 	public void onMaDeliveryFailure(MessageAgent ma, NameAddress recipient, String subject, String result) {
-		//LOG.info("Delivery failure: "+result);
+		//LOG.info("Delivery failure: {}", result);
 	}
 
 }

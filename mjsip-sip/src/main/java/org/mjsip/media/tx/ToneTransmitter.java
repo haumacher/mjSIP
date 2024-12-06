@@ -61,7 +61,7 @@ public class ToneTransmitter implements AudioTransmitter {
 			CodecType codec, int payload_type,
 			RtpPayloadFormat payloadFormat, int sample_rate, int channels, Encoder additional_encoder, long packet_time,
 			int packet_size, String remote_addr, int remote_port, RtpStreamSenderListener listener, RtpControl rtpControl) throws IOException {
-		LOG.info("Tone generator: " + _toneFreq + " Hz");
+		LOG.info("Tone generator: {} Hz", _toneFreq);
 		ToneInputStream audioIn = new ToneInputStream(_toneFreq, _toneAmpl, sample_rate, TONE_SAMPLE_SIZE,
 				ToneGenerator.Encoding.PCM_LINEAR_UNSIGNED, DEFAULT_BIG_ENDIAN);
 		RtpStreamSender sender = new RtpStreamSender(options, audioIn, true, payload_type, payloadFormat,

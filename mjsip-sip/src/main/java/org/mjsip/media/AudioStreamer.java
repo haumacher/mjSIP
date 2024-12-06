@@ -151,7 +151,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		}
 	
 		final AudioFormat baseFormat = SimpleAudioSystem.getBaseAudioFormat(sample_rate, channels);
-		LOG.info("Base format: " + baseFormat);
+		LOG.info("Base format: {}", baseFormat);
 
 		AudioFormat.Encoding encoding = getEncoding(baseFormat, codec);
 		if (encoding == null) {
@@ -162,7 +162,7 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 		if (targetFormat == null) {
 			throw new RuntimeException("No target fomat with encoding " + encoding + " found for: " + baseFormat);
 		}
-		LOG.info("Target format: " + targetFormat);
+		LOG.info("Target format: {}", targetFormat);
 
 		Encoder additional_encoder=null;
 		Encoder additional_decoder=null;
@@ -187,8 +187,8 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 					|| codec.equals(CodecType.AMR_0740) || codec.equals(CodecType.AMR_0795)
 					|| codec.equals(CodecType.AMR_1020) || codec.equals(CodecType.AMR_1220)) {
 				payloadFormat = new AmrRtpPayloadFormat(RTP_BANDWIDTH_EFFICIENT_MODE);
-				LOG.debug("RTP format: " + codec + " in "
-						+ ((RTP_BANDWIDTH_EFFICIENT_MODE) ? "Bandwidth-Efficinet" : "Octect-Alignied") + " Mode");
+				LOG.debug("RTP format: {} in {} Mode", codec,
+						((RTP_BANDWIDTH_EFFICIENT_MODE) ? "Bandwidth-Efficinet" : "Octect-Alignied"));
 			} else {
 				payloadFormat = null;
 			}
@@ -220,17 +220,15 @@ public class AudioStreamer implements MediaStreamer, RtpStreamSenderListener, Rt
 			throw new RuntimeException("Media streamer initialization failed.", ex);
 		}
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Codec:         " + codec);
-			LOG.debug("Base format:   " + baseFormat);
-			LOG.debug("Target format: " + targetFormat);
-			LOG.debug("Sample rate:   " + sample_rate + "Hz");
-			LOG.debug("Frame rate:    " + frame_rate + " frame/s");
-			LOG.debug("Frame size:    " + frame_size + " B");
-			LOG.debug("Packet time:   " + packet_time + " ms");
-			LOG.debug("Packet rate:   " + (1000 / packet_time) + " pkt/s");
-			LOG.debug("Packet size:   " + packet_size + " B");
-		}
+		LOG.debug("Codec:         {}", codec);
+		LOG.debug("Base format:   {}", baseFormat);
+		LOG.debug("Target format: {}", targetFormat);
+		LOG.debug("Sample rate:   {} Hz", sample_rate);
+		LOG.debug("Frame rate:    {} frame/s", frame_rate);
+		LOG.debug("Frame size:    {} B", frame_size);
+		LOG.debug("Packet time:   {} ms", packet_time);
+		LOG.debug("Packet rate:   {} pkt/s", (1000 / packet_time));
+		LOG.debug("Packet size:   {} B", packet_size);
 	}
 
 	private static AudioFormat getTargetFormat(final AudioFormat baseFormat, AudioFormat.Encoding encoding) {

@@ -66,10 +66,10 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 
 		try {
 			left_intercept_udp=new UdpProvider(new UdpSocket(left_intercept_port),0,this);
-			LOG.info("intercept udp interface: "+left_intercept_udp.toString()+" started");    
+			LOG.info("intercept udp interface: {} started", left_intercept_udp);    
 	
 			right_intercept_udp=new UdpProvider(new UdpSocket(right_intercept_port),0,this);
-			LOG.info("intercept udp interface: "+right_intercept_udp.toString()+" started");
+			LOG.info("intercept udp interface: {} started", right_intercept_udp);
 		}   
 		catch (Exception e) {
 			LOG.info("Exception.", e);
@@ -136,7 +136,7 @@ public class InterceptingUdpRelay extends SymmetricUdpRelay {
 	@Override
 	public void onServiceTerminated(UdpProvider udp_service, Exception error) {
 		if (udp_service==left_intercept_udp || udp_service==right_intercept_udp) {
-			LOG.info("udp interface: "+udp_service.toString()+" terminated");
+			LOG.info("udp interface: {} terminated", udp_service);
 			udp_service.getUdpSocket().close();
 		}
 		else {

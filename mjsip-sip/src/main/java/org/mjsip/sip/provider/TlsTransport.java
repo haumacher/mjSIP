@@ -141,7 +141,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 			// String[] ep=tls_socket_factory.getEnabledProtocols();
 			// String[] sp={ ep[ep.length-1] };
 			// tls_socket_factory.setEnabledProtocols(sp);
-			// LOG.debug("enabled protocols: "+sp[0]);
+			// LOG.debug("enabled protocols: {}", sp[0]);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -175,17 +175,17 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** From TcpServerListener. When a new incoming connection is established */
 	private void processIncomingConnection(TcpServer tcp_server, TcpSocket socket) {
-		LOG.debug("incoming connection from "+socket.getAddress()+":"+socket.getPort());
+		LOG.debug("incoming connection from {}:{}", socket.getAddress(), socket.getPort());
 		if (tcp_server==this.tls_server) {
 			try {
 				SipTransportConnection conn = new TlsTransportConnection(socket, this_conn_listener);
-				LOG.debug("tls connection " + conn + " opened");
+				LOG.debug("tls connection {} opened", conn);
 				addConnection(conn);
 				if (listener != null)
 					listener.onIncomingTransportConnection(this,
 							new SocketAddress(socket.getAddress(), socket.getPort()));
 			} catch (IOException ex) {
-				LOG.info("Handling incoming connection failed: " + ex.getMessage());
+				LOG.info("Handling incoming connection failed: {}", ex.getMessage());
 			}
 		}
 	}
@@ -193,7 +193,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 
 	/** From TcpServerListener. When TcpServer terminates. */
 	private void processServerTerminated(TcpServer tcp_server, Exception error)  {
-		LOG.debug("tls server "+tcp_server+" terminated");
+		LOG.debug("tls server {} terminated", tcp_server);
 	}
 
 

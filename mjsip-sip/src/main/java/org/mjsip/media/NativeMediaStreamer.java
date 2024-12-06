@@ -106,7 +106,7 @@ public class NativeMediaStreamer implements MediaStreamer {
 	 *        the string message to be logged.
 	 */
 	private void log(String str) {
-		LOG.info("NativeMediaApp: " + str);
+		LOG.info("NativeMediaApp: {}", str);
 	}
 
 }

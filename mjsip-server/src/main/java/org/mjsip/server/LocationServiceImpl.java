@@ -333,7 +333,7 @@ public class LocationServiceImpl implements LocationService {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			LOG.warn("file \"" + file_name + "\" not found: created new empty DB");
+			LOG.warn("file \"{}\" not found: created new empty DB", file_name);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -349,7 +349,7 @@ public class LocationServiceImpl implements LocationService {
 			out.write(this.toString());
         }
 		catch (IOException e) {
-			LOG.warn("error trying to write on file \""+file_name+"\"", e);
+			LOG.warn("error trying to write on file \"{}\"", file_name, e);
         }
 	}
 	

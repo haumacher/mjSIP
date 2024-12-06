@@ -96,9 +96,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	/** Changes the internal dialog state */
 	protected void changeStatus(DialogStatus newStatus) {
 		status = newStatus;
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Set state of dialog" + (dialog_id != null ? " " + dialog_id : "") + " to: " + getStatus());
-		}
+		LOG.debug("Set state of dialog {} to: {}", (dialog_id != null ? dialog_id : ""), getStatus());
 		
 		// remove the sip_provider listener when going to "terminated" state
 		if (dialog_id != null) {
@@ -142,7 +140,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 			
 		if (LOG.isDebugEnabled()) {
 			if (secure_old != secure) {
-				LOG.debug("Switing secure dialog to: " + secure);
+				LOG.debug("Switing secure dialog to: {}", secure);
 			}
 		}
 
@@ -151,7 +149,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 		SipId newDialogId = SipId.createDialogId(call_id, local_tag, remote_tag);
 		if (oldDialogId == null || !oldDialogId.equals(newDialogId)) {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Updated dialog ID to: " + newDialogId);
+				LOG.debug("Updated dialog ID to: {}", newDialogId);
 			}
 
 			if (sip_provider != null) {
@@ -173,7 +171,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	 */
 	protected final boolean verifyStatus(String message, boolean expression) {
 		if (!expression) {
-			LOG.warn("Status " + getStatus() + ": " + message);
+			LOG.warn("Status {}: {}", getStatus(), message);
 		}
 		return expression;
 	}
@@ -181,7 +179,7 @@ public abstract class Dialog extends DialogInfo implements SipProviderListener {
 	/** Verifies a message code, logs failures. */
 	protected final boolean verifyCode(int code, String message, boolean expression) {
 		if (!expression) {
-			LOG.warn("Code " + code + ": " + message);
+			LOG.warn("Code {}: {}", code, message);
 		}
 		return expression;
 	}
