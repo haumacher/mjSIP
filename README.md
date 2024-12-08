@@ -20,15 +20,72 @@ implementations. mjSIP comes with a core package implementation that includes:
 * some useful call control APIs (e.g. Call-Control, UserAgent, etc.),
 * a reference implementation of some SIP systems (Proxy Server, Session Border Controlleer, and User Agent).
 
-## Changes since 1.8
+## Usage
+
+You can import this library through a Maven dependency to your own project. Since it is not distributed to MavenCentral, 
+you have to add a custom repository section:
+
+```
+<repositories>
+	<repository>
+		<id>github</id>
+		<name>GitHub haumacher/mjSIP Apache Maven Packages</name>
+		<url>https://maven.pkg.github.com/haumacher/mjSIP</url>
+		<releases>
+			<enabled>true</enabled>
+		</releases>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+	</repository>
+</repositories>
+```
+
+Then you can import the modules with the following dependency:
+
+The client part (user-agent) to initiate calls:
+```
+<dependency>	
+    <groupId>org.mjsip</groupId>
+	<artifactId>mjsip-ua</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+The server part to implement VOIP servers:
+```
+<dependency>	
+    <groupId>org.mjsip</groupId>
+	<artifactId>mjsip-server</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+The library consists of the following modules, which can also be imported separately: 
+
+* mjsip-examples
+* mjsip-net
+* mjsip-phone
+* mjsip-server
+* mjsip-sip
+* mjsip-sound
+* mjsip-ua
+* mjsip-util
+
+To get an idea how to start, you can have a look into the [examples module](https://github.com/haumacher/mjSIP/tree/master/mjsip-examples/src/main/java/org/mjsip/examples). 
+
+## Main changes since 1.8
+
+This library was forked from version 1.8 distributed at http://mjsip.org/. Since this fork, the following changes were made: 
 
 * Added Maven build.
 * Split source into core modules `sip`, `server`, `ua`, and supporting modules `net`, `sound`, and `util`. Extracted 
   examples into modules `examples` and `phone`. 
 * Code cleanup: Added type parameter, added override annotations, reduced excessive logging, made fields private final
   where possible, removed mutable static fields, replaced lazy initialization with defined initialization order, reduced
-  number of constructors, enhanced configuration file parsing with `args4j`, applied Java naming conventions, encapsulated
-  fields. Access configuration from production code through read-only interfaces.
+  number of constructors, use Java resource management "try-with-resources" and `AutoClosable`, enhanced configuration 
+  file parsing with `args4j`, applied Java naming conventions, encapsulated fields. Access configuration from production 
+  code through read-only interfaces. Reduction of legacy Java APIs such as `Vector` and `StringBuffer`. Added Junit5 tests.
 * Replaced self-made logging with `slf4j` over `tinylog`.
 * Clarified transaction timeout handling with separate handler methods for each timeout. 
 * Modernized scheduling using ScheduledThreadPoolExecutor.
