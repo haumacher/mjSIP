@@ -76,7 +76,7 @@ public class MiniJukebox extends UserAgentCli {
 	
 	/** The main method. */
 	public static void main(String[] args) {
-		System.out.println("MiniJukebox"+SipStack.version);
+		System.out.println("MiniJukebox " + SipStack.version);
 		
 		SipConfig sipConfig = new SipConfig();
 		UAConfig uaConfig = new UAConfig();
