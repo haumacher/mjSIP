@@ -50,9 +50,14 @@ public class SipStack {
 		String v;
 		try (InputStream in = SipStack.class
 				.getResourceAsStream("/META-INF/maven/org.mjsip/mjsip-sip/pom.properties")) {
-			Properties properties = new Properties();
-			properties.load(in);
-			v = properties.getProperty("version");
+			if (in == null) {
+				// This may happen, if no Maven builder is used in a development environment
+				v = "development";
+			} else {
+				Properties properties = new Properties();
+				properties.load(in);
+				v = properties.getProperty("version");
+			}
 		} catch (IOException ex) {
 			v = "unknown";
 		}
