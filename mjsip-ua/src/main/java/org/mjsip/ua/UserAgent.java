@@ -163,16 +163,12 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	 *        The {@link MediaAgent} start the call with
 	 */
 	public void call(NameAddress callee, MediaAgent mediaAgent) {
+		setupMedia(mediaAgent);
+		
 		AddressType addressType = ConnectionField.addressType(callee.getAddress().getSpecificPart());
 		
 		// new call
 		SdpMessage sdp=_config.getNoOffer()? null : getSessionDescriptor(addressType);
-		call(callee,sdp, mediaAgent);
-	}
-
-	/** Makes a new call (acting as UAC) with specific SDP. */
-	public void call(NameAddress callee, SdpMessage sdp, MediaAgent mediaAgent) {
-		setupMedia(mediaAgent);
 
 		call = new ExtendedCall(sip_provider, new SipUser(_config.getUserURI(), _config.getAuthUser(),
 				_config.getAuthRealm(), _config.getAuthPasswd()),this);      
