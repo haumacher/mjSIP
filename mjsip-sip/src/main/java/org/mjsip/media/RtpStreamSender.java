@@ -411,7 +411,7 @@ public class RtpStreamSender implements Runnable, RtpControlledSender {
 	}
 
 
-	/** Gets the total number of UDP sent octects. */
+	/** Gets the total number of octets sent through the UDP socket. */
 	public long getUdpOctectCounter() {
 		if (rtp_socket!=null) return rtp_socket.getUdpSocket().getSenderOctectCounter();
 		else return 0;

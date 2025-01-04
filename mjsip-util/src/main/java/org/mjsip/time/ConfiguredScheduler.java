@@ -4,6 +4,7 @@
 package org.mjsip.time;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
@@ -33,18 +34,15 @@ public class ConfiguredScheduler implements Scheduler {
 		executor = new ScheduledThreadPoolExecutor(config.getThreadPoolSize(),
 				config.useDaemonThreads() ? new DaemonFactory() : Executors.defaultThreadFactory());
 	}
-
-	/**
-	 * Executor for regular tasks.
-	 */
-	@Override
-	public ScheduledThreadPoolExecutor executor() {
-		return executor;
-	}
 	
 	@Override
 	public void execute(Runnable command) {
 		executor.execute(command);
+	}
+	
+	@Override
+	public ScheduledExecutorService scheduler() {
+		return executor;
 	}
 
 	/**

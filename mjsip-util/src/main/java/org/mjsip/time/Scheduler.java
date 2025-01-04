@@ -4,6 +4,7 @@
 package org.mjsip.time;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -14,9 +15,21 @@ import java.util.concurrent.TimeUnit;
 public interface Scheduler extends Executor {
 
 	/** 
-	 * The {@link ScheduledExecutorService} used for scheduling tasks.
+	 * The executor.
 	 */
-	ScheduledExecutorService executor();
+	default ExecutorService executor() {
+		return scheduler();
+	}
+	
+	/** 
+	 * The scheduler.
+	 */
+	ScheduledExecutorService scheduler();
+
+	@Override
+	default void execute(Runnable command) {
+		executor().execute(command);
+	}
 
 	/**
 	 * Schedules a new task.
@@ -29,31 +42,13 @@ public interface Scheduler extends Executor {
 	 * @return The {@link ScheduledFuture} to control the task.
 	 */
 	default ScheduledFuture<?> schedule(long delay, Runnable task) {
-		return executor().schedule(task, delay, TimeUnit.MILLISECONDS);
+		return scheduler().schedule(task, delay, TimeUnit.MILLISECONDS);
 	}
 
 	/**
 	 * Schedules the given repeated task with a given fixed delay.
 	 */
 	default ScheduledFuture<?> schedulerWithFixedDelay(long delay, Runnable task) {
-		return executor().scheduleWithFixedDelay(task, delay, delay, TimeUnit.MILLISECONDS);
+		return scheduler().scheduleWithFixedDelay(task, delay, delay, TimeUnit.MILLISECONDS);
 	}
-	
-	/**
-	 * Wraps the given {@link ScheduledExecutorService} into a {@link Scheduler}.
-	 */
-	static Scheduler of(ScheduledExecutorService executor) {
-		return new Scheduler() {
-			@Override
-			public ScheduledExecutorService executor() {
-				return executor;
-			}
-
-			@Override
-			public void execute(Runnable command) {
-				executor.execute(command);
-			}
-		};
-	}
-	
 }
