@@ -4,7 +4,7 @@
 
 	<groupId>org.mjsip</groupId>
 	<artifactId>mjsip-parent</artifactId>
-	<version>2.0.2</version>
+	<version>2.0.3-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
@@ -44,7 +44,7 @@
 		<connection>scm:git:https://github.com/haumacher/mjSIP.git</connection>
 		<developerConnection>scm:git:https://github.com/haumacher/mjSIP.git</developerConnection>
 		<url>https://github.com/haumacher/mjSIP</url>
-		<tag>2.0.2</tag>
+		<tag>1.9.0</tag>
 	</scm>
 
 	<distributionManagement>
