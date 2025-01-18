@@ -35,12 +35,16 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 /** IpAddress is an IP address.
   */
 public class IpAddress {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(IpAddress.class);
 
 	/** The host address/name */
 	String address;
@@ -144,16 +148,19 @@ public class IpAddress {
 	public static InetAddress getLocalHostAddress(AddressType type) {
 		boolean ipv6 = type == AddressType.IP6;
 		
+		String remote = ipv6 ? "2001:4860:4860::8888" : "8.8.8.8";
 		try {
 			// Try to get an address with internet connection.
 			try (DatagramSocket socket=new DatagramSocket()) {
 				// Use Google DNS server
-				String remote = ipv6 ? "2001:4860:4860::8888" : "8.8.8.8";
 				socket.connect(InetAddress.getByName(remote), 9999);
 				return socket.getLocalAddress();
 			}
-		} catch (IOException ex) {
-			// Ignore.
+		} catch (Exception ex) {
+			// Ignore. Note: Here, not only a IOException can be thrown, but also a
+			// UncheckedIOException that wraps a SocketException, if executed on a host that
+			// has no IPv6 available.
+			LOG.debug("Cannot access {} for local socket address testing.", remote, ex);
 		}
 		
 		try {
