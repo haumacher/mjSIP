@@ -27,17 +27,17 @@ you have to add a custom repository section:
 
 ```
 <repositories>
-	<repository>
-		<id>github</id>
-		<name>GitHub haumacher/mjSIP Apache Maven Packages</name>
-		<url>https://maven.pkg.github.com/haumacher/mjSIP</url>
-		<releases>
-			<enabled>true</enabled>
-		</releases>
-		<snapshots>
-			<enabled>false</enabled>
-		</snapshots>
-	</repository>
+    <repository>
+        <id>github</id>
+        <name>GitHub haumacher/mjSIP Apache Maven Packages</name>
+        <url>https://maven.pkg.github.com/haumacher/mjSIP</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
 </repositories>
 ```
 
@@ -59,6 +59,19 @@ The server part to implement VOIP servers:
 	<artifactId>mjsip-server</artifactId>
     <version>2.0.0</version>
 </dependency>
+```
+
+Note that the GitHub hosted repositories require authentication (no anonymous download as from Maven-Central). 
+Therefore, you need to provide your GitHub access token in the Maven settings to make the download work (in `~/.m2/settings.xml`):
+
+```
+<servers>
+    <server>
+        <id>github</id>
+        <username>YOUR_USERNAME</username>
+        <password>YOUR_AUTH_TOKEN</password>
+    </server>
+</servers>
 ```
 
 The library consists of the following modules, which can also be imported separately: 
