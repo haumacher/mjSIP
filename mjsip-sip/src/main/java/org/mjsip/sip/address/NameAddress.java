@@ -61,8 +61,7 @@ public class NameAddress {
 
 	/** Creates a new NameAddress. */
 	public NameAddress(GenericURI uri) {
-		this.name=null;
-		this.uri=uri;
+		this(null, uri);
 	}
 
 	/** Creates a new NameAddress. */
