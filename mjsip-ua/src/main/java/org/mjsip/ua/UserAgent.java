@@ -165,7 +165,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 	public void call(NameAddress callee, MediaAgent mediaAgent) {
 		setupMedia(mediaAgent);
 		
-		AddressType addressType = ConnectionField.addressType(callee.getAddress().getSpecificPart());
+		AddressType addressType = callee.getAddress().toSipURI().getAddressType();
 		
 		// new call
 		SdpMessage sdp=_config.getNoOffer()? null : getSessionDescriptor(addressType);
