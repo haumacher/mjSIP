@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import org.mjsip.sip.provider.SipParser;
 import org.zoolu.net.AddressType;
 
 /**
@@ -197,6 +198,17 @@ public class SipURI extends GenericURI {
 			return null;
 		}
 		return new SipURIParser(uri).parse();
+	}
+
+	/**
+	 * Parses an address header value such as
+	 * <code><sip:ab-87042252@[2a01:0:0:0:0:0:0:1]:50060</code>
+	 */
+	public static SipURI parseAddress(String sipAddress) {
+		if (sipAddress == null || sipAddress.isBlank()) {
+			return null;
+		}
+		return parseSipURI(new SipParser(sipAddress).getURISource());
 	}
 
 	@Override

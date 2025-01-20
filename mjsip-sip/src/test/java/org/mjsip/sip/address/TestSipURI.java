@@ -3,6 +3,8 @@
  */
 package org.mjsip.sip.address;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -103,6 +105,19 @@ class TestSipURI {
 		Assertions.assertEquals("host.only", uri.getHost());
 		Assertions.assertTrue(uri.hasParameter("key"));
 		Assertions.assertEquals("value", uri.getParameter("key"));
+	}
+
+	@Test
+	void testParseHeaderValue1() {
+		SipURI uri = SipURI.parseAddress("<sip:**9@fritz.box>");
+		assertEquals("**9", uri.getUserName());
+	}
+
+	@Test
+	void testParseHeaderValue2() {
+		SipURI uri = SipURI.parseAddress("\"Some name\" <sip:**620@fritz.box>;tag=14B52E08DA5F10F9");
+		assertEquals("**620", uri.getUserName());
+		assertEquals("fritz.box", uri.getHost());
 	}
 
 	@Test

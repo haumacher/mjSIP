@@ -71,7 +71,6 @@ import org.mjsip.sip.header.UnsupportedHeader;
 import org.mjsip.sip.header.UserAgentHeader;
 import org.mjsip.sip.header.ViaHeader;
 import org.mjsip.sip.header.WwwAuthenticateHeader;
-import org.mjsip.sip.provider.SipParser;
 
 /** Class SipMessage extends class BasicSipMessage providing
   * methods for handling and parsing specific methods and header fields.
@@ -1207,7 +1206,7 @@ public class SipMessage extends BasicSipMessage {
 			return null;
 		}
 
-		return SipURI.parseSipURI(new SipParser(fromHeader.getValue()).getURISource());
+		return SipURI.parseAddress(fromHeader.getValue());
 	}
 
 }
