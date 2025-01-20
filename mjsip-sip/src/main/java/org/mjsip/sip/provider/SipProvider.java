@@ -108,14 +108,6 @@ public class SipProvider implements SipTransportListener {
 	/** SCTP protocol type */
 	public static final String PROTO_SCTP="sctp";
 	
-	/** String value "NO-OUTBOUND" used for setting no outbound proxy */
-	//public static final String NO_OUTBOUND="NO-OUTBOUND";
-
-	/** Message begin delimiter */
-	private static final String MESSAGE_BEGIN_DELIMITER = "-----Begin-of-message-----\n";
-
-	/** Message end delimiter */
-	private static final String MESSAGE_END_DELIMITER = "\n-----End-of-message-----";
 
 	// ************************ Other attributes *************************
 
@@ -1185,8 +1177,8 @@ public class SipProvider implements SipTransportListener {
 	/** Adds the SIP message to the message log. */
 	private final void logMessage(String message, String proto, String addr, int port, SipMessage msg) {
 		if (_sipConfig.isLogAllPackets()) {
-			LOG.info("{} {}:{}/{} ({} bytes)\n{} {} {}", message, addr, port, proto, msg.getLength(),
-					MESSAGE_BEGIN_DELIMITER, msg, MESSAGE_END_DELIMITER);
+			LOG.info("{} {}:{}/{} ({} bytes)\n-----Begin-of-message-----\n{}\n-----End-of-message-----", message, addr,
+					port, proto, msg.getLength(), msg);
 		}
 	}
 
