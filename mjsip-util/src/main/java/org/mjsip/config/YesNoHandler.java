@@ -24,8 +24,21 @@ public class YesNoHandler extends OptionHandler<Boolean> {
 
 	@Override
 	public int parseArguments(Parameters params) throws CmdLineException {
-		setter.addValue(Boolean.valueOf(params.getParameter(0).toLowerCase().startsWith("y")));
+		String arg = params.getParameter(0).toLowerCase();
+		setter.addValue(parseBoolean(arg));
 		return 1;
+	}
+
+	private Boolean parseBoolean(String arg) throws CmdLineException {
+		switch (arg) {
+		case "true": return Boolean.TRUE;
+		case "false": return Boolean.FALSE;
+		case "yes": return Boolean.TRUE;
+		case "no": return Boolean.FALSE;
+		case "1": return Boolean.TRUE;
+		case "0": return Boolean.FALSE;
+		default: throw new CmdLineException(owner, "Invalid boolean value '" + arg + "' in option '" + option + "'.", null);
+		}
 	}
 
 	@Override
