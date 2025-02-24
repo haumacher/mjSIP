@@ -18,8 +18,8 @@ public class UAConfig implements UAOptions {
 	@Option(name = "--display-name", metaVar = "<name>", usage = "The display name of the user.")
 	private String _displayName=null;
 
-	@Option(name = "--user", metaVar = "<name>", usage = "The user ID to register at the registrar.")
-	private String _user="alice";
+	@Option(name = "--sip-user", metaVar = "<name>", usage = "The user ID to register at the registrar.")
+	private String _sipUser="alice";
 
 	@Option(name = "--proxy", usage = "Proxy server to use.")
 	private String _proxy=null;
@@ -112,14 +112,14 @@ public class UAConfig implements UAOptions {
 	public void normalize(SipOptions sipConfig) {
 		if (getProxy()!=null && getProxy().equalsIgnoreCase(Configure.NONE)) setProxy(null);
 		if (getDisplayName()!=null && getDisplayName().equalsIgnoreCase(Configure.NONE)) setDisplayName(null);
-		if (getUser()!=null && getUser().equalsIgnoreCase(Configure.NONE)) setUser(null);
+		if (getSipUser()!=null && getSipUser().equalsIgnoreCase(Configure.NONE)) setSipUser(null);
 		if (getAuthRealm()!=null && getAuthRealm().equalsIgnoreCase(Configure.NONE)) setAuthRealm(null);
 
 		if (getRegistrar()==null && getProxy()!=null) setRegistrar(new SipURI(getProxy()));
 		if (getProxy()==null && getRegistrar()!=null) setProxy(getRegistrar().getHost());
 		if (getAuthRealm()==null && getProxy()!=null) setAuthRealm(getProxy());
 		if (getAuthRealm()==null && getRegistrar()!=null) setAuthRealm(getRegistrar().getHost());
-		if (getAuthUser()==null && getUser()!=null) setAuthUser(getUser());
+		if (getAuthUser()==null && getSipUser()!=null) setAuthUser(getSipUser());
 
 		if (isRegister() && getRegistrar() == null) {
 			throw new IllegalArgumentException("Registrar is required, when registering is enabled.");
@@ -139,10 +139,10 @@ public class UAConfig implements UAOptions {
 
 	@Override
 	public NameAddress getUserURI() {
-		if (getProxy()!=null && getUser()!=null) {
-			return new NameAddress(getDisplayName(),new SipURI(getUser(),getProxy()));
+		if (getProxy()!=null && getSipUser()!=null) {
+			return new NameAddress(getDisplayName(),new SipURI(getSipUser(),getProxy()));
 		} else {
-			return new NameAddress(getDisplayName(),new SipURI(getUser(),getUaAddress()));
+			return new NameAddress(getDisplayName(),new SipURI(getSipUser(),getUaAddress()));
 		}
 	}
 
@@ -160,13 +160,13 @@ public class UAConfig implements UAOptions {
 	}
 
 	@Override
-	public String getUser() {
-		return _user;
+	public String getSipUser() {
+		return _sipUser;
 	}
 	
 	/** @see #getUser() */
-	public void setUser(String user) {
-		this._user = user;
+	public void setSipUser(String sipUser) {
+		this._sipUser = sipUser;
 	}
 
 	@Override

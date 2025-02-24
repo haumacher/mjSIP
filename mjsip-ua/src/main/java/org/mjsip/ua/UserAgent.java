@@ -113,7 +113,7 @@ public class UserAgent extends CallListenerAdapter implements SipProviderListene
 
 	/** Gets SessionDescriptor from Vector of MediaSpec. */
 	private SdpMessage getSessionDescriptor(AddressType addressType) {
-		String owner=_config.getUser();
+		String owner=_config.getSipUser();
 		String mediaAddr = _config.getMediaAddr();
 		String media_addr=(mediaAddr!=null)? mediaAddr : sip_provider.getViaAddress(addressType);
 		SdpMessage sdp=SdpMessage.createSdpMessage(owner, media_addr);

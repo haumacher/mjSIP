@@ -26,6 +26,6 @@ public interface UserOptions extends AuthOptions {
 	 * User's name. It is used to build the user's AOR registered to the registrar server and used
 	 * as From URI.
 	 */
-	String getUser();
+	String getSipUser();
 
 }

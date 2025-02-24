@@ -59,8 +59,8 @@ public interface StaticOptions {
 			}
 			
 			@Override
-			public String getUser() {
-				return user.getUser();
+			public String getSipUser() {
+				return user.getSipUser();
 			}
 			
 			@Override
