@@ -18,7 +18,7 @@
 
 # User's name.
 # It is used to build the user's AOR registered to the registrar server and used as From URL.
-#user=alice
+#sip-user=alice
 
 # Fully qualified domain name (or address) of the proxy server.
 # It is part of the user's AOR registered to the registrar server and used as From URL.
@@ -61,6 +61,9 @@
 # Whether unregistering all contacts beafore registering the contact address.
 # Default value: do_unregister_all=no
 #do_unregister_all=yes
+
+# Whether to debug SIP traffic.
+log-all-packets=no
 
 # Expires time.
 # Default value: expires=3600
