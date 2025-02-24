@@ -192,8 +192,13 @@ public abstract class BasicSipMessageFactory {
 		String remote_tag=dialog.getRemoteTag();
 		//String branch=SipStack.pickBranch();
 		SipMessage req=createRequest(method,request_uri,to,from/*,proto,via_addr,host_port,rport*/,call_id,cseq,local_tag,remote_tag/*,null*/,contact,content_type,body);
-		Vector route=dialog.getRoute();
-		if (route!=null && route.size()>0) req.addRoutes(new MultipleHeader(SipHeaders.Route,route));
+		Vector<NameAddress> route = dialog.getRoute();
+		Vector<String> routeHeader = new Vector<>();
+		for (NameAddress address : route) {
+			routeHeader.add(address.toString());
+		}
+		if (route != null && route.size() > 0)
+			req.addRoutes(new MultipleHeader(SipHeaders.Route, routeHeader));
 		req.rfc2543RouteAdapt();
 		return req;
 	}

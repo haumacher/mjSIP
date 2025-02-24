@@ -118,8 +118,12 @@ public class MultipleHeader {
 		compact=comma_separated;
 	}
 
-	/** Whether the MultipleHeader rappresentation is comma-separated or multiple headers.
-	  * @return whether comma-separated or multiple headers. */
+	/**
+	 * Whether the MultipleHeader representation is comma-separated or multiple
+	 * headers.
+	 * 
+	 * @return whether comma-separated or multiple headers.
+	 */
 	public boolean isCommaSeparated() {
 		return compact;
 	}
