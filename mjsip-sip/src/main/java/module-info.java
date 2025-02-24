@@ -7,7 +7,7 @@
  */
 module org.mjsip.sip {
 
-	requires org.mjsip.sound;
+	requires transitive org.mjsip.sound;
 	requires transitive org.mjsip.util;
 	requires transitive org.mjsip.net;
 	requires args4j;
