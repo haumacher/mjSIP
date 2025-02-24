@@ -184,7 +184,7 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 					return new PcmToG711AudioInputStream(source_stream,target_format);
 				}
 				else {
-					throw new IllegalArgumentException("Unable to convert "+source_format.toString()+" to "+target_format.toString());
+					throw new IllegalArgumentException("Unable to convert "+source_format+" to "+target_format);
 				}
 			}
 			else  {
@@ -206,13 +206,15 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 	  * is not supported. */
 	@Override
 	public AudioInputStream getAudioInputStream(final AudioFormat target_format, final AudioInputStream source_stream) {
-		LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): source format={}", source_stream.getFormat());
+		AudioFormat sourceFormat = source_stream.getFormat();
+		
+		LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): source format={}", sourceFormat);
 		LOG.debug("getAudioInputStream(AudioFormat,AudioInputStream): target format={}", target_format);
 		
-		if (isConversionSupported(target_format,source_stream.getFormat())) {
-			AudioFormat[] formats=getTargetFormats(target_format.getEncoding(),source_stream.getFormat());
+		if (isConversionSupported(target_format,sourceFormat)) {
+			AudioFormat[] formats=getTargetFormats(target_format.getEncoding(),sourceFormat);
 			if (formats!=null && formats.length>0) {
-				AudioFormat source_format=source_stream.getFormat();
+				AudioFormat source_format=sourceFormat;
 				if (source_format.equals(target_format)) {
 					return source_stream;
 				}
@@ -225,15 +227,15 @@ public class G711FormatConversionProvider extends FormatConversionProvider {
 					return new PcmToG711AudioInputStream(source_stream,target_format);
 				}
 				else {
-					throw new IllegalArgumentException("Unable to convert "+source_format.toString()+" to "+target_format.toString());
+					throw new IllegalArgumentException("Unable to convert "+source_format+" to "+target_format);
 				}
 			}
 			else {
-				throw new IllegalArgumentException("Target format not found");
+				throw new IllegalArgumentException("Target format not found: " + target_format);
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Conversion not supported");
+			throw new IllegalArgumentException("Conversion not supported: " + sourceFormat + " -> " + target_format);
 		}
 	}
 }
