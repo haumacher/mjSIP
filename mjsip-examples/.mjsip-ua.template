@@ -35,7 +35,7 @@
 #auth-user=alice
 
 # User's realm used for server authentication.
-auth-realm=fritz.box
+#auth-realm=fritz.box
 
 # User's passwd used for server authentication.
 #auth-passwd=
