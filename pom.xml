@@ -113,6 +113,24 @@
 				<artifactId>mjsip-ua</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-util</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-net</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-sound</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
