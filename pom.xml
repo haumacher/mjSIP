@@ -12,15 +12,15 @@
 	<url>http://www.mjsip.org</url>
 	<description>
 		A complete java-based implementation of a SIP stack.
-		
-		SIP (Session Initiation Protocol) is the IETF (Internet Engineering Task Force) signaling standard for managing 
+
+		SIP (Session Initiation Protocol) is the IETF (Internet Engineering Task Force) signaling standard for managing
 		multimedia session initiation; it is currently defined in RFC 3261. SIP can be used to initiate voice, video and
-		multimedia sessions, for both interactive applications (e.g. an IP phone call or a video conference) and not 
-		interactive ones (e.g. a Video Streaming), and it is the more promising candidate as call setup signaling for 
-		the present day and future IP based telephony services. SIP has been also proposed for session initiation 
+		multimedia sessions, for both interactive applications (e.g. an IP phone call or a video conference) and not
+		interactive ones (e.g. a Video Streaming), and it is the more promising candidate as call setup signaling for
+		the present day and future IP based telephony services. SIP has been also proposed for session initiation
 		related uses, such as for messaging, gaming, etc.
 
-		The mjSIP stack has been used in research activities by Dept. of Engineering and Architecture at University of 
+		The mjSIP stack has been used in research activities by Dept. of Engineering and Architecture at University of
 		Parma and by DIE - University of Roma "Tor Vergata" and several commercial products.
 	</description>
 
@@ -81,33 +81,19 @@
 
 	<dependencies>
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-api</artifactId>
-		    <version>2.0.7</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.7</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.tinylog</groupId>
-			<artifactId>slf4j-tinylog</artifactId>
-			<version>2.6.1</version>
-		    <scope>runtime</scope>
-		</dependency>
-		
-		<dependency>
-		    <groupId>org.tinylog</groupId>
-		    <artifactId>tinylog-impl</artifactId>
-		    <version>2.6.1</version>
-		    <scope>runtime</scope>
-		</dependency>
-	
-		<dependency>
-		    <groupId>org.junit.jupiter</groupId>
-		    <artifactId>junit-jupiter</artifactId>
-		    <version>5.10.2</version>
-		    <scope>test</scope>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.10.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -126,6 +112,30 @@
 				<groupId>org.mjsip</groupId>
 				<artifactId>mjsip-ua</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-util</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-net</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mjsip</groupId>
+				<artifactId>mjsip-sound</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>args4j</groupId>
+				<artifactId>args4j</artifactId>
+				<version>2.37</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -146,11 +156,11 @@
 				<targetPath>META-INF</targetPath>
 			</resource>
 		</resources>
-		
+
 		<plugins>
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-resources-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
 			</plugin>
 
 			<plugin>
@@ -218,11 +228,11 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-				    <groupId>org.apache.maven.plugins</groupId>
-				    <artifactId>maven-resources-plugin</artifactId>
-				    <version>3.3.0</version>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.3.0</version>
 				</plugin>
-	
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -236,6 +246,6 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
+
 	</build>
 </project>
