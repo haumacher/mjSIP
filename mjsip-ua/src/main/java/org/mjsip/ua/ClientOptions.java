@@ -9,6 +9,5 @@ package org.mjsip.ua;
  * @see UAOptions
  */
 public interface ClientOptions extends StaticOptions, UserOptions {
-
-	
+	// Pure sum interface.
 }
