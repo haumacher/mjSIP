@@ -93,13 +93,20 @@ public class RtcpCompoundPacket {
 		return length;
 	}
 
-	/** Gets the RTCP packets componing the compound packet. */
+	/** Gets the RTCP packets componing the compound packet.
+	  * <p>
+	  * Packets that are not completely contained in the received data are dropped, since their length
+	  * is announced by the packets themselves and may exceed the data actually received.
+	  * </p>
+	  * @return the RTCP packets found in the compound packet */
 	public RtcpPacket[] getRtcpPackets() {
 		int index=0;
 		Vector<RtcpPacket> aux=new Vector<>();
-		while (index<length) {
+		while (index+RtcpPacket.HDR_LEN<=length) {
 			RtcpPacket rp=new RtcpPacket(buffer,offset+index);
-			index+=rp.getPacketLength();
+			int packet_len=rp.getPacketLength();
+			if (packet_len<RtcpPacket.HDR_LEN || index+packet_len>length) break; // broken packet
+			index+=packet_len;
 			aux.addElement(rp);
 		}
 		RtcpPacket[] rtcp_packets=new RtcpPacket[aux.size()];

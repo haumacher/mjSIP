@@ -189,8 +189,22 @@ public class RtpPacket {
 		if (length<HDR_LEN) return 0; // broken packet
 		// else
 		boolean p=BufferUtil.getBit(buffer[offset],5);
-		if (p) return buffer[offset+length-1];
-		else return 0;
+		if (!p) return 0;
+		// else
+		int padding_len=buffer[offset+length-1] & 0xFF; // the padding length is an unsigned value
+		// Note: The padding length is announced by the packet itself, therefore it may be larger than
+		// the number of bytes actually received. Such a packet is broken and has no payload at all.
+		int available=getAvailableLength();
+		return (padding_len<=available)? padding_len : available;
+	}
+
+	/** Gets the number of received bytes following the RTP header, i.e. the bytes available for the
+	  * payload and for the padding.
+	  * @return the number of bytes following the RTP header, or 0 if the announced header does not fit
+	  *         into the received packet */
+	private int getAvailableLength() {
+		int available=length-getHeaderLength();
+		return (available>0)? available : 0; // returns 0 in case of broken packet
 	}
 
 	/** Sets padding length.
@@ -386,8 +400,12 @@ public class RtpPacket {
 	/** Gets the RTP header length.
 	  * @return the RTP header length */
 	public int getHeaderLength() {
-		if (length>=HDR_LEN) return HDR_LEN+4*getCsrcCount();
-		else return length; // broken packet
+		if (length<HDR_LEN) return length; // broken packet
+		// else
+		int hdr_len=HDR_LEN+4*getCsrcCount();
+		// Note: The CSRC count is announced by the packet itself, therefore the announced header may
+		// be longer than the number of bytes actually received.
+		return (hdr_len<=length)? hdr_len : length; // broken packet
 	}
 
 	/** Sets the RTP payload.
@@ -411,20 +429,19 @@ public class RtpPacket {
 	}
 
 	/** Gets the payload.
-	  * @return a new byte array containing the the payload data */ 
+	  * @return a new byte array containing the the payload data (without any padding) */
 	public byte[] getPayload() {
 		int hdr_len=getHeaderLength();
-		int pl_len=length-hdr_len;
+		int pl_len=getPayloadLength();
 		byte[] pl_buf=new byte[pl_len];
-		for (int i=0; i<pl_len; i++) pl_buf[i]=buffer[offset+hdr_len+i]; 
+		for (int i=0; i<pl_len; i++) pl_buf[i]=buffer[offset+hdr_len+i];
 		return pl_buf;
 	}
 
 	/** Gets the RTP payload length.
-	  * @return the RTP payload length */
+	  * @return the RTP payload length; never more than the number of bytes actually received */
 	public int getPayloadLength() {
-		int pl_len=length-getHeaderLength()-getPaddingLength();
-		return (pl_len>0)? pl_len : 0; // returns 0 in case of broken packet
+		return getAvailableLength()-getPaddingLength();
 	}
 
 	/** Sets the RTP payload length.
