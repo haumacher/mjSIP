@@ -190,14 +190,20 @@ public class TcpConnection extends Thread {
 					LOG.debug("Connection closed: {}", socket);
 					stop=true;
 				} else if (len > 0) {
-					if (listener!=null) listener.onReceivedData(this,buff,len);
+					// Note: A failure while processing received data must not terminate the connection
+					// handler, since that would leave the connection in an undefined state without
+					// notifying the listener. Errors are caught as well, since e.g. an OutOfMemoryError
+					// may be provoked by malicious data.
+					if (listener!=null) try {  listener.onReceivedData(this,buff,len);  } catch (Throwable t) {
+						LOG.warn("Dropping {} bytes received from {} that could not be processed.",Integer.valueOf(len),socket,t);
+					}
 					if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
 				}
 			}
 		}
-		catch (IOException e) {
-			LOG.info("TCP connection terminated: {}", e.getMessage());
-			error=e;
+		catch (Throwable t) {
+			LOG.info("TCP connection terminated: {}", t.getMessage());
+			error=(t instanceof IOException)? (IOException)t : new IOException(t);
 			stop=true;
 		}
 		is_running=false;
