@@ -27,6 +27,8 @@ package org.zoolu.net;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 
+import org.slf4j.LoggerFactory;
+
 
 /** UdpProvider provides an UDP send/receive service.
   * On the receiver side it waits for UDP datagrams and passes them
@@ -39,7 +41,9 @@ import java.io.InterruptedIOException;
   * receiving packets.
   */
 public class UdpProvider extends Thread {
-	
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UdpProvider.class);
+
 	/** The reading buffer size */
 	public static final int BUFFER_SIZE=65535;
 	  
@@ -179,15 +183,19 @@ public class UdpProvider extends Thread {
 					continue;
 				}
 				if (packet.getLength()>=minimum_length) {
-					//if (listener!=null) listener.onReceivedPacket(this,packet);
-					if (listener!=null) try {  listener.onReceivedPacket(this,packet);  } catch (Exception e) {}
+					// Note: A failure while processing a single packet must not terminate the receiver
+					// thread, since that would stop the service for all peers. Errors are caught as
+					// well, since e.g. an OutOfMemoryError may be provoked by a malicious packet.
+					if (listener!=null) try {  listener.onReceivedPacket(this,packet);  } catch (Throwable t) {
+						LOG.warn("Dropping packet from {}:{} that could not be processed.",packet.getIpAddress(),Integer.valueOf(packet.getPort()),t);
+					}
 					if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
 				}
 				packet=new UdpPacket(buf, buf.length);
 			}
 		}
-		catch (Exception e) {
-			error=e;
+		catch (Throwable t) {
+			error=(t instanceof Exception)? (Exception)t : new RuntimeException(t);
 			stop=true;
 		} 
 		is_running=false;

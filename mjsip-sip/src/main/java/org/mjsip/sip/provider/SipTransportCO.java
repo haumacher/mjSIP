@@ -31,6 +31,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.mjsip.sip.message.SipMessage;
+import org.mjsip.sip.message.SipMessageBuffer;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.SocketAddress;
@@ -59,7 +60,10 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 	boolean manual=false;
 
 	/** Whether changing the Via protocol, sent-by, and port values of sending messages according to the transport connection */
-	boolean force_sent_by=false;   
+	boolean force_sent_by=false;
+
+	/** Maximum size of a single received SIP message (in bytes) */
+	int max_message_size=SipMessageBuffer.DEFAULT_MAX_MESSAGE_SIZE;
 
 
 
@@ -98,9 +102,29 @@ public abstract class SipTransportCO implements SipTransport/*, SipTransportConn
 
 	/** Whether the "force-sent-by" mode is set.
 	  * See method {@link #setForceSentBy(boolean)} for more details.
-	  * @return true if "force-sent-by" mode is set */ 
+	  * @return true if "force-sent-by" mode is set */
 	public boolean isForceSentBySet() {
 		return force_sent_by;
+	}
+
+
+	/** Sets the maximum size of a single received SIP message.
+	  * A connection delivering more data than that without forming a complete message is closed, since
+	  * such data can neither be parsed nor be buffered indefinitely.
+	  * <p>
+	  * The setting is applied to connections established afterwards.
+	  * </p>
+	  * @param max_message_size the maximum size of a single received SIP message (in bytes) */
+	public void setMaxMessageSize(int max_message_size) {
+		this.max_message_size=max_message_size;
+	}
+
+
+	/** Gets the maximum size of a single received SIP message.
+	  * See method {@link #setMaxMessageSize(int)} for more details.
+	  * @return the maximum size of a single received SIP message (in bytes) */
+	public int getMaxMessageSize() {
+		return max_message_size;
 	}
 
 

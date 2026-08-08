@@ -27,6 +27,7 @@ import org.mjsip.config.YesNoHandler;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.config.IpAddressHandler;
 import org.mjsip.sip.config.SipURIHandler;
+import org.mjsip.sip.message.SipMessageBuffer;
 import org.mjsip.sip.message.SipMethods;
 import org.slf4j.LoggerFactory;
 import org.zoolu.net.AddressType;
@@ -157,6 +158,9 @@ public class SipConfig implements SipOptions {
 
 	@Option(name = "--max-connections")
 	private int _maxConnections = 0;
+
+	@Option(name = "--max-message-size", usage = "Maximum size of a single SIP message received over a stream-oriented transport.")
+	private int _maxMessageSize = SipMessageBuffer.DEFAULT_MAX_MESSAGE_SIZE;
 
 	@Option(name = "--outbound-proxy", handler = SipURIHandler.class, usage = "Use the given outbound proxy.")
 	private SipURI _outboundProxy = null;
@@ -540,6 +544,16 @@ public class SipConfig implements SipOptions {
 
 	public void setMaxConnections(int maxConnections) {
 		this._maxConnections = maxConnections;
+	}
+
+	@Override
+	public int getMaxMessageSize() {
+		return _maxMessageSize;
+	}
+
+	/** @see #getMaxMessageSize() */
+	public void setMaxMessageSize(int maxMessageSize) {
+		this._maxMessageSize = maxMessageSize;
 	}
 
 	@Override

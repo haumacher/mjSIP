@@ -178,7 +178,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 		LOG.debug("incoming connection from {}:{}", socket.getAddress(), socket.getPort());
 		if (tcp_server==this.tls_server) {
 			try {
-				SipTransportConnection conn = new TlsTransportConnection(socket, this_conn_listener);
+				SipTransportConnection conn = new TlsTransportConnection(socket, getMaxMessageSize(), this_conn_listener);
 				LOG.debug("tls connection {} opened", conn);
 				addConnection(conn);
 				if (listener != null)
@@ -201,7 +201,7 @@ public class TlsTransport extends SipTransportCO/* implements TcpServerListener*
 	@Override
 	protected SipTransportConnection createTransportConnection(SocketAddress remote_soaddr) throws IOException {
 		TcpSocket tls_socket=tls_socket_factory.createTlsSocket(remote_soaddr.getAddress(),remote_soaddr.getPort());
-		return new TlsTransportConnection(tls_socket,this_conn_listener);
+		return new TlsTransportConnection(tls_socket,getMaxMessageSize(),this_conn_listener);
 	}
 
 

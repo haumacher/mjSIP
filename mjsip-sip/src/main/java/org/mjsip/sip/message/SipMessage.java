@@ -94,9 +94,26 @@ public class SipMessage extends BasicSipMessage {
 		super(str);
 	}
 
-	/** Creates a new Message */
+	/** Creates a new Message.
+	  * <p>
+	  * Note: A parser error is only logged, which produces a partially initialized message. Use
+	  * {@link #parse(byte[],int,int)} for messages received from the network.
+	  * </p> */
 	public SipMessage(byte[] buff, int offset, int len) {
 		super(buff,offset,len);
+	}
+
+	/** Parses a message received from a datagram-oriented transport.
+	  * @param buf the byte array containing the message
+	  * @param off the message offset within the byte array
+	  * @param len the message len
+	  * @return the parsed message
+	  * @exception MalformedSipMessageException if the given bytes do not contain (starting at the given
+	  *            offset with) a valid SIP message */
+	public static SipMessage parse(byte[] buf, int off, int len) throws MalformedSipMessageException {
+		SipMessage result=new SipMessage();
+		result.setMessage(buf,off,len);
+		return result;
 	}
 
 	/** Creates a new Message */

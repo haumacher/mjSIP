@@ -113,7 +113,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 		LOG.debug("incoming connection from {}:{}", socket.getAddress(), socket.getPort());
 		if (tcp_server==this.tcp_server) {
 			try {
-				SipTransportConnection conn = new TcpTransportConnection(socket, this_conn_listener);
+				SipTransportConnection conn = new TcpTransportConnection(socket, getMaxMessageSize(), this_conn_listener);
 				LOG.debug("tcp connection {} opened", conn);
 				addConnection(conn);
 				if (listener != null)
@@ -136,7 +136,7 @@ public class TcpTransport extends SipTransportCO/* implements TcpServerListener*
 	@Override
 	protected SipTransportConnection createTransportConnection(SocketAddress remote_soaddr) throws IOException {
 		TcpSocket tcp_socket=new TcpSocket(remote_soaddr.getAddress(),remote_soaddr.getPort());
-		return new TcpTransportConnection(tcp_socket,this_conn_listener);
+		return new TcpTransportConnection(tcp_socket,getMaxMessageSize(),this_conn_listener);
 	}
 
 

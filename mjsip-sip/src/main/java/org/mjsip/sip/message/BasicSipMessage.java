@@ -194,6 +194,8 @@ public abstract class BasicSipMessage {
 			ContentLengthHeader clh=getContentLengthHeader();
 			if (clh!=null) {
 				int body_len=clh.getContentLength();
+				int available=str.length()-par.getPos();
+				checkBodyLength(body_len,available);
 				body=par.getString(body_len).getBytes();
 			}
 			else
@@ -201,11 +203,14 @@ public abstract class BasicSipMessage {
 				String body_str=par.getRemainingString();
 				body=(body_str.length()>0)? body_str.getBytes() : null;
 			}
-			
+
 			return par.getPos();
 		}
+		catch (MalformedSipMessageException e) {
+			throw e;
+		}
 		catch (Exception e) {
-			throw new MalformedSipMessageException(e.getMessage()); 
+			throw new MalformedSipMessageException(e.getMessage());
 		}
 	}
 
@@ -213,12 +218,44 @@ public abstract class BasicSipMessage {
 	/** Sets the message from an array of bytes containing the SIP message.
 	  * The array of bytes must contain a valid SIP message, otherwise a MalformedSipMessageException is thrown.
 	  * Possible additional bytes after the end of the SIP message are simply ignored.
-	  * @param buf the byte array containing the SIP message 
+	  * <p>
+	  * The given bytes are interpreted as a single transport packet of a datagram-oriented transport,
+	  * see {@link #setMessage(byte[],int,int,boolean)}.
+	  * </p>
+	  * @param buf the byte array containing the SIP message
 	  * @param off the offset within the byte array
 	  * @param len the number of available bytes
 	  * @return the number of used bytes
 	  * @exception MalformedSipMessageException in case the array of bytes does not contain (starting at the given offset with) a valid SIP message */
 	protected int setMessage(byte[] buf, int off, int len) throws MalformedSipMessageException {
+		return setMessage(buf,off,len,false);
+	}
+
+
+	/** Sets the message from an array of bytes containing the SIP message.
+	  * The array of bytes must contain a valid SIP message, otherwise a MalformedSipMessageException is thrown.
+	  * Possible additional bytes after the end of the SIP message are simply ignored.
+	  * <p>
+	  * How the end of the message body is determined depends on the transport the bytes have been
+	  * received from (see RFC 3261, 18.3). In a datagram-oriented transport (<code>stream</code> is
+	  * <code>false</code>), the given bytes are a single transport packet: A message body without a
+	  * Content-Length header field ends at the end of the packet. In a stream-oriented transport
+	  * (<code>stream</code> is <code>true</code>), the given bytes may contain more than one message,
+	  * so a Content-Length header field is the only way to tell where the message ends: A message
+	  * without that header field is rejected instead of consuming bytes that potentially belong to a
+	  * subsequent message. Moreover, a message that is not completely contained in the given bytes is
+	  * only an error in a datagram-oriented transport, while in a stream-oriented transport the rest
+	  * of the message may still arrive, which is reported by an {@link IncompleteSipMessageException}.
+	  * </p>
+	  * @param buf the byte array containing the SIP message
+	  * @param off the offset within the byte array
+	  * @param len the number of available bytes
+	  * @param stream whether the bytes have been received from a stream-oriented transport
+	  * @return the number of used bytes
+	  * @exception IncompleteSipMessageException in case of a stream-oriented transport, if the message
+	  *            is not completely contained in the given bytes
+	  * @exception MalformedSipMessageException in case the array of bytes does not contain (starting at the given offset with) a valid SIP message */
+	protected int setMessage(byte[] buf, int off, int len, boolean stream) throws MalformedSipMessageException {
 		try {
 			// skip any leading CRLF
 			/*int skip_len=0;
@@ -227,25 +264,22 @@ public abstract class BasicSipMessage {
 				len--;
 				skip_len++;
 			}*/
-		
+
 			// find total header length
-			byte[] delim={(byte)'\r',(byte)'\n',(byte)'\r',(byte)'\n'};
-			int siph_len=ByteUtils.indexOf(delim,buf,off,len);
+			int siph_len=headerLength(buf,off,len);
 			if (siph_len<0) {
-				delim=new byte[]{(byte)'\n',(byte)'\n'};
-				siph_len=ByteUtils.indexOf(delim,buf,off,len);
+				if (stream) throw new IncompleteSipMessageException("Incomplete message header: No SIP header delimiter found within "+len+" bytes.");
+				throw new MalformedSipMessageException("No SIP header delimiter found.");
 			}
-			if (siph_len<0) throw new MalformedSipMessageException("No SIP header delimiter found.");
 			// else
-			siph_len+=delim.length;
 			String siph_str=new String(buf,off,siph_len);
-	
+
 			// parse first line
 			SipParser par=new SipParser(siph_str);
-			String proto_version=siph_str.substring(0,SIP_VERSION.length());     
+			String proto_version=siph_str.substring(0,SIP_VERSION.length());
 			if (proto_version.equalsIgnoreCase(SIP_VERSION)) status_line=par.getStatusLine();
 			else request_line=par.getRequestLine();
-	
+
 			// parse all header fields
 			//headers=new Vector();
 			if (headers.size()>0) headers.removeAllElements();
@@ -254,19 +288,71 @@ public abstract class BasicSipMessage {
 				headers.addElement(h);
 				h=par.getHeader();
 			}
-	
+
 			// get body
 			int body_len=0;
+			int available=len-siph_len;
 			ContentLengthHeader clh=getContentLengthHeader();
-			if (clh!=null) body_len=clh.getContentLength();
-			else if (getContentTypeHeader()!=null) body_len=len-siph_len;
+			if (clh!=null) {
+				body_len=clh.getContentLength();
+				if (stream && body_len>=0 && body_len>available)
+					throw new IncompleteSipMessageException("Incomplete message body: Only "+available+" of "+body_len+" bytes received.");
+				checkBodyLength(body_len,available);
+			}
+			else if (stream) {
+				// Without a Content-Length header field, the end of the message cannot be determined,
+				// since the remaining bytes may belong to a subsequent message.
+				throw new MalformedSipMessageException("Missing Content-Length header field in a message received over a stream-oriented transport.");
+			}
+			else if (getContentTypeHeader()!=null) body_len=available;
 			body=(body_len>0)? ByteUtils.copy(buf,off+siph_len,body_len) : null;
-			
+
 			return /*skip_len+*/siph_len+body_len;
 		}
-		catch (Exception e) {
-			throw new MalformedSipMessageException(e.getMessage()); 
+		catch (MalformedSipMessageException e) {
+			throw e;
 		}
+		catch (Exception e) {
+			throw new MalformedSipMessageException(e.getMessage());
+		}
+	}
+
+
+	/** The alternative sequences terminating the header of a SIP message. */
+	private static final byte[][] HEADER_DELIMITERS={
+		{(byte)'\r',(byte)'\n',(byte)'\r',(byte)'\n'},
+		{(byte)'\n',(byte)'\n'}
+	};
+
+	/** Finds the end of the message header.
+	  * @param buf the byte array containing the SIP message
+	  * @param off the offset within the byte array
+	  * @param len the number of available bytes
+	  * @return the length of the message header including the terminating empty line, or -1 if the
+	  *         given bytes do not contain a complete message header */
+	private static int headerLength(byte[] buf, int off, int len) {
+		int result=-1;
+		int found=len;
+		for (byte[] delim : HEADER_DELIMITERS) {
+			int index=ByteUtils.indexOf(delim,buf,off,len);
+			// Note: The delimiter occurring first terminates the header. A later one must not be
+			// taken, since it may already belong to a subsequent message in a stream of messages.
+			if (index>=0 && index<found) {
+				found=index;
+				result=index+delim.length;
+			}
+		}
+		return result;
+	}
+
+	/** Checks that a Content-Length header field value describes a body that is actually there.
+	  * @param body_len the declared length of the message body
+	  * @param available the number of bytes available after the message header
+	  * @exception MalformedSipMessageException if the declared length is negative, or if the declared
+	  *            body is not completely contained in the received message */
+	private static void checkBodyLength(int body_len, int available) throws MalformedSipMessageException {
+		if (body_len<0) throw new MalformedSipMessageException("Negative Content-Length: "+body_len);
+		if (body_len>available) throw new MalformedSipMessageException("Truncated message body: Content-Length of "+body_len+" exceeds the "+available+" bytes received.");
 	}
 
 
