@@ -208,13 +208,17 @@ public class RtpPacket {
 	}
 
 	/** Sets padding length.
+	  * The packet is extended to hold the padding, keeping its payload.
 	  * @param padding_len the number of padding bytes */
 	public void setPaddingLength(int padding_len) {
 		if (length<HDR_LEN) return; // broken packet
 		// else
 		if (padding_len>0)  {
-			int pl_len=getPayloadLength();
 			int hdr_len=getHeaderLength();
+			int pl_len=getPayloadLength();
+			// Note: The padding has to be part of the packet, otherwise it is neither sent nor found
+			// again by getPaddingLength().
+			setPacketLength(hdr_len+pl_len+padding_len);
 			for (int i=0; i<padding_len-1; i++) buffer[offset+hdr_len+pl_len+i]=0;
 			buffer[offset+hdr_len+pl_len+padding_len-1]=(byte)padding_len;
 			BufferUtil.setBit(true, buffer, offset, 5);

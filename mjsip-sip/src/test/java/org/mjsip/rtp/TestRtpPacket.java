@@ -45,6 +45,33 @@ class TestRtpPacket {
 		assertArrayEquals(payload,packet.getPayload());
 	}
 
+	/** The padding has to become part of the packet, so that it is sent and found again. */
+	@Test
+	void testSetPaddingLength() {
+		byte[] payload={ 1, 2, 3, 4, 5 };
+		RtpPacket packet=new RtpPacket(0,4711,1,0,payload,0,payload.length);
+		packet.setPaddingLength(4);
+
+		assertEquals(HDR_LEN+payload.length+4,packet.getPacketLength());
+		assertEquals(4,packet.getPaddingLength());
+		assertEquals(payload.length,packet.getPayloadLength());
+		assertArrayEquals(payload,packet.getPayload());
+		assertPayloadWithinPacket(packet);
+	}
+
+	/** Setting the padding again must replace the padding set before. */
+	@Test
+	void testResetPaddingLength() {
+		byte[] payload={ 1, 2, 3, 4, 5 };
+		RtpPacket packet=new RtpPacket(0,4711,1,0,payload,0,payload.length);
+		packet.setPaddingLength(4);
+		packet.setPaddingLength(8);
+
+		assertEquals(HDR_LEN+payload.length+8,packet.getPacketLength());
+		assertEquals(8,packet.getPaddingLength());
+		assertArrayEquals(payload,packet.getPayload());
+	}
+
 	/** A received packet with four bytes of payload followed by four bytes of padding. */
 	@Test
 	void testPacketWithPadding() {
