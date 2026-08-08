@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +112,7 @@ class TestTcpReceiveLoops {
 			}
 		};
 
-		TcpServer server=new TcpServer(serverSocket(),listener);
+		TcpServer server=new TcpServer(0,LOCALHOST,listener);
 		try (TcpSocket first=new TcpSocket(LOCALHOST,server.getPort())) {
 			TcpSocket refused_socket=poll(refused);
 			assertNotNull(refused_socket,"The first connection has not been handled.");
@@ -129,18 +128,19 @@ class TestTcpReceiveLoops {
 		}
 	}
 
-	// **************************** Utilities ****************************
+	/** A server listening to a port assigned by the operating system must report that port. */
+	@Test
+	void testEphemeralPort() throws IOException, InterruptedException {
+		try (Acceptor acceptor=new Acceptor()) {
+			assertTrue(acceptor.getPort()>0,"No port assigned: "+acceptor.getPort());
 
-	/**
-	 * A server socket bound to an ephemeral port of the loopback interface.
-	 * <p>
-	 * Note: {@link TcpServer#getPort()} reports the port passed to its constructor, so a
-	 * {@link TcpServer} created for port 0 does not report the port it is actually listening to.
-	 * </p>
-	 */
-	private static ServerSocket serverSocket() throws IOException {
-		return new ServerSocket(0,TcpServer.DEFAULT_SOCKET_BACKLOG,InetAddress.getLoopbackAddress());
+			try (TcpSocket client=new TcpSocket(LOCALHOST,acceptor.getPort())) {
+				assertEquals(acceptor.getPort(),acceptor.accepted().getLocalPort());
+			}
+		}
 	}
+
+	// **************************** Utilities ****************************
 
 	private static void send(TcpSocket socket, String data) throws IOException {
 		socket.getOutputStream().write(data.getBytes(StandardCharsets.UTF_8));
@@ -177,7 +177,7 @@ class TestTcpReceiveLoops {
 		private final TcpServer _server;
 
 		Acceptor() throws IOException {
-			_server=new TcpServer(serverSocket(),new TcpServerListener() {
+			_server=new TcpServer(0,LOCALHOST,new TcpServerListener() {
 				@Override
 				public void onIncomingConnection(TcpServer server, TcpSocket socket) {
 					_accepted.add(socket);
