@@ -286,22 +286,29 @@ public class RtpStreamReceiver implements Runnable, RtpControlledReceiver {
 						byte[] payload_buf=rtp_packet.getPacketBuffer();
 						int payload_off=rtp_packet.getHeaderLength();
 						int payload_len=rtp_packet.getPayloadLength();
-						
-						// remove possible RTP payload format
-						int unformatted_len=(rtp_payload_format!=null)? rtp_payload_format.removeRtpPayloadFormat(payload_buf,payload_off,payload_len) : payload_len;
-					
-						// drop a small percentage of packets
-						if (random_early_drop>0 && (++packet_counter)%random_early_drop==0) continue;
-						// else 
 
-						if (additional_decoder!=null) unformatted_len=additional_decoder.encode(payload_buf,payload_off,unformatted_len,payload_buf,payload_off);
-
-						// write the payload data to the output_stream
+						// Note: A packet that cannot be processed must not terminate the reception,
+						// since that would end the media stream for the whole call.
 						try {
+							// remove possible RTP payload format
+							int unformatted_len=(rtp_payload_format!=null)? rtp_payload_format.removeRtpPayloadFormat(payload_buf,payload_off,payload_len) : payload_len;
+
+							// drop a small percentage of packets
+							if (random_early_drop>0 && (++packet_counter)%random_early_drop==0) continue;
+							// else
+
+							if (additional_decoder!=null) unformatted_len=additional_decoder.encode(payload_buf,payload_off,unformatted_len,payload_buf,payload_off);
+
+							// write the payload data to the output_stream
 							output_stream.write(payload_buf,payload_off,unformatted_len);
 						}
+						catch (RuntimeException e) {
+							LOG.warn("Dropping RTP packet that could not be processed (offset={}, length={}).",
+									Integer.valueOf(payload_off),Integer.valueOf(payload_len),e);
+						}
 						catch (IOException e) {
-							System.out.println("DEBUG: RtpStreamReceiver: write(buf,off="+payload_off+", len="+unformatted_len+"): error: "+e);
+							LOG.warn("Writing the received payload failed (offset={}, length={}).",
+									Integer.valueOf(payload_off),Integer.valueOf(payload_len),e);
 							throw e;
 						}
 					}

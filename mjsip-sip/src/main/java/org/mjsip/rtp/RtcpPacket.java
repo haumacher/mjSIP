@@ -27,7 +27,10 @@ package org.mjsip.rtp;
 /** RTCP packet, as defined by RFC 3550. 
  */
 public class RtcpPacket {
-	
+
+	/** Length of the RTCP common header (V, P, PT, and length) */
+	public static final int HDR_LEN=4;
+
 	/** SR (Sendr Report) RTCP packet type */
 	public static final int PT_SR=200;
 
@@ -105,9 +108,17 @@ public class RtcpPacket {
 	/** Gets padding length
 	  * @return the number of padding bytes */
 	public int getPaddingLength() {
+		int packet_len=getPacketLength();
+		if (packet_len<=HDR_LEN) return 0; // broken packet, or no room for padding
+		// else
 		boolean p=BufferUtil.getBit(buffer[offset],5);
-		if (p) return buffer[offset+getPacketLength()-1];
-		else return 0;
+		if (!p) return 0;
+		// else
+		int padding_len=buffer[offset+packet_len-1] & 0xFF; // the padding length is an unsigned value
+		// Note: The padding length is announced by the packet itself, therefore it may be larger than
+		// the number of bytes actually received.
+		int available=packet_len-HDR_LEN;
+		return (padding_len<=available)? padding_len : available;
 	}
 
 	/** Sets padding length.
@@ -137,15 +148,22 @@ public class RtcpPacket {
 	}
 
 	/** Gets the RTCP packet length.
-	  * @return the RTCP packet length including the header and any padding */   
+	  * @return the RTCP packet length including the header and any padding; never more than the number
+	  *         of bytes available after the packet offset */
 	public int getPacketLength() {
-		return (BufferUtil.getInt(buffer,2,4)+1)*4;
+		int available=buffer.length-offset;
+		if (available<HDR_LEN) return (available>0)? available : 0; // broken packet
+		// else
+		int packet_len=(BufferUtil.getInt(buffer,offset+2,offset+4)+1)*4;
+		// Note: The length is announced by the packet itself, therefore it may be larger than the
+		// number of bytes actually received.
+		return (packet_len<=available)? packet_len : available;
 	}
 
 	/** Sets the RTCP packet length.
-	  * @param len the RTCP packet length including the header and any padding */   
+	  * @param len the RTCP packet length including the header and any padding */
 	public void setPacketLength(int len) {
-		BufferUtil.setInt(len/4-1,buffer,2,4);
+		BufferUtil.setInt(len/4-1,buffer,offset+2,offset+4);
 	}
 
 }
