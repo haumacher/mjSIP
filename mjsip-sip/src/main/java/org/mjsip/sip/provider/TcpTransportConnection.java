@@ -27,6 +27,7 @@ package org.mjsip.sip.provider;
 
 import java.io.IOException;
 
+import org.mjsip.sip.message.IncompleteSipMessageException;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.message.SipMessageBuffer;
 import org.slf4j.LoggerFactory;
@@ -56,42 +57,61 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 	long last_time;
 	
 	/** Receiver buffer. */
-	SipMessageBuffer buffer=new SipMessageBuffer();
-	  
+	SipMessageBuffer buffer;
+
 	/** SipTransportConnection listener */
 	SipTransportConnectionListener listener;   
 
 
 
-	/** Creates a new TcpTransportConnection. */ 
+	/** Creates a new TcpTransportConnection. */
 	public TcpTransportConnection(IpAddress remote_ipaddr, int remote_port, SipTransportConnectionListener listener) throws IOException {
-		init(new TcpSocket(remote_ipaddr,remote_port),listener);
+		this(new TcpSocket(remote_ipaddr,remote_port),listener);
 	}
 
 
 	/**
-	 * Creates a new TcpTransportConnection.
-	 * 
+	 * Creates a new TcpTransportConnection accepting messages of
+	 * {@link SipMessageBuffer#DEFAULT_MAX_MESSAGE_SIZE} bytes.
+	 *
 	 * @param socket
 	 *        the TCP socket
 	 * @param listener
 	 *        the TcpTransportConnection listener
 	 */
 	public TcpTransportConnection(TcpSocket socket, SipTransportConnectionListener listener) throws IOException {
-		init(socket,listener);
+		this(socket,SipMessageBuffer.DEFAULT_MAX_MESSAGE_SIZE,listener);
+	}
+
+
+	/**
+	 * Creates a new TcpTransportConnection.
+	 *
+	 * @param socket
+	 *        the TCP socket
+	 * @param max_message_size
+	 *        the maximum size of a single received SIP message (in bytes)
+	 * @param listener
+	 *        the TcpTransportConnection listener
+	 */
+	public TcpTransportConnection(TcpSocket socket, int max_message_size, SipTransportConnectionListener listener) throws IOException {
+		init(socket,max_message_size,listener);
 	}
 
 
 	/**
 	 * Inits the TcpTransportConnection.
-	 * 
+	 *
 	 * @param socket
 	 *        the TCP socket
+	 * @param max_message_size
+	 *        the maximum size of a single received SIP message (in bytes)
 	 * @param listener
 	 *        the TcpTransportConnection listener
 	 */
-	private void init(TcpSocket socket, SipTransportConnectionListener listener) throws IOException {
+	private void init(TcpSocket socket, int max_message_size, SipTransportConnectionListener listener) throws IOException {
 		this.listener=listener;
+		this.buffer=new SipMessageBuffer(max_message_size);
 		TcpConnectionListener this_tcp_conn_listener=new TcpConnectionListener() {
 			@Override
 			public void onReceivedData(TcpConnection tcp_conn, byte[] data, int len) {
@@ -228,13 +248,25 @@ public class TcpTransportConnection implements SipTransportConnection/*, TcpConn
 
 	/** Tries to get a SIP message from the receiver buffer. */
 	private SipMessage getSipMessage()   {
-		SipMessage msg=null;
 		// skip possible leading CRLF
 		byte b;
 		while (buffer.getLength()>0 && ((b=buffer.byteAt(0))=='\r' || b=='\n')) buffer.skip(1);
 		// try to get a SIP message
-		try {  msg=buffer.parseSipMessage();  } catch (Exception e) {}
-		return msg;
+		try {
+			return buffer.parseSipMessage();
+		}
+		catch (IncompleteSipMessageException e) {
+			// The message has not been completely received yet, retry when more data arrives.
+			return null;
+		}
+		catch (Exception e) {
+			// The message cannot be framed, so where the next message starts within the stream is
+			// unknown. Continuing would mean to interpret arbitrary bytes as a message, therefore the
+			// connection must not be used any longer (see RFC 3261, 18.3).
+			LOG.warn("Closing connection {} due to a framing error: {}", connection_id, e.getMessage());
+			halt();
+			return null;
+		}
 	}
 
 }

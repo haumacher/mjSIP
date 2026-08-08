@@ -55,6 +55,21 @@ public class TlsTransportConnection extends TcpTransportConnection {
 	}
 
 
+	/**
+	 * Constructs a new TlsTransportConnection
+	 *
+	 * @param socket
+	 *        the TLS socket
+	 * @param max_message_size
+	 *        the maximum size of a single received SIP message (in bytes)
+	 * @param listener
+	 *        the TlsTransportConnection listener
+	 */
+	public TlsTransportConnection(TcpSocket socket, int max_message_size, SipTransportConnectionListener listener) throws IOException {
+		super(socket,max_message_size,listener);
+	}
+
+
 	/** Gets protocol type */ 
 	@Override
 	public String getProtocol() {

@@ -24,7 +24,9 @@ package org.mjsip.sip.provider;
 
 import java.io.IOException;
 
+import org.mjsip.sip.message.MalformedSipMessageException;
 import org.mjsip.sip.message.SipMessage;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.IpAddress;
 import org.zoolu.net.UdpPacket;
 import org.zoolu.net.UdpProvider;
@@ -35,7 +37,9 @@ import org.zoolu.util.ByteUtils;
 /** UdpTransport provides an UDP transport service for SIP.
   */
 public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
-	
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UdpTransport.class);
+
 	/** Ping data */
 	static final byte[] PING=new byte[]{0x0d,0x0a,0x0d,0x0a}; // CRLF CRCF (RFC5626 PING)
 	
@@ -167,7 +171,17 @@ public class UdpTransport implements SipTransport/*, UdpProviderListener*/ {
 			// do something..
 		}
 		else {
-			SipMessage msg=new SipMessage(packet.getData(),packet.getOffset(),packet.getLength());
+			SipMessage msg;
+			try {
+				msg=SipMessage.parse(packet.getData(),packet.getOffset(),packet.getLength());
+			}
+			catch (MalformedSipMessageException e) {
+				// Note: A partially parsed message must not be passed on, since it may lack even the
+				// request line or the Via header field.
+				LOG.info("Dropping malformed message from {}:{}: {}",packet.getIpAddress(),
+						Integer.valueOf(packet.getPort()),e.getMessage());
+				return;
+			}
 			msg.setRemoteAddress(packet.getIpAddress().toString());
 			msg.setRemotePort(packet.getPort());
 			msg.setTransportProtocol(PROTO_UDP);

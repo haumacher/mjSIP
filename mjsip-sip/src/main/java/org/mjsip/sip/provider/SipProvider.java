@@ -260,6 +260,9 @@ public class SipProvider implements SipTransportListener {
 				}
 				
 				if (transp!=null)  {
+					if (transp instanceof SipTransportCO) {
+						((SipTransportCO)transp).setMaxMessageSize(_sipConfig.getMaxMessageSize());
+					}
 					setTransport(transp);
 				}
 			}

@@ -26,22 +26,41 @@ package org.mjsip.sip.message;
 /** Class SipMessageBuffer provides methods for extracting SIP messages from a byte buffer.
   */
 public class SipMessageBuffer {
-	
+
+	/** Default value for the maximum size of a single SIP message (in bytes). */
+	public static final int DEFAULT_MAX_MESSAGE_SIZE=1024*1024;
 
 	/** Buffer */
 	byte[] buffer=null;
-	
+
 	/** Current data offset within the buffer */
 	int offset=0;
-	
+
 	/** Current data length */
 	//int length=0;
 
-	
-	
-	/** Creates a new SipMessageBuffer. */
+	/** Maximum size of a single SIP message (in bytes) */
+	private final int max_message_size;
+
+
+
+	/** Creates a new SipMessageBuffer accepting messages of {@link #DEFAULT_MAX_MESSAGE_SIZE} bytes. */
 	public SipMessageBuffer() {
-		
+		this(DEFAULT_MAX_MESSAGE_SIZE);
+	}
+
+	/** Creates a new SipMessageBuffer.
+	  * @param max_message_size the maximum size of a single SIP message (in bytes); data exceeding
+	  *        that size without forming a complete message is rejected, since it can neither be
+	  *        parsed nor be buffered indefinitely */
+	public SipMessageBuffer(int max_message_size) {
+		this.max_message_size=max_message_size;
+	}
+
+	/** Gets the maximum size of a single SIP message (in bytes).
+	  * @return the maximum message size */
+	public int getMaxMessageSize() {
+		return max_message_size;
 	}
 
 	/** Gets the current buffer.
@@ -104,10 +123,32 @@ public class SipMessageBuffer {
 	}
 
 	/** Tries to get a new SIP message from the buffer.
-	  * @return a new SIP message or null */
+	  * <p>
+	  * The buffer is a stream of messages, therefore only a message with a Content-Length header field
+	  * can be framed, see {@link BasicSipMessage#setMessage(byte[],int,int,boolean)}. As long as the buffer
+	  * does not contain a complete message, an {@link IncompleteSipMessageException} is thrown and the
+	  * buffer contents are kept for a later retry. Any other {@link MalformedSipMessageException} means
+	  * that the start of the next message within the stream cannot be determined any more.
+	  * </p>
+	  * @return a new SIP message or null
+	  * @exception IncompleteSipMessageException if the buffer does not (yet) contain a complete message
+	  * @exception MalformedSipMessageException if the buffer does not start with a valid SIP message, or
+	  *            if the buffered data exceeds {@link #getMaxMessageSize()} without forming a message */
 	public synchronized SipMessage parseSipMessage() throws MalformedSipMessageException {
+		int length=getLength();
+		if (length<=0) throw new IncompleteSipMessageException("No data buffered.");
 		SipMessage msg=new SipMessage();
-		offset+=msg.setMessage(buffer,offset,buffer.length-offset);
+		try {
+			offset+=msg.setMessage(buffer,offset,length,true);
+		}
+		catch (IncompleteSipMessageException ex) {
+			// Note: An incomplete message must be kept until the rest of it arrives. Without a limit,
+			// a peer could exhaust the memory by announcing a huge Content-Length or by never
+			// terminating the message header.
+			if (length>max_message_size)
+				throw new MalformedSipMessageException("Message too large: More than "+max_message_size+" bytes received without a complete message.");
+			throw ex;
+		}
 		// DEBUG:
 		/*try {
 			offset+=msg.setMessage(buffer,offset,buffer.length-offset);

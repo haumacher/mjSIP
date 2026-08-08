@@ -4,6 +4,7 @@
 package org.mjsip.sip.provider;
 
 import org.mjsip.sip.address.SipURI;
+import org.mjsip.sip.message.SipMessageBuffer;
 import org.zoolu.net.AddressType;
 import org.zoolu.net.IpAddress;
 
@@ -42,6 +43,14 @@ public interface SipOptions {
 
 	/** Max number of (contemporary) open connections */
 	int getMaxConnections();
+
+	/**
+	 * Maximum size of a single SIP message (in bytes) received over a stream-oriented transport. A
+	 * connection delivering more data than that without forming a complete message is closed.
+	 */
+	default int getMaxMessageSize() {
+		return SipMessageBuffer.DEFAULT_MAX_MESSAGE_SIZE;
+	}
 
 	/**
 	 * Outbound proxy URI ([sip:]host_addr[:host_port][;transport=proto]). Use 'NONE' for not using
