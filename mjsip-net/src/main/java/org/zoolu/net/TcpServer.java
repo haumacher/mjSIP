@@ -107,13 +107,15 @@ public class TcpServer extends Thread {
 	/** Inits the TcpServer */
 	private void init(ServerSocket server_socket, int port, IpAddress bind_ipaddr, long alive_time, TcpServerListener listener) throws java.io.IOException {
 		this.listener=listener;
-		this.server_port=port;
 		this.server_ipaddr=bind_ipaddr;
 		if (server_socket==null) {
 			if (bind_ipaddr==null) server_socket=new ServerSocket(port);
 			else server_socket=new ServerSocket(port,DEFAULT_SOCKET_BACKLOG,bind_ipaddr.getInetAddress());
 		}
 		this.server_socket=server_socket;
+		// Note: The port is taken from the socket, since the port requested may be 0, in which case the
+		// server is listening to a port assigned by the operating system.
+		this.server_port=server_socket.getLocalPort();
 		this.socket_timeout=DEFAULT_SOCKET_TIMEOUT;
 		this.alive_time=alive_time;
 		this.stop=false; 
