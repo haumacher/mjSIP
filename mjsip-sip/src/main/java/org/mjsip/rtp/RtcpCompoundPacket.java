@@ -44,10 +44,12 @@ public class RtcpCompoundPacket {
 
 
 
-	/** Creates a new RtcpCompoundPacket. */ 
+	/** Creates a new RtcpCompoundPacket containing the whole given buffer.
+	  * @param buffer packet buffer */
 	public RtcpCompoundPacket(byte[] buffer) {
 		this.buffer=buffer;
 		this.offset=0;
+		this.length=buffer.length;
 	}
 
 	/** Creates a new RtcpCompoundPacket.

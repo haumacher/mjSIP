@@ -123,6 +123,23 @@ class TestRtcpPacket {
 		assertEquals(0,packets[0].getPacketOffset());
 	}
 
+	/** A compound packet created for a buffer covers that whole buffer. */
+	@Test
+	void testCompoundPacketForBuffer() {
+		byte[] buffer=new byte[36];
+		RtcpPacket first=new RtcpPacket(buffer,0);
+		first.setVersion(2);
+		first.setPacketLength(8);
+		RtcpPacket second=new RtcpPacket(buffer,8);
+		second.setVersion(2);
+		second.setPacketLength(28);
+
+		RtcpCompoundPacket compound=new RtcpCompoundPacket(buffer);
+
+		assertEquals(buffer.length,compound.getPacketLength());
+		assertEquals(2,compound.getRtcpPackets().length);
+	}
+
 	/** A trailing fragment shorter than a RTCP header must be dropped. */
 	@Test
 	void testCompoundPacketWithTrailingFragment() {
