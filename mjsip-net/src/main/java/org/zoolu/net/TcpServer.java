@@ -28,12 +28,16 @@ import java.io.InterruptedIOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
+import org.slf4j.LoggerFactory;
+
 
 
 /** TcpServer implements a TCP server wainting for incoming connection.
   */
 public class TcpServer extends Thread {
-	
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TcpServer.class);
+
 	/** Default value for the maximum time that the tcp server can remain active after been halted (in milliseconds) */
 	public static final int DEFAULT_SOCKET_TIMEOUT=5000; // 5sec 
 
@@ -153,13 +157,19 @@ public class TcpServer extends Thread {
 					if (alive_time>0 && System.currentTimeMillis()>expire) halt();
 					continue;
 				}
-				if (listener!=null) listener.onIncomingConnection(this,socket);
+				// Note: A failure while handling a single connection must not terminate the server,
+				// since that would stop accepting connections at all. Errors are caught as well, since
+				// e.g. an OutOfMemoryError may be provoked by a malicious peer.
+				if (listener!=null) try {  listener.onIncomingConnection(this,socket);  } catch (Throwable t) {
+					LOG.warn("Refusing connection from {}:{} that could not be handled.",socket.getAddress(),Integer.valueOf(socket.getPort()),t);
+					try {  socket.close();  } catch (Exception e) {}
+				}
 				if (alive_time>0) expire=System.currentTimeMillis()+alive_time;
 			}
 		}
-		catch (Exception e) {
-			error=e;
-			e.printStackTrace();
+		catch (Throwable t) {
+			error=(t instanceof Exception)? (Exception)t : new RuntimeException(t);
+			LOG.warn("TCP server terminated.",t);
 			stop=true;
 		}
 		is_running=false;
